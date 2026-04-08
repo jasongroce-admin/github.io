@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VPD Defender - Game2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hud">
+      <div>
+        <h1>VPD Defender</h1>
+        <p class="subhead">Dispatch-driven response racing with mobile-first controls.</p>
+      </div>
+      <div class="stats">
+        <span>Mode <strong id="modeLabel">Mission</strong></span>
+        <span>Call <strong id="callId">-</strong></span>
+        <span>Target <strong id="targetAddress">-</strong></span>
+        <span>ETA <strong id="time">0</strong>s</span>
+        <span>Score <strong id="score">0</strong></span>
+        <span>Speed <strong id="speed">0</strong></span>
+        <span>Hull <strong id="lives">100</strong>%</span>
+      </div>
+    </header>
+
+    <section class="game-wrap">
+      <canvas id="game" width="480" height="760" aria-label="VPD Defender game"></canvas>
+      <aside id="tipsPanel" class="tips-panel">
+        <h3>Road Hazard Tips</h3>
+        <ul>
+          <li><strong>Soft spots</strong>: discolored asphalt with bubbling brown water.</li>
+          <li><strong>Debris</strong>: limbs, cones, bins, and shopping carts can spin your cruiser.</li>
+          <li><strong>People</strong>: pedestrians may dart from sidewalks.</li>
+          <li><strong>Practice mode</strong>: no call timer, great for learning the streets.</li>
+        </ul>
+      </aside>
+
+      <div id="overlay" class="overlay">
+        <div class="card">
+          <h2>Dispatch Ready</h2>
+          <p id="overlayStory">Choose a mode. Mission mode sends you to timed 4-digit house calls on town streets. Free Roam removes the timer so you can practice.</p>
+
+          <div class="mode-row">
+            <button id="missionBtn" class="mode active">Mission</button>
+            <button id="freeRoamBtn" class="mode">Free Roam</button>
+            <button id="tipsBtn" class="mode">Slide Tips</button>
+          </div>
+
+          <ul>
+            <li>Drive with arrow keys / WASD or touch controls.</li>
+            <li>Hold <strong>SIREN</strong> for a short boost.</li>
+            <li>Avoid traffic, potholes, limbs, trash bins, carts, oil, and open manholes.</li>
+            <li>Collect clocks and shields for time and hull recovery.</li>
+          </ul>
+
+          <button id="startBtn">Begin Shift</button>
+        </div>
+      </div>
+
+      <div id="hintToast" class="hint-toast hidden" aria-live="polite"></div>
+    </section>
+
+    <section class="controls" aria-label="Touch controls">
+      <button data-key="ArrowLeft">◀</button>
+      <button data-key="ArrowUp">▲</button>
+      <button data-key="ArrowDown">▼</button>
+      <button data-key="ArrowRight">▶</button>
+      <button data-key="Space">SIREN</button>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
