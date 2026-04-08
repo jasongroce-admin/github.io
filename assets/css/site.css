@@ -1,0 +1,65 @@
+:root {
+  --bg: #142226;
+  --panel: #1f3238;
+  --text: #e9f8fc;
+  --accent: #6dd6ff;
+  --muted: #9bc4d1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #244955, var(--bg));
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.hero {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.hero h1 {
+  margin-bottom: 0.25rem;
+}
+
+.hero p {
+  color: var(--muted);
+}
+
+.copyright {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.games-grid {
+  width: min(960px, 92vw);
+  margin: 1.5rem auto 2rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.card {
+  background: linear-gradient(160deg, #2a444d, var(--panel));
+  border: 2px solid #346371;
+  border-radius: 16px;
+  padding: 1.1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.card-disabled {
+  opacity: 0.66;
+  pointer-events: none;
+}
