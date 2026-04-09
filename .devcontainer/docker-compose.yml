@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ..:/workspace
+  browser:
+    image: selenium/standalone-chrome:latest  # or toradex/kiosk-mode-browser, etc.
+    ports:
+      - "7900:7900"  # for VNC access if needed
+    shm_size: 2gb
