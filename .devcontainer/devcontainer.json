@@ -1,0 +1,15 @@
+{
+  "name": "My Dev Container with Browser",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",  // or any base image you prefer
+  "features": {
+    // Add common features here, e.g., for Git, Node, etc.
+  },
+  "postCreateCommand": "echo 'Dev container ready!'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Add useful extensions, e.g., "ms-playwright.playwright" for browser automation
+      ]
+    }
+  }
+}
