@@ -247,12 +247,8 @@ function update(dt) {
 
   if (game.mode === 'mission') {
     game.timeLeft -= dt;
-    if (game.timeLeft <= 0) {
-      endGame(false, 'Dispatch timeout.');
-      updateHud();
-      return;
-    }
-    if (game.distance >= game.callTargetDistance) completeCall();
+    if (game.timeLeft <= 0) endGame(false, 'Dispatch timeout.');
+    if (game.distance > game.level * 150) completeCall();
   }
 
   game.spawnClock += dt;
