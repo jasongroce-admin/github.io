@@ -38,3 +38,26 @@ jasongroce-admin.github.io/
 ## Copyright
 
 Copyright © Jason Groce - Kennard IN
+
+## Maintenance
+
+- Run local reference checks:
+
+  ```bash
+  python3 tools/check_links.py
+  ```
+
+- Run JavaScript syntax checks:
+
+  ```bash
+  for f in games/game-01/js/*.js games/game-02/js/*.js; do node --check "$f"; done
+  ```
+
+- Keep `work` and `main` synchronized before merge testing:
+
+  ```bash
+  git checkout work
+  git branch -f main work
+  git checkout work
+  ```
+

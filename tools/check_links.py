@@ -1,7 +1,9 @@
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+
 
 class RefParser(HTMLParser):
     def __init__(self):
@@ -16,7 +18,12 @@ class RefParser(HTMLParser):
 
 
 def is_external(value: str) -> bool:
-    return value.startswith(("http://", "https://", "mailto:", "#", "javascript:"))
+    return value.startswith(("http://", "https://", "mailto:", "tel:", "javascript:", "#", "data:"))
+
+
+def normalize_local_ref(value: str) -> str:
+    parsed = urlsplit(value)
+    return unquote(parsed.path)
 
 
 def main() -> int:
@@ -30,7 +37,10 @@ def main() -> int:
         for ref in parser.refs:
             if is_external(ref):
                 continue
-            target = (html_file.parent / ref).resolve()
+            normalized_ref = normalize_local_ref(ref)
+            if not normalized_ref:
+                continue
+            target = (html_file.parent / normalized_ref).resolve()
             if not target.exists():
                 errors.append(f"{html_file.relative_to(ROOT)} -> {ref}")
 
