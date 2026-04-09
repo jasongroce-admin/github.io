@@ -1,10 +1,11 @@
 :root {
-  --bg: #142226;
-  --panel: #1f3238;
-  --panel-2: #223b43;
-  --text: #e9f8fc;
-  --accent: #6dd6ff;
-  --muted: #9bc4d1;
+  --bg: #2a1c17;
+  --bg-2: #4b2f1f;
+  --panel: #5d3c2a;
+  --panel-2: #7a4f35;
+  --text: #f4eee6;
+  --accent: #d98b4f;
+  --muted: #d8c2aa;
 }
 
 * {
@@ -14,7 +15,7 @@
 body {
   margin: 0;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-  background: radial-gradient(circle at top, #244955, var(--bg));
+  background: radial-gradient(circle at 20% 0%, var(--bg-2), var(--bg));
   color: var(--text);
   min-height: 100vh;
   line-height: 1.55;
@@ -50,9 +51,10 @@ body {
 
 .panel {
   background: linear-gradient(165deg, var(--panel-2), var(--panel));
-  border: 2px solid #346371;
+  border: 1px solid #aa7a56;
   border-radius: 16px;
   padding: 1.1rem 1.2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
 .panel h2 {
@@ -67,8 +69,8 @@ body {
 
 .card {
   display: block;
-  background: linear-gradient(160deg, #2a444d, var(--panel));
-  border: 2px solid #3a6877;
+  background: linear-gradient(160deg, #6a4530, #4f3325);
+  border: 1px solid #b3835e;
   border-radius: 14px;
   padding: 1rem;
   color: inherit;
@@ -85,25 +87,19 @@ body {
   border-color: var(--accent);
 }
 
-.card-disabled {
-  opacity: 0.68;
-  pointer-events: none;
-}
-
-
 .play-btn {
   display: inline-block;
   margin-top: 0.55rem;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
-  border: 1px solid #5aa7bf;
-  background: #1a4e5f;
+  border: 1px solid #e3a06b;
+  background: #8b5433;
   color: var(--text);
   text-decoration: none;
   font-weight: 700;
 }
 
 .play-btn:hover {
-  border-color: var(--accent);
-  background: #226178;
+  border-color: #ffd0a1;
+  background: #a3643e;
 }
