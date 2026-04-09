@@ -1,4 +1,4 @@
-# Game2 - VPD Defender
+# Game 02 - VPD Defender
 
 Arcade-style first responder chase game built with HTML5 Canvas.
 

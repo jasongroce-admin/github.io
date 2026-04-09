@@ -1,6 +1,7 @@
 :root {
   --bg: #142226;
   --panel: #1f3238;
+  --panel-2: #223b43;
   --text: #e9f8fc;
   --accent: #6dd6ff;
   --muted: #9bc4d1;
@@ -16,42 +17,67 @@ body {
   background: radial-gradient(circle at top, #244955, var(--bg));
   color: var(--text);
   min-height: 100vh;
+  line-height: 1.55;
 }
 
 .hero {
   text-align: center;
-  padding: 2rem 1rem 1rem;
+  padding: 2.2rem 1rem 1rem;
 }
 
 .hero h1 {
-  margin-bottom: 0.25rem;
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
 }
 
-.hero p {
+.subtitle {
   color: var(--muted);
+  margin: 0.35rem 0 0;
 }
 
 .copyright {
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
+  color: var(--muted);
 }
 
-.games-grid {
+.content {
   width: min(960px, 92vw);
-  margin: 1.5rem auto 2rem;
+  margin: 1rem auto 2.5rem;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.panel {
+  background: linear-gradient(165deg, var(--panel-2), var(--panel));
+  border: 2px solid #346371;
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+.projects-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
 .card {
+  display: block;
   background: linear-gradient(160deg, #2a444d, var(--panel));
-  border: 2px solid #346371;
-  border-radius: 16px;
-  padding: 1.1rem;
+  border: 2px solid #3a6877;
+  border-radius: 14px;
+  padding: 1rem;
   color: inherit;
   text-decoration: none;
   transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.card h3 {
+  margin-top: 0;
 }
 
 .card:hover {
@@ -60,6 +86,24 @@ body {
 }
 
 .card-disabled {
-  opacity: 0.66;
+  opacity: 0.68;
   pointer-events: none;
+}
+
+
+.play-btn {
+  display: inline-block;
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #5aa7bf;
+  background: #1a4e5f;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.play-btn:hover {
+  border-color: var(--accent);
+  background: #226178;
 }
