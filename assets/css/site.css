@@ -1,11 +1,12 @@
 :root {
-  --bg: #2a1c17;
-  --bg-2: #4b2f1f;
-  --panel: #5d3c2a;
-  --panel-2: #7a4f35;
-  --text: #f4eee6;
-  --accent: #d98b4f;
-  --muted: #d8c2aa;
+  --bg: #1e0f0e;
+  --bg-2: #3f1e17;
+  --panel: #54291a;
+  --panel-2: #7d3b1f;
+  --text: #fff4e7;
+  --accent: #ff9d45;
+  --muted: #f2c9a2;
+  --border: #d47b3b;
 }
 
 * {
@@ -15,7 +16,10 @@
 body {
   margin: 0;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-  background: radial-gradient(circle at 20% 0%, var(--bg-2), var(--bg));
+  background:
+    radial-gradient(circle at 12% 2%, rgba(255, 130, 52, 0.25), transparent 35%),
+    radial-gradient(circle at 88% 6%, rgba(255, 201, 116, 0.2), transparent 30%),
+    linear-gradient(170deg, var(--bg-2), var(--bg));
   color: var(--text);
   min-height: 100vh;
   line-height: 1.55;
@@ -29,6 +33,7 @@ body {
 .hero h1 {
   margin: 0;
   font-size: clamp(2rem, 4vw, 2.75rem);
+  letter-spacing: 0.03em;
 }
 
 .subtitle {
@@ -36,9 +41,15 @@ body {
   margin: 0.35rem 0 0;
 }
 
+.updated {
+  color: #ffd9bc;
+  margin: 0.45rem 0 0;
+  font-size: 0.92rem;
+}
+
 .copyright {
   font-size: 0.9rem;
-  margin-top: 0.6rem;
+  margin-top: 0.55rem;
   color: var(--muted);
 }
 
@@ -50,11 +61,11 @@ body {
 }
 
 .panel {
-  background: linear-gradient(165deg, var(--panel-2), var(--panel));
-  border: 1px solid #aa7a56;
+  background: linear-gradient(162deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.1rem 1.2rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
 }
 
 .panel h2 {
@@ -69,13 +80,13 @@ body {
 
 .card {
   display: block;
-  background: linear-gradient(160deg, #6a4530, #4f3325);
-  border: 1px solid #b3835e;
+  background: linear-gradient(160deg, #82401f, #5c2e18);
+  border: 1px solid #ea9554;
   border-radius: 14px;
   padding: 1rem;
   color: inherit;
   text-decoration: none;
-  transition: transform 120ms ease, border-color 120ms ease;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .card h3 {
@@ -84,7 +95,8 @@ body {
 
 .card:hover {
   transform: translateY(-3px);
-  border-color: var(--accent);
+  border-color: #ffd39a;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 .play-btn {
@@ -92,14 +104,14 @@ body {
   margin-top: 0.55rem;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
-  border: 1px solid #e3a06b;
-  background: #8b5433;
+  border: 1px solid #ffd3a5;
+  background: #ab5427;
   color: var(--text);
   text-decoration: none;
   font-weight: 700;
 }
 
 .play-btn:hover {
-  border-color: #ffd0a1;
-  background: #a3643e;
+  border-color: #fff0dc;
+  background: #c4652f;
 }
