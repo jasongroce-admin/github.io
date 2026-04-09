@@ -17,6 +17,23 @@
         <span>Level: <strong id="level">1</strong></span>
         <span>Lives: <strong id="lives">3</strong></span>
       </div>
+      <details class="settings" id="settingsPanel">
+        <summary>Control Settings</summary>
+        <div class="settings-grid">
+          <label>
+            <input id="showTouchControls" type="checkbox" checked />
+            Show touch controls
+          </label>
+          <label>
+            <input id="enableTilt" type="checkbox" />
+            Tilt steering (mobile)
+          </label>
+          <label class="range-label" for="tiltSensitivity">Tilt sensitivity</label>
+          <input id="tiltSensitivity" type="range" min="0.4" max="2" step="0.1" value="1" />
+          <button id="requestTiltBtn" type="button">Enable motion permission</button>
+          <p id="tiltStatus" class="tilt-status">Tilt is currently off.</p>
+        </div>
+      </details>
     </header>
 
     <section class="game-wrap">
@@ -31,18 +48,18 @@
             <li>Collect stars and time bonuses</li>
             <li>Tornado conditions begin in later levels</li>
           </ul>
-          <button id="startBtn">Start Shift</button>
+          <button id="startBtn" type="button">Start Shift</button>
           <p><a href="../../index.html">Back to homepage</a></p>
         </div>
       </div>
     </section>
 
-    <section class="controls" aria-label="Touch controls">
-      <button data-key="ArrowLeft">◀</button>
-      <button data-key="ArrowUp">▲</button>
-      <button data-key="ArrowDown">▼</button>
-      <button data-key="ArrowRight">▶</button>
-      <button data-key="Space">SIREN</button>
+    <section class="controls" id="touchControls" aria-label="Touch controls">
+      <button data-key="ArrowLeft" type="button">◀</button>
+      <button data-key="ArrowUp" type="button">▲</button>
+      <button data-key="ArrowDown" type="button">▼</button>
+      <button data-key="ArrowRight" type="button">▶</button>
+      <button data-key="Space" type="button">SIREN</button>
     </section>
   </main>
 

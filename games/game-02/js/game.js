@@ -9,12 +9,28 @@ const livesEl = document.getElementById('lives');
 const overlay = document.getElementById('overlay');
 const startBtn = document.getElementById('startBtn');
 
+const touchControlsEl = document.getElementById('touchControls');
+const showTouchControlsEl = document.getElementById('showTouchControls');
+const enableTiltEl = document.getElementById('enableTilt');
+const tiltSensitivityEl = document.getElementById('tiltSensitivity');
+const requestTiltBtn = document.getElementById('requestTiltBtn');
+const tiltStatusEl = document.getElementById('tiltStatus');
+
+const SETTINGS_KEY = 'vpd-defender-settings-v1';
 const W = canvas.width;
 const H = canvas.height;
 const ROAD_X = 90;
 const ROAD_W = 300;
 
 const keys = new Set();
+let tiltSteer = 0;
+let motionPermissionGranted = false;
+
+const settings = {
+  showTouchControls: true,
+  enableTilt: false,
+  tiltSensitivity: 1,
+};
 
 const game = {
   running: false,
@@ -43,6 +59,92 @@ const player = {
   boost: 0,
   invuln: 0,
 };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    settings.showTouchControls = parsed.showTouchControls ?? settings.showTouchControls;
+    settings.enableTilt = parsed.enableTilt ?? settings.enableTilt;
+    settings.tiltSensitivity = parsed.tiltSensitivity ?? settings.tiltSensitivity;
+  } catch {
+    // ignore corrupted local storage values
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function applySettingsToUi() {
+  showTouchControlsEl.checked = settings.showTouchControls;
+  enableTiltEl.checked = settings.enableTilt;
+  tiltSensitivityEl.value = String(settings.tiltSensitivity);
+  touchControlsEl.style.display = settings.showTouchControls ? 'grid' : 'none';
+  updateTiltStatus();
+}
+
+function updateTiltStatus() {
+  if (!settings.enableTilt) {
+    tiltStatusEl.textContent = 'Tilt is currently off.';
+    return;
+  }
+  if (motionPermissionGranted) {
+    tiltStatusEl.textContent = `Tilt is on (sensitivity ${settings.tiltSensitivity.toFixed(1)}).`;
+    return;
+  }
+  tiltStatusEl.textContent = 'Tilt enabled. Tap “Enable motion permission” on iPhone/iPad if needed.';
+}
+
+async function requestMotionPermission() {
+  const requestFn = DeviceOrientationEvent?.requestPermission;
+  if (typeof requestFn !== 'function') {
+    motionPermissionGranted = true;
+    updateTiltStatus();
+    return;
+  }
+
+  try {
+    const result = await requestFn.call(DeviceOrientationEvent);
+    motionPermissionGranted = result === 'granted';
+    tiltStatusEl.textContent = motionPermissionGranted
+      ? 'Motion permission granted. Tilt steering is active.'
+      : 'Motion permission was denied.';
+  } catch {
+    tiltStatusEl.textContent = 'Unable to request motion permission on this device.';
+  }
+}
+
+window.addEventListener('deviceorientation', (event) => {
+  if (!settings.enableTilt) return;
+  const gamma = event.gamma ?? 0;
+  const normalized = Math.max(-1, Math.min(1, gamma / 30));
+  tiltSteer = normalized * settings.tiltSensitivity;
+  motionPermissionGranted = true;
+  updateTiltStatus();
+});
+
+showTouchControlsEl.addEventListener('change', () => {
+  settings.showTouchControls = showTouchControlsEl.checked;
+  touchControlsEl.style.display = settings.showTouchControls ? 'grid' : 'none';
+  saveSettings();
+});
+
+enableTiltEl.addEventListener('change', () => {
+  settings.enableTilt = enableTiltEl.checked;
+  if (!settings.enableTilt) tiltSteer = 0;
+  updateTiltStatus();
+  saveSettings();
+});
+
+tiltSensitivityEl.addEventListener('input', () => {
+  settings.tiltSensitivity = Number(tiltSensitivityEl.value);
+  updateTiltStatus();
+  saveSettings();
+});
+
+requestTiltBtn.addEventListener('click', requestMotionPermission);
 
 function resetGame() {
   game.running = true;
@@ -97,7 +199,8 @@ function spawn(type) {
 function addParticles(x, y, n, color) {
   for (let i = 0; i < n; i++) {
     game.particles.push({
-      x, y,
+      x,
+      y,
       vx: (Math.random() - 0.5) * 5,
       vy: (Math.random() - 0.5) * 5,
       life: 0.5 + Math.random() * 0.8,
@@ -132,14 +235,15 @@ function endGame(win) {
 function update(dt) {
   if (!game.running) return;
 
-  const steer = (keys.has('ArrowLeft') || keys.has('a') ? -1 : 0) + (keys.has('ArrowRight') || keys.has('d') ? 1 : 0);
+  const keyboardSteer = (keys.has('ArrowLeft') || keys.has('a') ? -1 : 0) + (keys.has('ArrowRight') || keys.has('d') ? 1 : 0);
+  const steer = settings.enableTilt ? Math.max(-1, Math.min(1, keyboardSteer + tiltSteer)) : keyboardSteer;
   const throttle = (keys.has('ArrowUp') || keys.has('w') ? 1 : 0) + (keys.has('ArrowDown') || keys.has('s') ? -0.6 : 0);
 
   if (keys.has(' ') || keys.has('Space')) player.boost = Math.min(5, player.boost + 8 * dt);
   else player.boost = Math.max(0, player.boost - 10 * dt);
 
   const tornado = game.level >= 4 ? Math.sin(game.tornadoPhase) * 1.1 : 0;
-  player.x += (steer * 260 * dt) + tornado;
+  player.x += steer * 260 * dt + tornado;
   game.speed = Math.max(6, Math.min(22, game.speed + throttle * 3.2 * dt));
 
   player.x = Math.max(ROAD_X + player.w / 2, Math.min(ROAD_X + ROAD_W - player.w / 2, player.x));
@@ -202,7 +306,7 @@ function update(dt) {
     }
   }
 
-  game.objects = game.objects.filter(o => o.y < H + 120 && !(o.hit && (o.type === 'star' || o.type === 'time')));
+  game.objects = game.objects.filter((o) => o.y < H + 120 && !(o.hit && (o.type === 'star' || o.type === 'time')));
 
   player.invuln = Math.max(0, player.invuln - dt);
 
@@ -211,7 +315,7 @@ function update(dt) {
     p.y += p.vy;
     p.life -= dt;
   }
-  game.particles = game.particles.filter(p => p.life > 0);
+  game.particles = game.particles.filter((p) => p.life > 0);
 
   if (game.timeLeft <= 0) endGame(true);
   updateHud();
@@ -231,8 +335,10 @@ function drawRoad() {
   ctx.strokeStyle = '#f4d620';
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(ROAD_X + 3, 0); ctx.lineTo(ROAD_X + 3, H);
-  ctx.moveTo(ROAD_X + ROAD_W - 3, 0); ctx.lineTo(ROAD_X + ROAD_W - 3, H);
+  ctx.moveTo(ROAD_X + 3, 0);
+  ctx.lineTo(ROAD_X + 3, H);
+  ctx.moveTo(ROAD_X + ROAD_W - 3, 0);
+  ctx.lineTo(ROAD_X + ROAD_W - 3, H);
   ctx.stroke();
 
   game.stripsOffset = (game.stripsOffset + (game.speed + player.boost) * 14 * 0.016) % 80;
@@ -288,8 +394,10 @@ function drawObject(o) {
     ctx.strokeStyle = '#345f2b';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(-16, 0); ctx.lineTo(-25, -10);
-    ctx.moveTo(8, 2); ctx.lineTo(20, -11);
+    ctx.moveTo(-16, 0);
+    ctx.lineTo(-25, -10);
+    ctx.moveTo(8, 2);
+    ctx.lineTo(20, -11);
     ctx.stroke();
   } else if (o.type === 'ped') {
     ctx.fillStyle = '#ffde7a';
@@ -303,10 +411,8 @@ function drawObject(o) {
     ctx.beginPath();
     const r = 12;
     for (let i = 0; i < 5; i++) {
-      const a = -Math.PI / 2 + i * (Math.PI * 2 / 5);
-      const x = Math.cos(a) * r;
-      const y = Math.sin(a) * r;
-      ctx.lineTo(x, y);
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+      ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
       const a2 = a + Math.PI / 5;
       ctx.lineTo(Math.cos(a2) * 5, Math.sin(a2) * 5);
     }
@@ -387,15 +493,23 @@ window.addEventListener('keydown', (e) => {
   keys.add(key);
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
 });
+
 window.addEventListener('keyup', (e) => keys.delete(e.key === ' ' ? 'Space' : e.key));
 
 for (const btn of document.querySelectorAll('.controls button')) {
   const key = btn.dataset.key;
   const down = () => keys.add(key === 'Space' ? 'Space' : key);
   const up = () => keys.delete(key === 'Space' ? 'Space' : key);
-  btn.addEventListener('touchstart', (e) => { e.preventDefault(); down(); }, { passive: false });
+  btn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    down();
+  }, { passive: false });
   btn.addEventListener('touchend', up);
   btn.addEventListener('mousedown', down);
   btn.addEventListener('mouseup', up);
   btn.addEventListener('mouseleave', up);
 }
+
+loadSettings();
+applySettingsToUi();
+updateHud();
