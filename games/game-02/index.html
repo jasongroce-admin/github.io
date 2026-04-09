@@ -1,68 +1,18 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Game 02 - VPD Defender</title>
-  <link rel="stylesheet" href="css/game.css" />
-</head>
-<body>
-  <main class="app">
-    <header class="hud">
-      <h1>VPD Defender</h1>
-      <div class="stats">
-        <span>Score: <strong id="score">0</strong></span>
-        <span>Time: <strong id="time">60</strong>s</span>
-        <span>Speed: <strong id="speed">0</strong></span>
-        <span>Level: <strong id="level">1</strong></span>
-        <span>Lives: <strong id="lives">3</strong></span>
-      </div>
-      <details class="settings" id="settingsPanel">
-        <summary>Control Settings</summary>
-        <div class="settings-grid">
-          <label>
-            <input id="showTouchControls" type="checkbox" checked />
-            Show touch controls
-          </label>
-          <label>
-            <input id="enableTilt" type="checkbox" />
-            Tilt steering (mobile)
-          </label>
-          <label class="range-label" for="tiltSensitivity">Tilt sensitivity</label>
-          <input id="tiltSensitivity" type="range" min="0.4" max="2" step="0.1" value="1" />
-          <button id="requestTiltBtn" type="button">Enable motion permission</button>
-          <p id="tiltStatus" class="tilt-status">Tilt is currently off.</p>
-        </div>
-      </details>
-    </header>
-
-    <section class="game-wrap">
-      <canvas id="game" width="480" height="760" aria-label="VPD Defender game"></canvas>
-      <div id="overlay" class="overlay">
-        <div class="card">
-          <h2>First Responder Alert</h2>
-          <p>Get to the scene quickly. Avoid traffic, pedestrians, potholes, and debris.</p>
-          <ul>
-            <li>Arrow keys / WASD to steer</li>
-            <li>Hold Space for siren boost</li>
-            <li>Collect stars and time bonuses</li>
-            <li>Tornado conditions begin in later levels</li>
-          </ul>
-          <button id="startBtn" type="button">Start Shift</button>
-          <p><a href="../../index.html">Back to homepage</a></p>
-        </div>
-      </div>
-    </section>
-
-    <section class="controls" id="touchControls" aria-label="Touch controls">
-      <button data-key="ArrowLeft" type="button">◀</button>
-      <button data-key="ArrowUp" type="button">▲</button>
-      <button data-key="ArrowDown" type="button">▼</button>
-      <button data-key="ArrowRight" type="button">▶</button>
-      <button data-key="Space" type="button">SIREN</button>
-    </section>
-  </main>
-
-  <script src="js/game.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game 02 | Vehicle Patrol Driver Training</title>
+    <link rel="stylesheet" href="../../assets/css/site.css" />
+  </head>
+  <body>
+    <main class="content">
+      <section class="panel">
+        <h1>Game 02: Vehicle Patrol Driver Training</h1>
+        <p>This local launcher page is in place while the game package is restored.</p>
+        <p><a class="play-btn" href="../../index.html">Return to Home Page</a></p>
+      </section>
+    </main>
+  </body>
 </html>
