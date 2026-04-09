@@ -1,0 +1,127 @@
+:root {
+  --bg: #0f1d24;
+  --panel: #1f2f36;
+  --panel-2: #273b43;
+  --text: #effcff;
+  --accent: #6adfff;
+  --warning: #ffb347;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #21414c, var(--bg));
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+.shell {
+  width: min(1280px, 96vw);
+  margin: 1rem auto;
+}
+
+.hud-top {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  background: var(--panel);
+  border: 2px solid #385764;
+  border-radius: 14px;
+  padding: 0.7rem 1rem;
+}
+
+.game-wrap {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 0.8rem;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 2px solid #406470;
+  background: #37584a;
+  touch-action: none;
+}
+
+.side-panel {
+  background: var(--panel);
+  border: 2px solid #385764;
+  border-radius: 14px;
+  padding: 0.9rem;
+}
+
+h2,
+h3 {
+  margin: 0.2rem 0 0.5rem;
+}
+
+.table-card,
+.controls-card {
+  background: var(--panel-2);
+  border-radius: 10px;
+  padding: 0.65rem;
+  margin: 0.65rem 0;
+}
+
+button {
+  background: #4e7f90;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #5c95a8;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.portal-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(4, 8, 10, 0.75);
+}
+
+.modal-content {
+  width: min(560px, 90vw);
+  background: #17323d;
+  border: 2px solid #4f8ca4;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .hud-top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .game-wrap {
+    grid-template-columns: 1fr;
+  }
+}
