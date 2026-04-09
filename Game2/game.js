@@ -40,6 +40,8 @@ const game = {
   hull: 100,
   speed: 8,
   distance: 0,
+  callStartDistance: 0,
+  callTargetDistance: 150,
   level: 1,
   callIndex: 0,
   callETA: 70,
@@ -82,6 +84,8 @@ function nextDispatch() {
   game.callIndex += 1;
   game.dispatchId = `VPD-${String(100 + game.callIndex).padStart(3, '0')}`;
   game.targetAddress = randomAddress();
+  game.callStartDistance = game.distance;
+  game.callTargetDistance = game.callStartDistance + game.level * 150;
   game.callETA = Math.max(36, 74 - game.level * 5);
   if (game.mode === 'mission') game.timeLeft = game.callETA;
 }
@@ -92,6 +96,8 @@ function resetGame() {
   game.hull = 100;
   game.speed = 8;
   game.distance = 0;
+  game.callStartDistance = 0;
+  game.callTargetDistance = 150;
   game.level = 1;
   game.callIndex = 0;
   game.spawnClock = 0;
@@ -246,7 +252,7 @@ function update(dt) {
       updateHud();
       return;
     }
-    if (game.distance > game.level * 150) completeCall();
+    if (game.distance >= game.callTargetDistance) completeCall();
   }
 
   game.spawnClock += dt;
