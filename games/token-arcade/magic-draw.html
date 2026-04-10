@@ -1,30 +1,399 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Magic Draw</title><link rel='stylesheet' href='common.css'><style>canvas{width:100%;height:62vh;background:#080b18;border:1px solid #345;border-radius:12px;touch-action:none}.toolPanel{margin-top:8px;background:#0b1b30;border:1px solid #335;border-radius:10px;padding:8px}.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.tools label{display:grid;gap:4px;font-size:.82rem}.row{display:flex;gap:8px;flex-wrap:wrap}</style></head><body><div class='wrap'><div class='notice'>Magic Draw is for play/testing only.</div><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div class='row'><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div></div><div class='panel'><h2>Magic Drawing Screen</h2><p class='notice'>Neon default is active immediately. Tools are always visible at the top.</p><div class='toolPanel' id='toolPanel'>
-<div class='tools'>
-<label>Brush Size <input id='size' type='range' min='1' max='40' value='7'></label>
-<label>Opacity <input id='alpha' type='range' min='0.05' max='1' step='0.05' value='1'></label>
-<label>Glow <input id='glow' type='range' min='0' max='40' value='12'></label>
-<label>Fade Seconds <input id='fade' type='range' min='2' max='30' value='10'></label>
-<label>Hue Shift <input id='hueShift' type='range' min='0' max='360' value='0'></label>
-<label>Stroke Color <input id='color' type='color' value='#66ccff'></label>
-<label>Effect <select id='effect'><option value='neon'>Neon (Default)</option><option value='rainbow'>Rainbow</option><option value='spark'>Spark</option><option value='smoke'>Smoke</option><option value='pixel'>Pixel</option></select></label>
-</div>
-<div class='row' style='margin-top:8px'><button class='btn' id='undo'>Undo</button><button class='btn' id='clear'>Clear</button><button class='btn' id='save'>Save as PNG</button></div>
-</div><canvas id='c' width='1000' height='700'></canvas></div></div>
-<script src='common.js'></script><script>
-initWallet();
-const c=document.getElementById('c'),x=c.getContext('2d');
-const ctl={size,alpha,glow,fade,hueShift,color,effect};
-let trails=[],down=false,strokes=[];
-function toRGB(hex){const h=hex.replace('#','');return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
-function pos(e){const r=c.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return {x:(p.clientX-r.left)*(c.width/r.width),y:(p.clientY-r.top)*(c.height/r.height)}}
-function current(){return {size:+ctl.size.value,alpha:+ctl.alpha.value,glow:+ctl.glow.value,fade:+ctl.fade.value*1000,hueShift:+ctl.hueShift.value,color:ctl.color.value,effect:ctl.effect.value}}
-function addPt(p){const s=current();const t={x:p.x,y:p.y,t:Date.now(),h:(Math.random()*360+s.hueShift)%360,...s};trails.push(t);if(strokes.length===0||!strokes[strokes.length-1].active)strokes.push({active:true,pts:[]});strokes[strokes.length-1].pts.push(t)}
-function begin(e){down=true;addPt(pos(e));}
-function move(e){if(!down)return;addPt(pos(e));e.preventDefault()}
-function end(){down=false;if(strokes.length)strokes[strokes.length-1].active=false;}
-['pointerdown','touchstart'].forEach(ev=>c.addEventListener(ev,begin,{passive:false}));['pointermove','touchmove'].forEach(ev=>c.addEventListener(ev,move,{passive:false}));['pointerup','pointerleave','touchend','touchcancel'].forEach(ev=>c.addEventListener(ev,end));
-function drawSeg(a,b,now){const age=(now-b.t)/b.fade,al=Math.max(0,b.alpha*(1-age));if(al<=0)return;let col=`hsla(${b.h},100%,60%,${al})`;if(b.effect==='rainbow')col=`hsla(${(b.h+age*220)%360},100%,60%,${al})`;if(b.effect==='spark')col=`rgba(255,${180+Math.random()*70|0},80,${al})`;if(b.effect==='smoke'){const rgb=toRGB(b.color);col=`rgba(${rgb.r},${rgb.g},${rgb.b},${al*0.55})`;}if(b.effect==='pixel'){x.fillStyle=col;x.fillRect(b.x,b.y,Math.max(2,b.size),Math.max(2,b.size));return;}x.strokeStyle=col;x.lineWidth=Math.max(1,b.size*(1-age));x.shadowColor=col;x.shadowBlur=b.glow;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}
-function frame(){x.fillStyle='rgba(8,11,24,0.18)';x.fillRect(0,0,c.width,c.height);const now=Date.now();trails=trails.filter(p=>now-p.t<p.fade);for(let i=1;i<trails.length;i++) drawSeg(trails[i-1],trails[i],now);requestAnimationFrame(frame)}
-undo.onclick=()=>{strokes.pop();trails=strokes.flatMap(s=>s.pts);};clear.onclick=()=>{trails=[];strokes=[];x.clearRect(0,0,c.width,c.height);};save.onclick=()=>{const a=document.createElement('a');a.download='magic-draw.png';a.href=c.toDataURL('image/png');a.click();};
-frame();
-</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Magic Draw</title>
+    <link rel="stylesheet" href="common.css" />
+    <style>
+      .draw-shell { display: grid; gap: 10px; }
+      .toolPanel {
+        position: sticky;
+        top: 8px;
+        z-index: 20;
+        margin-top: 8px;
+        background: #0b1b30f2;
+        border: 1px solid #335;
+        border-radius: 10px;
+        padding: 8px;
+        backdrop-filter: blur(2px);
+      }
+      .toolPanel h3 { margin: 0 0 8px; font-size: 1rem; }
+      .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+      .tools label { display: grid; gap: 4px; font-size: 0.82rem; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .canvasWrap {
+        background: #070b14;
+        border: 1px solid #345;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      canvas {
+        width: 100%;
+        height: min(66vh, 820px);
+        display: block;
+        background: #080b18;
+        touch-action: none;
+      }
+      .hint { font-size: .8rem; opacity: .9; }
+      .toggleBtn { margin-left: auto; }
+      .toolPanel.collapsed .tools,
+      .toolPanel.collapsed .advanced,
+      .toolPanel.collapsed .hint { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="notice">Magic Draw is for play/testing only.</div>
+      <div class="top">
+        <a class="btn" href="index.html">← Arcade Menu</a>
+        <button id="soundBtn" class="btn" onclick="toggleSound()">Sound</button>
+      </div>
+
+      <div class="panel draw-shell">
+        <h2>Magic Drawing Screen</h2>
+        <p class="notice">Tools and options are now persistent and stay visible unless you collapse them.</p>
+
+        <div class="toolPanel" id="toolPanel">
+          <div class="row" style="margin-bottom:8px">
+            <h3>Toolbox</h3>
+            <button class="btn toggleBtn" id="toggleTools" type="button">Collapse Tools</button>
+          </div>
+
+          <div class="tools">
+            <label>Brush Size <input id="size" type="range" min="1" max="60" value="8" /></label>
+            <label>Opacity <input id="alpha" type="range" min="0.05" max="1" step="0.05" value="1" /></label>
+            <label>Glow <input id="glow" type="range" min="0" max="50" value="14" /></label>
+            <label>Fade Seconds <input id="fade" type="range" min="0" max="30" value="0" /></label>
+            <label>Hue Shift <input id="hueShift" type="range" min="0" max="360" value="0" /></label>
+            <label>Stroke Color <input id="color" type="color" value="#66ccff" /></label>
+            <label>Effect
+              <select id="effect">
+                <option value="neon">Neon</option>
+                <option value="rainbow">Rainbow</option>
+                <option value="spark">Spark</option>
+                <option value="smoke">Smoke</option>
+                <option value="pixel">Pixel</option>
+              </select>
+            </label>
+            <label>Symmetry
+              <select id="symmetry">
+                <option value="none">None</option>
+                <option value="mirror-x">Mirror X</option>
+                <option value="mirror-y">Mirror Y</option>
+                <option value="quad">Quad</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="row advanced" style="margin-top:8px">
+            <button class="btn" id="undo" type="button">Undo</button>
+            <button class="btn" id="redo" type="button">Redo</button>
+            <button class="btn" id="clear" type="button">Clear</button>
+            <button class="btn" id="save" type="button">Save PNG</button>
+            <button class="btn" id="resetSettings" type="button">Reset Tools</button>
+          </div>
+          <div class="hint">Draw with mouse, stylus, or touch. Settings are saved locally so they stay after refresh.</div>
+        </div>
+
+        <div class="canvasWrap">
+          <canvas id="c" width="1200" height="760" aria-label="Magic draw canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+      initWallet();
+
+      const PREF_KEY = 'magicDrawPrefsV2';
+      const c = document.getElementById('c');
+      const x = c.getContext('2d');
+      const toolPanel = document.getElementById('toolPanel');
+
+      const ctl = {
+        size: document.getElementById('size'),
+        alpha: document.getElementById('alpha'),
+        glow: document.getElementById('glow'),
+        fade: document.getElementById('fade'),
+        hueShift: document.getElementById('hueShift'),
+        color: document.getElementById('color'),
+        effect: document.getElementById('effect'),
+        symmetry: document.getElementById('symmetry'),
+        undo: document.getElementById('undo'),
+        redo: document.getElementById('redo'),
+        clear: document.getElementById('clear'),
+        save: document.getElementById('save'),
+        resetSettings: document.getElementById('resetSettings'),
+        toggleTools: document.getElementById('toggleTools')
+      };
+
+      let down = false;
+      let trail = [];
+      let strokeId = 0;
+      let history = [];
+      let redo = [];
+      let strokeCache = new Map();
+      let frameCount = 0;
+      let lastPoint = null;
+
+      function toRGB(hex) {
+        const h = hex.replace('#', '');
+        return {
+          r: parseInt(h.slice(0, 2), 16),
+          g: parseInt(h.slice(2, 4), 16),
+          b: parseInt(h.slice(4, 6), 16)
+        };
+      }
+
+      function resizeCanvas() {
+        const ratio = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+        const rect = c.getBoundingClientRect();
+        const w = Math.max(320, Math.floor(rect.width * ratio));
+        const h = Math.max(240, Math.floor(rect.height * ratio));
+        if (c.width === w && c.height === h) return;
+        const old = document.createElement('canvas');
+        old.width = c.width;
+        old.height = c.height;
+        old.getContext('2d').drawImage(c, 0, 0);
+        c.width = w;
+        c.height = h;
+        x.drawImage(old, 0, 0, w, h);
+      }
+
+      function getPos(e) {
+        const rect = c.getBoundingClientRect();
+        const p = e.touches ? e.touches[0] : e;
+        return {
+          x: (p.clientX - rect.left) * (c.width / rect.width),
+          y: (p.clientY - rect.top) * (c.height / rect.height)
+        };
+      }
+
+      function currentSettings() {
+        return {
+          size: +ctl.size.value,
+          alpha: +ctl.alpha.value,
+          glow: +ctl.glow.value,
+          fadeMs: +ctl.fade.value * 1000,
+          hueShift: +ctl.hueShift.value,
+          color: ctl.color.value,
+          effect: ctl.effect.value,
+          symmetry: ctl.symmetry.value
+        };
+      }
+
+      function savePrefs() {
+        const prefs = {
+          size: ctl.size.value,
+          alpha: ctl.alpha.value,
+          glow: ctl.glow.value,
+          fade: ctl.fade.value,
+          hueShift: ctl.hueShift.value,
+          color: ctl.color.value,
+          effect: ctl.effect.value,
+          symmetry: ctl.symmetry.value,
+          collapsed: toolPanel.classList.contains('collapsed')
+        };
+        localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
+      }
+
+      function loadPrefs() {
+        try {
+          const prefs = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+          Object.keys(prefs).forEach((k) => {
+            if (ctl[k] && typeof ctl[k].value !== 'undefined') ctl[k].value = prefs[k];
+          });
+          if (prefs.collapsed) {
+            toolPanel.classList.add('collapsed');
+            ctl.toggleTools.textContent = 'Expand Tools';
+          }
+        } catch (_) {}
+      }
+
+      function applySymmetry(point, settings) {
+        const out = [point];
+        const mx = { x: c.width - point.x, y: point.y };
+        const my = { x: point.x, y: c.height - point.y };
+        const mxy = { x: c.width - point.x, y: c.height - point.y };
+        if (settings.symmetry === 'mirror-x') out.push(mx);
+        if (settings.symmetry === 'mirror-y') out.push(my);
+        if (settings.symmetry === 'quad') out.push(mx, my, mxy);
+        return out;
+      }
+
+      function pushPoint(point) {
+        const settings = currentSettings();
+        const now = Date.now();
+        const set = applySymmetry(point, settings);
+        set.forEach((p) => {
+          const point = {
+            x: p.x,
+            y: p.y,
+            t: now,
+            strokeId,
+            h: (frameCount * 4 + Math.random() * 30 + settings.hueShift) % 360,
+            ...settings
+          };
+          trail.push(point);
+          if (!strokeCache.has(strokeId)) strokeCache.set(strokeId, []);
+          strokeCache.get(strokeId).push(point);
+        });
+      }
+
+      function begin(e) {
+        down = true;
+        strokeId += 1;
+        lastPoint = getPos(e);
+        pushPoint(lastPoint);
+        if (e.pointerId != null && c.setPointerCapture) c.setPointerCapture(e.pointerId);
+      }
+
+      function move(e) {
+        if (!down) return;
+        const p = getPos(e);
+        const steps = Math.max(1, Math.floor(Math.hypot(p.x - lastPoint.x, p.y - lastPoint.y) / 4));
+        for (let i = 1; i <= steps; i++) {
+          pushPoint({
+            x: lastPoint.x + ((p.x - lastPoint.x) * i) / steps,
+            y: lastPoint.y + ((p.y - lastPoint.y) * i) / steps
+          });
+        }
+        lastPoint = p;
+        e.preventDefault();
+      }
+
+      function end(e) {
+        if (!down) return;
+        down = false;
+        history.push(strokeId);
+        redo = [];
+        if (e && e.pointerId != null && c.releasePointerCapture) c.releasePointerCapture(e.pointerId);
+      }
+
+      function drawSeg(a, b, now) {
+        if (a.strokeId !== b.strokeId) return;
+        let alpha = b.alpha;
+        if (b.fadeMs > 0) {
+          const age = (now - b.t) / b.fadeMs;
+          alpha *= Math.max(0, 1 - age);
+          if (alpha <= 0) return;
+        }
+
+        let col = `hsla(${b.h},100%,60%,${alpha})`;
+        if (b.effect === 'rainbow') col = `hsla(${(b.h + now * 0.05) % 360},100%,60%,${alpha})`;
+        if (b.effect === 'spark') col = `rgba(255,${(180 + Math.random() * 70) | 0},80,${alpha})`;
+        if (b.effect === 'smoke') {
+          const rgb = toRGB(b.color);
+          col = `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha * 0.55})`;
+        }
+        if (b.effect === 'pixel') {
+          x.fillStyle = col;
+          x.fillRect(b.x - b.size / 2, b.y - b.size / 2, Math.max(2, b.size), Math.max(2, b.size));
+          return;
+        }
+
+        x.strokeStyle = col;
+        x.lineWidth = Math.max(1, b.size);
+        x.lineCap = 'round';
+        x.lineJoin = 'round';
+        x.shadowColor = col;
+        x.shadowBlur = b.glow;
+        x.beginPath();
+        x.moveTo(a.x, a.y);
+        x.lineTo(b.x, b.y);
+        x.stroke();
+      }
+
+      function redraw(now) {
+        x.fillStyle = 'rgba(8,11,24,0.16)';
+        x.fillRect(0, 0, c.width, c.height);
+
+        if (+ctl.fade.value > 0) {
+          trail = trail.filter((p) => now - p.t < p.fadeMs + 120);
+        }
+
+        for (let i = 1; i < trail.length; i++) drawSeg(trail[i - 1], trail[i], now);
+        x.shadowBlur = 0;
+      }
+
+      function undoStroke() {
+        if (!history.length) return;
+        const id = history.pop();
+        redo.push(id);
+        trail = trail.filter((p) => p.strokeId !== id);
+      }
+
+      function redoStroke() {
+        if (!redo.length) return;
+        const id = redo.pop();
+        const pts = strokeCache.get(id) || [];
+        if (!pts.length) return;
+        trail.push(...pts);
+        history.push(id);
+      }
+
+      function clearAll() {
+        trail = [];
+        history = [];
+        redo = [];
+        strokeCache = new Map();
+        x.clearRect(0, 0, c.width, c.height);
+      }
+
+      function savePng() {
+        const a = document.createElement('a');
+        a.download = 'magic-draw.png';
+        a.href = c.toDataURL('image/png');
+        a.click();
+      }
+
+      function resetTools() {
+        ctl.size.value = 8;
+        ctl.alpha.value = 1;
+        ctl.glow.value = 14;
+        ctl.fade.value = 0;
+        ctl.hueShift.value = 0;
+        ctl.color.value = '#66ccff';
+        ctl.effect.value = 'neon';
+        ctl.symmetry.value = 'none';
+        savePrefs();
+      }
+
+      function loop() {
+        frameCount += 1;
+        redraw(Date.now());
+        requestAnimationFrame(loop);
+      }
+
+      // events
+      ['input', 'change'].forEach((ev) => {
+        Object.values(ctl).forEach((el) => {
+          if (el && el.addEventListener && el.tagName) el.addEventListener(ev, savePrefs);
+        });
+      });
+
+      ctl.toggleTools.onclick = () => {
+        toolPanel.classList.toggle('collapsed');
+        ctl.toggleTools.textContent = toolPanel.classList.contains('collapsed') ? 'Expand Tools' : 'Collapse Tools';
+        savePrefs();
+      };
+
+      ctl.undo.onclick = undoStroke;
+      ctl.redo.onclick = redoStroke;
+      ctl.clear.onclick = clearAll;
+      ctl.save.onclick = savePng;
+      ctl.resetSettings.onclick = resetTools;
+
+      ['pointerdown', 'touchstart'].forEach((ev) => c.addEventListener(ev, begin, { passive: false }));
+      ['pointermove', 'touchmove'].forEach((ev) => c.addEventListener(ev, move, { passive: false }));
+      ['pointerup', 'pointercancel', 'pointerleave', 'touchend', 'touchcancel'].forEach((ev) => c.addEventListener(ev, end));
+
+      addEventListener('resize', resizeCanvas);
+
+      loadPrefs();
+      resizeCanvas();
+      loop();
+    </script>
+  </body>
+</html>
