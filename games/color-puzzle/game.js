@@ -1,178 +1,22 @@
-const SETTINGS = {
-  easy: { colors: 8, pieces: 26 },
-  medium: { colors: 14, pieces: 40 },
-  hard: { colors: 20, pieces: 58 }
-};
-
+const SETTINGS = { easy:{colors:8,pieces:24}, medium:{colors:14,pieces:40}, hard:{colors:20,pieces:62} };
 const PALETTES = {
-  firefighter: ["#e74c3c", "#f39c12", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e67e22", "#d35400", "#c0392b", "#7f8c8d", "#16a085", "#8e44ad", "#2980b9", "#27ae60", "#ff6b81", "#6c5ce7", "#00cec9", "#fdcb6e", "#e17055"],
-  police: ["#1e90ff", "#2f3542", "#70a1ff", "#57606f", "#ffa502", "#2ed573", "#3742fa", "#ff4757", "#7bed9f", "#5352ed", "#a4b0be", "#ff6b81", "#2f9cff", "#37406b", "#00d2d3", "#feca57", "#5f27cd", "#ff9f43", "#10ac84", "#341f97"]
+  firefighter:["#e74c3c","#f39c12","#f1c40f","#2ecc71","#3498db","#9b59b6","#1abc9c","#e67e22","#d35400","#c0392b","#7f8c8d","#16a085","#8e44ad","#2980b9","#27ae60","#ff6b81","#6c5ce7","#00cec9","#fdcb6e","#e17055"],
+  police:["#1e90ff","#2f3542","#70a1ff","#57606f","#ffa502","#2ed573","#3742fa","#ff4757","#7bed9f","#5352ed","#a4b0be","#ff6b81","#2f9cff","#37406b","#00d2d3","#feca57","#5f27cd","#ff9f43","#10ac84","#341f97"]
 };
-
-const STATE = {
-  selected: 1,
-  scene: "firefighter",
-  difficulty: "easy",
-  pieces: [],
-  colorCount: SETTINGS.easy.colors
+const IMG = {
+ firefighter:`data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 560'><rect width='420' height='560' fill='#1a2639'/><rect y='420' width='420' height='140' fill='#2f5233'/><rect x='40' y='330' width='150' height='70' fill='#d62828'/><rect x='250' y='220' width='130' height='180' fill='#5f748f'/><rect x='262' y='238' width='30' height='40' fill='#9ec4f2'/><rect x='310' y='238' width='30' height='40' fill='#9ec4f2'/><text x='210' y='48' fill='white' font-size='28' text-anchor='middle'>🚒 Firefighter Action</text></svg>` )}`,
+ police:`data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 560'><rect width='420' height='560' fill='#1d2434'/><rect y='430' width='420' height='130' fill='#3f5b32'/><rect x='50' y='350' width='170' height='65' fill='#2f3f58'/><rect x='58' y='330' width='55' height='22' fill='#1e90ff'/><rect x='120' y='330' width='55' height='22' fill='#ff4757'/><text x='210' y='48' fill='white' font-size='28' text-anchor='middle'>🚓 Police Action</text></svg>` )}`
 };
-
-const svg = document.getElementById("puzzleSvg");
-const paletteEl = document.getElementById("palette");
-const statusEl = document.getElementById("status");
-const sceneSelect = document.getElementById("sceneSelect");
-const difficultySelect = document.getElementById("difficultySelect");
-
-document.getElementById("resetBtn").addEventListener("click", render);
-sceneSelect.addEventListener("change", () => { STATE.scene = sceneSelect.value; render(); });
-difficultySelect.addEventListener("change", () => { STATE.difficulty = difficultySelect.value; render(); });
-
-document.addEventListener("contextmenu", (e) => e.preventDefault());
-window.addEventListener("load", () => setTimeout(() => window.scrollTo(0, 1), 120));
-
-function render() {
-  const config = SETTINGS[STATE.difficulty];
-  STATE.selected = 1;
-  STATE.colorCount = config.colors;
-  STATE.pieces = buildPieces(config.pieces, config.colors);
-  renderPalette(config.colors);
-  renderPuzzle();
-  updateStatus();
+const STATE={selected:1,scene:'firefighter',difficulty:'easy',pieces:[],colorCount:8};
+const svg=document.getElementById('puzzleSvg'), paletteEl=document.getElementById('palette'), statusEl=document.getElementById('status');
+sceneSelect.onchange=()=>{STATE.scene=sceneSelect.value;render()}; difficultySelect.onchange=()=>{STATE.difficulty=difficultySelect.value;render()}; resetBtn.onclick=render;
+function render(){const cfg=SETTINGS[STATE.difficulty];STATE.selected=1;STATE.colorCount=cfg.colors;STATE.pieces=buildPieces(cfg.pieces,cfg.colors);renderPalette(cfg.colors);renderPuzzle();updateStatus();}
+function buildPieces(total,colors){const pieces=[];let id=1;let y=60;while(id<=total&&y<560){let h=rand(34,86), x=0;while(id<=total&&x<420){let w=rand(45,115);if(x+w>420)w=420-x;const jitter=8;const pts=[[x+rand(0,jitter),y+rand(0,jitter)],[x+w-rand(0,jitter),y+rand(0,jitter)],[x+w-rand(0,jitter),y+h-rand(0,jitter)],[x+rand(0,jitter),y+h-rand(0,jitter)]];pieces.push({id,number:((id-1)%colors)+1,pts,filled:false,cx:x+w/2,cy:y+h/2});id++;x+=w;}y+=h;}return pieces.slice(0,total)}
+function renderPalette(cnt){paletteEl.innerHTML='';const colors=PALETTES[STATE.scene];for(let i=1;i<=cnt;i++){const b=document.createElement('button');b.className=`swatch ${i===STATE.selected?'active':''}`;b.style.background=colors[i-1];b.textContent=i;b.onclick=()=>{STATE.selected=i;renderPalette(cnt);updateStatus()};paletteEl.appendChild(b)}}
+function renderPuzzle(){svg.innerHTML='';const img=document.createElementNS('http://www.w3.org/2000/svg','image');img.setAttribute('href',IMG[STATE.scene]);img.setAttribute('x','0');img.setAttribute('y','0');img.setAttribute('width','420');img.setAttribute('height','560');svg.appendChild(img);
+for(const p of STATE.pieces){const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');poly.setAttribute('points',p.pts.map(([x,y])=>`${x},${y}`).join(' '));poly.setAttribute('class','piece');poly.setAttribute('fill',p.filled?'transparent':'#111');poly.setAttribute('opacity',p.filled?'0':'0.92');poly.onpointerdown=e=>{e.preventDefault();paint(p.id)};svg.appendChild(poly);if(!p.filled){const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',p.cx);t.setAttribute('y',p.cy);t.setAttribute('class','nLabel');t.textContent=p.number;svg.appendChild(t);}}
 }
-
-function buildPieces(totalPieces, colors) {
-  const pieces = [];
-  const cols = 6;
-  const rows = Math.ceil(totalPieces / cols);
-  const w = 420 / cols;
-  const h = 560 / rows;
-
-  let idx = 0;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (idx >= totalPieces) break;
-      const x = c * w;
-      const y = r * h;
-      const jitter = 10;
-      const pts = [
-        [x + rand(2, jitter), y + rand(2, jitter)],
-        [x + w - rand(2, jitter), y + rand(2, jitter)],
-        [x + w - rand(2, jitter), y + h - rand(2, jitter)],
-        [x + rand(2, jitter), y + h - rand(2, jitter)]
-      ];
-      const number = (idx % colors) + 1;
-      pieces.push({ id: idx + 1, number, pts, filled: false, cx: x + w / 2, cy: y + h / 2 });
-      idx++;
-    }
-  }
-  return pieces;
-}
-
-function renderPalette(colorCount) {
-  paletteEl.innerHTML = "";
-  const colors = PALETTES[STATE.scene];
-
-  for (let i = 1; i <= colorCount; i++) {
-    const btn = document.createElement("button");
-    btn.className = `swatch ${i === STATE.selected ? "active" : ""}`;
-    btn.style.background = colors[i - 1];
-    btn.textContent = i;
-    btn.addEventListener("click", () => {
-      STATE.selected = i;
-      renderPalette(colorCount);
-      updateStatus();
-    });
-    paletteEl.appendChild(btn);
-  }
-}
-
-function renderPuzzle() {
-  svg.innerHTML = "";
-
-  // Scene background accents
-  const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  bg.setAttribute("x", "0"); bg.setAttribute("y", "0"); bg.setAttribute("width", "420"); bg.setAttribute("height", "560");
-  bg.setAttribute("fill", "#111");
-  svg.appendChild(bg);
-
-  const emblem = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  emblem.setAttribute("x", "210"); emblem.setAttribute("y", "36"); emblem.setAttribute("text-anchor", "middle");
-  emblem.setAttribute("fill", "#ffffffaa"); emblem.setAttribute("font-size", "20");
-  emblem.textContent = STATE.scene === "firefighter" ? "🚒 Firefighter Action" : "🚓 Police Action";
-  svg.appendChild(emblem);
-
-  for (const piece of STATE.pieces) {
-    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-    poly.setAttribute("class", `piece ${piece.filled ? "done" : ""}`);
-    poly.setAttribute("points", piece.pts.map(([x, y]) => `${x},${y}`).join(" "));
-    poly.dataset.id = piece.id;
-    poly.setAttribute("fill", piece.filled ? PALETTES[STATE.scene][piece.number - 1] : grayFor(piece.number, STATE.colorCount));
-
-    poly.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      tryPaintPiece(piece.id);
-    });
-    svg.appendChild(poly);
-
-    if (!piece.filled) {
-      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("x", piece.cx);
-      label.setAttribute("y", piece.cy);
-      label.setAttribute("class", "nLabel");
-      label.setAttribute("fill", "#f3f3f3");
-      label.textContent = piece.number;
-      svg.appendChild(label);
-    }
-  }
-
-  svg.onpointerdown = (e) => {
-    const rect = svg.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 420;
-    const y = ((e.clientY - rect.top) / rect.height) * 560;
-    const nearby = nearestPiece(x, y, 26); // forgiving touch radius
-    if (nearby) tryPaintPiece(nearby.id);
-  };
-}
-
-function nearestPiece(x, y, maxDist) {
-  let best = null;
-  let d = Infinity;
-  for (const p of STATE.pieces) {
-    if (p.filled) continue;
-    const dist = Math.hypot(p.cx - x, p.cy - y);
-    if (dist < d && dist <= maxDist) {
-      d = dist;
-      best = p;
-    }
-  }
-  return best;
-}
-
-function tryPaintPiece(id) {
-  const piece = STATE.pieces.find((p) => p.id === id);
-  if (!piece || piece.filled) return;
-
-  if (piece.number === STATE.selected) {
-    piece.filled = true;
-    renderPuzzle();
-    updateStatus();
-  }
-}
-
-function updateStatus() {
-  const total = STATE.pieces.length;
-  const done = STATE.pieces.filter((p) => p.filled).length;
-  statusEl.textContent = `Color ${STATE.selected} selected • ${done}/${total} tiles activated.`;
-}
-
-function grayFor(number, colorCount) {
-  const t = (number - 1) / Math.max(1, colorCount - 1);
-  const shade = Math.round(45 + t * 180);
-  return `rgb(${shade}, ${shade}, ${shade})`;
-}
-
-function rand(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+function paint(id){const p=STATE.pieces.find(x=>x.id===id);if(!p||p.filled)return;if(p.number===STATE.selected){p.filled=true;renderPuzzle();updateStatus();}}
+function updateStatus(){const d=STATE.pieces.filter(p=>p.filled).length;statusEl.textContent=`Selected ${STATE.selected} • ${d}/${STATE.pieces.length} pieces revealed.`}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 render();
