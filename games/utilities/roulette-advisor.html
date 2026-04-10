@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Roulette Advisor</title><link rel='stylesheet' href='../../assets/css/site.css'></head>
+<body><main class='content'><section class='panel'><h1>Roulette Next Bet Advisor</h1><p>Enter last spin color/number, then choose one of 10 common strategy templates.</p>
+<div class='projects-grid'>
+<label>Last Color <select id='lastColor'><option>Red</option><option>Black</option><option>Green</option></select></label>
+<label>Last Number <input id='lastNum' type='number' min='0' max='36' value='17'></label>
+<label>Strategy <select id='strat'></select></label>
+<button id='build'>Build Next Bet</button>
+</div>
+<div id='out' class='card' style='margin-top:10px'><h3>Recommendation</h3><p>Pick values and click Build Next Bet.</p></div>
+<p><a class='card' href='index.html'><h3>Back to Utilities</h3><p>Return to utilities menu.</p></a></p>
+</section></main>
+<script>
+const strategies=[
+'Flat Betting','Martingale','Reverse Martingale (Paroli)','Fibonacci','D\'Alembert','Labouchere','Oscar\'s Grind','James Bond','Column Progression','Dozen Progression'];
+strat.innerHTML=strategies.map(s=>`<option>${s}</option>`).join('');
+const advice={
+'Flat Betting':()=>`Bet 1 unit on ${lastColor.value==='Red'?'Black':'Red'} (single even-money hedge).`,
+'Martingale':()=>`If last spin lost your color bet, double next stake on ${lastColor.value}.`,
+'Reverse Martingale (Paroli)':()=>`After a win, press to 2 units on same color; reset after 3 wins or 1 loss.`,
+'Fibonacci':()=>`Use 1-1-2-3 progression on ${lastColor.value==='Red'?'Black':'Red'}; step back two after wins.`,
+"D'Alembert":()=>`Increase by 1 after losses and decrease by 1 after wins on an even-money bet.`,
+'Labouchere':()=>`Set line 1-2-3-4 and bet ends sum (5) on ${lastColor.value}. Cancel wins, append losses.`,
+"Oscar's Grind":()=>`Flat-bet until win, then raise by 1 unit each win until +1 session profit.`,
+'James Bond':()=>`Split 70% high (19-36), 25% six line 13-18, 5% on 0 for coverage.`,
+'Column Progression':()=>`Bet 1 unit on column opposite to last number mod-3 group; adjust +1 on loss.`,
+'Dozen Progression':()=>`If last number in 1st dozen, rotate to 2nd dozen next spin with 1 unit.`
+};
+build.onclick=()=>{const s=strat.value;const msg=(advice[s]||(()=>`No rule for ${s}`))();out.innerHTML=`<h3>${s}</h3><p><b>Last spin:</b> ${lastColor.value} ${lastNum.value}</p><p>${msg}</p><p><i>Educational strategy template only — no guaranteed outcomes.</i></p>`};
+</script></body></html>
