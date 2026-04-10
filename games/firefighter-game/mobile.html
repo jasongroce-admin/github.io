@@ -1,33 +1,765 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Firefighter Game (Mobile)</title>
-    <style>
-      :root { color-scheme: dark; }
-      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      html, body { margin: 0; background: #171327; color: #f3ecff; font-family: system-ui, sans-serif; }
-      body { min-height: 100svh; display: grid; grid-template-rows: auto 1fr; }
-      header { padding: .9rem 1rem; background: #2b2350; border-bottom: 1px solid #7f69c7; }
-      main { padding: .8rem; display: grid; gap: .7rem; }
-      .card { background:#241e42; border:1px solid #7f69c7; border-radius:12px; padding:.8rem; }
-      a.btn { display:inline-block; margin-top:.6rem; text-decoration:none; color:#fff; background:#7f69c7; padding:.55rem .8rem; border-radius:10px; }
-      iframe { width:100%; min-height:65svh; border:0; border-radius:10px; background:#000; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <strong>Firefighter Game (Mobile)</strong>
-      <div><a href="../../index.html" style="color:#cfc3ef">← Back to homepage</a></div>
-    </header>
-    <main>
-      <section class="card">
-        <p>This page is set up as the local entry for your firefighter game.</p>
-        <p>If remote access is available, it loads your hosted mobile game below.</p>
-        <a class="btn" href="https://kennardin.com/firefighter-game/mobile.html" target="_blank" rel="noopener">Open Hosted Game</a>
-      </section>
-      <iframe src="https://kennardin.com/firefighter-game/mobile.html" title="Firefighter mobile game"></iframe>
-    </main>
-  </body>
+<head>
+<meta charset="UTF-8">
+<title>Kennard Fire Defender - Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+body { margin:0; background:#000; font-family:Arial, sans-serif; overflow:hidden; touch-action: none; }
+#gameContainer { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
+canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: crisp-edges; }
+
+#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 10; }
+
+button { 
+  pointer-events: auto; 
+  margin: 12px 8px; 
+  padding: 14px 32px; 
+  font-size: 18px; 
+  color: white; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  width: 220px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+button:hover { filter: brightness(1.2); }
+.difficulty-btn, .secondary-btn, #nextLevelBtn, #nextLevelBtnFinal { background: #0066CC; }
+
+.copyright { 
+  position: absolute; bottom: 8px; left: 12px; font-size: 9px; color:#777; 
+  text-align: left; z-index: 20; line-height: 1.1; 
+  background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; 
+}
+
+#landscapeMessage { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(0,0,0,0.95); color: #FFDD00; font-size: 24px; 
+  line-height: 1.4; display: none; align-items: center; justify-content: center; 
+  text-align: center; z-index: 200; padding: 30px; 
+}
+
+#levelCompleteScreen { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  display: none; align-items: center; justify-content: center; 
+  background: rgba(0,0,0,0.65); z-index: 30; 
+}
+#levelCompleteScreen > div { 
+  background: rgba(0,0,0,0.92); 
+  padding: 28px 32px; 
+  border-radius: 16px; 
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+#levelCompleteScreen h1 { font-size: 24px; color: #0F0; margin: 0 0 12px 0; }
+#levelCompleteScreen p { font-size: 15.5px; line-height: 1.4; margin: 8px 0; color: #ddd; }
+
+.buttons {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.button-slide {
+  opacity: 0;
+  transform: translateX(-200px);
+  transition: all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.button-slide.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#levelCompleteScreen.show > div {
+  animation: popIn 0.5s ease-out forwards;
+}
+@keyframes popIn {
+  from { transform: scale(0.75) translateY(40px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+#confirmDialog { 
+  position:absolute; top:0; left:0; width:100%; height:100%; 
+  background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:50; 
+}
+</style>
+</head>
+<body>
+
+<div id="landscapeMessage">Please rotate your device to <strong>Landscape</strong> mode<br>for the best experience</div>
+<div id="gameContainer"> <canvas id="game" width="1200" height="600"></canvas></div>
+
+<div id="overlay">
+  <div id="titleScreen" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.85);">
+    <h1 style="font-size:58px; margin:0 0 20px 0; color:#FF0; text-shadow: 0 0 20px #FF0, 0 0 40px #FF8800, 4px 4px 0 #000, -3px -3px 0 #000;">KENNARD FIRE DEFENDER</h1>
+    <p style="font-size:26px; margin:0 0 40px 0; color:#FFDD88;">Choose Your Rank</p>
+    <div>
+      <button class="difficulty-btn" onclick="startGame(1)">RECRUIT</button>
+      <button class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
+      <button class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
+    </div>
+  </div>
+</div>
+
+<div id="levelCompleteScreen">
+  <div>
+    <h1 id="levelTitle"></h1>
+    <p id="encourageText" style="font-size:18px; color:#0F0;"></p>
+    <p id="safetyTip" style="font-size:15px; color:#FFEE88; margin-top:12px;"></p>
+    
+    <div class="buttons" id="normalButtons">
+      <button id="nextLevelBtn" class="button-slide" onclick="nextLevel()">NEXT LEVEL</button>
+      <button class="secondary-btn button-slide" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="showRestartConfirm()">RESTART GAME</button>
+    </div>
+    
+    <div class="buttons" id="finalButtons" style="display:none;">
+      <button id="nextLevelBtnFinal" class="button-slide" onclick="playGameAgain()">PLAY GAME AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="returnToFirePage()">Go to the Kennard Fire Department's Page</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmDialog">
+  <div style="background:#222; padding:30px; border-radius:12px; text-align:center; max-width:380px;">
+    <p style="font-size:18px; margin-bottom:20px; color:#fff;">Are you sure you want to restart the entire game from the beginning?</p>
+    <button onclick="confirmRestartYes()" style="background:#C00; margin:8px; width:160px; padding:12px;">YES, RESTART</button>
+    <button onclick="confirmRestartNo()" style="background:#0066CC; margin:8px; width:160px; padding:12px;">CANCEL</button>
+  </div>
+</div>
+
+<div class="copyright">
+  Free for public use.<br>
+  Created by Jason Groce - Kennard, IN<br>
+  If you enjoyed please consider a donation to the Kennard Volunteer Fire Department.
+</div>
+
+<script>
+// ============== COMPLETE KENNARD FIRE DEFENDER - FINAL FIXED VERSION ==============
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let score = 0;
+let levelStartScore = 0;
+let mouseX = 500, mouseY = 300;
+let isSpraying = false;
+let gameState = 'title';
+let currentLevel = 1;
+let difficulty = 2;
+let timeOfDay = 0;
+let tornadoAngle = 0;
+let fireSpots = [];
+let particles = [];
+
+const truckX = 100;
+const truckY = 480;
+const nozzleAttachX = 168;
+const nozzleAttachY = -45;
+const maxHoseLength = 300;
+
+const safetyTips = [
+  "Never play with matches or lighters.", "If your clothes catch fire, stop, drop, and roll.",
+  "Have a family escape plan and practice it.", "Check smoke alarms every month.",
+  "Keep a fire extinguisher accessible and know how to use it.", "Stay low and crawl under smoke to escape.",
+  "Never hide from fire — get low and go!", "Don't overload electrical outlets.",
+  "Keep flammable items away from heat sources.", "Practice fire safety every day — it could save lives."
+];
+
+const baseLevels = [
+  { name: "Small Shed Fire", fireSpots: [{x:865,y:295,w:55,h:55,health:320,maxHealth:400},{x:895,y:268,w:65,h:40,health:580,maxHealth:720},{x:932,y:362,w:42,h:95,health:270,maxHealth:340}], entities: [{type:'shedWindow',x:840}, {type:'ridingMower',x:680}] },
+  { name: "Car + Tree Crash", fireSpots: [{x:615,y:368,w:110,h:55,health:380,maxHealth:480,isVehicle:true},{x:645,y:332,w:70,h:45,health:350,maxHealth:440,isVehicle:true},{x:785,y:295,w:45,h:140,health:430,maxHealth:530},{x:805,y:272,w:35,h:80,health:300,maxHealth:380}], entities: [{type:'sedan',x:580,yOffset:12},{type:'tree',x:810}] },
+  { name: "Garage Fire", fireSpots: [{x:915,y:215,w:110,h:45,health:480,maxHealth:600,roof:true},{x:915,y:268,w:55,h:225,health:350,maxHealth:440},{x:970,y:268,w:55,h:225,health:350,maxHealth:440},{x:940,y:465,w:40,h:20,health:240,maxHealth:300}], entities: [{type:'singleGarage',x:820}] },
+  { name: "Small Shed + Tree with Tire Swing", fireSpots: [{x:865,y:295,w:55,h:55,health:360,maxHealth:450},{x:895,y:268,w:65,h:40,health:610,maxHealth:760},{x:932,y:362,w:42,h:95,health:320,maxHealth:400},{x:670,y:368,w:45,h:50,health:340,maxHealth:430},{x:695,y:338,w:35,h:40,health:290,maxHealth:370},{x:855,y:178,w:80,h:35,health:420,maxHealth:520,roof:true}], entities: [{type:'smallShed',x:820},{type:'treeWithSwing',x:620}] },
+  { name: "Small House + Sedan", fireSpots: [{x:915,y:275,w:50,h:70,health:380,maxHealth:480},{x:995,y:275,w:50,h:70,health:380,maxHealth:480},{x:865,y:185,w:190,h:60,health:690,maxHealth:850,roof:true},{x:945,y:405,w:45,h:100,health:350,maxHealth:440,isVehicle:true}], entities: [{type:'smallHouse',x:850,color:'#FFCC99'}, {type:'sedan',x:520,yOffset:8}] },
+  { name: "Tall House + Pickup + Burning Trees", fireSpots: [{x:895,y:255,w:60,h:90,health:410,maxHealth:510},{x:1015,y:255,w:60,h:90,health:410,maxHealth:510},{x:855,y:155,w:240,h:50,health:730,maxHealth:900,roof:true},{x:955,y:415,w:50,h:110,health:380,maxHealth:480,isVehicle:true},{x:675,y:295,w:45,h:120,health:370,maxHealth:470},{x:1145,y:295,w:45,h:120,health:370,maxHealth:470}], entities: [{type:'house',x:860,color:'#66CCFF'}, {type:'pickup',x:520,yOffset:10}, {type:'tree',x:780}, {type:'tree',x:1150}] },
+  { name: "Mini Barn", fireSpots: [{x:875,y:270,w:78,h:225,health:500,maxHealth:620}, {x:915,y:215,w:90,h:45,health:350,maxHealth:430,roof:true}, {x:615,y:430,w:110,h:70,health:460,maxHealth:570,isHay:true}, {x:775,y:270,w:45,h:225,health:480,maxHealth:580}, {x:1015,y:270,w:45,h:225,health:480,maxHealth:580}, {x:935,y:270,w:35,h:120,health:420,maxHealth:520}, {x:975,y:270,w:35,h:120,health:420,maxHealth:520}, {x:915,y:145,w:40,h:35,health:340,maxHealth:410,roof:true}], entities: [{type:'miniBarn',x:820}, {type:'tractor',x:520,facing:'right'}, {type:'ridingMower',x:680}] },
+  { name: "Farm Fire", fireSpots: [{x:715,y:425,w:75,h:65,health:410,maxHealth:510,isHay:true},{x:795,y:410,w:75,h:65,health:430,maxHealth:530,isHay:true},{x:875,y:440,w:75,h:65,health:400,maxHealth:500,isHay:true},{x:945,y:425,w:75,h:65,health:460,maxHealth:570,isHay:true},{x:615,y:440,w:110,h:70,health:460,maxHealth:570,isHay:true}], entities: [{type:'largeRedBarn',x:1050},{type:'tractor',x:520,facing:'left'},{type:'hayBale',x:720},{type:'hayBale',x:800},{type:'hayBale',x:880},{type:'hayBale',x:950}] },
+  { name: "Tall House with Tornado", fireSpots: [{x:775,y:255,w:60,h:90,health:520,maxHealth:650},{x:895,y:255,w:60,h:90,health:520,maxHealth:650},{x:735,y:155,w:240,h:50,health:820,maxHealth:1020,roof:true},{x:835,y:415,w:50,h:110,health:480,maxHealth:600}], entities: [{type:'house',x:740,color:'#FFEE66'}, {type:'tornado',x:620}] },
+  { name: "Big Car Wreck", fireSpots: [{x:475,y:370,w:110,h:55,health:520,maxHealth:650,isVehicle:true},{x:505,y:335,w:70,h:45,health:460,maxHealth:580,isVehicle:true},{x:735,y:330,w:90,h:80,health:620,maxHealth:780,isSemi:true},{x:835,y:300,w:260,h:105,health:850,maxHealth:1060,isSemi:true},{x:975,y:370,w:130,h:55,health:550,maxHealth:690,isVehicle:true},{x:645,y:355,w:55,h:40,health:500,maxHealth:630,isSemi:true}], entities: [{type:'sedan',x:420,yOffset:12},{type:'pickup',x:620,yOffset:8},{type:'semi',x:780}] }
+];
+
+function isInTimeSelector(x, y) { return y > 8 && y < 82 && x > 950 && x < 1195; }
+function handleTimeSelection(x, y) {
+  if (x > 980 && x < 1042) setTimeOfDay(0);
+  else if (x > 1048 && x < 1110) setTimeOfDay(1);
+  else if (x > 1116 && x < 1178) setTimeOfDay(2);
+}
+
+function setTimeOfDay(mode) { timeOfDay = mode; }
+
+function startGame(diff) {
+  difficulty = diff;
+  document.getElementById('titleScreen').style.display = 'none';
+  loadLevel(1);
+}
+
+function loadLevel(lvl) {
+  currentLevel = lvl;
+  levelStartScore = score;
+  const base = baseLevels[lvl-1];
+  fireSpots = base.fireSpots.map(s => {
+    let mult = 2.0;
+    if (difficulty === 2) mult = 6.0;
+    if (difficulty === 3) mult = 12.0;
+    return { 
+      ...s, 
+      health: Math.floor(s.health * mult), 
+      maxHealth: Math.floor(s.maxHealth * mult), 
+      growthRate: 4.2,
+      isHay: !!s.isHay,
+      isVehicle: !!s.isVehicle,
+      isSemi: !!s.isSemi
+    };
+  });
+  particles = [];
+  gameState = 'playing';
+  document.getElementById('levelCompleteScreen').style.display = 'none';
+  document.getElementById('levelCompleteScreen').classList.remove('show');
+}
+
+function checkWin() {
+  if (gameState !== 'playing') return;
+  if (fireSpots.every(s => s.health <= 0)) {
+    gameState = 'levelComplete';
+    const isFinal = currentLevel === 10;
+    const dispatchMsg = `Dispatch – ${baseLevels[currentLevel-1].name} Extinguished`;
+    document.getElementById('levelTitle').textContent = dispatchMsg;
+    document.getElementById('encourageText').innerHTML = isFinal 
+      ? "Thank you for playing!<br>Try a harder difficulty next time." 
+      : "Great Work, Kennard Fire Defender!<br>You saved the day!";
+    document.getElementById('safetyTip').textContent = safetyTips[currentLevel-1];
+    document.getElementById('normalButtons').style.display = isFinal ? 'none' : 'flex';
+    document.getElementById('finalButtons').style.display = isFinal ? 'flex' : 'none';
+
+    const screen = document.getElementById('levelCompleteScreen');
+    screen.style.display = 'flex';
+    setTimeout(() => {
+      screen.classList.add('show');
+      setTimeout(() => {
+        const btns = screen.querySelectorAll('.button-slide');
+        btns.forEach((btn, i) => {
+          btn.style.transitionDelay = (i * 100) + 'ms';
+          btn.classList.add('show');
+        });
+      }, 3000);
+    }, 40);
+  }
+}
+
+function nextLevel() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
+    if (currentLevel < 10) loadLevel(currentLevel + 1);
+    else { alert("You completed all 10 levels! Congratulations!"); location.reload(); }
+  }, 500);
+}
+
+function redoLevel() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
+    score = levelStartScore;
+    loadLevel(currentLevel);
+  }, 400);
+}
+
+function playGameAgain() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    score = 0;
+    document.getElementById('titleScreen').style.display = 'flex';
+    gameState = 'title';
+  }, 400);
+}
+
+function returnToFirePage() { window.location.href = 'https://kennardin.com/fire-department.html'; }
+function showRestartConfirm() { document.getElementById('confirmDialog').style.display = 'flex'; }
+function confirmRestartYes() { document.getElementById('confirmDialog').style.display = 'none'; location.reload(); }
+function confirmRestartNo() { document.getElementById('confirmDialog').style.display = 'none'; }
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  let clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 500);
+  let clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 300);
+  mouseX = (clientX - rect.left) * (1200 / rect.width);
+  mouseY = (clientY - rect.top) * (600 / rect.height);
+  mouseX = Math.max(80, Math.min(mouseX, 1160));
+  mouseY = Math.max(80, Math.min(mouseY, 520));
+}
+
+function handleStart(e) { 
+  e.preventDefault(); 
+  getPos(e); 
+  if (gameState === 'playing') { 
+    if (isInTimeSelector(mouseX, mouseY)) { 
+      handleTimeSelection(mouseX, mouseY); 
+      return; 
+    } 
+    isSpraying = true; 
+  }
+}
+function handleMove(e) { e.preventDefault(); getPos(e); }
+function handleEnd(e) { e.preventDefault(); isSpraying = false; }
+
+canvas.addEventListener('mousemove', handleMove);
+canvas.addEventListener('mousedown', handleStart);
+canvas.addEventListener('mouseup', handleEnd);
+canvas.addEventListener('mouseleave', handleEnd);
+canvas.addEventListener('touchstart', handleStart, { passive: false });
+canvas.addEventListener('touchmove', handleMove, { passive: false });
+canvas.addEventListener('touchend', handleEnd, { passive: false });
+canvas.addEventListener('touchcancel', handleEnd, { passive: false });
+canvas.addEventListener('click', function(e) { 
+  getPos(e); 
+  if (isInTimeSelector(mouseX, mouseY)) handleTimeSelection(mouseX, mouseY); 
+});
+
+class Particle {
+  constructor(x, y, vx, vy, color, life, size, type) { 
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy; 
+    this.color = color; this.life = life; this.size = size; this.type = type; 
+  }
+  update() { 
+    this.x += this.vx; this.y += this.vy; this.life--; 
+    if (this.type === 'water') this.vy += 0.13; 
+    if (this.type === 'fire') { 
+      this.vy -= 0.22 + Math.random() * 0.25; 
+      this.vx += (Math.random() - 0.5) * 1.6; 
+    } 
+  }
+  draw() { 
+    ctx.globalAlpha = Math.max(0.15, this.life / 45); 
+    ctx.fillStyle = this.color; 
+    if (this.type === 'water') { 
+      ctx.fillRect(this.x - 1.8, this.y - 3, 3.6, 7); 
+    } else { 
+      ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size); 
+    } 
+    ctx.globalAlpha = 1; 
+  }
+}
+
+function createFireParticles(x, y, intensity) {
+  for (let i = 0; i < intensity * 0.42; i++) {
+    const vx = (Math.random() - 0.5) * 3.8;
+    const vy = -5.2 - Math.random() * 7.8;
+    let color = '#FFEE55';
+    if (Math.random() < 0.4) color = '#FFAA22';
+    else if (Math.random() < 0.75) color = '#FF5500';
+    particles.push(new Particle(x + (Math.random()-0.5)*40, y + (Math.random()-0.5)*32, vx, vy, color, 55, 7 + Math.random()*12, 'fire'));
+  }
+}
+
+function createSmoke(x, y) {
+  for (let i = 0; i < 12; i++) {
+    particles.push(new Particle(x + (Math.random()-0.5)*45, y + (Math.random()-0.5)*26, (Math.random()-0.5)*2.1, -1.0 - Math.random()*1.7, '#555555', 580, 8 + Math.random()*8, 'smoke'));
+  }
+}
+
+function getClampedHoseEnd() {
+  const attachX = truckX + nozzleAttachX;
+  const attachY = truckY + nozzleAttachY;
+  const dx = mouseX - attachX;
+  const dy = mouseY - attachY;
+  const dist = Math.hypot(dx, dy);
+  if (dist <= maxHoseLength || dist === 0) return { x: mouseX, y: mouseY, length: dist };
+  const ratio = maxHoseLength / dist;
+  return { x: attachX + dx * ratio, y: attachY + dy * ratio, length: maxHoseLength };
+}
+
+function createWaterParticles() {
+  const tip = getClampedHoseEnd();
+  const attachX = truckX + nozzleAttachX;
+  const attachY = truckY + nozzleAttachY;
+  const dx = tip.x - attachX;
+  const dy = tip.y - attachY;
+  const len = Math.hypot(dx, dy) || 1;
+  const stretchFactor = Math.min(tip.length / maxHoseLength, 1);
+  const coneSpread = 12 * (1 - stretchFactor * 0.93);
+  const waterSpeed = 6.5 + stretchFactor * 21;
+  const numStreams = stretchFactor > 0.7 ? 4 : 10;
+  for (let s = 0; s < numStreams; s++) {
+    const spread = coneSpread * (Math.random() - 0.5) * 0.8;
+    const perpX = -dy / len;
+    const perpY = dx / len;
+    const startX = tip.x + perpX * spread;
+    const startY = tip.y + perpY * spread;
+    const vx = (dx / len) * waterSpeed;
+    const vy = (dy / len) * waterSpeed + 4.2;
+    for (let i = 0; i < 7; i++) {
+      const progress = i / 6;
+      particles.push(new Particle(
+        startX + vx * progress * 0.6, startY + vy * progress * 0.6,
+        vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
+        Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF', 32 + Math.random() * 12, 2.8 + Math.random() * 1.6, 'water'
+      ));
+    }
+  }
+}
+
+function drawTotalFireGauge() {
+  if (fireSpots.length === 0) return;
+  let totalCurrent = 0; let totalMax = 0;
+  fireSpots.forEach(s => { totalCurrent += Math.max(0, s.health); totalMax += s.maxHealth; });
+  const percent = totalMax > 0 ? totalCurrent / totalMax : 0;
+  const gaugeX = 480; const gaugeY = 25; const gaugeWidth = 240; const gaugeHeight = 18;
+  ctx.fillStyle = '#333'; ctx.fillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  const grad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeWidth, gaugeY);
+  grad.addColorStop(0, '#FF2200'); grad.addColorStop(1, '#FFDD00');
+  ctx.fillStyle = grad; ctx.fillRect(gaugeX, gaugeY, gaugeWidth * percent, gaugeHeight);
+  ctx.strokeStyle = '#FFF'; ctx.lineWidth = 2; ctx.strokeRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  ctx.fillStyle = '#FFF'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('TOTAL FIRE', gaugeX + gaugeWidth/2, gaugeY - 6);
+}
+
+function drawBackground() {
+  let sky1, sky2, sunColor, sunX, sunY, grassColor;
+  if (timeOfDay === 0) { sky1 = '#7BC4FF'; sky2 = '#C0E4FF'; sunColor = '#FFDD00'; sunX = 300; sunY = 120; grassColor = '#3D8C40'; }
+  else if (timeOfDay === 1) { sky1 = '#FF8800'; sky2 = '#FFBB66'; sunColor = '#FFAA00'; sunX = 900; sunY = 140; grassColor = '#2A6B2F'; }
+  else { sky1 = '#112244'; sky2 = '#223366'; sunColor = '#EEEEEE'; sunX = 600; sunY = 130; grassColor = '#1F4A22'; }
+  const grad = ctx.createLinearGradient(0, 0, 0, 520);
+  grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
+  ctx.fillStyle = sunColor; ctx.beginPath(); ctx.arc(sunX, sunY, 45, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = grassColor; ctx.fillRect(0, 480, 1200, 120);
+  if (timeOfDay === 2) {
+    ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.8;
+    ctx.fillRect(200,80,3,3); ctx.fillRect(450,50,2,2); ctx.fillRect(720,110,3,3); ctx.fillRect(950,70,2,2); ctx.fillRect(1100,40,3,3);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawSideFireTruck() {
+  ctx.fillStyle = '#E22'; ctx.fillRect(truckX + 8, truckY - 48, 195, 82);
+  ctx.fillStyle = '#C11'; ctx.fillRect(truckX + 18, truckY - 78, 72, 38);
+  ctx.fillStyle = '#AACCFF'; ctx.fillRect(truckX + 26, truckY - 72, 28, 24); ctx.fillRect(truckX + 58, truckY - 72, 26, 24);
+  ctx.fillStyle = '#FF0'; ctx.fillRect(truckX + 12, truckY - 18, 185, 14);
+  ctx.fillStyle = '#000'; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('KENNARD', truckX + 125, truckY + 8);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(truckX + 52, truckY + 38, 26, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(truckX + 135, truckY + 38, 26, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(truckX + 175, truckY + 38, 26, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(truckX + 52, truckY + 38, 13, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(truckX + 135, truckY + 38, 13, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(truckX + 175, truckY + 38, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00F'; ctx.fillRect(truckX + 25, truckY - 82, 12, 6);
+}
+
+function drawSedan(x,yOffset=0) {
+  const gy = 480 + yOffset;
+  ctx.fillStyle = '#E22'; ctx.fillRect(x+25, gy-68, 165, 78);
+  ctx.fillStyle = '#0F3A6B'; ctx.fillRect(x+55, gy-105, 105, 48);
+  ctx.fillStyle = '#AACCFF'; ctx.fillRect(x+70, gy-95, 42, 35); ctx.fillRect(x+125, gy-95, 32, 35);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(x+55, gy+10, 28, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+145, gy+10, 28, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(x+55, gy+10, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+145, gy+10, 15, 0, Math.PI*2); ctx.fill();
+}
+
+function drawPickup(x,yOffset=0) {
+  const gy = 480 + yOffset;
+  ctx.fillStyle = '#E22'; ctx.fillRect(x+35, gy-72, 145, 78);
+  ctx.fillRect(x+170, gy-48, 95, 54);
+  ctx.fillStyle = '#0F3A6B'; ctx.fillRect(x+55, gy-105, 85, 45);
+  ctx.fillStyle = '#AACCFF'; ctx.fillRect(x+70, gy-98, 35, 30);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(x+65, gy+10, 28, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+215, gy+10, 28, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(x+65, gy+10, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+215, gy+10, 15, 0, Math.PI*2); ctx.fill();
+}
+
+function drawSemi(x) {
+  const gy = 480;
+  ctx.fillStyle = '#C00'; ctx.fillRect(x, gy-95, 135, 135);
+  ctx.fillStyle = '#DDD'; ctx.fillRect(x+125, gy-88, 390, 125);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(x+55, gy+12, 32, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+280, gy+12, 38, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+340, gy+12, 38, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(x+55, gy+12, 17, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+280, gy+12, 20, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+340, gy+12, 20, 0, Math.PI*2); ctx.fill();
+}
+
+function drawRidingLawnMower(x) {
+  const gy = 465;
+  ctx.fillStyle = '#228B22'; ctx.fillRect(x+25, gy-38, 115, 42);
+  ctx.fillStyle = '#1E5A1E'; ctx.fillRect(x+12, gy-12, 138, 28);
+  ctx.fillStyle = '#222'; ctx.fillRect(x+88, gy-58, 38, 24);
+  ctx.fillStyle = '#111'; ctx.fillRect(x+98, gy-68, 8, 14);
+  ctx.beginPath(); ctx.arc(x+102, gy-71, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x+42, gy+12, 23, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD'; ctx.beginPath(); ctx.arc(x+42, gy+12, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x+122, gy+8, 14, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD'; ctx.beginPath(); ctx.arc(x+122, gy+8, 8, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1E5A1E'; ctx.fillRect(x+28, gy-48, 55, 18);
+}
+
+function drawShedWindow(x) {
+  ctx.fillStyle = '#E8D5B8'; ctx.fillRect(x+30,255,190,225);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<9;i++){ctx.beginPath();ctx.moveTo(x+38,270+i*24);ctx.lineTo(x+210,270+i*24);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x+10,255);ctx.lineTo(x+125,185);ctx.lineTo(x+240,255);ctx.fill();
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+82,340,48,140);
+  ctx.fillStyle='#AACCFF';ctx.fillRect(x+155,275,52,52); ctx.strokeRect(x+155,275,52,52);
+}
+
+function drawSmallShed(x) {
+  ctx.fillStyle = '#E8D5B8'; ctx.fillRect(x+30,255,160,225);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<8;i++){ctx.beginPath();ctx.moveTo(x+38,270+i*26);ctx.lineTo(x+180,270+i*26);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x+10,255);ctx.lineTo(x+110,195);ctx.lineTo(x+200,255);ctx.fill();
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+72,340,42,140);
+}
+
+function drawSingleGarage(x) {
+  ctx.fillStyle = '#E8D5B8'; ctx.fillRect(x+20,230,260,250);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<11;i++){ctx.beginPath();ctx.moveTo(x+30,245+i*22);ctx.lineTo(x+270,245+i*22);ctx.stroke();}
+  ctx.fillStyle='#555';ctx.fillRect(x+91,255,118,225);
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x,230);ctx.lineTo(x+150,160);ctx.lineTo(x+300,230);ctx.fill();
+}
+
+function drawTallHouse(x) {
+  ctx.fillStyle = '#E8D5B8'; ctx.fillRect(x,200,270,320);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<13;i++){ctx.beginPath();ctx.moveTo(x+12,212+i*24);ctx.lineTo(x+258,212+i*24);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x-25,190);ctx.lineTo(x+135,100);ctx.lineTo(x+290,190);ctx.fill();
+  ctx.fillStyle='#A33';ctx.fillRect(x+175,115,32,60);
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+105,405,48,115);
+  ctx.fillStyle='#FFCC00';ctx.fillRect(x+122,465,10,10);
+  ctx.strokeStyle='#222';ctx.lineWidth=4;
+  ctx.strokeRect(x+30,255,68,95);ctx.strokeRect(x+172,255,68,95);
+  ctx.fillStyle='#AACCFF';ctx.fillRect(x+35,260,58,85);ctx.fillRect(x+177,260,58,85);
+}
+
+function drawSmallHouse(x,color='#FFCC99') {
+  ctx.fillStyle = color; ctx.fillRect(x+40,240,180,240);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<8;i++){ctx.beginPath();ctx.moveTo(x+48,252+i*26);ctx.lineTo(x+212,252+i*26);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x+20,240);ctx.lineTo(x+130,150);ctx.lineTo(x+220,240);ctx.fill();
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+92,390,45,90);
+  ctx.fillStyle='#FFCC00';ctx.fillRect(x+102,440,8,8);
+  ctx.strokeStyle='#222';ctx.lineWidth=4;
+  ctx.strokeRect(x+55,270,48,65);ctx.strokeRect(x+145,270,48,65);
+  ctx.fillStyle='#AACCFF';ctx.fillRect(x+58,273,42,58);ctx.fillRect(x+148,273,42,58);
+}
+
+function drawMiniBarn(x) {
+  ctx.fillStyle = '#C22'; ctx.fillRect(x+40,230,180,250);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<9;i++){ctx.beginPath();ctx.moveTo(x+48,245+i*24);ctx.lineTo(x+212,245+i*24);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x+20,230);ctx.lineTo(x+130,170);ctx.lineTo(x+220,230);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.fillRect(x+78,310,55,170);
+}
+
+function drawLargeRedBarn(x) {
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = '#C22'; ctx.fillRect(x+20,180,260,300);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<13;i++){ctx.beginPath();ctx.moveTo(x+30,195+i*22);ctx.lineTo(x+270,195+i*22);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x,180);ctx.lineTo(x+130,100);ctx.lineTo(x+280,180);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.fillRect(x+95,340,70,140);
+  ctx.globalAlpha = 1;
+}
+
+function drawHayBale(x) {
+  ctx.fillStyle = '#E8B070'; ctx.fillRect(x,415,80,60);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4; ctx.strokeRect(x,415,80,60);
+  ctx.fillStyle='#D9A060'; for(let i=0;i<5;i++) ctx.fillRect(x+10+i*12,420,8,50);
+}
+
+function drawTractor(x,facing) {
+  const flip = facing==='left'?-1:1;
+  ctx.save();
+  ctx.translate(x+75,410); ctx.scale(flip,1);
+  ctx.fillStyle='#228B22';ctx.fillRect(-65,0,130,65);
+  ctx.fillStyle='#111';ctx.fillRect(-45,-30,65,38);
+  ctx.fillStyle='#AACCFF';ctx.fillRect(-38,-25,38,28);
+  ctx.fillStyle='#1A6B1A';ctx.fillRect(10,-10,55,38);
+  ctx.fillStyle='#111'; ctx.beginPath();ctx.arc(-45,65,22,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#DDD';ctx.beginPath();ctx.arc(-45,65,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath();ctx.arc(35,65,14,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#DDD';ctx.beginPath();ctx.arc(35,65,7,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function drawTree(x) {
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+35,370,18,110);
+  ctx.fillStyle='#1E8C2E';
+  ctx.beginPath();ctx.moveTo(x+8,380);ctx.lineTo(x+44,310);ctx.lineTo(x+80,380);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+12,340);ctx.lineTo(x+44,280);ctx.lineTo(x+76,340);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+18,310);ctx.lineTo(x+44,250);ctx.lineTo(x+70,310);ctx.fill();
+}
+
+function drawTreeWithSwing(x) {
+  ctx.fillStyle='#3C2F1F';ctx.fillRect(x+35,370,18,110);
+  ctx.fillStyle='#1E8C2E';
+  ctx.beginPath();ctx.moveTo(x+8,380);ctx.lineTo(x+44,310);ctx.lineTo(x+80,380);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+12,340);ctx.lineTo(x+44,280);ctx.lineTo(x+76,340);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+18,310);ctx.lineTo(x+44,250);ctx.lineTo(x+70,310);ctx.fill();
+  ctx.strokeStyle='#222';ctx.lineWidth=6;
+  ctx.beginPath();ctx.moveTo(x+55,310);ctx.lineTo(x+55,405);ctx.stroke();
+  ctx.fillStyle='#222'; ctx.beginPath();ctx.arc(x+55,420,18,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#555'; ctx.beginPath();ctx.arc(x+55,420,12,0,Math.PI*2);ctx.fill();
+}
+
+function drawTornado(x) {
+  tornadoAngle += 0.085;
+  const topTwist = Math.sin(tornadoAngle * 2.2) * 38;
+  const midTwist = Math.sin(tornadoAngle * 1.8) * 28;
+  const bottomTwist = Math.sin(tornadoAngle * 1.4) * 45;
+  ctx.globalAlpha = 0.75;
+  ctx.strokeStyle = '#222222'; ctx.lineWidth = 48;
+  ctx.beginPath();
+  ctx.moveTo(x - 22 + topTwist, 140);
+  ctx.quadraticCurveTo(x + 18 + midTwist, 235, x - 12 + bottomTwist, 355);
+  ctx.quadraticCurveTo(x + 35, 430, x + 15, 485);
+  ctx.stroke();
+  ctx.strokeStyle = '#444444'; ctx.lineWidth = 22;
+  ctx.beginPath();
+  ctx.moveTo(x - 18 + topTwist * 0.7, 145);
+  ctx.quadraticCurveTo(x + 12 + midTwist * 0.8, 240, x - 8 + bottomTwist * 0.6, 360);
+  ctx.stroke();
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = '#555555';
+  for (let i = 0; i < 9; i++) {
+    const angle = tornadoAngle * 3 + i * 0.8;
+    const dist = 35 + i * 12;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist * 0.6 - 80;
+    ctx.fillRect(x + dx - 3, 180 + dy, 6, 6);
+  }
+}
+
+function loop() {
+  ctx.clearRect(0,0,1200,600);
+  drawBackground();
+
+  ctx.fillStyle = 'rgba(0,0,0,0.92)';
+  ctx.fillRect(20,18,320,48);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 26px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Score: ${score}`,35,48);
+  ctx.fillText(`Level: ${currentLevel}`,195,48);
+
+  ctx.fillStyle = '#0066CC';
+  ctx.fillRect(980,18,62,38);
+  ctx.fillRect(1048,18,62,38);
+  ctx.fillRect(1116,18,62,38);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("Day",1011,43);
+  ctx.fillText("Dusk",1079,43);
+  ctx.fillText("Night",1147,43);
+
+  const data = baseLevels[currentLevel-1];
+  data.entities.forEach(ent => {
+    if (ent.type === 'shedWindow') drawShedWindow(ent.x);
+    if (ent.type === 'smallShed') drawSmallShed(ent.x);
+    if (ent.type === 'singleGarage') drawSingleGarage(ent.x);
+    if (ent.type === 'house') drawTallHouse(ent.x);
+    if (ent.type === 'smallHouse') drawSmallHouse(ent.x, ent.color);
+    if (ent.type === 'miniBarn') drawMiniBarn(ent.x);
+    if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent.x);
+    if (ent.type === 'hayBale') drawHayBale(ent.x);
+    if (ent.type === 'tractor') drawTractor(ent.x, ent.facing || 'right');
+    if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0);
+    if (ent.type === 'pickup') drawPickup(ent.x, ent.yOffset || 0);
+    if (ent.type === 'semi') drawSemi(ent.x);
+    if (ent.type === 'tree') drawTree(ent.x);
+    if (ent.type === 'treeWithSwing') drawTreeWithSwing(ent.x);
+    if (ent.type === 'tornado') drawTornado(ent.x);
+    if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
+  });
+
+  drawSideFireTruck();
+
+  const tip = getClampedHoseEnd();
+  ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
+  ctx.beginPath(); ctx.moveTo(truckX + nozzleAttachX, truckY + nozzleAttachY);
+  ctx.quadraticCurveTo(truckX + 255, truckY - 165, tip.x, tip.y); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+  ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+
+  const sortedSpots = [...fireSpots].sort((a, b) => a.x - b.x);
+  sortedSpots.forEach(spot => {
+    if (spot.health <= 0) return;
+    if (Math.random() < 0.022) spot.health = Math.min(spot.health + (spot.growthRate || 4.2), spot.maxHealth);
+    const healthPercent = spot.health / spot.maxHealth;
+    const intensity = Math.floor(healthPercent * 28 + 4);
+    createFireParticles(spot.x + spot.w/2, spot.y + spot.h/2, intensity);
+
+    for (let i = particles.length-1; i >= 0; i--) {
+      const p = particles[i];
+      if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
+        let damage = 0.072;
+        if (spot.isHay) damage = 0.018;
+        else if (spot.isVehicle || spot.isSemi) damage = 0.035;
+        spot.health -= damage;
+        p.life = 8;
+      }
+    }
+    if (spot.health <= 0) { createSmoke(spot.x + spot.w/2, spot.y + spot.h/2); score += 10; }
+  });
+
+  if (currentLevel === 10) {
+    fireSpots.forEach(spot => {
+      if (spot.isSemi && Math.random() < 0.028) {
+        fireSpots.forEach(other => {
+          if (other.health > 0) {
+            const dist = Math.hypot(other.x - spot.x, other.y - spot.y);
+            if (dist < 180) other.health = Math.min(other.health + 85, other.maxHealth);
+          }
+        });
+        createFireParticles(spot.x + 40, spot.y + 30, 22);
+      }
+    });
+  }
+
+  if (isSpraying) createWaterParticles();
+
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.update(); 
+    p.draw();
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  drawTotalFireGauge();
+
+  ctx.fillStyle = '#FF0';
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'right';
+  ctx.fillText('KVFD - Kennard, IN',1180,580);
+
+  if (gameState === 'playing') checkWin();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
 </html>
