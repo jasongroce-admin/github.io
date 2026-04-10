@@ -1,30 +1,54 @@
 <!doctype html>
-<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Roulette Advisor</title><link rel='stylesheet' href='../../assets/css/site.css'></head>
-<body><main class='content'><section class='panel'><h1>Roulette Next Bet Advisor</h1><p>Enter last spin color/number, then choose one of 10 common strategy templates.</p>
-<div class='projects-grid'>
-<label>Last Color <select id='lastColor'><option>Red</option><option>Black</option><option>Green</option></select></label>
-<label>Last Number <input id='lastNum' type='number' min='0' max='36' value='17'></label>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Roulette Advisor</title><link rel='stylesheet' href='../../assets/css/site.css'>
+<style>
+.board{max-width:980px;overflow:auto;border:1px solid #334155;border-radius:10px;padding:8px;background:#0b1220}
+svg{width:960px;height:310px;display:block}
+.num{cursor:pointer;stroke:#d1e7dd;stroke-width:1}.num.red{fill:#b91c1c}.num.black{fill:#111827}.num.green{fill:#15803d}
+.sel{stroke:#fbbf24;stroke-width:3}
+.history{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chip{padding:6px 8px;border-radius:10px;color:#fff;font-weight:700}
+</style></head>
+<body><main class='content'><section class='panel'><h1>Roulette Next Bet Advisor</h1><p>Tap numbers on the table to log the last spins (up to 10), then get strategy suggestions.</p>
+<div class='board'><svg id='table' viewBox='0 0 960 310'></svg></div>
+<div class='history' id='history'></div>
+<div class='projects-grid' style='margin-top:8px'>
 <label>Strategy <select id='strat'></select></label>
-<button id='build'>Build Next Bet</button>
+<button id='guess'>Suggest Bet</button>
+<button id='clear'>Clear Last 10</button>
 </div>
-<div id='out' class='card' style='margin-top:10px'><h3>Recommendation</h3><p>Pick values and click Build Next Bet.</p></div>
+<div id='out' class='card' style='margin-top:10px'><h3>Suggestion</h3><p>Select numbers and press Suggest Bet.</p></div>
 <p><a class='card' href='index.html'><h3>Back to Utilities</h3><p>Return to utilities menu.</p></a></p>
 </section></main>
 <script>
-const strategies=[
-'Flat Betting','Martingale','Reverse Martingale (Paroli)','Fibonacci','D\'Alembert','Labouchere','Oscar\'s Grind','James Bond','Column Progression','Dozen Progression'];
+const redSet=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const strategies=['Flat Betting','Martingale','Reverse Martingale','Fibonacci','D\'Alembert','Labouchere','Oscar\'s Grind','James Bond','Column','Dozen'];
 strat.innerHTML=strategies.map(s=>`<option>${s}</option>`).join('');
-const advice={
-'Flat Betting':()=>`Bet 1 unit on ${lastColor.value==='Red'?'Black':'Red'} (single even-money hedge).`,
-'Martingale':()=>`If last spin lost your color bet, double next stake on ${lastColor.value}.`,
-'Reverse Martingale (Paroli)':()=>`After a win, press to 2 units on same color; reset after 3 wins or 1 loss.`,
-'Fibonacci':()=>`Use 1-1-2-3 progression on ${lastColor.value==='Red'?'Black':'Red'}; step back two after wins.`,
-"D'Alembert":()=>`Increase by 1 after losses and decrease by 1 after wins on an even-money bet.`,
-'Labouchere':()=>`Set line 1-2-3-4 and bet ends sum (5) on ${lastColor.value}. Cancel wins, append losses.`,
-"Oscar's Grind":()=>`Flat-bet until win, then raise by 1 unit each win until +1 session profit.`,
-'James Bond':()=>`Split 70% high (19-36), 25% six line 13-18, 5% on 0 for coverage.`,
-'Column Progression':()=>`Bet 1 unit on column opposite to last number mod-3 group; adjust +1 on loss.`,
-'Dozen Progression':()=>`If last number in 1st dozen, rotate to 2nd dozen next spin with 1 unit.`
-};
-build.onclick=()=>{const s=strat.value;const msg=(advice[s]||(()=>`No rule for ${s}`))();out.innerHTML=`<h3>${s}</h3><p><b>Last spin:</b> ${lastColor.value} ${lastNum.value}</p><p>${msg}</p><p><i>Educational strategy template only — no guaranteed outcomes.</i></p>`};
+const last=[];
+function colorOf(n){if(n===0)return'green';return redSet.has(n)?'red':'black';}
+function addSpin(n){last.unshift({n,c:colorOf(n)});if(last.length>10)last.pop();renderHistory();}
+function renderHistory(){history.innerHTML=last.map(s=>`<span class='chip' style='background:${s.c==='red'?'#b91c1c':s.c==='black'?'#111827':'#15803d'}'>${s.n}</span>`).join('');}
+function suggest(){if(!last.length){out.innerHTML='<h3>Suggestion</h3><p>Add at least one spin first.</p>';return;}const s=strat.value;const n=last[0].n,c=last[0].c;let msg='';
+if(s==='Flat Betting')msg=`Bet 1 unit on ${c==='red'?'Black':c==='black'?'Red':'Red/Black split'} for controlled risk.`;
+if(s==='Martingale')msg=`If your target color lost last spin (${c}), double next even-money stake.`;
+if(s==='Reverse Martingale')msg='Press winnings for up to 3 hits, then reset to base unit.';
+if(s==='Fibonacci')msg='Use 1-1-2-3 progression and step back two numbers after wins.';
+if(s==="D'Alembert")msg='Increase by 1 after loss, decrease by 1 after win on even-money bet.';
+if(s==='Labouchere')msg='Set line 1-2-3-4 and stake ends sum; remove ends on win.';
+if(s==="Oscar's Grind")msg='Flat-bet until a win then increase by one until +1 unit session.';
+if(s==='James Bond')msg='Split bankroll: 70% high (19-36), 25% 13-18, 5% on 0.';
+if(s==='Column')msg=`Last number ${n}: try opposite column with 1 unit and track 3-spin cycles.`;
+if(s==='Dozen')msg=`Last number ${n}: rotate to another dozen for the next spin.`;
+out.innerHTML=`<h3>${s}</h3><p><b>Latest:</b> ${n} (${c})</p><p>${msg}</p><p><i>Educational only — strategy guidance, not guaranteed outcomes.</i></p>`;
+}
+function buildTable(){
+const svg=table; let html='';
+html+=`<rect class='num green' data-n='0' x='0' y='0' width='70' height='300'></rect><text x='35' y='155' fill='white' text-anchor='middle'>0</text>`;
+const cellW=74, cellH=95;
+for(let col=0;col<12;col++){
+  [3,2,1].forEach((r,row)=>{const n=col*3+r;const x=80+col*cellW,y=row*100;const cls=colorOf(n);html+=`<rect class='num ${cls}' data-n='${n}' x='${x}' y='${y}' width='70' height='95'></rect><text x='${x+35}' y='${y+55}' fill='white' text-anchor='middle'>${n}</text>`;});
+}
+svg.innerHTML=html;
+svg.querySelectorAll('.num').forEach(el=>el.addEventListener('click',()=>{const n=+el.dataset.n;addSpin(n);svg.querySelectorAll('.num').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');}));
+}
+buildTable();
+guess.onclick=suggest;clear.onclick=()=>{last.length=0;renderHistory();out.innerHTML='<h3>Suggestion</h3><p>History cleared.</p>'};
 </script></body></html>

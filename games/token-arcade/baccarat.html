@@ -70,6 +70,7 @@
         </div>
 
         <div id='status' class='token status'>Place a bet, then Deal. Cards are face down until clicked.</div>
+        <div class='sideTotals' style='margin-top:8px'><div class='totLabel'>History Board (latest 20)</div><div id='roadmap' style='display:flex;gap:6px;flex-wrap:wrap;min-height:34px'></div></div>
       </div>
 
       <div class='bottom-actions'>
@@ -94,7 +95,7 @@
 
       let bet={player:0,banker:0,tie:0,seven:0,panda:0};
       let last={};
-      let currentRound=null;
+      let currentRound=null; let hist=[];
 
       const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
       const suits=['♠','♥','♦','♣'];
@@ -215,7 +216,7 @@
             :"<line x1='205' y1='40' x2='280' y2='40' stroke='#ffd166' stroke-width='6'/>";
         setTimeout(()=>{wLine.style.height='0';wLine.innerHTML='';},1500);
 
-        status.textContent=`Result: ${win.toUpperCase()} (${pv} - ${bv}) ${paid?`+${paid.toFixed(2)} SpendTokens`:'no payout'}`;
+        status.textContent=`Result: ${win.toUpperCase()} (${pv} - ${bv}) ${paid?`+${paid.toFixed(2)} SpendTokens`:'no payout'}`;hist.unshift({win,pv,bv});hist=hist.slice(0,20);roadmap.innerHTML=hist.map(h=>`<span class='btn' style='padding:6px;background:${h.win==='player'?'#2453ff':h.win==='banker'?'#bb2a2a':'#7d7d7d'}'>${h.win[0].toUpperCase()} ${h.pv}-${h.bv}</span>`).join('');
         if(paid>0)celebrateWin(paid>=80?'BACCARAT JACKPOT!':'BACCARAT WIN!',paid,'Congratulations!');beep(paid?780:260,.12);
 
         last={...bet};

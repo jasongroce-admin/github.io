@@ -136,6 +136,7 @@
       let strokeCache = new Map();
       let frameCount = 0;
       let lastPoint = null;
+      let moveTick = 0;
 
       function toRGB(hex) {
         const h = hex.replace('#', '');
@@ -252,7 +253,8 @@
       function move(e) {
         if (!down) return;
         const p = getPos(e);
-        const steps = Math.max(1, Math.floor(Math.hypot(p.x - lastPoint.x, p.y - lastPoint.y) / 4));
+        moveTick++; if(moveTick % 2 === 0) return;
+        const steps = Math.max(1, Math.floor(Math.hypot(p.x - lastPoint.x, p.y - lastPoint.y) / 7));
         for (let i = 1; i <= steps; i++) {
           pushPoint({
             x: lastPoint.x + ((p.x - lastPoint.x) * i) / steps,
@@ -298,7 +300,7 @@
         x.lineCap = 'round';
         x.lineJoin = 'round';
         x.shadowColor = col;
-        x.shadowBlur = b.glow;
+        x.shadowBlur = Math.min(20,b.glow);
         x.beginPath();
         x.moveTo(a.x, a.y);
         x.lineTo(b.x, b.y);
@@ -313,6 +315,7 @@
           trail = trail.filter((p) => now - p.t < p.fadeMs + 120);
         }
 
+        if (trail.length > 4500) trail = trail.slice(trail.length - 4500);
         for (let i = 1; i < trail.length; i++) drawSeg(trail[i - 1], trail[i], now);
         x.shadowBlur = 0;
       }
