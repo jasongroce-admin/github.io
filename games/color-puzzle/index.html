@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Action Color Puzzle</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <h1>Action Color Puzzle</h1>
+        <p>Pick a color number, then tap matching numbered pieces.</p>
+        <div class="row">
+          <label>Scene
+            <select id="sceneSelect">
+              <option value="firefighter">Firefighter Action</option>
+              <option value="police">Police Action</option>
+            </select>
+          </label>
+          <label>Difficulty
+            <select id="difficultySelect">
+              <option value="easy">Easy (8 colors)</option>
+              <option value="medium">Medium (14 colors)</option>
+              <option value="hard">Hard (20 colors)</option>
+            </select>
+          </label>
+          <button id="resetBtn">Reset</button>
+        </div>
+      </header>
+
+      <section class="canvas-wrap">
+        <svg id="puzzleSvg" viewBox="0 0 420 560" aria-label="color puzzle"></svg>
+      </section>
+
+      <section class="palette-zone">
+        <div id="palette" class="palette" aria-label="Color drawer"></div>
+        <p id="status">Choose a color number from the drawer.</p>
+      </section>
+
+      <a class="back" href="../../index.html">← Back to homepage</a>
+    </main>
+    <script src="game.js"></script>
+  </body>
+</html>
