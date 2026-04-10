@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>JR's #2 Rescue</title>
+    <link rel="stylesheet" href="css/game.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="hud-top">
+        <div><strong>Level:</strong> <span id="levelLabel">1</span></div>
+        <div><strong>Score:</strong> <span id="scoreLabel">0</span></div>
+        <div><strong>Leaks Fixed:</strong> <span id="fixedLabel">0</span>/<span id="totalLabel">0</span></div>
+        <div><strong>Patch:</strong> <span id="patchLabel">None</span></div>
+      </header>
+
+      <section class="game-wrap">
+        <canvas id="gameCanvas" width="900" height="580" aria-label="JR's #2 Rescue game area"></canvas>
+
+        <aside class="side-panel">
+          <h2>JR's #2 Rescue Mission</h2>
+          <p>
+            Find soggy spots, dig to reveal pipes, and patch leaks before they erupt. Some holes are fake, some hold treasure.
+          </p>
+
+          <div class="table-card">
+            <h3>Patch Table</h3>
+            <button id="equipPatchBtn" type="button">Equip Patch</button>
+            <p>Grab a patch here, then click/tap a broken pipe to repair.</p>
+          </div>
+
+          <div class="controls-card">
+            <h3>Controls</h3>
+            <ul>
+              <li><strong>Move:</strong> WASD / Arrow Keys</li>
+              <li><strong>Dig:</strong> Hold mouse, touch, or Spacebar</li>
+              <li><strong>Repair:</strong> Click/tap pipe while carrying patch</li>
+            </ul>
+          </div>
+
+          <div class="buttons">
+            <button id="retryBtn" type="button">Retry Level</button>
+            <button id="restartBtn" type="button">Restart Game</button>
+          </div>
+
+          <a class="portal-link" href="../../index.html">← Back to portal</a>
+        </aside>
+      </section>
+
+      <div id="tipModal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-content">
+          <h3 id="tipTitle"></h3>
+          <p id="tipText"></p>
+          <button id="nextLevelBtn" type="button">Next Level</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

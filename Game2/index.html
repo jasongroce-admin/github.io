@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPD Driving Response</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hud">
+      <div>
+        <h1>KPD Driving Response</h1>
+        <p class="subhead">Kennard Police Department dispatch response with curved-road driving.</p>
+      </div>
+      <div class="stats">
+        <span>Mode <strong id="modeLabel">Mission</strong></span>
+        <span>Call <strong id="callId">-</strong></span>
+        <span>Target <strong id="targetAddress">-</strong></span>
+        <span>ETA <strong id="time">0</strong>s</span>
+        <span>Score <strong id="score">0</strong></span>
+        <span>Speed <strong id="speed">0</strong></span>
+        <span>Hull <strong id="lives">100</strong>%</span>
+      </div>
+    </header>
+
+    <section class="game-wrap">
+      <canvas id="game" width="480" height="760" aria-label="KPD driving game"></canvas>
+      <aside id="tipsPanel" class="tips-panel">
+        <h3>KPD Hazard Tips</h3>
+        <ul>
+          <li><strong>Soft spots</strong>: discolored asphalt with bubbling brown water.</li>
+          <li><strong>Debris</strong>: limbs, cones, bins, and carts can spin your cruiser.</li>
+          <li><strong>Forward + reverse</strong>: use Up/Down to control pace through turns.</li>
+          <li><strong>Boost</strong>: short taps are snappy and drop off quickly.</li>
+        </ul>
+      </aside>
+
+      <div id="overlay" class="overlay">
+        <div class="card">
+          <h2>Dispatch Ready</h2>
+          <p id="overlayStory">Choose a mode. Mission mode sends timed house calls. Free Roam removes the timer to practice curved road handling.</p>
+
+          <div class="mode-row">
+            <button id="missionBtn" class="mode active">Mission</button>
+            <button id="freeRoamBtn" class="mode">Free Roam</button>
+            <button id="tipsBtn" class="mode">Slide Tips</button>
+          </div>
+
+          <ul>
+            <li>Drive with arrow keys / WASD or touch controls.</li>
+            <li>Move left, right, forward, and back to manage curves.</li>
+            <li>Hold <strong>SIREN</strong> for quick bursts of speed.</li>
+            <li>Avoid hazards and collect clocks/shields when it is safe.</li>
+          </ul>
+
+          <button id="startBtn">Begin Shift</button>
+        </div>
+      </div>
+
+      <div id="hintToast" class="hint-toast hidden" aria-live="polite"></div>
+    </section>
+
+    <section class="controls" aria-label="Touch controls">
+      <button data-key="ArrowLeft">◀</button>
+      <button data-key="ArrowUp">▲</button>
+      <button data-key="ArrowDown">▼</button>
+      <button data-key="ArrowRight">▶</button>
+      <button data-key="Space">SIREN</button>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
