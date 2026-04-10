@@ -2,8 +2,8 @@
   --bg:#130f24; --panel:#231c43; --border:#7f69c7; --text:#f6f1ff; --muted:#cbbcf0;
 }
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
-html,body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; }
-.app { min-height:100svh; display:grid; grid-template-rows:auto 1fr auto auto; gap:.5rem; padding:max(.5rem, env(safe-area-inset-top)) .6rem max(.7rem, env(safe-area-inset-bottom)); }
+html,body { margin:0; min-height:100%; background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; }
+.app { min-height:100svh; display:grid; grid-template-rows:auto 1fr auto; gap:.5rem; padding:max(.5rem, env(safe-area-inset-top)) .6rem 10.6rem; }
 .top { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:.6rem; }
 h1 { margin:.1rem 0 .25rem; font-size:1.2rem; }
 .top p { margin:.1rem 0 .5rem; color:var(--muted); font-size:.92rem; }
@@ -12,10 +12,21 @@ select,button { border-radius:10px; border:1px solid var(--border); background:#
 label { font-size:.85rem; display:grid; gap:.2rem; }
 .canvas-wrap { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; min-height:50svh; }
 svg { width:100%; height:100%; touch-action:manipulation; }
-.piece { fill:#2f274f; stroke:#5f4f95; stroke-width:2; }
+.piece { stroke:#8f87ab; stroke-width:2; }
 .piece.done { stroke:#e9deff; }
 .nLabel { fill:#ffffff; font-size:13px; text-anchor:middle; dominant-baseline:middle; pointer-events:none; font-weight:700; }
-.palette-zone { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:.45rem; }
+.palette-zone {
+  position:fixed;
+  left:.55rem;
+  right:.55rem;
+  bottom:max(.45rem, env(safe-area-inset-bottom));
+  z-index:30;
+  background:rgba(35,28,67,.96);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:.45rem;
+  box-shadow:0 -6px 20px rgba(0,0,0,.35);
+}
 .palette { display:flex; overflow-x:auto; gap:.45rem; padding-bottom:.2rem; }
 .swatch { min-width:48px; min-height:48px; border-radius:12px; border:3px solid transparent; color:#fff; font-weight:700; }
 .swatch.active { border-color:#fff; transform:translateY(-1px); }
