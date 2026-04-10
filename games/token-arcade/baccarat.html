@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover' />
+    <title>Token Baccarat</title>
+    <link rel='stylesheet' href='common.css' />
+    <style>
+      .table { background:#0b6f96; border:2px solid #9dd8ff; border-radius:12px; padding:10px; }
+      .zones { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+      .z { min-height:64px; border:1px solid #d9eefc; border-radius:10px; display:grid; place-items:center; font-weight:800; font-size:1.05rem; position:relative; }
+      .tok { position:absolute; top:4px; right:4px; background:#ffd166; color:#111; border-radius:50%; width:30px; height:30px; display:grid; place-items:center; font-size:.72rem; }
+      .z.win { outline:4px solid #ffd166; }
+      .layout { display:grid; grid-template-columns:1.6fr .8fr; gap:10px; margin-top:8px; }
+      .cards { display:flex; gap:6px; flex-wrap:wrap; min-height:88px; }
+      .c {
+        width:58px; height:82px; border-radius:8px; display:grid; place-items:center;
+        font-size:1.25rem; cursor:pointer; user-select:none; border:1px solid #f0f8ff;
+      }
+      .c.back { background:repeating-linear-gradient(45deg,#114,#114 8px,#335 8px,#335 16px); color:#8ab5ff; }
+      .c.face { background:#fff; color:#111; }
+      .sideTotals { background:#081c2d; border:1px solid #2f5070; border-radius:10px; padding:10px; }
+      .totLabel { font-size:.82rem; opacity:.9; }
+      .totVal { font-size:2.1rem; font-weight:900; color:#ffd166; line-height:1.1; }
+      .status { margin-top:10px; }
+      .row { display:flex; gap:8px; flex-wrap:wrap; }
+    </style>
+  </head>
+  <body>
+    <div class='wrap'>
+      <div class='notice'>Testing only: SpendTokens have no real-world value.</div>
+      <div class='top'>
+        <a class='btn' href='index.html'>← Arcade Menu</a>
+        <div>SpendTokens: <span id='tokenTotal' class='token'></span></div>
+        <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
+      </div>
+
+      <div class='panel table'>
+        <svg id='wLine' viewBox='0 0 300 80' style='width:100%;height:0'></svg>
+        <div class='zones'>
+          <div class='z' id='pZone'>PLAYER</div>
+          <div class='z' id='tZone'>TIE</div>
+          <div class='z' id='bZone'>BANKER</div>
+        </div>
+
+
+        <div class='row' style='margin-top:8px'>
+          <button class='btn' id='sbSeven'>Seven Heaven</button>
+          <button class='btn' id='sbPanda'>Panda 8</button>
+        </div>
+
+        <div class='layout'>
+          <div>
+            <div><b>Player Cards (click to reveal)</b></div>
+            <div class='cards' id='pc'></div>
+            <div style='margin-top:6px'><b>Banker Cards (click to reveal)</b></div>
+            <div class='cards' id='bc'></div>
+          </div>
+
+          <div class='sideTotals'>
+            <div class='totLabel'>PLAYER TOTAL</div>
+            <div class='totVal' id='pTotal'>--</div>
+            <hr style='border-color:#2f5070' />
+            <div class='totLabel'>BANKER TOTAL</div>
+            <div class='totVal' id='bTotal'>--</div>
+            <div style='margin-top:10px'>
+              <button class='btn' id='revealAll'>Reveal All</button>
+            </div>
+          </div>
+        </div>
+
+        <div id='status' class='token status'>Place a bet, then Deal. Cards are face down until clicked.</div>
+        <div class='sideTotals' style='margin-top:8px'><div class='totLabel'>History Board (latest 20)</div><div id='roadmap' style='display:flex;gap:6px;flex-wrap:wrap;min-height:34px'></div></div>
+      </div>
+
+      <div class='bottom-actions'>
+        <label>Token <select id='amt'></select></label>
+        <button class='btn' id='deal'>Deal</button>
+        <button class='btn' id='repeat'>Repeat Bet</button>
+        <button class='btn' id='clear'>Remove Bets</button>
+        <button class='btn' id='tips'>Tips</button>
+      </div>
+    </div>
+
+    <div class='drawer' id='tipd'>
+      <h3>Baccarat Tips</h3>
+      <p>Common electronic layout: Player, Banker, Tie. Banker often has lowest house edge in standard rules.</p>
+    </div>
+
+    <script src='common.js'></script>
+    <script>
+      initWallet();
+
+      [1,3,5,10,25,50,100].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;amt.appendChild(o)});
+
+      let bet={player:0,banker:0,tie:0,seven:0,panda:0};
+      let last={};
+      let currentRound=null; let hist=[];
+
+      const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+      const suits=['♠','♥','♦','♣'];
+
+      function draw(){ return {r:ranks[(Math.random()*13)|0], s:suits[(Math.random()*4)|0]}; }
+      function val(c){ if(['10','J','Q','K'].includes(c.r)) return 0; if(c.r==='A') return 1; return +c.r; }
+      function handVal(h){ return h.reduce((a,c)=>a+val(c),0)%10; }
+
+      function renderBets(){
+        [[pZone,'PLAYER',bet.player],[bZone,'BANKER',bet.banker],[tZone,'TIE',bet.tie],[sbSeven,'SEVEN HEAVEN',bet.seven],[sbPanda,'PANDA 8',bet.panda]].forEach(([el,l,v])=>{
+          el.textContent=l;
+          const o=el.querySelector('.tok');
+          if(o)o.remove();
+          if(v){ const t=document.createElement('span'); t.className='tok'; t.textContent=v.toFixed(0); el.appendChild(t); }
+        });
+        setTokens(getTokens());
+      }
+
+      function place(k){
+        if(currentRound){ status.textContent='Reveal current cards first.'; return; }
+        const a=+amt.value;
+        if(!spend(a)) return;
+        bet[k]+=a;
+        beep(520);
+        renderBets();
+      }
+
+      function makeCardEl(card, side, idx){
+        const d=document.createElement('button');
+        d.className='c back';
+        d.type='button';
+        d.textContent='🂠';
+        d.dataset.side=side;
+        d.dataset.idx=idx;
+        d.onclick=()=>revealCard(side, idx, d);
+        return d;
+      }
+
+      function revealCard(side, idx, el){
+        if(!currentRound) return;
+        const next=currentRound.queue[0];if(!next||next.side!==side||next.idx!==idx){status.textContent='Reveal one card at a time in order.';return;}const pile = side==='player' ? currentRound.player : currentRound.banker;
+        const slot = pile[idx];
+        if(!slot || slot.revealed) return;
+        slot.revealed=true;
+        el.classList.remove('back');
+        el.classList.add('face');
+        el.textContent=slot.card.r + slot.card.s;
+        beep(700,.05);
+        updateTotals();
+        currentRound.queue.shift();if(allRevealed()) settleRound();
+      }
+
+      function revealAllCards(){
+        if(!currentRound) return;
+        while(currentRound && currentRound.queue && currentRound.queue.length){const n=currentRound.queue[0];const el=n.side==='player'?pc.children[n.idx]:bc.children[n.idx];revealCard(n.side,n.idx,el);}
+      }
+
+      function allRevealed(){
+        const p=currentRound.player.every(c=>c.revealed);
+        const b=currentRound.banker.every(c=>c.revealed);
+        return p&&b;
+      }
+
+      function updateTotals(){
+        if(!currentRound){ pTotal.textContent='--'; bTotal.textContent='--'; return; }
+        const pCards=currentRound.player.filter(c=>c.revealed).map(c=>c.card);
+        const bCards=currentRound.banker.filter(c=>c.revealed).map(c=>c.card);
+        pTotal.textContent = pCards.length ? handVal(pCards) : '--';
+        bTotal.textContent = bCards.length ? handVal(bCards) : '--';
+      }
+
+      function dealRound(){
+        if(currentRound){ status.textContent='Reveal all cards before a new deal.'; return; }
+        if(!bet.player && !bet.banker && !bet.tie && !bet.seven && !bet.panda){ status.textContent='Place at least one bet first.'; return; }
+
+        let p=[draw(),draw()], b=[draw(),draw()];
+        if(handVal(p)<=5) p.push(draw());
+        if(handVal(b)<=5) b.push(draw());
+
+        currentRound={
+          player:p.map(card=>({card,revealed:false})),
+          banker:b.map(card=>({card,revealed:false})),
+          queue:[]
+        };
+        const maxLen=Math.max(currentRound.player.length,currentRound.banker.length);
+        for(let i=0;i<maxLen;i++){if(currentRound.player[i])currentRound.queue.push({side:'player',idx:i});if(currentRound.banker[i])currentRound.queue.push({side:'banker',idx:i});}
+
+        pc.innerHTML='';
+        bc.innerHTML='';
+        currentRound.player.forEach((c,i)=>pc.appendChild(makeCardEl(c.card,'player',i)));
+        currentRound.banker.forEach((c,i)=>bc.appendChild(makeCardEl(c.card,'banker',i)));
+
+        [pZone,tZone,bZone].forEach(z=>z.classList.remove('win'));
+        updateTotals();
+        status.textContent='Click cards to reveal. Totals update on the right.';
+      }
+
+      function settleRound(){
+        const pCards=currentRound.player.map(c=>c.card);
+        const bCards=currentRound.banker.map(c=>c.card);
+        const pv=handVal(pCards), bv=handVal(bCards);
+        let win='tie';
+        if(pv>bv) win='player';
+        if(bv>pv) win='banker';
+
+        let paid=0;
+        if(win==='player') paid+=bet.player*2;
+        if(win==='banker') paid+=bet.banker*1.95;
+        if(win==='tie') paid+=bet.tie*9;const pThree=pCards.length===3&&pv===7;const bPanda=win==='banker'&&bv===8&&bCards.length===3;if(pThree)paid+=bet.seven*41;if(bPanda)paid+=bet.panda*26;
+        add(paid);
+
+        (win==='player'?pZone:win==='banker'?bZone:tZone).classList.add('win');
+        wLine.style.height='80px';
+        wLine.innerHTML=win==='player'
+          ?"<line x1='20' y1='40' x2='95' y2='40' stroke='#ffd166' stroke-width='6'/>"
+          :win==='tie'
+            ?"<line x1='110' y1='40' x2='190' y2='40' stroke='#ffd166' stroke-width='6'/>"
+            :"<line x1='205' y1='40' x2='280' y2='40' stroke='#ffd166' stroke-width='6'/>";
+        setTimeout(()=>{wLine.style.height='0';wLine.innerHTML='';},1500);
+
+        status.textContent=`Result: ${win.toUpperCase()} (${pv} - ${bv}) ${paid?`+${paid.toFixed(2)} SpendTokens`:'no payout'}`;hist.unshift({win,pv,bv});hist=hist.slice(0,20);roadmap.innerHTML=hist.map(h=>`<span class='btn' style='padding:6px;background:${h.win==='player'?'#2453ff':h.win==='banker'?'#bb2a2a':'#7d7d7d'}'>${h.win[0].toUpperCase()} ${h.pv}-${h.bv}</span>`).join('');
+        if(paid>0)celebrateWin(paid>=80?'BACCARAT JACKPOT!':'BACCARAT WIN!',paid,'Congratulations!');beep(paid?780:260,.12);
+
+        last={...bet};
+        bet={player:0,banker:0,tie:0,seven:0,panda:0};
+        currentRound=null;
+        renderBets();
+      }
+
+      pZone.onclick=()=>place('player');
+      bZone.onclick=()=>place('banker');
+      tZone.onclick=()=>place('tie');
+      sbSeven.onclick=()=>place('seven');
+      sbPanda.onclick=()=>place('panda');
+      deal.onclick=dealRound;
+      revealAll.onclick=revealAllCards;
+
+      repeat.onclick=()=>{
+        if(currentRound){ status.textContent='Finish current reveal first.'; return; }
+        for(const [k,v] of Object.entries(last)){ if(v&&spend(v)) bet[k]+=v; }
+        renderBets();
+        dealRound();
+      };
+
+      clear.onclick=()=>{
+        if(currentRound){ status.textContent='Cannot remove bets during active reveal.'; return; }
+        Object.values(bet).forEach(add);
+        bet={player:0,banker:0,tie:0,seven:0,panda:0};
+        renderBets();
+        status.textContent='Bets removed.';
+      };
+
+      tips.onclick=()=>tipd.classList.toggle('open');
+
+      renderBets();
+      updateTotals();
+    </script>
+
+    <div class='gate' id='gate'>
+      <div class='box'>
+        <h2>Baccarat</h2>
+        <p>Cards deal face down. Click each to reveal and watch the large right-side totals update.</p>
+        <button class='btn' id='startBtn'>Start Game</button>
+      </div>
+    </div>
+    <script>document.getElementById('startBtn').onclick=()=>document.getElementById('gate').style.display='none';</script>
+  </body>
+</html>
