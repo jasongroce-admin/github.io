@@ -53,9 +53,6 @@ const game = {
   objects: [],
   particles: [],
   idleClock: 0,
-  roadOffset: 0,
-  curveTarget: 0,
-  curveTimer: 0,
 };
 
 const player = {
@@ -74,7 +71,7 @@ function randomAddress() {
 }
 
 function roadCenterAt(y) {
-  return W / 2 + game.roadOffset;
+  return W / 2 + Math.sin((y + game.distance * 8) * 0.012) * CURVE_WOBBLE;
 }
 
 function laneBounds(y) {
@@ -88,7 +85,7 @@ function setMode(mode) {
   freeRoamBtn.classList.toggle('active', mode === 'freeRoam');
   overlayStory.textContent = mode === 'mission'
     ? 'Dispatch is assigning timed house calls. Reach each target before ETA hits zero.'
-    : 'Free Roam practice: no timer pressure. Learn KPD curves, hazard timing, and quick boost control.';
+: 'Free Roam practice: no timer pressure. Learn KPD curves, hazard timing, and quick boost control.';
 }
 
 function nextDispatch() {
@@ -114,9 +111,6 @@ function resetGame() {
   game.objects = [];
   game.particles = [];
   game.idleClock = 0;
-  game.roadOffset = 0;
-  game.curveTarget = 0;
-  game.curveTimer = 0;
 
   player.x = W / 2;
   player.y = H - 120;
@@ -140,7 +134,7 @@ function updateHud() {
 }
 
 function spawn(type) {
-  const b = laneBounds(-90);
+  const b = laneBounds(80);
   const laneX = b.min + 34 + Math.random() * (ROAD_W - 68);
   const obj = { type, x: laneX, y: -90, hit: false };
 
@@ -249,14 +243,6 @@ function update(dt) {
   game.tornado += dt * (1.2 + game.level * 0.28);
   const wind = game.level >= 5 ? Math.sin(game.tornado) * 1.3 : 0;
 
-  game.curveTimer -= dt;
-  if (game.curveTimer <= 0) {
-    const chooseCorner = Math.random() < 0.24 + game.level * 0.03;
-    game.curveTarget = chooseCorner ? (Math.random() > 0.5 ? 1 : -1) * (16 + Math.random() * CURVE_WOBBLE) : 0;
-    game.curveTimer = chooseCorner ? 1.4 + Math.random() * 1.2 : 2.6 + Math.random() * 2.2;
-  }
-  game.roadOffset += (game.curveTarget - game.roadOffset) * Math.min(1, dt * 1.9);
-
   game.speed = Math.max(2.6, Math.min(24, game.speed + throttle * 8.6 * dt));
   const accelFeel = 170 + game.speed * 4.5;
   player.y += (keys.has('ArrowDown') || keys.has('s') ? 1 : 0) * accelFeel * dt;
@@ -335,29 +321,39 @@ function drawRoad() {
   ctx.fillStyle = '#8795a2';
   ctx.fillRect(0, 0, W, H);
 
-  const topCenter = roadCenterAt(0);
-  const bottomCenter = roadCenterAt(H);
-  const topLeft = topCenter - ROAD_W / 2;
-  const topRight = topCenter + ROAD_W / 2;
-  const bottomLeft = bottomCenter - ROAD_W / 2;
-  const bottomRight = bottomCenter + ROAD_W / 2;
+  ctx.fillStyle = '#a7b4be';
+  ctx.fillRect(0, 0, W, H);
 
   ctx.fillStyle = '#2a3037';
   ctx.beginPath();
-  ctx.moveTo(topLeft, 0);
-  ctx.lineTo(topRight, 0);
-  ctx.lineTo(bottomRight, H);
-  ctx.lineTo(bottomLeft, H);
+  for (let y = -20; y <= H + 20; y += 10) {
+    const c = roadCenterAt(y);
+    const l = c - ROAD_W / 2;
+    const r = c + ROAD_W / 2;
+    if (y === -20) ctx.moveTo(l, y); else ctx.lineTo(l, y);
+  }
+  for (let y = H + 20; y >= -20; y -= 10) {
+    const c = roadCenterAt(y);
+    const r = c + ROAD_W / 2;
+    ctx.lineTo(r, y);
+  }
   ctx.closePath();
   ctx.fill();
 
   ctx.strokeStyle = '#f2d04f';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(topLeft + 3, 0);
-  ctx.lineTo(bottomLeft + 3, H);
-  ctx.moveTo(topRight - 3, 0);
-  ctx.lineTo(bottomRight - 3, H);
+  for (let y = -20; y <= H + 20; y += 10) {
+    const c = roadCenterAt(y);
+    const l = c - ROAD_W / 2 + 3;
+    const r = c + ROAD_W / 2 - 3;
+    if (y === -20) ctx.moveTo(l, y); else ctx.lineTo(l, y);
+  }
+  for (let y = -20; y <= H + 20; y += 10) {
+    const c = roadCenterAt(y);
+    const r = c + ROAD_W / 2 - 3;
+    if (y === -20) ctx.moveTo(r, y); else ctx.lineTo(r, y);
+  }
   ctx.stroke();
 
   game.stripsOffset = (game.stripsOffset + (game.speed + player.boost) * 0.19) % 74;
@@ -365,8 +361,7 @@ function drawRoad() {
   ctx.lineWidth = 4;
   for (let i = -1; i < 14; i++) {
     const y = i * 74 + game.stripsOffset;
-    const t = Math.max(0, Math.min(1, y / H));
-    const c = topCenter + (bottomCenter - topCenter) * t;
+    const c = roadCenterAt(y + 20);
     ctx.beginPath();
     ctx.moveTo(c, y);
     ctx.lineTo(c, y + 38);
