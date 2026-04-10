@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Magic Draw</title><link rel='stylesheet' href='common.css'><style>canvas{width:100%;height:64vh;background:#080b18;border:1px solid #345;border-radius:12px;touch-action:none}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px}.controls label{display:grid;gap:4px;font-size:.85rem}.row{display:flex;gap:8px;flex-wrap:wrap}</style></head><body><div class='wrap'><div class='notice'>Magic Draw is for play/testing only.</div><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div><div class='panel'><h2>Magic Drawing Screen</h2><p class='notice'>Default neon mode is preserved. Added advanced controls, save PNG, and fade timing.</p>
+<div class='controls'>
+<label>Brush Size <input id='size' type='range' min='1' max='40' value='7'></label>
+<label>Opacity <input id='alpha' type='range' min='0.05' max='1' step='0.05' value='1'></label>
+<label>Glow <input id='glow' type='range' min='0' max='40' value='12'></label>
+<label>Fade Seconds <input id='fade' type='range' min='2' max='30' value='10'></label>
+<label>Hue Shift <input id='hueShift' type='range' min='0' max='360' value='0'></label>
+<label>Stroke Color <input id='color' type='color' value='#66ccff'></label>
+<label>Effect
+<select id='effect'><option value='neon'>Neon (Default)</option><option value='rainbow'>Rainbow</option><option value='spark'>Spark</option><option value='smoke'>Smoke</option><option value='pixel'>Pixel</option></select></label>
+</div>
+<div class='row'><button class='btn' id='undo'>Undo</button><button class='btn' id='clear'>Clear</button><button class='btn' id='save'>Save as PNG</button></div>
+<canvas id='c' width='1000' height='700'></canvas></div></div><script src='common.js'></script><script>
+initWallet();
+const c=document.getElementById('c'),x=c.getContext('2d');
+let trails=[],down=false,strokes=[];
+const ctl={size,alpha,glow,fade,hueShift,color,effect};
+function toRGB(hex){const h=hex.replace('#','');return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
+function pos(e){const r=c.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return {x:(p.clientX-r.left)*(c.width/r.width),y:(p.clientY-r.top)*(c.height/r.height)}};
+function current(){return {size:+ctl.size.value,alpha:+ctl.alpha.value,glow:+ctl.glow.value,fade:+ctl.fade.value*1000,hueShift:+ctl.hueShift.value,color:ctl.color.value,effect:ctl.effect.value}}
+function addPt(p){const s=current();const t={x:p.x,y:p.y,t:Date.now(),h:(Math.random()*360+s.hueShift)%360,...s};trails.push(t);if(strokes.length===0||!strokes[strokes.length-1].active)strokes.push({active:true,pts:[]});strokes[strokes.length-1].pts.push(t);if(Math.random()<0.15)beep(280+Math.random()*340,.02)}
+function begin(e){down=true;addPt(pos(e));}
+function move(e){if(!down)return;addPt(pos(e));e.preventDefault()}
+function end(){down=false;if(strokes.length)strokes[strokes.length-1].active=false;}
+['pointerdown','touchstart'].forEach(ev=>c.addEventListener(ev,begin,{passive:false}));
+['pointermove','touchmove'].forEach(ev=>c.addEventListener(ev,move,{passive:false}));
+['pointerup','pointerleave','touchend','touchcancel'].forEach(ev=>c.addEventListener(ev,end));
+function drawSeg(a,b,now){const age=(now-b.t)/b.fade,al=Math.max(0,b.alpha*(1-age));if(al<=0)return;let col=`hsla(${b.h},100%,60%,${al})`;if(b.effect==='neon')col=`hsla(${b.h},100%,60%,${al})`;if(b.effect==='rainbow')col=`hsla(${(b.h+age*220)%360},100%,60%,${al})`;if(b.effect==='spark')col=`rgba(255,${180+Math.random()*70|0},80,${al})`;if(b.effect==='smoke'){const rgb=toRGB(b.color);col=`rgba(${rgb.r},${rgb.g},${rgb.b},${al*0.55})`;}if(b.effect==='pixel'){x.fillStyle=col;x.fillRect(b.x,b.y,Math.max(2,b.size),Math.max(2,b.size));return;}
+x.strokeStyle=col;x.lineWidth=Math.max(1,b.size*(1-age));x.shadowColor=col;x.shadowBlur=b.glow;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();if(b.effect==='spark'&&Math.random()<0.3){x.fillStyle='rgba(255,255,200,'+al+')';x.beginPath();x.arc(b.x+Math.random()*8-4,b.y+Math.random()*8-4,1+Math.random()*2,0,Math.PI*2);x.fill();}}
+function frame(){x.fillStyle='rgba(8,11,24,0.18)';x.fillRect(0,0,c.width,c.height);const now=Date.now();trails=trails.filter(p=>now-p.t<p.fade);for(let i=1;i<trails.length;i++) drawSeg(trails[i-1],trails[i],now);requestAnimationFrame(frame)}
+undo.onclick=()=>{strokes.pop();trails=strokes.flatMap(s=>s.pts);};
+clear.onclick=()=>{trails=[];strokes=[];x.clearRect(0,0,c.width,c.height);};
+save.onclick=()=>{const a=document.createElement('a');a.download='magic-draw.png';a.href=c.toDataURL('image/png');a.click();};
+frame();
+</script><div class='gate' id='gate'><div class='box'><h2>Magic Draw</h2><p>Start with default Neon mode. Then explore brush width, color/effects, fade timing, and save your art as PNG.</p><button class='btn' id='startBtn'>Start Drawing</button></div></div><script>startBtn.onclick=()=>gate.style.display='none';</script></body></html>
