@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Kennard Fire Defender v2</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0c1220;color:#e8f2ff}
+.wrap{max-width:1200px;margin:0 auto;padding:12px}
+.top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+button,a.btn{padding:10px 14px;border-radius:8px;border:1px solid #32517c;background:#1a2f4f;color:#fff;text-decoration:none;cursor:pointer}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:10px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+canvas{width:100%;border:1px solid #3d5885;border-radius:12px;background:#274064;touch-action:none}
+.card{background:#0f1c31;border:1px solid #2f4465;border-radius:10px;padding:10px}
+.hud{display:flex;justify-content:space-between;margin:6px 0}
+.small{color:#b9c9e5;font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Kennard Fire Defender v2</h1>
+    <div>
+      <a class="btn" href="../casino-deluxe/index.html">Open Casino Deluxe</a>
+      <a class="btn" href="mobile.html">Open Original Firefighter</a>
+    </div>
+  </div>
+  <p class="small">Version 2 focus: improved art style, clearer objectives, and more actions than only spraying.</p>
+  <div class="grid">
+    <div>
+      <canvas id="c" width="960" height="520"></canvas>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="spray">Spray</button><button id="foam">Foam (vehicle)</button><button id="rescue">Rescue</button><button id="refill">Refill</button><button id="reset">Reset</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hud"><span>Score</span><b id="score">0</b></div>
+      <div class="hud"><span>Water</span><b id="water">100%</b></div>
+      <div class="hud"><span>Saved</span><b id="saved">0</b></div>
+      <hr>
+      <b>Mission Tips</b>
+      <ul>
+        <li>Buildings not on fire look normal. Burning ones show active flames.</li>
+        <li>After extinguish, structures and vehicles keep burned markings.</li>
+        <li>Use <b>Foam</b> for car fire hotspot control.</li>
+        <li>Brown bubbling water should be used in the pipe game, not KPD car game.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+const s={mode:'spray',score:0,water:100,saved:0,build:[{x:520,y:180,w:160,h:220,hp:130,fire:1,burn:0},{x:730,y:175,w:170,h:225,hp:130,fire:1,burn:0},{x:320,y:230,w:140,h:170,hp:100,fire:0,burn:0}],car:{x:170,y:365,w:155,h:70,hp:85,fire:1,burn:0},npc:{x:612,y:420,on:1}};
+function bld(b){x.fillStyle='#5f748f';x.fillRect(b.x,b.y,b.w,b.h);x.fillStyle='#3a4b65';x.fillRect(b.x+8,b.y+10,b.w-16,b.h-18);x.fillStyle='#90aed8';for(let i=0;i<3;i++)x.fillRect(b.x+18+i*44,b.y+30,25,32);if(b.fire){for(let i=0;i<6;i++){x.fillStyle=['#ffe28a','#ff9f43','#f94144'][i%3];const fx=b.x+14+i*24,fy=b.y-8+Math.sin(Date.now()/130+i)*4;x.beginPath();x.moveTo(fx,fy+30);x.quadraticCurveTo(fx+12,fy-15,fx+24,fy+30);x.fill();}}if(b.burn){x.fillStyle='rgba(35,18,18,'+Math.min(.65,b.burn/100)+')';x.fillRect(b.x,b.y,b.w,b.h)}}
+function car(){const v=s.car;x.fillStyle='#455f7f';x.fillRect(v.x,v.y,v.w,v.h);if(v.fire){for(let i=0;i<4;i++){x.fillStyle=['#ffb703','#fb8500','#e63946'][i%3];x.beginPath();x.arc(v.x+28+i*28,v.y-6-Math.sin(Date.now()/120+i)*4,10,0,Math.PI*2);x.fill();}}if(v.burn){x.fillStyle='rgba(40,20,20,.45)';x.fillRect(v.x,v.y,v.w,v.h)}}
+function npc(){if(!s.npc.on)return;x.fillStyle='#f2c48b';x.beginPath();x.arc(s.npc.x,s.npc.y,11,0,Math.PI*2);x.fill();x.fillStyle='#48c0ef';x.fillRect(s.npc.x-8,s.npc.y+12,16,28)}
+function draw(){x.clearRect(0,0,960,520);let g=x.createLinearGradient(0,0,0,520);g.addColorStop(0,'#6d8cb5');g.addColorStop(1,'#293f62');x.fillStyle=g;x.fillRect(0,0,960,520);x.fillStyle='#2a5232';x.fillRect(0,435,960,85);x.fillStyle='#18263a';x.fillRect(70,355,130,75);x.fillStyle='#d62828';x.fillRect(96,332,55,25);car();s.build.forEach(bld);npc()}
+function hit(px,py){if(s.mode==='rescue'&&s.npc.on&&Math.hypot(px-s.npc.x,py-s.npc.y)<24){s.npc.on=0;s.saved++;s.score+=120;upd();return}if(s.mode==='foam'&&s.car.fire&&px>s.car.x&&px<s.car.x+s.car.w&&py>s.car.y-35&&py<s.car.y+s.car.h){s.car.hp-=24;s.water-=5;if(s.car.hp<=0){s.car.fire=0;s.car.burn=100;s.score+=180}upd();return}s.build.forEach(b=>{if(px>b.x&&px<b.x+b.w&&py>b.y-20&&py<b.y+b.h&&b.fire&&s.water>0){b.hp-=16;s.water-=3.3;s.score+=8;if(b.hp<=0){b.fire=0;b.burn=100;s.score+=140}}});upd()}
+function upd(){s.water=Math.max(0,Math.min(100,s.water));score.textContent=s.score;water.textContent=s.water.toFixed(0)+'%';saved.textContent=s.saved}
+c.addEventListener('pointerdown',e=>{const r=c.getBoundingClientRect();hit((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height))});
+spray.onclick=()=>s.mode='spray';foam.onclick=()=>s.mode='foam';rescue.onclick=()=>s.mode='rescue';refill.onclick=()=>{s.water=100;s.score=Math.max(0,s.score-25);upd()};reset.onclick=()=>location.reload();
+setInterval(()=>{s.build.forEach(b=>{if(!b.fire&&b.burn>0)b.burn-=.25});if(!s.car.fire&&s.car.burn>0)s.car.burn-=.25;draw()},33);upd();
+</script>
+</body>
+</html>

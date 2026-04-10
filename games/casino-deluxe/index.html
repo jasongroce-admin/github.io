@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kennard Casino Deluxe</title>
+<style>
+:root{--felt:#0b7a35;--panel:#0d1b2a;--line:#e8f3d8;--gold:#ffd166;--red:#bf1f2f}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#06121c;color:#eef}
+.wrap{max-width:1320px;margin:0 auto;padding:12px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs button{margin:3px;padding:8px 12px;border-radius:999px;border:1px solid #345;background:#16243a;color:#fff;cursor:pointer}.tabs .on{background:#235b9a}
+.panel{display:none;background:#0d1b2a;border:1px solid #31455e;border-radius:12px;padding:10px;margin-top:10px}.panel.on{display:block}
+.money{color:var(--gold);font-weight:700}.btn{padding:8px 12px;border-radius:8px;border:1px solid #2d5a8d;background:#1f3f69;color:#fff;cursor:pointer}
+.btn.big{font-size:1.1rem;padding:14px 24px;background:#cc2f2f;border-color:#ff8888}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px}@media(max-width:980px){.grid2{grid-template-columns:1fr}}
+.roulette-layout{background:var(--felt);border:2px solid #cde8b7;border-radius:10px;padding:8px;overflow:auto}
+.num-grid{display:grid;grid-template-columns:72px repeat(12,56px);gap:2px;position:relative}
+.cell{height:44px;border:1px solid #d8eac8;display:flex;align-items:center;justify-content:center;position:relative;font-weight:700;cursor:pointer}.red{background:var(--red)}.black{background:#111}.green{background:#1f974e}
+.bet-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#ffd166;border:1px solid #111;right:1px;top:1px;font-size:9px;color:#111;display:none;align-items:center;justify-content:center}
+.overlay{position:absolute;inset:0;pointer-events:none}.bet-hit{position:absolute;pointer-events:auto;background:rgba(255,255,255,.001)}
+.outside{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-top:4px}.out{height:38px;border:1px solid #d8eac8;display:grid;place-items:center;cursor:pointer}
+.log{max-height:180px;overflow:auto;background:#07121e;padding:8px;border-radius:8px;border:1px solid #2e4058}
+.side-drawer{position:fixed;right:-360px;top:0;height:100vh;width:350px;background:#071321;border-left:2px solid #335;padding:10px;transition:right .35s;z-index:40;overflow:auto}.side-drawer.open{right:0}
+.wheelWrap{display:grid;place-items:center;margin:8px 0}.wheel{width:230px;height:230px;border-radius:50%;border:7px solid #d6ead0;position:relative;background:radial-gradient(circle,#0f2a3b,#05121d);overflow:hidden}.wheelSpin{transition:transform 2.3s cubic-bezier(.16,.84,.44,1)}
+.pocket{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:10px;color:#fff}
+.pointer{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:22px solid #ffd166;margin:0 auto 4px}
+.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:45}.popup.show{display:grid}
+.popcard{background:#12223a;border:1px solid #49658f;border-radius:12px;padding:20px;min-width:280px;text-align:center;position:relative;overflow:hidden}
+.win{font-size:2rem;color:var(--gold);font-weight:800;text-shadow:0 0 10px #ffdb70}
+.coin{position:absolute;top:-20px;font-size:18px;animation:fall 1.5s linear infinite}@keyframes fall{to{transform:translateY(180px) rotate(300deg)}}
+.small{color:#b6c8de;font-size:.85rem}.card{display:inline-flex;width:58px;height:82px;margin-right:6px;background:#fff;border-radius:8px;align-items:center;justify-content:center;color:#111;font-weight:700}
+.table{background:#0a7a30;border:2px solid #dbeecb;border-radius:10px;padding:8px}.die{font-size:2rem;min-width:52px;display:inline-block;text-align:center}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.reel{height:100px;display:grid;place-items:center;border:1px solid #355;border-radius:10px;background:#0d2435;font-size:2.1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Kennard Casino Deluxe</h1><div class="small">Play responsibly. Help: 1-800-GAMBLER.</div></header>
+<div class="tabs" id="tabs"></div>
+
+<section class="panel on" data-p="roulette">
+  <div class="grid2">
+    <div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+        <label>Wheel <select id="wheel"><option value="american">American</option><option value="euro">European</option></select></label>
+        <label>Chip <select id="chip"></select></label>
+        <button class="btn big" id="spin">SPIN ROULETTE</button>
+        <button class="btn" id="clear">Clear/Refund</button>
+        <button class="btn" id="atmR">Automatic Token Machine +100</button>
+        <button class="btn" id="toggleStats">History & %</button>
+      </div>
+      <div class="wheelWrap">
+        <div class="pointer"></div>
+        <div class="wheel wheelSpin" id="wheelVis"></div>
+      </div>
+      <div class="roulette-layout"><div class="num-grid" id="grid"></div><div class="outside" id="outside"></div></div>
+      <div class="small">Inside/Outside bets: straight, split, street, corner, six-line, dozens, columns, red/black, odd/even, high/low.</div>
+      <hr>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <h3 style="margin:4px 0">Next Bet Strategy Tool</h3>
+        <label>Strategy <select id="strategy"><option value="martingale">Martingale</option><option value="fibonacci">Fibonacci</option><option value="dalambert">D'Alembert</option><option value="labouchere">Labouchere</option><option value="flat">Flat Betting</option></select></label>
+        <label>Target Color <select id="pickColor"><option>Red</option><option>Black</option></select></label>
+        <label>Target Number <select id="pickNum"></select></label>
+        <label>Base SpendTokens <input id="baseTok" type="number" min="1" value="5" style="width:70px"></label>
+        <label><input type="checkbox" id="tipsToggle" checked> Show tips</label>
+        <button class="btn" id="adviseBtn">Build Next Bet</button>
+      </div>
+      <div class="log" id="adviseLog"></div>
+    </div>
+    <div>
+      <div>SpendTokens: <span class="money" id="moneyR">500</span></div><div>Current Bet: <span id="totalR">0</span></div><div>Last Spin: <span id="lastR">-</span></div>
+      <div class="log" id="logR"></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" data-p="blackjack"><div class="grid2"><div><div style="margin-bottom:8px">Bet <select id="bjBet"></select> <button class="btn" id="deal">Deal</button><button class="btn" id="hit">Hit</button><button class="btn" id="stand">Stand</button><button class="btn" id="double">Double</button><button class="btn" id="atmB">Automatic Token Machine +100</button></div><div class="table"><div><b>Dealer</b> <span id="dScore"></span></div><div id="dCards"></div><div style="margin-top:8px"><b>Player</b> <span id="pScore"></span></div><div id="pCards"></div></div></div><div><div>SpendTokens: <span class="money" id="moneyB">500</span></div><div id="statB">Ready</div></div></div></section>
+
+<section class="panel" data-p="craps"><div class="grid2"><div><div style="margin-bottom:8px">Mode <select id="modeC"><option value="easy">Easy</option><option value="std">Standard</option><option value="crapless">Crapless</option></select> Bet <select id="typeC"><option value="pass">Pass</option><option value="dont">Dont Pass</option><option value="field">Field</option><option value="small">Small (4-10)</option><option value="tall">Tall (2-6)</option><option value="all">All (2-12)</option></select> Amount <select id="amtC"></select> <button class="btn" id="placeC">Place</button><button class="btn" id="roll">Roll Dice</button><button class="btn" id="atmC">Automatic Token Machine +100</button><button class="btn" id="toggleCStats">History & %</button></div><div class="table"><div>Point: <span id="point">OFF</span></div><div><span class="die" id="d1">⚀</span><span class="die" id="d2">⚀</span> Total <b id="tot">2</b></div></div></div><div><div>SpendTokens: <span class="money" id="moneyC">500</span></div><div class="log" id="logC"></div></div></div></section>
+
+<section class="panel" data-p="slots"><div class="grid2"><div><div>Bet <select id="betS"></select> <button class="btn" id="spinS">Spin Leopard Cat</button> <button class="btn" id="atmS">Automatic Token Machine +100</button></div><div class="reels" id="reels"></div></div><div><div>SpendTokens: <span class="money" id="moneyS">500</span></div><div>Last Win: <span id="winS">0</span></div></div></div></section>
+</div>
+
+<div class="side-drawer" id="drawer"><h3>Roulette Tracker (last 50)</h3><div id="rHist"></div><hr><div id="rPct"></div></div>
+<div class="side-drawer" id="cDrawer"><h3>Craps Tracker (last 50)</h3><div id="cHist"></div><hr><div id="cPct"></div></div>
+<div class="popup" id="popup"><div class="popcard"><div id="popMsg"></div><div id="coinBox"></div></div></div>
+
+<script>
+const chips=[0.5,1,3,5,10,25,50,100],betList=[5,10,25,50,100];
+const bank={roulette:500,blackjack:500,craps:500,slots:500};
+const tabs=[['roulette','Roulette'],['blackjack','Blackjack'],['craps','Craps'],['slots','Slots']];
+function fill(id,arr){const e=document.getElementById(id);arr.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;e.appendChild(o)})}
+fill('chip',chips);fill('bjBet',betList);fill('amtC',betList);fill('betS',chips);for(let i=0;i<=36;i++){const o=document.createElement('option');o.textContent=i;pickNum.appendChild(o)}
+const tabsEl=document.getElementById('tabs');
+tabs.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=k==='roulette'?'on':'';b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.querySelector(`[data-p="${k}"]`).classList.add('on');};tabsEl.appendChild(b)});
+
+const red=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const wheelA=['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1','00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+const wheelE=['0','32','15','19','4','21','2','25','17','34','6','27','13','36','11','30','8','23','10','5','24','16','33','1','20','14','31','9','22','18','29','7','28','12','35','3','26'];
+let rbets={},chipVal=5,rHist=[],cHist=[];
+function wheelSeq(){return wheel.value==='american'?wheelA:wheelE}
+function buildWheel(){wheelVis.innerHTML='';const seq=wheelSeq();const step=360/seq.length;seq.forEach((n,i)=>{const d=document.createElement('div');d.className='pocket';const angle=i*step;d.style.transform=`rotate(${angle}deg) translate(98px) rotate(${-angle}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#6ef0a6':(red.has(+n)?'#ff8080':'#f2f2f2');wheelVis.appendChild(d);});}
+function spinWheelVisual(idx){const turns=8+Math.random()*2;const step=360/wheelSeq().length;wheelVis.style.transform=`rotate(${turns*360 + (360-idx*step)}deg)`;}
+
+const grid=document.getElementById('grid');
+function addCell(txt,key,cls){const d=document.createElement('div');d.className='cell '+cls;d.textContent=txt;d.onclick=()=>bet(key,chipVal);const p=document.createElement('div');p.className='bet-dot';d.appendChild(p);d.dataset.k=key;grid.appendChild(d)}
+function drawTable(){grid.innerHTML='';addCell('0','n:0','green');for(let c=0;c<12;c++){[3,2,1].forEach(r=>{let n=c*3+r;addCell(n,'n:'+n,red.has(n)?'red':'black')})}if(wheel.value==='american')addCell('00','n:00','green');
+const ov=document.createElement('div');ov.className='overlay';grid.appendChild(ov);const startX=74,w=58,h=46;
+for(let col=0;col<12;col++){for(let row=0;row<3;row++){const n=col*3+(3-row);if(row<2){const hit=document.createElement('div');hit.className='bet-hit';hit.style.cssText=`left:${startX+col*w+w-6}px;top:${row*h+16}px;width:12px;height:12px`;hit.onclick=()=>bet(`split:${n}-${n-1}`,chipVal);ov.appendChild(hit);}if(col<11){const hit2=document.createElement('div');hit2.className='bet-hit';hit2.style.cssText=`left:${startX+col*w+w-6}px;top:${row*h+2}px;width:12px;height:${h-4}px`;hit2.onclick=()=>bet(`split:${n}-${n+3}`,chipVal);ov.appendChild(hit2);}}
+const st=document.createElement('div');st.className='bet-hit';st.style.cssText=`left:${startX+col*w+2}px;top:${3*h+2}px;width:${w-4}px;height:14px`;st.onclick=()=>{let a=col*3+1;bet(`street:${a}-${a+1}-${a+2}`,chipVal)};ov.appendChild(st);
+if(col<11){const six=document.createElement('div');six.className='bet-hit';six.style.cssText=`left:${startX+col*w+w-4}px;top:${3*h+2}px;width:8px;height:14px`;six.onclick=()=>{let a=col*3+1;bet(`six:${a}-${a+5}`,chipVal)};ov.appendChild(six);}if(col<11){for(let row=0;row<2;row++){const a=col*3+(3-row);const c=document.createElement('div');c.className='bet-hit';c.style.cssText=`left:${startX+col*w+w-6}px;top:${row*h+h-6}px;width:12px;height:12px`;c.onclick=()=>bet(`corner:${a}-${a-1}-${a+3}-${a+2}`,chipVal);ov.appendChild(c);}}}
+updR();buildWheel();}
+[['dozen:1','1st 12'],['dozen:2','2nd 12'],['dozen:3','3rd 12'],['col:1','2 to 1'],['col:2','2 to 1'],['col:3','2 to 1'],['out:low','1-18'],['out:even','EVEN'],['out:red','RED'],['out:black','BLACK'],['out:odd','ODD'],['out:high','19-36']].forEach(([k,t])=>{let d=document.createElement('div');d.className='out';d.textContent=t;d.onclick=()=>bet(k,chipVal);outside.appendChild(d)});
+function bet(k,a){if(bank.roulette<a)return logR('Not enough SpendTokens');bank.roulette-=a;rbets[k]=(rbets[k]||0)+a;updR();}
+function numsFrom(k){if(k.startsWith('n:'))return[k.slice(2)];if(k.startsWith('split:'))return k.slice(6).split('-');if(k.startsWith('street:'))return k.slice(7).split('-');if(k.startsWith('corner:'))return k.slice(7).split('-');if(k.startsWith('six:')){let [a,b]=k.slice(4).split('-').map(Number),arr=[];for(let n=a;n<=b;n++)arr.push(String(n));return arr;}return null}
+function payout(k,amt,n){const ns=numsFrom(k);if(ns){if(ns.includes(n)){if(k.startsWith('n:'))return amt*36;if(k.startsWith('split:'))return amt*18;if(k.startsWith('street:'))return amt*12;if(k.startsWith('corner:'))return amt*9;if(k.startsWith('six:'))return amt*6;}return 0;}const x=+n;if(k==='out:red'&&red.has(x))return amt*2;if(k==='out:black'&&!red.has(x)&&n!=='0'&&n!=='00')return amt*2;if(k==='out:odd'&&x%2===1)return amt*2;if(k==='out:even'&&x%2===0&&x!==0)return amt*2;if(k==='out:low'&&x>=1&&x<=18)return amt*2;if(k==='out:high'&&x>=19&&x<=36)return amt*2;if(k==='dozen:1'&&x<=12&&x>=1)return amt*3;if(k==='dozen:2'&&x<=24&&x>=13)return amt*3;if(k==='dozen:3'&&x<=36&&x>=25)return amt*3;if(k==='col:1'&&x%3===1&&x>=1)return amt*3;if(k==='col:2'&&x%3===2&&x>=1)return amt*3;if(k==='col:3'&&x%3===0&&x>=1)return amt*3;return 0}
+function updR(){moneyR.textContent=bank.roulette.toFixed(2);let t=0;Object.values(rbets).forEach(v=>t+=v);totalR.textContent=t.toFixed(2);grid.querySelectorAll('.cell').forEach(c=>{const v=rbets[c.dataset.k]||0;const dot=c.querySelector('.bet-dot');dot.style.display=v?'flex':'none';dot.textContent=v?Math.round(v):''})}
+function logR(m){document.getElementById('logR').innerHTML='• '+m+'<br>'+document.getElementById('logR').innerHTML}
+function renderRStats(){const data=rHist.slice(0,50);document.getElementById('rHist').innerHTML=data.map(x=>`<span style='display:inline-block;margin:2px;padding:2px 6px;border-radius:8px;background:${x.color};color:#fff'>${x.num}</span>`).join('');const total=data.length||1;const reds=data.filter(x=>x.color===varRed()).length;const blacks=data.filter(x=>x.color==='#111').length;const greens=data.filter(x=>x.color==='#1f974e').length;document.getElementById('rPct').innerHTML=`Red ${((reds/total)*100).toFixed(1)}%<br>Black ${((blacks/total)*100).toFixed(1)}%<br>Green ${((greens/total)*100).toFixed(1)}%`}
+function varRed(){return getComputedStyle(document.documentElement).getPropertyValue('--red').trim()||'#bf1f2f'}
+function pop(message,win){popMsg.innerHTML=message;coinBox.innerHTML='';if(win>0){popMsg.innerHTML+=`<div class='win'>+${win.toFixed(2)} SpendTokens</div>`;for(let i=0;i<14;i++){const c=document.createElement('div');c.className='coin';c.textContent='🪙';c.style.left=(10+Math.random()*250)+'px';c.style.animationDelay=(Math.random()*1)+'s';coinBox.appendChild(c);}}popup.classList.add('show');setTimeout(()=>popup.classList.remove('show'),2200)}
+spin.onclick=()=>{const seq=wheelSeq(),idx=(Math.random()*seq.length)|0,n=seq[idx];spinWheelVisual(idx);setTimeout(()=>{lastR.textContent=n;let win=0;for(const [k,a] of Object.entries(rbets))win+=payout(k,a,n);bank.roulette+=win;const color=(n==='0'||n==='00')?'#1f974e':(red.has(+n)?varRed():'#111');rHist.unshift({num:n,color});rHist=rHist.slice(0,50);renderRStats();logR(`Spin ${n}. ${win?`Win ${win.toFixed(2)} SpendTokens`:'No win'}`);pop(`Landed on ${n}`,win);rbets={};updR();},2350)};
+clear.onclick=()=>{for(const a of Object.values(rbets))bank.roulette+=a;rbets={};updR();};atmR.onclick=()=>{bank.roulette+=100;updR();logR('Automatic Token Machine +100')};document.getElementById('chip').onchange=e=>chipVal=+e.target.value;wheel.onchange=()=>{drawTable();renderRStats()};toggleStats.onclick=()=>drawer.classList.toggle('open');drawTable();renderRStats();
+
+adviseBtn.onclick=()=>{const strat=strategy.value,base=Math.max(1,+baseTok.value||5),num=pickNum.value,color=pickColor.value,last=rHist[0]?.num;let next=base,tip='';
+if(strat==='martingale'){const lost=(rHist[0]&&rHist[1]&&rHist[0].color!== (color==='Red'?varRed():'#111'));next=lost?base*2:base;tip='Double after a loss, reset after a win.'}
+if(strat==='fibonacci'){const fib=[1,1,2,3,5,8,13,21];next=base*fib[Math.min(4,Math.floor(Math.random()*fib.length))];tip='Move one step forward on loss, back two on win.'}
+if(strat==='dalambert'){next=base+(Math.random()>.5?base:0);tip='Increase by one unit after loss, decrease by one after win.'}
+if(strat==='labouchere'){next=base*3;tip='Use a cancellation line and combine first+last.'}
+if(strat==='flat'){next=base;tip='Same unit every spin to reduce variance.'}
+let msg=`Strategy: ${strat}. Next bet: ${next.toFixed(2)} SpendTokens on ${color}` + (num!=='0'?` and/or straight ${num}.`:' with color focus.');
+if(tipsToggle.checked) msg += ` Tip: ${tip} Last spin seen: ${last??'none'}.`;
+adviseLog.innerHTML='• '+msg+'<br>'+adviseLog.innerHTML};
+
+let shoe=[],ph=[],dh=[],bbet=5,inRound=false;const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function fresh(){shoe=[];for(let d=0;d<6;d++)for(const s of suits)for(const r of ranks)shoe.push({r,s});for(let i=shoe.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[shoe[i],shoe[j]]=[shoe[j],shoe[i]]}}fresh();
+const v=c=>c.r==='A'?11:(['K','Q','J'].includes(c.r)?10:+c.r),score=h=>{let t=h.reduce((a,c)=>a+v(c),0),a=h.filter(c=>c.r==='A').length;while(t>21&&a--)t-=10;return t};
+function d(){if(shoe.length<70)fresh();return shoe.pop()}function r(id,h,hide){const e=document.getElementById(id);e.innerHTML='';h.forEach((c,i)=>{const x=document.createElement('div');x.className='card';x.textContent=hide&&i===1?'🂠':c.r+c.s;e.appendChild(x)})}
+function ub(m=''){moneyB.textContent=bank.blackjack.toFixed(2);if(m)statB.textContent=m;pScore.textContent='('+score(ph)+')';dScore.textContent=inRound?'(?)':'('+score(dh)+')';r('pCards',ph,0);r('dCards',dh,inRound)}
+function settle(){inRound=false;const p=score(ph),de=score(dh);if(p>21)return ub('Bust.');if(de>21||p>de){const w=(ph.length===2&&p===21)?bbet*2.5:bbet*2;bank.blackjack+=w;return ub('Win '+w.toFixed(2)+' SpendTokens');}if(p===de){bank.blackjack+=bbet;return ub('Push');}ub('Dealer wins');}
+deal.onclick=()=>{bbet=+bjBet.value;if(bank.blackjack<bbet)return ub('Need SpendTokens');bank.blackjack-=bbet;ph=[d(),d()];dh=[d(),d()];inRound=true;ub('Hand live')};hit.onclick=()=>{if(!inRound)return;ph.push(d());ub('Hit');if(score(ph)>=21){while(score(dh)<17)dh.push(d());settle()}};stand.onclick=()=>{if(!inRound)return;while(score(dh)<17)dh.push(d());settle()};double.onclick=()=>{if(!inRound||ph.length!==2||bank.blackjack<bbet)return;bank.blackjack-=bbet;bbet*=2;ph.push(d());while(score(dh)<17)dh.push(d());settle()};atmB.onclick=()=>{bank.blackjack+=100;ub('Automatic Token Machine +100')};ub();
+
+const faces=['','⚀','⚁','⚂','⚃','⚄','⚅'];let point=0,cbets=[];
+function uc(){moneyC.textContent=bank.craps.toFixed(2);document.getElementById('point').textContent=point||'OFF'}
+function lc(m){document.getElementById('logC').innerHTML='• '+m+'<br>'+document.getElementById('logC').innerHTML}
+function cstats(){const d=cHist.slice(0,50);document.getElementById('cHist').innerHTML=d.map(n=>`<span style='display:inline-block;margin:2px;padding:2px 6px;border-radius:8px;background:#1f3f69'>${n}</span>`).join('');const t=d.length||1;const low=d.filter(n=>n<=6).length,high=d.filter(n=>n>=8).length,sevens=d.filter(n=>n===7).length;document.getElementById('cPct').innerHTML=`Low (2-6): ${((low/t)*100).toFixed(1)}%<br>High (8-12): ${((high/t)*100).toFixed(1)}%<br>Seven: ${((sevens/t)*100).toFixed(1)}%`}
+placeC.onclick=()=>{let a=+amtC.value,t=typeC.value;if(bank.craps<a)return lc('Need SpendTokens');bank.craps-=a;cbets.push({t,a});uc();lc(`Bet ${t} ${a}`)};
+function res(b,sum){const m=modeC.value;if(['small','tall','all'].includes(b.t)){if(b.t==='small'&&sum>=4&&sum<=10)return b.a*2;if(b.t==='tall'&&sum>=2&&sum<=6)return b.a*2;if(b.t==='all')return b.a*2;return 0;}
+if(b.t==='field')return [2,3,4,9,10,11,12].includes(sum)?b.a*(sum===2||sum===12?3:2):0;
+if(b.t==='pass'){if(!point){if(sum===7||sum===11)return b.a*2;if([2,3,12].includes(sum)&&m!=='crapless')return 0;point=sum;return null;}if(sum===point){point=0;return b.a*2;}if(sum===7){point=0;return 0;}return null;}
+if(b.t==='dont'){if(!point){if([2,3].includes(sum))return b.a*2;if(sum===12)return b.a;if([7,11].includes(sum))return 0;point=sum;return null;}if(sum===7){point=0;return b.a*2;}if(sum===point){point=0;return 0;}return null;}}
+roll.onclick=()=>{let c=0,sum=2;const iv=setInterval(()=>{const a=1+((Math.random()*6)|0),b=1+((Math.random()*6)|0);sum=a+b;d1.textContent=faces[a];d2.textContent=faces[b];tot.textContent=sum;c++;if(c>9){clearInterval(iv);let pay=0;for(let i=cbets.length-1;i>=0;i--){const r=res(cbets[i],sum);if(r!==null){pay+=r;cbets.splice(i,1)}}bank.craps+=pay;cHist.unshift(sum);cHist=cHist.slice(0,50);cstats();uc();lc(`Rolled ${sum}. ${pay?`Paid ${pay.toFixed(2)} SpendTokens`:'No immediate pay'}`)}},80)};
+atmC.onclick=()=>{bank.craps+=100;uc();lc('Automatic Token Machine +100')};toggleCStats.onclick=()=>cDrawer.classList.toggle('open');uc();cstats();
+
+const sym=['🐆','🐾','💎','🔥','🍀','7️⃣'];function rr(a=['🐆','🐾','💎']){reels.innerHTML='';a.forEach(s=>{const d=document.createElement('div');d.className='reel';d.textContent=s;reels.appendChild(d)})}rr();
+function us(w=0){moneyS.textContent=bank.slots.toFixed(2);winS.textContent=w.toFixed(2)}spinS.onclick=()=>{let b=+betS.value;if(bank.slots<b)return;bank.slots-=b;const o=[0,0,0].map(()=>sym[(Math.random()*sym.length)|0]);rr(o);let w=0;if(o[0]===o[1]&&o[1]===o[2])w=b*8;else if(o.filter(x=>x==='🐆').length>=2)w=b*4;else if(new Set(o).size===2)w=b*1.5;bank.slots+=w;us(w)};atmS.onclick=()=>{bank.slots+=100;us()};us();
+</script>
+</body>
+</html>
