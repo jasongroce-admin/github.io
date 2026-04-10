@@ -1,21 +1,6 @@
 <!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Arcade Games</title><link rel='stylesheet' href='common.css'></head><body><div class='wrap'>
 <div class='notice'><b>Testing Notice:</b> SpendTokens only. Educational coding demo, no real-world value, no redemption or prizes.</div>
-<div class='top'><h1 style='margin:0'>Token Arcade Games</h1><div>Total SpendTokens: <span id='tokenTotal' class='token'>500.00</span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div>
+<div class='top'><h1 style='margin:0'>Token Arcade Games</h1><div>Total SpendTokens: <span id='tokenTotal' class='token'>500.00</span></div></div>
 <div class='panel' style='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px'>
-<a class='btn' href='roulette.html'>Roulette</a><a class='btn' href='blackjack.html'>Blackjack</a><a class='btn' href='craps.html'>Craps</a><a class='btn' href='baccarat.html'>Baccarat</a><a class='btn' href='slots.html'>Slots 5x3</a><a class='btn' href='magic-draw.html'>Magic Draw</a><a class='btn' href='../../index.html'>Back Home</a>
-</div>
-<div class='panel'><h3>Advanced Tips Area</h3>
-<div style='display:flex;gap:8px;flex-wrap:wrap'>
-<label>Game <select id='tipGame'><option>Roulette</option><option>Blackjack</option><option>Craps</option></select></label>
-<label>Last result <input id='tipLast' placeholder='red 17 / A+8 / 4+3'></label>
-<label>System <select id='tipSystem'><option>Martingale</option><option>Fibonacci</option><option>D-Alembert</option><option>Paroli</option></select></label>
-<button class='btn' id='tipBuild'>Build Tip</button></div>
-<div id='tipOut' class='notice' style='margin-top:8px'>Choose inputs and build a strategy note.</div>
-</div>
-</div><script src='common.js'></script><script>
-initWallet();
-tipBuild.onclick=()=>{const g=tipGame.value,s=tipSystem.value,l=tipLast.value||'none';const map={"Martingale":"Increase next unit after a loss and reset after win.","Fibonacci":"Use 1,1,2,3,5 progression and step back after wins.","D-Alembert":"Increase one unit after loss, decrease one after win.","Paroli":"Increase after wins for short streak attacks."};
-tipOut.innerHTML=`<b>${g} • ${s}</b><br>How it works: ${map[s]}<br>Based on last result: <b>${l}</b><br><i>Educational only. No guaranteed outcomes.</i>`;
-alert('Advanced Tips ready. Read the strategy panel.');
-};
-</script></body></html>
+<a class='btn' href='roulette.html'>Roulette</a><a class='btn' href='blackjack.html'>Blackjack</a><a class='btn' href='craps.html'>Craps</a><a class='btn' href='baccarat.html'>Baccarat</a><a class='btn' href='slots.html'>Slots 5x3</a><a class='btn' href='../../index.html'>Back Home</a>
+</div></div><script src='common.js'></script><script>initWallet()</script></body></html>
