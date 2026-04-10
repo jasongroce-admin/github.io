@@ -13,7 +13,8 @@ const STATE = {
   selected: 1,
   scene: "firefighter",
   difficulty: "easy",
-  pieces: []
+  pieces: [],
+  colorCount: SETTINGS.easy.colors
 };
 
 const svg = document.getElementById("puzzleSvg");
@@ -32,6 +33,7 @@ window.addEventListener("load", () => setTimeout(() => window.scrollTo(0, 1), 12
 function render() {
   const config = SETTINGS[STATE.difficulty];
   STATE.selected = 1;
+  STATE.colorCount = config.colors;
   STATE.pieces = buildPieces(config.pieces, config.colors);
   renderPalette(config.colors);
   renderPuzzle();
@@ -90,7 +92,7 @@ function renderPuzzle() {
   // Scene background accents
   const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
   bg.setAttribute("x", "0"); bg.setAttribute("y", "0"); bg.setAttribute("width", "420"); bg.setAttribute("height", "560");
-  bg.setAttribute("fill", STATE.scene === "firefighter" ? "#3a1b26" : "#16233d");
+  bg.setAttribute("fill", "#111");
   svg.appendChild(bg);
 
   const emblem = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -104,7 +106,7 @@ function renderPuzzle() {
     poly.setAttribute("class", `piece ${piece.filled ? "done" : ""}`);
     poly.setAttribute("points", piece.pts.map(([x, y]) => `${x},${y}`).join(" "));
     poly.dataset.id = piece.id;
-    if (piece.filled) poly.setAttribute("fill", PALETTES[STATE.scene][piece.number - 1]);
+    poly.setAttribute("fill", piece.filled ? PALETTES[STATE.scene][piece.number - 1] : grayFor(piece.number, STATE.colorCount));
 
     poly.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -117,6 +119,7 @@ function renderPuzzle() {
       label.setAttribute("x", piece.cx);
       label.setAttribute("y", piece.cy);
       label.setAttribute("class", "nLabel");
+      label.setAttribute("fill", "#f3f3f3");
       label.textContent = piece.number;
       svg.appendChild(label);
     }
@@ -159,7 +162,13 @@ function tryPaintPiece(id) {
 function updateStatus() {
   const total = STATE.pieces.length;
   const done = STATE.pieces.filter((p) => p.filled).length;
-  statusEl.textContent = `Color ${STATE.selected} selected • ${done}/${total} sections painted.`;
+  statusEl.textContent = `Color ${STATE.selected} selected • ${done}/${total} tiles activated.`;
+}
+
+function grayFor(number, colorCount) {
+  const t = (number - 1) / Math.max(1, colorCount - 1);
+  const shade = Math.round(45 + t * 180);
+  return `rgb(${shade}, ${shade}, ${shade})`;
 }
 
 function rand(min, max) {
