@@ -16,18 +16,18 @@
     .outside .o{height:40px;border:1px solid #dcefd1;display:grid;place-items:center;color:#fff;cursor:pointer;position:relative}
     .outside .redBox{background:#b91c1c}.outside .blackBox{background:#101010;color:#fff}.outside .other{background:#1d7a3d}
 
-    .wheel{width:260px;height:260px;border-radius:50%;border:6px solid #dcefd1;background:#0f2238;position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
+    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:#0f2238;position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
     .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:9px}
     .orbit{position:absolute;left:50%;top:50%;width:0;height:0}
-    .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-112px;margin:-5px;box-shadow:0 0 8px #fff}
+    .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-139px;margin:-5px;box-shadow:0 0 8px #fff}
     .spinBall{animation:counterspin 2.35s linear}
     @keyframes counterspin{from{transform:rotate(0deg)}to{transform:rotate(-1440deg)}}
 
     .bottomBar{position:sticky;bottom:0;background:#0a1830;border:1px solid #345;border-radius:12px;padding:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:8px}.tableWrap{position:relative}
     .pickChip{width:44px;height:44px;border-radius:50%;border:2px solid #fff;color:#fff;font-weight:700;background-size:cover;background-position:center;text-shadow:0 0 3px #000}
-    .lastTile{margin:8px auto 0;width:96px;height:58px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
+    .lastTile{margin:10px auto 0;width:160px;height:92px;border-radius:12px;display:grid;place-items:center;font-size:3rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
     .status{font-size:.9rem;color:#cfe6ff}
-    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:4px}.histTile{min-width:34px;height:34px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800}.histTile.latest{min-width:68px;height:68px;font-size:1.5rem}
+    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:14px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}
   </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
     </div>
 
     <div class='panel'>
-      <div class='roulette-layout'>
+      <div class='roulette-layout' style='align-items:start'>
         <div class='tableWrap'>
           <div id='betGrid' class='bet-grid'></div>
           <div id='chipLayer' style='position:absolute;inset:8px auto auto 8px;pointer-events:none'></div>
@@ -58,14 +58,14 @@
             <button class='btn' id='spin'>SPIN</button>
             <button class='btn' id='clear'>Remove Bets</button>
             <button class='btn' id='repeat'>Repeat Bet</button>
-            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap'></div>
+            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-left:90px'></div>
             <div id='pickHelp' class='status'>Pick numbers for current bet type.</div>
             <div id='specials' class='status'>Special Bets: <button class='btn' data-special='snake'>Red Snake</button> <button class='btn' data-special='blackNeighbors'>Black Neighbors</button> <button class='btn' data-special='voisins'>Voisins du Zero</button></div>
             <div id='historyStrip' class='historyStrip'></div>
           </div>
         </div>
 
-        <div style='margin-left:-40px'>
+        <div style='margin-left:-98px;margin-top:-6px'>
           <div class='wheel' id='w'><div class='orbit' id='orbit'><div class='ball'></div></div></div>
           <div style='text-align:center;margin-top:8px'>
             Last: <span id='last'>-</span><br>
