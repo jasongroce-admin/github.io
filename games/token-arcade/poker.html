@@ -1,2 +1,425 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Poker</title><link rel='stylesheet' href='common.css'><style>.table{border-radius:12px;padding:10px;background:#0b5e35;position:relative}.cards{display:flex;gap:6px;flex-wrap:wrap}.card{width:64px;height:90px;border-radius:8px;background:#fff;color:#111;display:grid;place-items:center;font-weight:800}.back{background:#1e3a8a;color:#93c5fd}.hold{outline:3px solid #ffd166}.pot{width:130px;height:130px;border-radius:65px;background:radial-gradient(circle,#0c3f22,#072715);border:2px solid #d4af37;display:grid;place-items:center;cursor:pointer;position:relative}.stack{position:absolute;bottom:24px;display:grid;place-items:center}.stack .chip{width:58px;height:16px;border-radius:16px;background:#ef4444;border:2px solid #fff}.stack .chip:nth-child(2){transform:translateY(-6px)}.stack .chip:nth-child(3){transform:translateY(-12px)}.potTotal{position:absolute;top:8px;color:#fff;font-weight:900;text-shadow:0 0 6px #000}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}</style></head><body><div class='wrap'><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div><div class='panel table' id='table'><h2>Poker Table</h2><div class='row'><label>Theme <select id='theme'><option value='green'>Classic Green</option><option value='west'>Old West</option><option value='neon'>Neon Lounge</option></select></label><label>Poker Type <select id='ptype'><option>Jacks or Better</option><option>Deuces Wild</option><option>Bonus Poker</option><option>Double Bonus</option></select></label><label>Chip <select id='chipPick'></select></label></div><div class='row' style='margin-top:8px'><div><b>Dealer</b><div class='cards' id='dealer'></div></div><div class='pot' id='pot'><div class='potTotal' id='potTotal'>0</div><div class='stack'><div class='chip'></div><div class='chip'></div><div class='chip'></div></div></div><div><b>Player</b><div class='cards' id='cards'></div></div></div><div style='margin-top:8px'><button class='btn' id='deal'>Deal</button><button class='btn' id='draw'>Draw</button><button class='btn' id='undo'>Undo Pot Chip</button></div><div id='status' class='token'>Click pot to add selected chips.</div></div></div><script src='common.js'></script><script>initWallet();const vals=[1,5,10,25,50,100,250,500];chipPick.innerHTML=vals.map(v=>`<option>${v}</option>`).join('');let potAmt=0,stack=[],deck=[],hand=[],dhand=[];const suits=['♠','♥','♦','♣'],r=['A','K','Q','J','10','9','8','7','6','5','4','3','2'];function fresh(){deck=[];for(const s of suits)for(const n of r)deck.push({n,s});deck.sort(()=>Math.random()-.5)}function drawOne(){if(!deck.length)fresh();return deck.pop()}function renderCards(reveal=false){cards.innerHTML='';hand.forEach(c=>{let d=document.createElement('div');d.className='card'+(c.h?' hold':'');d.textContent=c.n+c.s;d.onclick=()=>{c.h=!c.h;renderCards(reveal)};cards.appendChild(d)});dealer.innerHTML='';dhand.forEach((c,i)=>{let d=document.createElement('div');d.className='card '+((reveal||i===0)?'':'back');d.textContent=(reveal||i===0)?c.n+c.s:'🂠';dealer.appendChild(d)});potTotal.textContent=potAmt.toFixed(0);}function placePot(){const v=+chipPick.value;if(!spend(v))return;potAmt+=v;stack.push(v);renderCards(false);status.textContent=`Pot ${potAmt.toFixed(2)}`;}pot.onclick=placePot;undo.onclick=()=>{const a=stack.pop();if(!a)return;potAmt-=a;add(a);renderCards(false);status.textContent=`Pot ${potAmt.toFixed(2)}`};function score(h){const counts={};h.forEach(c=>counts[c.n]=(counts[c.n]||0)+1);const vals=Object.values(counts).sort((a,b)=>b-a).join(',');if(vals==='4,1')return 25;if(vals==='3,2')return 9;if(vals==='3,1,1')return 3;if(vals==='2,2,1')return 2;if(vals==='2,1,1,1')return 1;return 0}function typeBoost(base){return ptype.value==='Deuces Wild'?base*1.2:ptype.value==='Bonus Poker'?base*1.35:ptype.value==='Double Bonus'?base*1.55:base}
-deal.onclick=()=>{if(!potAmt)placePot();fresh();hand=[drawOne(),drawOne(),drawOne(),drawOne(),drawOne()].map(c=>({...c,h:false}));dhand=[drawOne(),drawOne(),drawOne(),drawOne(),drawOne()];renderCards(false);status.textContent='Tap player cards to hold, then Draw to reveal dealer.'};draw.onclick=()=>{hand=hand.map(c=>c.h?c:{...drawOne(),h:false});const pm=typeBoost(score(hand)),dm=score(dhand),win=Math.max(0,potAmt*pm - potAmt*dm*0.25);add(win);renderCards(true);if(win>0)celebrateWin(win>=100?'POKER JACKPOT!':'POKER WIN!',win,ptype.value);status.textContent=win?`Player wins ${win.toFixed(2)} with ${ptype.value}`:'Dealer edge this round';potAmt=0;stack=[];setTimeout(()=>renderCards(false),1800)};theme.onchange=()=>table.style.background=theme.value==='west'?'#6b4423':theme.value==='neon'?'#2b125b':'#0b5e35';theme.onchange();</script><div class='gate' id='gate'><div class='box'><h2>Poker How-To</h2><p>Select chip, tap the pot to stack bets, Deal, hold cards, then Draw. Dealer cards reveal on draw.</p><button class='btn' id='startBtn'>Start Poker</button></div></div><script>startBtn.onclick=()=>gate.style.display='none';</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Token Poker</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+      .table {
+        border-radius: 22px;
+        padding: 14px;
+        background: radial-gradient(circle at top, #0f7442, #094827 70%);
+        position: relative;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .table-grid {
+        margin-top: 12px;
+        display: grid;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .seat {
+        border: 1px solid rgba(220, 239, 209, 0.24);
+        border-radius: 20px;
+        background: rgba(5, 19, 12, 0.26);
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .seat-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+
+      .seat-head b {
+        font-size: 1.05rem;
+      }
+
+      .seat-note {
+        color: #dcefd1;
+        font-size: 0.88rem;
+      }
+
+      .cards {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        min-height: 96px;
+      }
+
+      .card {
+        width: 64px;
+        height: 90px;
+        border-radius: 10px;
+        background: #fff;
+        color: #111;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        box-shadow: 0 8px 14px rgba(0, 0, 0, 0.24);
+      }
+
+      .back {
+        background: linear-gradient(180deg, #1e3a8a, #172a63);
+        color: #93c5fd;
+      }
+
+      .hold {
+        outline: 3px solid #ffd166;
+      }
+
+      .table-center {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+      }
+
+      .pot {
+        width: 150px;
+        height: 150px;
+        border-radius: 75px;
+        background: radial-gradient(circle, #0c3f22, #072715);
+        border: 2px solid #d4af37;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .stack {
+        position: absolute;
+        bottom: 28px;
+        display: grid;
+        place-items: center;
+      }
+
+      .stack .chip {
+        width: 62px;
+        height: 16px;
+        border-radius: 16px;
+        background: #ef4444;
+        border: 2px solid #fff;
+      }
+
+      .stack .chip:nth-child(2) {
+        transform: translateY(-6px);
+      }
+
+      .stack .chip:nth-child(3) {
+        transform: translateY(-12px);
+      }
+
+      .pot-total {
+        position: absolute;
+        top: 10px;
+        color: #fff;
+        font-weight: 900;
+        text-shadow: 0 0 6px #000;
+      }
+
+      .round-step {
+        color: #dcefd1;
+        text-align: center;
+        max-width: 280px;
+      }
+
+      .actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      @media (min-width: 980px) and (orientation: landscape) {
+        .table-grid {
+          grid-template-columns: minmax(240px, 1fr) 200px minmax(240px, 1fr);
+        }
+
+        .seat.dealer {
+          order: 1;
+        }
+
+        .table-center {
+          order: 2;
+        }
+
+        .seat.player {
+          order: 3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <a class="btn" href="index.html">&larr; Arcade Menu</a>
+        <div>SpendTokens: <span id="tokenTotal" class="token"></span></div>
+        <button id="soundBtn" class="btn" onclick="toggleSound()">Sound</button>
+      </div>
+
+      <div class="panel table" id="table">
+        <h2>Poker Table</h2>
+        <div class="controls">
+          <label>Theme
+            <select id="theme">
+              <option value="green">Classic Green</option>
+              <option value="west">Old West</option>
+              <option value="neon">Neon Lounge</option>
+            </select>
+          </label>
+          <label>Poker Type
+            <select id="ptype">
+              <option>Jacks or Better</option>
+              <option>Deuces Wild</option>
+              <option>Bonus Poker</option>
+              <option>Double Bonus</option>
+            </select>
+          </label>
+          <label>Chip
+            <select id="chipPick"></select>
+          </label>
+        </div>
+
+        <div class="table-grid">
+          <section class="seat dealer">
+            <div class="seat-head">
+              <b>Dealer Hand</b>
+              <span class="seat-note" id="dealerNote">Cards stay face down until the reveal.</span>
+            </div>
+            <div class="cards" id="dealer"></div>
+          </section>
+
+          <div class="table-center">
+            <div class="pot" id="pot" aria-label="Pot">
+              <div class="pot-total" id="potTotal">0</div>
+              <div class="stack">
+                <div class="chip"></div>
+                <div class="chip"></div>
+                <div class="chip"></div>
+              </div>
+            </div>
+            <div class="round-step" id="roundStep">Build the pot, deal the hands, choose holds, then reveal the showdown.</div>
+          </div>
+
+          <section class="seat player">
+            <div class="seat-head">
+              <b>Your Hand</b>
+              <span class="seat-note">Tap a card to hold it before the draw.</span>
+            </div>
+            <div class="cards" id="cards"></div>
+          </section>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="deal">Deal</button>
+          <button class="btn" id="draw">Draw</button>
+          <button class="btn" id="undo">Undo Pot Chip</button>
+        </div>
+
+        <div id="status" class="token" style="margin-top:10px">Click pot to add selected chips.</div>
+      </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+      const tokenTotalEl = document.getElementById("tokenTotal");
+      const soundBtnEl = document.getElementById("soundBtn");
+      const tableEl = document.getElementById("table");
+      const themeEl = document.getElementById("theme");
+      const pokerTypeEl = document.getElementById("ptype");
+      const chipPickEl = document.getElementById("chipPick");
+      const dealerNoteEl = document.getElementById("dealerNote");
+      const dealerEl = document.getElementById("dealer");
+      const potEl = document.getElementById("pot");
+      const potTotalEl = document.getElementById("potTotal");
+      const roundStepEl = document.getElementById("roundStep");
+      const cardsEl = document.getElementById("cards");
+      const dealBtn = document.getElementById("deal");
+      const drawBtn = document.getElementById("draw");
+      const undoBtn = document.getElementById("undo");
+      const statusEl = document.getElementById("status");
+      const gateEl = document.getElementById("gate");
+      const startBtnEl = document.getElementById("startBtn");
+
+      initWallet();
+
+      const vals = [1, 5, 10, 25, 50, 100, 250, 500];
+      chipPickEl.innerHTML = vals.map((value) => `<option>${value}</option>`).join("");
+
+      let potAmt = 0;
+      let stack = [];
+      let deck = [];
+      let hand = [];
+      let dhand = [];
+      let roundState = "idle";
+
+      const suits = ["S", "H", "D", "C"];
+      const ranks = ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"];
+
+      function fresh() {
+        deck = [];
+        for (const suit of suits) {
+          for (const rank of ranks) {
+            deck.push({ rank, suit });
+          }
+        }
+        deck.sort(() => Math.random() - 0.5);
+      }
+
+      function drawOne() {
+        if (!deck.length) fresh();
+        return deck.pop();
+      }
+
+      function score(cardsInHand) {
+        const counts = {};
+        cardsInHand.forEach((card) => {
+          counts[card.rank] = (counts[card.rank] || 0) + 1;
+        });
+        const pattern = Object.values(counts).sort((a, b) => b - a).join(",");
+        if (pattern === "4,1") return 25;
+        if (pattern === "3,2") return 9;
+        if (pattern === "3,1,1") return 3;
+        if (pattern === "2,2,1") return 2;
+        if (pattern === "2,1,1,1") return 1;
+        return 0;
+      }
+
+      function typeBoost(base) {
+        if (pokerTypeEl.value === "Deuces Wild") return base * 1.2;
+        if (pokerTypeEl.value === "Bonus Poker") return base * 1.35;
+        if (pokerTypeEl.value === "Double Bonus") return base * 1.55;
+        return base;
+      }
+
+      function renderCards(revealDealer = false) {
+        cardsEl.innerHTML = "";
+        hand.forEach((card) => {
+          const el = document.createElement("div");
+          el.className = `card${card.h ? " hold" : ""}`;
+          el.textContent = `${card.rank}${card.suit}`;
+          el.onclick = () => {
+            if (roundState !== "holding") return;
+            card.h = !card.h;
+            renderCards(false);
+          };
+          cardsEl.appendChild(el);
+        });
+
+        dealerEl.innerHTML = "";
+        dhand.forEach((card) => {
+          const el = document.createElement("div");
+          el.className = `card ${revealDealer ? "" : "back"}`.trim();
+          el.textContent = revealDealer ? `${card.rank}${card.suit}` : "XX";
+          dealerEl.appendChild(el);
+        });
+
+        potTotalEl.textContent = potAmt.toFixed(0);
+        dealerNoteEl.textContent = revealDealer
+          ? "Dealer hand is now revealed for the showdown."
+          : "Cards stay face down until the reveal.";
+      }
+
+      function placePot() {
+        if (roundState === "holding") return;
+        const value = Number(chipPickEl.value);
+        if (!spend(value)) return;
+        potAmt += value;
+        stack.push(value);
+        renderCards(false);
+        statusEl.textContent = `Pot ${potAmt.toFixed(2)}`;
+      }
+
+      function undoPot() {
+        const value = stack.pop();
+        if (!value || roundState === "holding") return;
+        potAmt -= value;
+        add(value);
+        renderCards(false);
+        statusEl.textContent = `Pot ${potAmt.toFixed(2)}`;
+      }
+
+      function resetRoundArea() {
+        hand = [];
+        dhand = [];
+        roundState = "idle";
+        roundStepEl.textContent = "Build the pot, deal the hands, choose holds, then reveal the showdown.";
+        renderCards(false);
+      }
+
+      potEl.onclick = placePot;
+      undoBtn.onclick = undoPot;
+
+      dealBtn.onclick = () => {
+        if (!potAmt) placePot();
+        fresh();
+        hand = [drawOne(), drawOne(), drawOne(), drawOne(), drawOne()].map((card) => ({ ...card, h: false }));
+        dhand = [drawOne(), drawOne(), drawOne(), drawOne(), drawOne()];
+        roundState = "holding";
+        roundStepEl.textContent = "Dealer remains hidden. Tap your cards to hold them, then click Draw.";
+        renderCards(false);
+        statusEl.textContent = "Your cards are live. Choose holds before the draw.";
+      };
+
+      drawBtn.onclick = () => {
+        if (roundState !== "holding") return;
+        hand = hand.map((card) => (card.h ? card : { ...drawOne(), h: false }));
+        const playerMult = typeBoost(score(hand));
+        const dealerMult = score(dhand);
+        const win = Math.max(0, potAmt * playerMult - potAmt * dealerMult * 0.25);
+        add(win);
+        roundState = "reveal";
+        roundStepEl.textContent = "Showdown: both hands are visible and the result is settled.";
+        renderCards(true);
+        if (win > 0) {
+          celebrateWin(win >= 100 ? "POKER JACKPOT!" : "POKER WIN!", win, pokerTypeEl.value);
+        }
+        statusEl.textContent = win
+          ? `Player wins ${win.toFixed(2)} with ${pokerTypeEl.value}.`
+          : "Dealer takes the edge this round.";
+        potAmt = 0;
+        stack = [];
+        window.setTimeout(() => {
+          resetRoundArea();
+          statusEl.textContent = "Click pot to add selected chips.";
+        }, 2000);
+      };
+
+      themeEl.onchange = () => {
+        tableEl.style.background =
+          themeEl.value === "west" ? "radial-gradient(circle at top, #7a542d, #4f3016 70%)" :
+          themeEl.value === "neon" ? "radial-gradient(circle at top, #4c2eff, #240b57 70%)" :
+          "radial-gradient(circle at top, #0f7442, #094827 70%)";
+      };
+
+      themeEl.onchange();
+      resetRoundArea();
+    </script>
+
+    <div class="gate" id="gate">
+      <div class="box">
+        <h2>Poker How-To</h2>
+        <p>This table plays like a heads-up draw round: build the pot, deal both hands, hold your cards, and reveal the dealer only at showdown.</p>
+        <button class="btn" id="startBtn">Start Poker</button>
+      </div>
+    </div>
+    <script>
+      startBtnEl.onclick = () => {
+        gateEl.style.display = "none";
+      };
+    </script>
+  </body>
+</html>
