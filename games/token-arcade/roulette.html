@@ -1,0 +1,345 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>
+  <title>Token Roulette</title>
+  <link rel='stylesheet' href='common.css'>
+  <style>
+    .roulette-layout{display:grid;grid-template-columns:minmax(680px,1fr) 230px;gap:10px}
+    .tableWrap{background:#0f8a43;border:2px solid #d7efc4;border-radius:10px;padding:8px;overflow:auto}
+    .bet-grid{display:grid;grid-template-columns:56px repeat(12,52px) 56px;grid-template-rows:repeat(3,52px) 46px;gap:2px;min-width:760px}
+    .cell{height:52px;display:grid;place-items:center;border:1px solid #dcefd1;font-weight:700;cursor:pointer;position:relative;color:#fff}
+    .green{background:#1a8f4e}
+    .red{background:#d12626}
+    .black{background:#101010;color:#fff}
+    .betCol{background:#2f7d3f}
+    .dozen{height:46px}
+    .chip{position:absolute;right:2px;top:2px;background:#ffd166;color:#111;border-radius:10px;padding:0 4px;font-size:10px}
+
+    .outside{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:4px;margin-top:8px}
+    .outside .o{height:40px;border:1px solid #dcefd1;display:grid;place-items:center;color:#fff;cursor:pointer;position:relative}
+    .outside .redBox{background:#b91c1c}
+    .outside .blackBox{background:#101010;color:#fff}
+    .outside .other{background:#1d7a3d}
+
+    .wheel{width:210px;height:210px;border-radius:50%;border:6px solid #dcefd1;background:#0f2238;position:relative;margin:auto;transition:transform 2.35s ease-out}
+    .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:9px}
+    .ball{position:absolute;width:10px;height:10px;background:#fff;border-radius:50%;left:50%;top:50%;margin:-5px}
+
+    .bottomBar{position:sticky;bottom:0;background:#0a1830;border:1px solid #345;border-radius:12px;padding:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:8px}
+    .pickChip{width:44px;height:44px;border-radius:50%;border:2px solid #fff;color:#fff;font-weight:700;background-size:cover;background-position:center;text-shadow:0 0 3px #000}
+
+    .dim{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;place-items:center;z-index:89}
+    .dim.show{display:grid}
+    .hitNum{font-size:5rem;color:#fff;text-shadow:0 0 12px #000;font-weight:900;padding:18px 28px;border-radius:16px;border:2px solid #fff}
+    .hitRed{background:rgba(180,20,20,.96)}
+    .hitBlack{background:rgba(10,10,10,.96)}
+    .hitGreen{background:rgba(18,121,58,.96)}
+    .lastTile{margin:8px auto 0;width:96px;height:58px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
+  </style>
+</head>
+<body>
+  <div class='wrap'>
+    <div class='notice'>Testing only: SpendTokens have no real-world value.</div>
+    <div class='top'>
+      <a class='btn' href='index.html'>← Arcade Menu</a>
+      <div>SpendTokens: <span id='tokenTotal' class='token'></span></div>
+      <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
+    </div>
+
+    <div class='panel'>
+      <div class='roulette-layout'>
+        <div class='tableWrap'>
+          <div id='betGrid' class='bet-grid'></div>
+          <div id='outside' class='outside'></div>
+
+          <div class='bottomBar'>
+            <label>Wheel
+              <select id='wheel'>
+                <option value='a'>American</option>
+                <option value='e'>European</option>
+              </select>
+            </label>
+            <button class='btn' id='spin'>SPIN</button>
+            <button class='btn' id='clear'>Remove Bets</button>
+            <button class='btn' id='repeat'>Repeat Bet</button>
+            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap'></div>
+          </div>
+        </div>
+
+        <div>
+          <div class='wheel' id='w'><div class='ball'></div></div>
+          <div style='text-align:center;margin-top:8px'>
+            Last: <span id='last'>-</span><br>
+            Bet: <span id='bet'>0</span><br>
+            Total Win: <span id='totWin'>0</span>
+            <div id='lastTile' class='lastTile'>-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class='dim' id='dim'><div class='hitNum' id='hitNum'></div></div>
+  <div class='money-rain' id='rain'></div>
+
+  <script src='common.js'></script>
+  <script>
+    initWallet();
+
+    const redSet = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+    const E=['0','32','15','19','4','21','2','25','17','34','6','27','13','36','11','30','8','23','10','5','24','16','33','1','20','14','31','9','22','18','29','7','28','12','35','3','26'];
+    const A=['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1','00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+    const chipVals=[0.5,1,3,5,10,25,50,100,250,500];
+
+    let currentChip = 5;
+    let totalWin = 0;
+    let bets = {};
+    let lastBet = {};
+    let spinning = false;
+    let spinRotation = 0;
+
+    const chipAsset = v => `images/chips/chip-${String(v).replace('.','_')}.svg`;
+
+    chipVals.forEach(v=>{
+      const b=document.createElement('button');
+      b.className='pickChip';
+      b.style.backgroundImage=`url('${chipAsset(v)}')`;
+      b.textContent=v;
+      b.onclick=()=>currentChip=v;
+      rail.appendChild(b);
+    });
+
+    const colKey = n => n%3===1?'col:1':n%3===2?'col:2':'col:3';
+    const seq = () => wheel.value==='a'?A:E;
+    const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+    function drawWheel(){
+      w.querySelectorAll('.p').forEach(x=>x.remove());
+      const s=seq(), step=360/s.length;
+      s.forEach((n,i)=>{
+        const d=document.createElement('div');
+        d.className='p';
+        d.style.transform=`rotate(${i*step}deg) translate(90px) rotate(${-i*step}deg)`;
+        d.textContent=n;
+        d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');
+        w.appendChild(d);
+      });
+    }
+
+    function place(key, amount){
+      if(spinning) return;
+      if(!spend(amount)) return;
+      bets[key]=(bets[key]||0)+amount;
+      render();
+    }
+
+    function makeCell(label,key,cls='green'){
+      const d=document.createElement('button');
+      d.className='cell '+cls;
+      d.textContent=label;
+      d.onclick=()=>place(key,currentChip);
+      if(bets[key]){
+        const c=document.createElement('span');
+        c.className='chip';
+        c.textContent=bets[key].toFixed(1);
+        d.appendChild(c);
+      }
+      return d;
+    }
+
+    function renderTable(){
+      betGrid.innerHTML='';
+      const american = wheel.value==='a';
+
+      const c1 = makeCell('0','n:0','green');
+      c1.style.gridColumn='1';
+      c1.style.gridRow='1 / span 2';
+      betGrid.appendChild(c1);
+
+      if(american){
+        const c1b = makeCell('00','n:00','green');
+        c1b.style.gridColumn='1';
+        c1b.style.gridRow='3';
+        betGrid.appendChild(c1b);
+      }else{
+        const filler=document.createElement('div');
+        filler.className='cell green';
+        filler.style.opacity='.25';
+        filler.style.gridColumn='1';
+        filler.style.gridRow='3';
+        betGrid.appendChild(filler);
+      }
+
+      for(let c=1;c<=12;c++){
+        const base=(c-1)*3;
+        [base+3,base+2,base+1].forEach((n,rowIdx)=>{
+          const cell=makeCell(String(n),'n:'+n,redSet.has(n)?'red':'black');
+          cell.style.gridColumn=String(c+1);
+          cell.style.gridRow=String(rowIdx+1);
+          betGrid.appendChild(cell);
+        });
+      }
+
+      for(let r=1;r<=3;r++){
+        const b=makeCell('2 to 1','col:'+r,'betCol');
+        b.style.gridColumn='14';
+        b.style.gridRow=String(r);
+        betGrid.appendChild(b);
+      }
+
+      const d1=makeCell('1st 12','row:1','betCol dozen'); d1.style.gridColumn='2 / span 4'; d1.style.gridRow='4';
+      const d2=makeCell('2nd 12','row:2','betCol dozen'); d2.style.gridColumn='6 / span 4'; d2.style.gridRow='4';
+      const d3=makeCell('3rd 12','row:3','betCol dozen'); d3.style.gridColumn='10 / span 4'; d3.style.gridRow='4';
+      betGrid.append(d1,d2,d3);
+    }
+
+    function renderOutside(){
+      outside.innerHTML='';
+      [
+        ['out:red','RED','redBox'],['out:black','BLACK','blackBox'],
+        ['out:odd','ODD','other'],['out:even','EVEN','other'],
+        ['out:low','1-18','other'],['out:high','19-36','other']
+      ].forEach(([k,t,cl])=>{
+        const b=document.createElement('button');
+        b.className='o '+cl;
+        b.textContent=t;
+        b.onclick=()=>place(k,currentChip);
+        if(bets[k]){
+          const c=document.createElement('span');
+          c.className='chip';
+          c.textContent=bets[k].toFixed(1);
+          b.appendChild(c);
+        }
+        outside.appendChild(b);
+      });
+    }
+
+    function render(){
+      bet.textContent=Object.values(bets).reduce((a,b)=>a+b,0).toFixed(2);
+      totWin.textContent=totalWin.toFixed(2);
+      setTokens(getTokens());
+      renderTable();
+      renderOutside();
+    }
+
+    function pay(k,a,n){
+      const x=+n;
+      if(k===`n:${n}`) return a*36;
+      if(k===colKey(x) && x>0) return a*3;
+      if(k==='row:1' && x>=1 && x<=12) return a*3;
+      if(k==='row:2' && x>=13 && x<=24) return a*3;
+      if(k==='row:3' && x>=25 && x<=36) return a*3;
+      if(k==='out:red' && redSet.has(x)) return a*2;
+      if(k==='out:black' && !redSet.has(x) && x>0) return a*2;
+      if(k==='out:odd' && x%2===1) return a*2;
+      if(k==='out:even' && x%2===0 && x>0) return a*2;
+      if(k==='out:low' && x>=1 && x<=18) return a*2;
+      if(k==='out:high' && x>=19 && x<=36) return a*2;
+      return 0;
+    }
+
+    function moneyRain(){
+      rain.innerHTML='';
+      for(let i=0;i<30;i++){
+        const m=document.createElement('div');
+        m.className='m';
+        m.textContent='💵';
+        m.style.left=(Math.random()*100)+'%';
+        m.style.animationDelay=(Math.random()*0.65)+'s';
+        rain.appendChild(m);
+        setTimeout(()=>m.remove(),2200);
+      }
+    }
+
+    async function animateWinCount(win){
+      const start=totalWin;
+      const end=totalWin+win;
+      const dur=1400;
+      const t0=performance.now();
+      return new Promise(resolve=>{
+        const step=(now)=>{
+          const p=Math.min(1,(now-t0)/dur);
+          totalWin=start+(end-start)*p;
+          totWin.textContent=totalWin.toFixed(2);
+          if(p<1) requestAnimationFrame(step);
+          else { totalWin=end; resolve(); }
+        };
+        requestAnimationFrame(step);
+      });
+    }
+
+
+    function winClass(n){
+      if(n==='0' || n==='00') return 'hitGreen';
+      return redSet.has(+n) ? 'hitRed' : 'hitBlack';
+    }
+
+    function tileColorClass(n){
+      if(n==='0' || n==='00') return 'green';
+      return redSet.has(+n) ? 'red' : 'black';
+    }
+
+    spin.onclick=async()=>{
+      if(spinning) return;
+      spinning=true;
+      const s=seq();
+      const i=(Math.random()*s.length)|0;
+      const n=s[i];
+      const target=((360-(i*(360/s.length)))%360);
+      spinRotation += (8+Math.random()*2)*360 + target;
+      w.style.transform=`rotate(${spinRotation}deg)`;
+
+      await sleep(2350);
+      last.textContent=n;
+      lastTile.textContent=n;
+      lastTile.className='lastTile '+tileColorClass(n);
+      hitNum.textContent=n;
+      hitNum.className='hitNum '+winClass(n);
+      dim.classList.add('show');
+      await sleep(1800);
+      dim.classList.remove('show');
+
+      let win=0;
+      for(const [k,a] of Object.entries(bets)) win += pay(k,a,n);
+
+      if(win>0){
+        add(win);
+        moneyRain();
+        await animateWinCount(win);
+        celebrateWin(win>=50?'JACKPOT!':'WINNER!',win,'Roulette payout!');
+        lastBet={...bets};
+        await sleep(1300);
+      }else{
+        bets={};
+      }
+
+      render();
+      beep(win?780:230,.16);
+      spinning=false;
+    };
+
+    clear.onclick=()=>{ if(spinning) return; Object.values(bets).forEach(add); bets={}; render(); };
+    repeat.onclick=()=>{
+      if(spinning) return;
+      if(!Object.keys(lastBet).length) return;
+      Object.entries(lastBet).forEach(([k,a])=>{ if(spend(a)) bets[k]=(bets[k]||0)+a; });
+      render();
+    };
+    wheel.onchange=()=>{drawWheel();render();};
+
+    drawWheel();
+    render();
+  </script>
+
+  <div class='gate' id='gate'>
+    <div class='box'>
+      <h2>Roulette</h2>
+      <p>Pick chip, place bets (number, columns, dozens, outside), then spin.</p>
+      <button class='btn' id='startBtn'>Start Game</button>
+    </div>
+  </div>
+  <script>startBtn.onclick=()=>gate.style.display='none';</script>
+</body>
+</html>
