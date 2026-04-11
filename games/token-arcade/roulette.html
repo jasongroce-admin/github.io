@@ -1,0 +1,242 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>
+  <title>Token Roulette</title>
+  <link rel='stylesheet' href='common.css'>
+  <style>
+    .roulette-layout{display:grid;grid-template-columns:minmax(680px,1fr) 230px;gap:10px}
+    .tableWrap{background:#0f8a43;border:2px solid #d7efc4;border-radius:10px;padding:8px;overflow:auto}
+    .bet-grid{display:grid;grid-template-columns:56px repeat(12,52px) 56px;grid-template-rows:repeat(3,52px) 46px;gap:2px;min-width:760px}
+    .cell{height:52px;display:grid;place-items:center;border:1px solid #dcefd1;font-weight:700;cursor:pointer;position:relative;color:#fff}
+    .green{background:#1a8f4e}.red{background:#d12626}.black{background:#101010;color:#fff}.betCol{background:#2f7d3f}.dozen{height:46px}
+    .chip{position:absolute;right:2px;top:2px;background:#ffd166;color:#111;border-radius:10px;padding:0 4px;font-size:10px}
+    .outside{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:4px;margin-top:8px}
+    .outside .o{height:40px;border:1px solid #dcefd1;display:grid;place-items:center;color:#fff;cursor:pointer;position:relative}
+    .outside .redBox{background:#b91c1c}.outside .blackBox{background:#101010;color:#fff}.outside .other{background:#1d7a3d}
+
+    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:radial-gradient(circle at center,#111 0 28%,transparent 29%),conic-gradient(#b91c1c 0 20deg,#111 20deg 40deg,#b91c1c 40deg 60deg,#111 60deg 80deg,#b91c1c 80deg 100deg,#111 100deg 120deg,#b91c1c 120deg 140deg,#111 140deg 160deg,#b91c1c 160deg 180deg,#111 180deg 200deg,#b91c1c 200deg 220deg,#111 220deg 240deg,#b91c1c 240deg 260deg,#111 260deg 280deg,#b91c1c 280deg 300deg,#111 300deg 320deg,#b91c1c 320deg 340deg,#111 340deg 360deg);position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
+    .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:12px}
+    .orbit{position:absolute;left:50%;top:50%;width:0;height:0}
+    .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-150px;margin:-5px;box-shadow:0 0 8px #fff}
+    .spinBall{animation:counterspin 2.35s linear}
+    @keyframes counterspin{from{transform:rotate(0deg)}to{transform:rotate(-1440deg)}}
+
+    .bottomBar{position:sticky;bottom:0;background:#0a1830;border:1px solid #345;border-radius:12px;padding:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:8px}.tableWrap{position:relative}
+    .pickChip{width:44px;height:44px;border-radius:50%;border:2px solid #fff;color:#fff;font-weight:700;background-size:cover;background-position:center;text-shadow:0 0 3px #000}
+    .lastTile{margin:10px auto 0;width:160px;height:92px;border-radius:12px;display:grid;place-items:center;font-size:3rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
+    .status{font-size:.9rem;color:#cfe6ff}
+    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:8px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}.top{justify-content:flex-start}.top>div:nth-child(2){margin-left:auto;order:90}
+  </style>
+</head>
+<body>
+  <div class='wrap'>
+    <div class='notice'>Testing only: SpendTokens have no real-world value.</div>
+    <div class='top'>
+      <a class='btn' href='index.html'>← Arcade Menu</a>
+      <div>SpendTokens: <span id='tokenTotal' class='token'></span></div>
+      <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
+    </div>
+
+    <div class='panel'>
+      <div class='roulette-layout' style='align-items:start'>
+        <div class='tableWrap'>
+          <div id='betGrid' class='bet-grid'></div>
+          <div id='chipLayer' style='position:absolute;inset:8px auto auto 8px;pointer-events:none'></div>
+          <div id='outside' class='outside'></div>
+
+          <div class='bottomBar'>
+            <label>Wheel <select id='wheel'><option value='a'>American</option><option value='e'>European</option></select></label>
+            <label>Bet Type
+              <select id='betType'>
+                <option value='straight'>Straight</option>
+                <option value='split'>Split (2 numbers)</option>
+                <option value='corner'>Corner (4 numbers)</option>
+              </select>
+            </label>
+            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:100%'></div>
+            <div style='display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%'><button class='btn' id='spin'>SPIN</button>
+            <button class='btn' id='clear'>Remove Bets</button>
+            <button class='btn' id='repeat'>Repeat Bet</button></div>
+            <div id='pickHelp' class='status'>Pick numbers for current bet type.</div>
+            <button class='btn' id='toggleSpecials' type='button'>Special Bets</button><div id='specials' class='status' style='display:none'> <button class='btn' data-special='snake'>Red Snake</button> <button class='btn' data-special='blackNeighbors'>Black Neighbors</button> <button class='btn' data-special='voisins'>Voisins du Zero</button> <button class='btn' data-special='tiers'>Tiers du Cylindre</button> <button class='btn' data-special='orphelins'>Orphelins</button> <button class='btn' data-special='jeuZero'>Jeu Zero</button></div>
+            <div id='historyStrip' class='historyStrip'></div>
+          </div>
+        </div>
+
+        <div style='margin-left:-18px;margin-top:-6px'>
+          <div class='wheel' id='w'><div class='orbit' id='orbit'><div class='ball'></div></div></div>
+          <div style='text-align:center;margin-top:8px'>
+            Last: <span id='last'>-</span><br>
+            <div id='lastTile' class='lastTile'>-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class='money-rain' id='rain'></div>
+
+  <script src='common.js'></script>
+  <script>
+    initWallet();
+
+    const redSet = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+    const E=['0','32','15','19','4','21','2','25','17','34','6','27','13','36','11','30','8','23','10','5','24','16','33','1','20','14','31','9','22','18','29','7','28','12','35','3','26'];
+    const A=['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1','00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+    const chipVals=[0.5,1,3,5,10,25,50,100,250,500];
+
+    let currentChip=5,totalWin=0,bets={},lastBet={},spinning=false,spinRotation=0;
+    let pendingNums=[];
+    const history=[];
+    const specialSets={
+      snake:[1,5,9,12,14,16,19,23,27,30,32,34],
+      blackNeighbors:[2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35],
+      voisins:[22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25],
+      tiers:[27,13,36,11,30,8,23,10,5,24,16,33],
+      orphelins:[1,20,14,31,9,17,34,6],
+      jeuZero:[12,35,3,26,0,32,15]
+    };
+
+    const chipAsset=v=>`images/chips/chip-${String(v).replace('.','_')}.svg`;
+    chipVals.forEach(v=>{const b=document.createElement('button');b.className='pickChip';b.style.backgroundImage=`url('${chipAsset(v)}')`;b.textContent=v;b.onclick=()=>currentChip=v;rail.appendChild(b);});
+
+    const seq=()=>wheel.value==='a'?A:E;
+    const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+    function coordsFor(n){
+      if(n==='0') return [{r:1,c:1},{r:2,c:1}];
+      if(n==='00') return [{r:3,c:1}];
+      const x=+n;
+      const r = x%3===0?1:(x%3===2?2:3);
+      const c = Math.ceil(x/3)+1;
+      return [{r,c}];
+    }
+    function adjacent(a,b){
+      for(const p of coordsFor(a))for(const q of coordsFor(b))if(Math.abs(p.r-q.r)+Math.abs(p.c-q.c)===1)return true;
+      return false;
+    }
+    function isCorner(nums){
+      if(nums.some(n=>n==='0'||n==='00'))return false;
+      const pts=nums.map(n=>coordsFor(n)[0]);
+      const rs=[...new Set(pts.map(p=>p.r))], cs=[...new Set(pts.map(p=>p.c))];
+      if(rs.length!==2||cs.length!==2) return false;
+      if(Math.abs(rs[0]-rs[1])!==1||Math.abs(cs[0]-cs[1])!==1) return false;
+      const want=new Set(rs.flatMap(r=>cs.map(c=>`${r},${c}`)));
+      const got=new Set(pts.map(p=>`${p.r},${p.c}`));
+      return want.size===4 && [...want].every(x=>got.has(x));
+    }
+
+    function drawWheel(){
+      w.querySelectorAll('.p').forEach(x=>x.remove());
+      const s=seq(),step=360/s.length;
+      s.forEach((n,i)=>{const d=document.createElement('div');d.className='p';d.style.transform=`rotate(${i*step}deg) translate(148px) rotate(${-i*step}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');w.appendChild(d);});
+    }
+
+
+    function outsideConflicts(key){
+      const pair={ 'out:red':'out:black','out:black':'out:red','out:odd':'out:even','out:even':'out:odd','out:low':'out:high','out:high':'out:low' };
+      return pair[key];
+    }
+
+    function place(key,amount){
+      if(spinning)return;
+      if(key.startsWith('col:')){const c=Object.keys(bets).filter(k=>k.startsWith('col:')&&bets[k]>0&&!Object.is(k,key));if(c.length>=2)return alert('Only 2 column bets at once.');}
+      if(key.startsWith('row:')){const r=Object.keys(bets).filter(k=>k.startsWith('row:')&&bets[k]>0&&!Object.is(k,key));if(r.length>=2)return alert('Only 2 dozen bets at once.');}
+      const conf=outsideConflicts(key); if(conf&&bets[conf]) return alert('Choose one side only for that outside bet pair.');
+      if(!spend(amount))return;
+      bets[key]=(bets[key]||0)+amount;
+      render();
+    }
+    function addChipBadge(el,key){if(bets[key]){const c=document.createElement('span');c.className='chip';c.textContent=bets[key].toFixed(1);el.appendChild(c);}}
+    function makeCell(label,key,cls='green',n=null){const d=document.createElement('button');d.className='cell '+cls;d.textContent=label;d.onclick=()=>onNumberClick(n??label);addChipBadge(d,key);return d}
+
+    function onNumberClick(n){
+      const mode=betType.value;
+      if(mode==='straight'){place(`n:${n}`,currentChip);return;}
+      pendingNums.push(String(n));
+      pickHelp.textContent=`${mode}: ${pendingNums.join(' , ')}`;
+      if(mode==='split' && pendingNums.length===3){
+        const srt=[...new Set(pendingNums)].sort();
+        if(srt.join('|')==='0|00|2'){place('trio:0|00|2',currentChip);pendingNums=[];pickHelp.textContent='Pick numbers for current bet type.';return;}
+      }
+      if(mode==='split' && pendingNums.length===2){
+        const [a,b]=pendingNums;
+        if(a!==b && adjacent(a,b)){const k=`split:${[a,b].sort((x,y)=>(+x||99)-(+y||99)).join('|')}`;place(k,currentChip);}else alert('Split requires 2 adjacent numbers (or pick 0,00,2 for trio).');
+        pendingNums=[]; pickHelp.textContent='Pick numbers for current bet type.';
+      }
+      if(mode==='corner' && pendingNums.length===4){
+        const vals=[...new Set(pendingNums)];
+        if(vals.length===4 && isCorner(vals)){const k=`corner:${vals.sort((x,y)=>+x-+y).join('|')}`;place(k,currentChip);}else alert('Corner requires 4 numbers that form one 2x2 block.');
+        pendingNums=[]; pickHelp.textContent='Pick numbers for current bet type.';
+      }
+    }
+
+    function renderTable(){
+      betGrid.innerHTML='';const american=wheel.value==='a';
+      const c1=makeCell('0','n:0','green','0'); c1.style.gridColumn='1'; c1.style.gridRow='1 / span 2'; c1.style.height='104px'; c1.style.clipPath='polygon(0 0,100% 0,100% 100%,0 70%)'; betGrid.appendChild(c1);
+      if(american){const c1b=makeCell('00','n:00','green','00'); c1b.style.gridColumn='1'; c1b.style.gridRow='2 / span 2'; c1b.style.height='104px'; c1b.style.alignSelf='start'; c1b.style.clipPath='polygon(0 30%,100% 0,100% 100%,0 100%)'; betGrid.appendChild(c1b);} else {const filler=document.createElement('div');filler.className='cell green';filler.style.opacity='.25';filler.style.gridColumn='1';filler.style.gridRow='3';betGrid.appendChild(filler)}
+      for(let c=1;c<=12;c++){const base=(c-1)*3;[base+3,base+2,base+1].forEach((n,row)=>{const cell=makeCell(String(n),`n:${n}`,redSet.has(n)?'red':'black',String(n));cell.style.gridColumn=String(c+1);cell.style.gridRow=String(row+1);betGrid.appendChild(cell);});}
+      for(let r=1;r<=3;r++){const b=document.createElement('button');b.className='cell betCol';b.textContent='2 to 1';b.onclick=()=>place('col:'+r,currentChip);addChipBadge(b,'col:'+r);b.style.gridColumn='14';b.style.gridRow=String(r);betGrid.appendChild(b)}
+      const d1=document.createElement('button');d1.className='cell betCol dozen';d1.textContent='1st 12';d1.onclick=()=>place('row:1',currentChip);addChipBadge(d1,'row:1');d1.style.gridColumn='2 / span 4';d1.style.gridRow='4';
+      const d2=document.createElement('button');d2.className='cell betCol dozen';d2.textContent='2nd 12';d2.onclick=()=>place('row:2',currentChip);addChipBadge(d2,'row:2');d2.style.gridColumn='6 / span 4';d2.style.gridRow='4';
+      const d3=document.createElement('button');d3.className='cell betCol dozen';d3.textContent='3rd 12';d3.onclick=()=>place('row:3',currentChip);addChipBadge(d3,'row:3');d3.style.gridColumn='10 / span 4';d3.style.gridRow='4';
+      betGrid.append(d1,d2,d3);
+    }
+
+    function renderOutside(){
+      outside.innerHTML='';[['out:red','RED','redBox'],['out:black','BLACK','blackBox'],['out:odd','ODD','other'],['out:even','EVEN','other'],['out:low','1-18','other'],['out:high','19-36','other']].forEach(([k,t,cl])=>{const b=document.createElement('button');b.className='o '+cl;b.textContent=t;b.onclick=()=>place(k,currentChip);addChipBadge(b,k);outside.appendChild(b)});
+    }
+    function renderHistory(){historyStrip.innerHTML='';history.forEach((h,i)=>{const d=document.createElement('div');d.className='histTile '+(i===0?'latest':'');d.textContent=h.n;d.style.background=h.c;historyStrip.appendChild(d);});}
+    function renderChips(){chipLayer.innerHTML='';const originX=0,originY=0,cellW=54,cellH=54;const dot=(x,y,val)=>{const d=document.createElement('div');d.style.cssText=`position:absolute;left:${x-12}px;top:${y-12}px;width:24px;height:24px;border-radius:50%;background:#ffd166;color:#111;display:grid;place-items:center;font-size:10px;font-weight:800;border:1px solid #222`;d.textContent=Number(val).toFixed(1);chipLayer.appendChild(d)};for(const [k,a] of Object.entries(bets)){if(k.startsWith('n:')){const n=k.split(':')[1];const p=coordsFor(n)[0];dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a);}else if(k.startsWith('split:')){const [x,y]=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);dot(originX+((x.c+y.c)/2-1)*cellW+26,originY+((x.r+y.r)/2-1)*cellH+26,a);}else if(k.startsWith('corner:')){const pts=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);const cx=pts.reduce((t,p)=>t+p.c,0)/4,cy=pts.reduce((t,p)=>t+p.r,0)/4;dot(originX+(cx-1)*cellW+26,originY+(cy-1)*cellH+26,a);}else if(k==='trio:0|00|2'){dot(originX+39,originY+80,a);}else if(k.startsWith('special:')){const arr=specialSets[k.split(':')[1]]||[];arr.forEach(n=>{const p=coordsFor(String(n))[0];if(p)dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a/Math.max(arr.length,1));});} } }
+    function render(){setTokens(getTokens());renderTable();renderOutside();renderHistory();renderChips();}
+
+    function colKey(n){if(n%3===0)return 'col:1';if(n%3===2)return 'col:2';return 'col:3';}
+    function pay(k,a,n){
+      const x=+n;
+      if(k===`n:${n}`) return a*36;
+      if(k.startsWith('split:')){const m=k.split(':')[1].split('|');if(m.includes(n))return a*18;return 0;}
+      if(k.startsWith('corner:')){const m=k.split(':')[1].split('|');if(m.includes(n))return a*9;return 0;}
+      if(k==='trio:0|00|2' && (n==='0'||n==='00'||n==='2')) return a*12;
+      if(k.startsWith('special:')){const arr=specialSets[k.split(':')[1]]||[];if(arr.map(String).includes(String(n))) return a*(36/arr.length);return 0;}
+      if(k===colKey(x) && x>0)return a*3;
+      if(k==='row:1'&&x>=1&&x<=12)return a*3;if(k==='row:2'&&x>=13&&x<=24)return a*3;if(k==='row:3'&&x>=25&&x<=36)return a*3;
+      if(k==='out:red'&&redSet.has(x))return a*2;if(k==='out:black'&&!redSet.has(x)&&x>0)return a*2;if(k==='out:odd'&&x%2===1)return a*2;if(k==='out:even'&&x%2===0&&x>0)return a*2;if(k==='out:low'&&x>=1&&x<=18)return a*2;if(k==='out:high'&&x>=19&&x<=36)return a*2;
+      return 0;
+    }
+    function moneyRain(){rain.innerHTML='';for(let i=0;i<24;i++){const m=document.createElement('div');m.className='m';m.textContent='💵';m.style.left=(Math.random()*100)+'%';m.style.animationDelay=(Math.random()*0.45)+'s';rain.appendChild(m);setTimeout(()=>m.remove(),1800)}}
+
+    function tileClass(n){if(n==='0'||n==='00')return 'green';return redSet.has(+n)?'red':'black';}
+    function histMeta(n){const x=+n;const c=(n==='0'||n==='00')?'#1a8f4e':(redSet.has(x)?'#d12626':'#101010');return {n,c};}
+
+    spin.onclick=async()=>{
+      if(spinning)return;spinning=true;
+      const s=seq(),i=(Math.random()*s.length)|0,n=s[i];
+      const target=((360-(i*(360/s.length)))%360);
+      spinRotation += (8+Math.random()*2)*360 + target;
+      w.style.transform=`rotate(${spinRotation}deg)`;
+      orbit.classList.remove('spinBall'); void orbit.offsetWidth; orbit.classList.add('spinBall');
+      for(let f=240;f<520;f+=40){beep(f,.03);} await sleep(2350);
+
+      last.textContent=n; lastTile.textContent=n; lastTile.className='lastTile '+tileClass(n);
+      history.forEach(h=>h.old=true); history.unshift(histMeta(n)); if(history.length>25)history.pop();
+
+      let win=0; for(const [k,a] of Object.entries(bets)) win += pay(k,a,n);
+      if(win>0){moneyRain();for(let i=0;i<8;i++){beep(650+i*60,.04);}await sleep(500);let step=0;while(step<win){const inc=Math.max(0.5,win/12);step=Math.min(win,step+inc);add(inc);await sleep(35);}totalWin+=win;celebrateWin(win>=50?'JACKPOT!':'WINNER!',win,'Roulette payout!');lastBet={...bets};await sleep(900);}
+      else {chipLayer.style.transition='opacity .45s';chipLayer.style.opacity='0';for(let i=0;i<3;i++){beep(180-i*25,.05);}await sleep(460);chipLayer.style.opacity='1';bets={};}
+
+      render(); beep(win?780:230,.16); spinning=false;
+    };
+
+    clear.onclick=()=>{if(spinning)return;Object.values(bets).forEach(add);bets={};pendingNums=[];pickHelp.textContent='Pick numbers for current bet type.';render();};
+    repeat.onclick=()=>{if(spinning)return;if(!Object.keys(lastBet).length)return;Object.entries(lastBet).forEach(([k,a])=>{if(spend(a))bets[k]=(bets[k]||0)+a});render();};
+    wheel.onchange=()=>{drawWheel();render();};
+    betType.onchange=()=>{pendingNums=[];pickHelp.textContent='Pick numbers for current bet type.';};
+    toggleSpecials.onclick=()=>{specials.style.display=specials.style.display==='none'?'block':'none';};
+    document.querySelectorAll('#specials [data-special]').forEach(btn=>btn.onclick=()=>{const key=btn.dataset.special;place('special:'+key,currentChip);});
+
+    drawWheel();render();
+  </script>
+</body>
+</html>
