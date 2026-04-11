@@ -1,1 +1,70 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 420'><rect width='900' height='420' fill='#0b7a35'/><rect x='20' y='20' width='860' height='380' fill='none' stroke='#e6f3db' stroke-width='3'/><text x='30' y='50' fill='#ffd166' font-size='34'>CRAPLESS (2/3/12 can become points)</text><text x='170' y='95' fill='#ffd166' font-size='56'>2 3 4 5 6 8 9 10 11 12</text><text x='300' y='180' fill='#e6f3db' font-size='58'>COME</text><text x='320' y='250' fill='#ffd166' font-size='48'>FIELD 2 3 4 9 10 11 12</text><text x='30' y='390' fill='#e6f3db' font-size='40'>PASS LINE</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Crapless craps table">
+  <defs>
+    <linearGradient id="rail" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#6f4321"/>
+      <stop offset="1" stop-color="#2e1708"/>
+    </linearGradient>
+    <linearGradient id="felt" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#14693f"/>
+      <stop offset="1" stop-color="#0b3e25"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" rx="48" fill="url(#rail)"/>
+  <rect x="54" y="54" width="1492" height="792" rx="36" fill="url(#felt)" stroke="#d9c57d" stroke-width="5"/>
+  <g fill="none" stroke="#f7f0c6" stroke-width="4" opacity=".9">
+    <rect x="100" y="720" width="1400" height="92" rx="18"/>
+    <rect x="220" y="560" width="1160" height="118" rx="18"/>
+    <rect x="220" y="424" width="1160" height="96" rx="18"/>
+    <rect x="580" y="680" width="440" height="70" rx="18"/>
+    <rect x="590" y="124" width="420" height="82" rx="18"/>
+    <rect x="250" y="124" width="210" height="82" rx="18"/>
+    <rect x="1140" y="124" width="210" height="82" rx="18"/>
+  </g>
+  <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
+    <text x="800" y="775" font-size="54" letter-spacing="8">PASS LINE</text>
+    <text x="800" y="488" font-size="42" letter-spacing="6">COME</text>
+    <text x="800" y="727" font-size="34" letter-spacing="5">FIELD</text>
+    <text x="800" y="175" font-size="34" letter-spacing="6">ANY SEVEN</text>
+    <text x="355" y="175" font-size="30" letter-spacing="5">HORN</text>
+    <text x="1245" y="175" font-size="30" letter-spacing="5">C &amp; E</text>
+  </g>
+  <g fill="none" stroke="#f7f0c6" stroke-width="4">
+    <rect x="100" y="560" width="108" height="118"/>
+    <rect x="208" y="560" width="108" height="118"/>
+    <rect x="316" y="560" width="108" height="118"/>
+    <rect x="424" y="560" width="108" height="118"/>
+    <rect x="532" y="560" width="108" height="118"/>
+    <rect x="640" y="560" width="108" height="118"/>
+    <rect x="748" y="560" width="108" height="118"/>
+    <rect x="856" y="560" width="108" height="118"/>
+    <rect x="964" y="560" width="108" height="118"/>
+    <rect x="1072" y="560" width="108" height="118"/>
+    <rect x="1180" y="560" width="108" height="118"/>
+    <rect x="1292" y="560" width="208" height="118"/>
+  </g>
+  <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
+    <text x="154" y="624" font-size="38">2</text>
+    <text x="262" y="624" font-size="38">3</text>
+    <text x="370" y="624" font-size="38">4</text>
+    <text x="478" y="624" font-size="38">5</text>
+    <text x="586" y="624" font-size="38">6</text>
+    <text x="694" y="624" font-size="38">8</text>
+    <text x="802" y="624" font-size="38">9</text>
+    <text x="910" y="624" font-size="38">10</text>
+    <text x="1018" y="624" font-size="38">11</text>
+    <text x="1126" y="624" font-size="38">12</text>
+    <text x="1396" y="617" font-size="30">CRAPLESS</text>
+    <text x="1396" y="650" font-size="24">NUMBER BOXES</text>
+  </g>
+  <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
+    <text x="260" y="335" font-size="30">HARD 4</text>
+    <text x="530" y="335" font-size="30">HARD 6</text>
+    <text x="1070" y="335" font-size="30">HARD 8</text>
+    <text x="1340" y="335" font-size="30">HARD 10</text>
+    <text x="530" y="250" font-size="30">2</text>
+    <text x="650" y="250" font-size="30">3</text>
+    <text x="950" y="250" font-size="30">11</text>
+    <text x="1070" y="250" font-size="30">12</text>
+  </g>
+  <text x="800" y="92" fill="#ffcf54" font-family="Georgia, serif" font-size="36" text-anchor="middle" letter-spacing="7">CRAPLESS CRAPS</text>
+</svg>

@@ -1,9 +1,664 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Craps</title><link rel='stylesheet' href='common.css'><style>.board{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.z{min-height:54px;border:1px solid #eaf7dd;border-radius:8px;display:grid;place-items:center;background:#0a7d35;position:relative}.tok{position:absolute;top:4px;right:4px;background:#ffd166;color:#111;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;font-size:.72rem;font-weight:700}.die{font-size:3rem}</style></head><body><div class='wrap'><div class='notice'>Testing only: SpendTokens have no real-world value.</div><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div><div class='panel'><div style='display:flex;gap:8px;flex-wrap:wrap'><label>Mode <select id='mode'><option value='craps'>Craps</option><option value='easy'>Easy Craps</option><option value='crapless'>Crapless</option></select></label><span id='modeInfo' class='notice'>Standard rules.</span></div><img id='tableImg' src='images/craps-table-craps.svg' alt='craps table' style='width:100%;max-width:900px;border:1px solid #d7efc4;border-radius:8px;margin:6px 0'><div class='board' id='board'></div><div id='chips' style='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px'></div><div style='margin-top:8px'><button class='btn' id='repeat'>Repeat Bet</button><button class='btn' id='clear'>Remove Bets</button><button class='btn' id='roll'>Roll Dice</button><button class='btn' id='histBtn'>History</button></div><div class='die'>🎲 <span id='dice'>2</span></div><div>Point: <span id='point'>OFF</span></div><div class='log' id='log'></div></div></div><div class='drawer' id='hist'><h3>Last 50</h3><div id='histItems'></div></div><script src='common.js'></script><script>initWallet();const zones=['pass','dont','field','4','5','6','8','9','10','num2','num3','num11','num12','small','tall','all','hop7','anycraps'];let pick=1,bets={},prev={},pointV=0,h=[];[0.5,1,3,5,10,25,50,100,250,500].forEach(v=>{let c=document.createElement('button');c.className='btn';c.textContent=v;c.onclick=()=>pick=v;chips.appendChild(c)});zones.forEach(z=>{let d=document.createElement('div');d.className='z';d.dataset.z=z;d.onclick=()=>{if(!spend(pick))return;bets[z]=(bets[z]||0)+pick;beep(520);renderBoard()};board.appendChild(d)});
-function modeText(){modeInfo.textContent=mode.value==='craps'?'Standard craps: 2/3/12 lose on Pass.':mode.value==='easy'?'Easy Craps: 2/3 become pushes for Pass demo mode.':'Crapless: 2,3,12 can establish point.'}
-mode.onchange=()=>{modeText();tableImg.src=mode.value==='craps'?'images/craps-table-craps.svg':mode.value==='easy'?'images/craps-table-easy.svg':'images/craps-table-crapless.svg';}; modeText();
-function renderBoard(){const labels={num2:'2',num3:'3',num11:'11',num12:'12',anycraps:'ANY CRAPS',hop7:'HOP 7'};Array.from(board.children).forEach((d,i)=>{const z=zones[i];d.textContent=labels[z]||z.toUpperCase();const old=d.querySelector('.tok');if(old)old.remove();const v=bets[z]||0;if(v){const t=document.createElement('span');t.className='tok';t.textContent=v.toFixed(0);d.appendChild(t)}})}
-function passComeout(sum){if(sum===7||sum===11)return 'win';if(mode.value==='craps'&&[2,3,12].includes(sum))return 'lose';if(mode.value==='easy'&&[2,3].includes(sum))return 'push';if(mode.value==='easy'&&sum===12)return 'lose';if(mode.value==='crapless'&&[2,3,12].includes(sum))return 'point';if([4,5,6,8,9,10].includes(sum))return 'point';return 'none'}
-function pay(k,a,s){if(['4','5','6','8','9','10'].includes(k)&&Number(k)===s)return a*2;if(k==='num2'&&s===2)return a*31;if(k==='num3'&&s===3)return a*16;if(k==='num11'&&s===11)return a*16;if(k==='num12'&&s===12)return a*31; if(k==='field'&&[2,3,4,9,10,11,12].includes(s))return a*(s===2||s===12?3:2);if(k==='small'&&s>=4&&s<=10)return a*2;if(k==='tall'&&s>=2&&s<=6)return a*2;if(k==='all')return a*2;if(k==='hop7'&&s===7)return a*16;if(k==='anycraps'&&[2,3,12].includes(s))return a*8;
-if(k==='pass'){if(!pointV){const c=passComeout(s); if(c==='win')return a*2; if(c==='lose')return 0; if(c==='push')return a; if(c==='point'){pointV=s;return null;}} if(pointV&&s===pointV){pointV=0;return a*2} if(pointV&&s===7){pointV=0;return 0} return null;}
-if(k==='dont'){if(!pointV){if([2,3].includes(s))return a*2;if(s===12)return a;if([7,11].includes(s))return 0;pointV=s;return null;} if(pointV&&s===7){pointV=0;return a*2} if(pointV&&s===pointV){pointV=0;return 0} return null;}return 0}
-roll.onclick=()=>{let c=0,t=2;const iv=setInterval(()=>{t=1+((Math.random()*6)|0)+1+((Math.random()*6)|0);dice.textContent=t;c++;if(c>8){clearInterval(iv);let w=0;for(const [k,a] of Object.entries(bets)){let r=pay(k,a,t);if(r!==null){w+=r;delete bets[k]}}add(w);if(w>0)celebrateWin(w>=50?'CRAPS HOT STREAK!':'CRAPS WIN!',w,'Dice paid out!');point.textContent=pointV||'OFF';log.innerHTML=`• Rolled ${t} ${w?`+${w.toFixed(2)} SpendTokens`:'no win'}<br>`+log.innerHTML;prev={...bets};h.unshift(t);h=h.slice(0,50);histItems.innerHTML=h.map(n=>`<span class='btn' style='padding:6px'>${n}</span>`).join('');renderBoard();setTokens(getTokens());beep(w?760:280,.12)}},80)};repeat.onclick=()=>{Object.entries(prev).forEach(([k,v])=>{if(spend(v))bets[k]=(bets[k]||0)+v});renderBoard();roll.click()};clear.onclick=()=>{Object.values(bets).forEach(add);bets={};renderBoard();setTokens(getTokens())};histBtn.onclick=()=>hist.classList.toggle('open');renderBoard();</script><div class='gate' id='gate'><div class='box'><h2>Craps</h2><p>Choose mode (Craps/Easy/Crapless), place token chips on the table numbers or fields, then roll.</p><button class='btn' id='startBtn'>Start Game</button></div></div><script>document.getElementById('startBtn').onclick=()=>document.getElementById('gate').style.display='none';</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Token Craps</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root{--felt:#0e5934;--felt-dark:#09341f;--chalk:#f7f2cf;--gold:#ffcf54;--accent:#7fe7bd;--danger:#ef6a6a;--chip-red:#d45144;--chip-black:#1d2228;--chip-white:#f8f7f0;--chip-green:#24845d;--chip-purple:#6d4fd1}
+    body{background:radial-gradient(circle at top,rgba(255,207,84,.14),transparent 32%),linear-gradient(180deg,#091108 0%,#122316 100%)}
+    .craps-shell,.sidebar,.chip-bank{display:grid;gap:18px}
+    .craps-layout{display:grid;gap:18px;align-items:start}
+    .table-panel{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(247,242,207,.14);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.36);padding:16px}
+    .table-stage{position:relative;aspect-ratio:16/9;max-width:1200px;margin:0 auto;border-radius:26px;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.07),0 18px 50px rgba(0,0,0,.45);background:#173f2a}
+    .table-stage img{width:100%;height:100%;display:block;object-fit:cover;user-select:none;pointer-events:none}
+    .hotspot-layer{position:absolute;inset:0}
+    .hotspot{position:absolute;transform:translate(-50%,-50%);border:1px solid rgba(247,242,207,.2);background:rgba(9,19,11,.14);border-radius:18px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease}
+    .hotspot:hover,.hotspot:focus-visible{outline:none;border-color:rgba(255,207,84,.8);background:rgba(255,207,84,.12);box-shadow:0 0 0 2px rgba(255,207,84,.15),0 10px 18px rgba(0,0,0,.25);transform:translate(-50%,-50%) scale(1.02)}
+    .hotspot.invalid{border-color:rgba(239,106,106,.7);box-shadow:0 0 0 2px rgba(239,106,106,.15)}
+    .hotspot.active-target{border-color:rgba(127,231,189,.88);box-shadow:0 0 0 2px rgba(127,231,189,.18),0 0 22px rgba(127,231,189,.2)}
+    .chip-stack{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);display:grid;place-items:center;pointer-events:none;gap:4px}
+    .chip-token{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.76rem;letter-spacing:.04em;text-shadow:0 1px 2px rgba(0,0,0,.4);border:3px dashed rgba(255,255,255,.78);box-shadow:0 8px 18px rgba(0,0,0,.28);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.28),transparent 34%),radial-gradient(circle at 50% 50%,rgba(255,255,255,.12),transparent 65%),var(--chip-fill,var(--chip-red))}
+    .chip-token.black{--chip-fill:var(--chip-black)} .chip-token.red{--chip-fill:var(--chip-red)} .chip-token.green{--chip-fill:var(--chip-green)} .chip-token.white{--chip-fill:var(--chip-white);color:#151515;text-shadow:none;border-color:#252525} .chip-token.purple{--chip-fill:var(--chip-purple)}
+    .chip-caption{min-width:48px;padding:3px 8px;border-radius:999px;background:rgba(10,17,12,.84);color:var(--chalk);font-size:.66rem;text-align:center;border:1px solid rgba(247,242,207,.18);line-height:1.2}
+    .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px}
+    .metric,.hint,.bet-card,.history-card,.legend-card,.log{background:rgba(7,19,11,.72);border:1px solid rgba(247,242,207,.12);border-radius:18px}
+    .metric{padding:12px 14px}
+    .metric span{display:block;font-size:.72rem;color:#b8d4c1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    .metric strong{font-size:1.2rem;color:var(--chalk)}
+    .panel-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+    .panel-title h3{margin:0;color:var(--chalk)}
+    .control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+    .control-grid label,.chip-bank label{display:grid;gap:6px;color:#dfeadf;font-size:.92rem}
+    .control-grid select{width:100%}
+    .chip-row,.bet-mode-grid,.action-row{display:flex;flex-wrap:wrap;gap:8px}
+    .chip-btn{border:none;cursor:pointer;background:transparent;padding:0}
+    .chip-btn .chip-token{pointer-events:none}
+    .chip-btn.active .chip-token{box-shadow:0 0 0 3px rgba(255,207,84,.2),0 10px 20px rgba(0,0,0,.3);transform:translateY(-2px)}
+    .chip-btn small{display:block;margin-top:6px;color:#dfeadf;text-align:center;font-size:.76rem}
+    .bet-mode-grid .btn,.action-row .btn{flex:1 1 120px}
+    .btn.subtle{opacity:.84}
+    .bets-list,.roll-history{display:grid;gap:8px;max-height:260px;overflow:auto;padding-right:4px}
+    .bet-card,.history-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;color:#ecf0e8}
+    .bet-card strong,.history-card strong,.legend-card strong{color:var(--chalk)}
+    .bet-meta{font-size:.78rem;color:#b8d4c1;margin-top:3px}
+    .log{min-height:110px;max-height:220px;overflow:auto;padding:12px 14px;line-height:1.45}
+    .status{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;color:#eef3e7;margin-top:12px}
+    .payout-note{font-size:.8rem;color:#b8d4c1}
+    .dice-row{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px}
+    .die{width:64px;height:64px;border-radius:18px;background:linear-gradient(180deg,#fffdfa 0%,#e8e1d8 100%);color:#111;font-size:2rem;font-weight:800;display:grid;place-items:center;box-shadow:0 12px 22px rgba(0,0,0,.22)}
+    .table-legend{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:12px}
+    .legend-card{padding:12px 14px;color:#dce9dd}
+    .legend-card strong{display:block;margin-bottom:5px}
+    @media (min-width:1100px){.craps-layout{grid-template-columns:minmax(0,1.65fr) minmax(320px,.95fr)}.sidebar{position:sticky;top:14px}}
+    @media (max-width:760px){.table-panel{padding:12px}.table-stage{border-radius:20px}.chip-token{width:44px;height:44px;font-size:.68rem}.hotspot{border-radius:14px}}
+  </style>
+</head>
+<body>
+  <div class="wrap craps-shell">
+    <div class="notice">Testing only: SpendTokens have no real-world value.</div>
+    <div class="top">
+      <a class="btn" href="index.html">&larr; Arcade Menu</a>
+      <div>SpendTokens: <span id="tokenTotal" class="token"></span></div>
+      <button id="soundBtn" class="btn" onclick="toggleSound()">Sound</button>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          <h2 style="margin:0;color:var(--chalk)">Vegas Craps Tables</h2>
+          <div class="subtle">Choose a chip, then click the felt where you want the wager to sit.</div>
+        </div>
+      </div>
+      <div class="craps-layout">
+        <section class="table-panel">
+          <div class="control-grid" style="margin-bottom:12px">
+            <label>Table variant<select id="modeSelect"><option value="craps">Standard Craps</option><option value="crapless">Crapless Craps</option><option value="easy">Easy Craps</option></select></label>
+            <label>Number-box action<select id="numberAction"></select></label>
+          </div>
+          <div class="hint" id="modeHint"></div>
+          <div class="table-stage" style="margin-top:14px">
+            <img id="tableImage" src="images/craps-table-craps.svg" alt="craps felt">
+            <div class="hotspot-layer" id="hotspotLayer"></div>
+          </div>
+          <div class="status">
+            <div id="selectionHint">Selected chip: $5. Click a betting area to place it.</div>
+            <div class="payout-note" id="tableRuleNote">Place bets pay 9:5 on 4/10, 7:5 on 5/9, and 7:6 on 6/8.</div>
+          </div>
+          <div class="dice-row"><div class="die" id="dieOne">1</div><div class="die" id="dieTwo">1</div></div>
+          <div class="table-legend">
+            <div class="legend-card"><strong>Flow</strong>Pick a chip, keep the felt centered on every screen, and tap the exact zone to stack your wager.</div>
+            <div class="legend-card"><strong>Number Bets</strong>Use the number-box action selector before you tap the number boxes.</div>
+            <div class="legend-card"><strong>Vegas Style</strong>Pass, Come, props, hardways, and table-specific number bets follow the active variant rules.</div>
+          </div>
+        </section>
+        <aside class="sidebar">
+          <section class="panel"><div class="dashboard">
+            <div class="metric"><span>Point</span><strong id="pointDisplay">OFF</strong></div>
+            <div class="metric"><span>Last Roll</span><strong id="lastRollDisplay">-</strong></div>
+            <div class="metric"><span>Total Won</span><strong id="lastWinDisplay">$0</strong></div>
+            <div class="metric"><span>Table State</span><strong id="phaseDisplay">Come Out</strong></div>
+          </div></section>
+          <section class="panel chip-bank"><div class="panel-title"><h3>Chips</h3></div><div class="chip-row" id="chipRow"></div></section>
+          <section class="panel"><div class="panel-title"><h3>Actions</h3></div><div class="bet-mode-grid" id="quickActionRow"></div><div class="action-row" style="margin-top:10px"><button class="btn" id="rollBtn">Roll Dice</button><button class="btn subtle" id="repeatBtn">Repeat Bets</button><button class="btn subtle" id="clearBtn">Clear Bets</button></div></section>
+          <section class="panel"><div class="panel-title"><h3>Active Bets</h3><button class="btn subtle" id="removeLastBtn">Undo Last</button></div><div class="bets-list" id="betsList"></div></section>
+          <section class="panel"><div class="panel-title"><h3>Roll History</h3></div><div class="roll-history" id="historyList"></div></section>
+          <section class="panel"><div class="panel-title"><h3>Table Log</h3></div><div class="log" id="log"></div></section>
+        </aside>
+      </div>
+    </div>
+  </div>
+  <div class="gate" id="gate"><div class="box"><h2>Craps</h2><p>Use the Vegas-style felt, stack chips directly on the board, and swap between standard craps, crapless, and Easy Craps without losing the centered layout.</p><button class="btn" id="startBtn">Start Game</button></div></div>
+  <script src="common.js"></script>
+  <script>
+    initWallet();
+    const tableImage=document.getElementById("tableImage");
+    const hotspotLayer=document.getElementById("hotspotLayer");
+    const modeSelect=document.getElementById("modeSelect");
+    const numberAction=document.getElementById("numberAction");
+    const modeHint=document.getElementById("modeHint");
+    const tableRuleNote=document.getElementById("tableRuleNote");
+    const selectionHint=document.getElementById("selectionHint");
+    const pointDisplay=document.getElementById("pointDisplay");
+    const lastRollDisplay=document.getElementById("lastRollDisplay");
+    const lastWinDisplay=document.getElementById("lastWinDisplay");
+    const phaseDisplay=document.getElementById("phaseDisplay");
+    const betsList=document.getElementById("betsList");
+    const historyList=document.getElementById("historyList");
+    const log=document.getElementById("log");
+    const chipRow=document.getElementById("chipRow");
+    const quickActionRow=document.getElementById("quickActionRow");
+    const dieOne=document.getElementById("dieOne");
+    const dieTwo=document.getElementById("dieTwo");
+    const rollBtn=document.getElementById("rollBtn");
+    const repeatBtn=document.getElementById("repeatBtn");
+    const clearBtn=document.getElementById("clearBtn");
+    const removeLastBtn=document.getElementById("removeLastBtn");
+
+    const CHIP_SET=[{value:1,tone:"white"},{value:5,tone:"red"},{value:25,tone:"green"},{value:100,tone:"black"},{value:500,tone:"purple"}];
+    const HOTSPOTS={
+      common:[
+        {id:"pass",label:"Pass Line",x:50,y:92,w:88,h:9,kind:"direct"},
+        {id:"come",label:"Come",x:50,y:72,w:64,h:12,kind:"direct"},
+        {id:"field",label:"Field",x:50,y:83,w:42,h:10,kind:"direct"},
+        {id:"anyCraps",label:"Any Craps",x:50,y:31,w:16,h:9,kind:"direct"},
+        {id:"anySeven",label:"Any Seven",x:50,y:22,w:16,h:9,kind:"direct"},
+        {id:"horn",label:"Horn",x:25,y:31,w:14,h:10,kind:"direct"},
+        {id:"ce",label:"C and E",x:75,y:31,w:14,h:10,kind:"direct"},
+        {id:"craps2",label:"2",x:33,y:18,w:10,h:8,kind:"direct"},
+        {id:"craps3",label:"3",x:42,y:18,w:10,h:8,kind:"direct"},
+        {id:"yo11",label:"11",x:58,y:18,w:10,h:8,kind:"direct"},
+        {id:"craps12",label:"12",x:67,y:18,w:10,h:8,kind:"direct"},
+        {id:"hard4",label:"Hard 4",x:16,y:46,w:14,h:10,kind:"direct"},
+        {id:"hard6",label:"Hard 6",x:34,y:46,w:14,h:10,kind:"direct"},
+        {id:"hard8",label:"Hard 8",x:66,y:46,w:14,h:10,kind:"direct"},
+        {id:"hard10",label:"Hard 10",x:84,y:46,w:14,h:10,kind:"direct"}
+      ],
+      craps:[
+        {id:"dontPass",label:"Don't Pass",x:50,y:60,w:88,h:8,kind:"direct"},
+        {id:"dontCome",label:"Don't Come",x:50,y:50,w:64,h:9,kind:"direct"},
+        {id:"num-4",label:"4",x:18,y:63,w:12,h:13,kind:"number",number:4},
+        {id:"num-5",label:"5",x:31,y:63,w:12,h:13,kind:"number",number:5},
+        {id:"num-6",label:"6",x:44,y:63,w:12,h:13,kind:"number",number:6},
+        {id:"num-8",label:"8",x:56,y:63,w:12,h:13,kind:"number",number:8},
+        {id:"num-9",label:"9",x:69,y:63,w:12,h:13,kind:"number",number:9},
+        {id:"num-10",label:"10",x:82,y:63,w:12,h:13,kind:"number",number:10}
+      ],
+      crapless:[
+        {id:"num-2",label:"2",x:10,y:63,w:9,h:13,kind:"number",number:2},
+        {id:"num-3",label:"3",x:19,y:63,w:9,h:13,kind:"number",number:3},
+        {id:"num-4",label:"4",x:28,y:63,w:9,h:13,kind:"number",number:4},
+        {id:"num-5",label:"5",x:37,y:63,w:9,h:13,kind:"number",number:5},
+        {id:"num-6",label:"6",x:46,y:63,w:9,h:13,kind:"number",number:6},
+        {id:"num-8",label:"8",x:54,y:63,w:9,h:13,kind:"number",number:8},
+        {id:"num-9",label:"9",x:63,y:63,w:9,h:13,kind:"number",number:9},
+        {id:"num-10",label:"10",x:72,y:63,w:9,h:13,kind:"number",number:10},
+        {id:"num-11",label:"11",x:81,y:63,w:9,h:13,kind:"number",number:11},
+        {id:"num-12",label:"12",x:90,y:63,w:9,h:13,kind:"number",number:12}
+      ],
+      easy:[
+        {id:"lowField",label:"Low Field",x:24,y:83,w:18,h:10,kind:"direct"},
+        {id:"highField",label:"High Field",x:76,y:83,w:18,h:10,kind:"direct"},
+        {id:"num-2",label:"2",x:10,y:63,w:9,h:13,kind:"number",number:2},
+        {id:"num-3",label:"3",x:19,y:63,w:9,h:13,kind:"number",number:3},
+        {id:"num-4",label:"4",x:28,y:63,w:9,h:13,kind:"number",number:4},
+        {id:"num-5",label:"5",x:37,y:63,w:9,h:13,kind:"number",number:5},
+        {id:"num-6",label:"6",x:46,y:63,w:9,h:13,kind:"number",number:6},
+        {id:"num-8",label:"8",x:54,y:63,w:9,h:13,kind:"number",number:8},
+        {id:"num-9",label:"9",x:63,y:63,w:9,h:13,kind:"number",number:9},
+        {id:"num-10",label:"10",x:72,y:63,w:9,h:13,kind:"number",number:10},
+        {id:"num-11",label:"11",x:81,y:63,w:9,h:13,kind:"number",number:11},
+        {id:"num-12",label:"12",x:90,y:63,w:9,h:13,kind:"number",number:12}
+      ]
+    };
+    const MODE_RULES={
+      craps:{image:"images/craps-table-craps.svg",hint:"Standard craps: Pass wins on 7 or 11, loses on 2, 3, or 12. Don't Pass and Don't Come are available, and the place boxes are 4, 5, 6, 8, 9, and 10.",note:"Standard payouts: Place 4/10 pay 9:5, 5/9 pay 7:5, 6/8 pay 7:6. Buy and Lay use true odds with a 5% vig.",lineIds:["pass","dontPass","come","dontCome"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"lay",label:"Lay Bet"},{value:"passOdds",label:"Pass Odds"},{value:"dontPassOdds",label:"Don't Pass Odds"},{value:"comeOdds",label:"Come Odds"},{value:"dontComeOdds",label:"Don't Come Odds"}],numbers:[4,5,6,8,9,10]},
+      crapless:{image:"images/craps-table-crapless.svg",hint:"Crapless craps: Pass and Come never lose on the come-out except to 7. Totals 2, 3, 11, and 12 can all become points and number bets.",note:"Extended numbers use true-house style ratios: 2/12 pay 6:1, 3/11 pay 3:1, 4/10 pay 2:1, 5/9 pay 3:2, 6/8 pay 6:5.",lineIds:["pass","come"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"passOdds",label:"Pass Odds"},{value:"comeOdds",label:"Come Odds"}],numbers:[2,3,4,5,6,8,9,10,11,12]},
+      easy:{image:"images/craps-table-easy.svg",hint:"Easy Craps keeps the electronic-table feel: Pass plus place-to-win betting on 2 through 12, field variants, hardways, and regular center props.",note:"Easy Craps number boxes cover 2 through 12. Pass uses the easy-table variant and the side field areas stay one-roll wagers.",lineIds:["pass"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"passOdds",label:"Pass Odds"}],numbers:[2,3,4,5,6,8,9,10,11,12]}
+    };
+    const FRIENDLY={pass:"Pass Line",dontPass:"Don't Pass",come:"Come",dontCome:"Don't Come",field:"Field",lowField:"Low Field",highField:"High Field",anyCraps:"Any Craps",anySeven:"Any Seven",horn:"Horn",ce:"C and E",craps2:"Craps 2",craps3:"Craps 3",yo11:"Yo 11",craps12:"Craps 12",hard4:"Hard 4",hard6:"Hard 6",hard8:"Hard 8",hard10:"Hard 10",place:"Place",buy:"Buy",lay:"Lay",passOdds:"Pass Odds",dontPassOdds:"Don't Pass Odds",comeOdds:"Come Odds",dontComeOdds:"Don't Come Odds"};
+    const state={mode:"craps",selectedChip:5,lastChipTone:"red",point:null,lastRoll:null,rollHistory:[],lastWin:0,lastBetSnapshot:null,repeatSnapshot:null,lastPlaced:null,directBets:{},numberBets:{},lineBets:{pass:0,dontPass:0,come:0,dontCome:0},passOdds:{},dontPassOdds:{},comeContracts:{},dontComeContracts:{},unsettledCome:0,unsettledDontCome:0};
+
+    function money(value){return "$"+Number(value||0).toFixed(0)}
+    function trueOdds(number){return {2:6,3:3,4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2,11:3,12:6}[number]||0}
+    function numberPayout(mode,number,type){
+      const tables={
+        place:{craps:{4:9/5,5:7/5,6:7/6,8:7/6,9:7/5,10:9/5},crapless:{2:6,3:3,4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2,11:3,12:6},easy:{2:6,3:3,4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2,11:3,12:6}},
+        buy:{craps:{4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2},crapless:{2:6,3:3,4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2,11:3,12:6},easy:{2:6,3:3,4:2,5:3/2,6:6/5,8:6/5,9:3/2,10:2,11:3,12:6}},
+        lay:{craps:{4:1/2,5:2/3,6:5/6,8:5/6,9:2/3,10:1/2},crapless:{2:1/6,3:1/3,4:1/2,5:2/3,6:5/6,8:5/6,9:2/3,10:1/2,11:1/3,12:1/6}}
+      };
+      return (((tables[type]||{})[mode]||{})[number])||0;
+    }
+    function allowedLine(lineId){return MODE_RULES[state.mode].lineIds.includes(lineId)}
+    function allowedNumber(number){return MODE_RULES[state.mode].numbers.includes(number)}
+    function addLog(text){const stamp=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});log.innerHTML="<div><strong>"+stamp+"</strong> "+text+"</div>"+log.innerHTML}
+    function spendTokens(amount){if(!spend(amount)){addLog("Not enough SpendTokens for "+money(amount)+".");return false}setTokens(getTokens());return true}
+    function snapshotBets(){return JSON.parse(JSON.stringify({directBets:state.directBets,numberBets:state.numberBets,lineBets:state.lineBets,passOdds:state.passOdds,dontPassOdds:state.dontPassOdds,comeContracts:state.comeContracts,dontComeContracts:state.dontComeContracts,unsettledCome:state.unsettledCome,unsettledDontCome:state.unsettledDontCome}))}
+    function snapshotTotal(snapshot){
+      const amounts=[];
+      const collect=(obj)=>{Object.values(obj||{}).forEach((value)=>{if(typeof value==="number")amounts.push(value);else if(value&&typeof value==="object")collect(value)})};
+      collect(snapshot);
+      return amounts.reduce((sum,value)=>sum+value,0);
+    }
+    function restoreSnapshot(snapshot){
+      if(!snapshot)return;
+      state.directBets=snapshot.directBets||{};
+      state.numberBets=snapshot.numberBets||{};
+      state.lineBets=snapshot.lineBets||{pass:0,dontPass:0,come:0,dontCome:0};
+      state.passOdds=snapshot.passOdds||{};
+      state.dontPassOdds=snapshot.dontPassOdds||{};
+      state.comeContracts=snapshot.comeContracts||{};
+      state.dontComeContracts=snapshot.dontComeContracts||{};
+      state.unsettledCome=snapshot.unsettledCome||0;
+      state.unsettledDontCome=snapshot.unsettledDontCome||0;
+    }
+    function resetTableForMode(){
+      state.point=null;
+      state.lastRoll=null;
+      state.rollHistory=[];
+      state.lastWin=0;
+      state.lastBetSnapshot=null;
+      state.repeatSnapshot=null;
+      state.lastPlaced=null;
+      restoreSnapshot({directBets:{},numberBets:{},lineBets:{pass:0,dontPass:0,come:0,dontCome:0},passOdds:{},dontPassOdds:{},comeContracts:{},dontComeContracts:{},unsettledCome:0,unsettledDontCome:0});
+    }
+    function buildNumberActions(){
+      numberAction.innerHTML="";
+      MODE_RULES[state.mode].numberActions.forEach((item)=>{
+        const option=document.createElement("option");
+        option.value=item.value;
+        option.textContent=item.label;
+        numberAction.appendChild(option);
+      });
+    }
+    function buildChipBank(){
+      chipRow.innerHTML="";
+      CHIP_SET.forEach((chip)=>{
+        const button=document.createElement("button");
+        button.type="button";
+        button.className="chip-btn"+(state.selectedChip===chip.value?" active":"");
+        button.innerHTML="<div class='chip-token "+chip.tone+"'>"+chip.value+"</div><small>"+money(chip.value)+"</small>";
+        button.onclick=()=>{
+          state.selectedChip=chip.value;
+          state.lastChipTone=chip.tone;
+          buildChipBank();
+          render();
+        };
+        chipRow.appendChild(button);
+      });
+    }
+    function buildQuickActions(){
+      quickActionRow.innerHTML="";
+      [{text:"Pass",fn:()=>placeLineDirect("pass")},{text:"Come",fn:()=>placeLineDirect("come")},{text:"Field",fn:()=>placeDirect("field")},{text:"Horn",fn:()=>placeDirect("horn")}].forEach((item)=>{
+        const button=document.createElement("button");
+        button.className="btn";
+        button.textContent=item.text;
+        button.onclick=item.fn;
+        quickActionRow.appendChild(button);
+      });
+    }
+    function placementTargetLabel(spot){
+      if(spot.kind==="number")return FRIENDLY[numberAction.value]+" "+spot.number;
+      return FRIENDLY[spot.id]||spot.label;
+    }
+    function buildHotspots(){
+      hotspotLayer.innerHTML="";
+      HOTSPOTS.common.concat(HOTSPOTS[state.mode]||[]).forEach((spot)=>{
+        const button=document.createElement("button");
+        button.type="button";
+        button.className="hotspot";
+        button.dataset.id=spot.id;
+        button.style.left=spot.x+"%";
+        button.style.top=spot.y+"%";
+        button.style.width=spot.w+"%";
+        button.style.height=spot.h+"%";
+        button.onclick=()=>placeBetFromSpot(spot);
+        hotspotLayer.appendChild(button);
+      });
+      renderHotspots();
+    }
+    function setMode(mode){
+      state.mode=mode;
+      tableImage.src=MODE_RULES[mode].image;
+      modeHint.textContent=MODE_RULES[mode].hint;
+      tableRuleNote.textContent=MODE_RULES[mode].note;
+      buildNumberActions();
+      resetTableForMode();
+      buildHotspots();
+      addLog("Table switched to "+modeSelect.options[modeSelect.selectedIndex].text+".");
+      render();
+    }
+    function ensureNumberRecord(number){
+      if(!state.numberBets[number])state.numberBets[number]={place:0,buy:0,lay:0};
+      return state.numberBets[number];
+    }
+    function placeLineDirect(lineId){
+      if(!allowedLine(lineId)){addLog((FRIENDLY[lineId]||lineId)+" is not active on this table.");return}
+      if(!spendTokens(state.selectedChip))return;
+      state.lastBetSnapshot=snapshotBets();
+      if(lineId==="come")state.unsettledCome+=state.selectedChip;
+      else if(lineId==="dontCome")state.unsettledDontCome+=state.selectedChip;
+      else state.lineBets[lineId]=(state.lineBets[lineId]||0)+state.selectedChip;
+      state.repeatSnapshot=snapshotBets();
+      state.lastPlaced={id:lineId,label:FRIENDLY[lineId]};
+      addLog("Placed "+money(state.selectedChip)+" on "+FRIENDLY[lineId]+".");
+      beep(510,.08);
+      render();
+    }
+    function placeDirect(id){
+      if((id==="dontPass"||id==="dontCome")&&!allowedLine(id)){addLog((FRIENDLY[id]||id)+" is not active on this table.");return}
+      if(!spendTokens(state.selectedChip))return;
+      state.lastBetSnapshot=snapshotBets();
+      state.directBets[id]=(state.directBets[id]||0)+state.selectedChip;
+      state.repeatSnapshot=snapshotBets();
+      state.lastPlaced={id,label:FRIENDLY[id]||id};
+      addLog("Placed "+money(state.selectedChip)+" on "+(FRIENDLY[id]||id)+".");
+      beep(510,.08);
+      render();
+    }
+    function placeNumberBet(number,action){
+      if(!allowedNumber(number)){addLog("That number box is not active for this table.");return}
+      if(!spendTokens(state.selectedChip))return;
+      state.lastBetSnapshot=snapshotBets();
+      if(action==="place"||action==="buy"||action==="lay"){
+        const bucket=ensureNumberRecord(number);
+        bucket[action]=(bucket[action]||0)+state.selectedChip;
+      }else if(action==="passOdds"){
+        if(!state.point||state.point!==number){add(state.selectedChip);setTokens(getTokens());addLog("Pass odds can only sit behind the active point.");return}
+        state.passOdds[number]=(state.passOdds[number]||0)+state.selectedChip;
+      }else if(action==="dontPassOdds"){
+        if(!state.point||state.point!==number||!state.lineBets.dontPass){add(state.selectedChip);setTokens(getTokens());addLog("Don't Pass odds need an active point and a Don't Pass bet.");return}
+        state.dontPassOdds[number]=(state.dontPassOdds[number]||0)+state.selectedChip;
+      }else if(action==="comeOdds"){
+        if(!state.comeContracts[number]){add(state.selectedChip);setTokens(getTokens());addLog("Come odds need a Come contract on that number.");return}
+        state.comeContracts[number].odds=(state.comeContracts[number].odds||0)+state.selectedChip;
+      }else if(action==="dontComeOdds"){
+        if(!state.dontComeContracts[number]){add(state.selectedChip);setTokens(getTokens());addLog("Don't Come odds need a Don't Come contract on that number.");return}
+        state.dontComeContracts[number].odds=(state.dontComeContracts[number].odds||0)+state.selectedChip;
+      }
+      state.repeatSnapshot=snapshotBets();
+      state.lastPlaced={id:"num-"+number,label:FRIENDLY[action]+" "+number};
+      addLog("Placed "+money(state.selectedChip)+" on "+FRIENDLY[action]+" "+number+".");
+      beep(510,.08);
+      render();
+    }
+    function placeBetFromSpot(spot){
+      if(spot.kind==="number")placeNumberBet(spot.number,numberAction.value);
+      else if(["pass","dontPass","come","dontCome"].includes(spot.id))placeLineDirect(spot.id);
+      else placeDirect(spot.id);
+      renderHotspots();
+    }
+    function resolveDirectBets(total,d1,d2){
+      let winnings=0;
+      const nextDirect={};
+      Object.entries(state.directBets).forEach(([id,amount])=>{
+        if(id==="field"){if([2,3,4,9,10,11,12].includes(total))winnings+=amount+(total===2?amount*2:total===12?amount*3:amount);return}
+        if(id==="lowField"){if([2,3,4,5,6].includes(total))winnings+=amount+amount;return}
+        if(id==="highField"){if([8,9,10,11,12].includes(total))winnings+=amount+amount;return}
+        if(id==="anyCraps"){if([2,3,12].includes(total))winnings+=amount+amount*7;return}
+        if(id==="anySeven"){if(total===7)winnings+=amount+amount*4;return}
+        if(id==="craps2"){if(total===2)winnings+=amount+amount*30;return}
+        if(id==="craps3"){if(total===3)winnings+=amount+amount*15;return}
+        if(id==="yo11"){if(total===11)winnings+=amount+amount*15;return}
+        if(id==="craps12"){if(total===12)winnings+=amount+amount*30;return}
+        if(id==="ce"){if([2,3,12].includes(total))winnings+=amount+amount*3;else if(total===11)winnings+=amount+amount*7;return}
+        if(id==="horn"){
+          const quarter=amount/4;
+          if(total===2||total===12)winnings+=amount+quarter*27;
+          if(total===3||total===11)winnings+=amount+quarter*12;
+          return;
+        }
+        if(id==="hard4"){if(d1===2&&d2===2)winnings+=amount+amount*7;return}
+        if(id==="hard10"){if(d1===5&&d2===5)winnings+=amount+amount*7;return}
+        if(id==="hard6"){if(d1===3&&d2===3)winnings+=amount+amount*9;return}
+        if(id==="hard8"){if(d1===4&&d2===4)winnings+=amount+amount*9;return}
+        nextDirect[id]=amount;
+      });
+      state.directBets=nextDirect;
+      return winnings;
+    }
+    function resolveNumberBets(total){
+      let winnings=0;
+      const nextNumberBets={};
+      Object.entries(state.numberBets).forEach(([numberText,betSet])=>{
+        const number=Number(numberText);
+        const next={place:0,buy:0,lay:0};
+        ["place","buy","lay"].forEach((type)=>{
+          const amount=betSet[type]||0;
+          if(!amount)return;
+          if(!state.point&&(type==="place"||type==="buy")){next[type]=amount;return}
+          if((type==="place"||type==="buy")&&total===number){
+            let profit=amount*numberPayout(state.mode,number,type);
+            if(type==="buy")profit-=Math.ceil(amount*.05);
+            winnings+=amount+Math.max(0,Math.round(profit));
+            next[type]=amount;
+          }else if((type==="place"||type==="buy")&&total===7){
+            next[type]=0;
+          }else if(type==="lay"&&total===7){
+            let profit=amount*numberPayout(state.mode,number,"lay")-Math.ceil(amount*.05);
+            winnings+=amount+Math.max(0,Math.round(profit));
+            next[type]=amount;
+          }else if(type==="lay"&&total===number){
+            next[type]=0;
+          }else{
+            next[type]=amount;
+          }
+        });
+        if(next.place||next.buy||next.lay)nextNumberBets[number]=next;
+      });
+      state.numberBets=nextNumberBets;
+      return winnings;
+    }
+    function resolvePassOdds(total){
+      let winnings=0;
+      if(state.point&&total===state.point){
+        const amount=state.passOdds[state.point]||0;
+        if(amount)winnings+=amount+Math.round(amount*trueOdds(state.point));
+        state.passOdds={};
+      }else if(total===7){
+        state.passOdds={};
+      }
+      return winnings;
+    }
+    function resolveDontPassOdds(total){
+      let winnings=0;
+      if(state.point&&total===7){
+        const amount=state.dontPassOdds[state.point]||0;
+        if(amount)winnings+=amount+Math.round(amount/trueOdds(state.point));
+        state.dontPassOdds={};
+      }else if(state.point&&total===state.point){
+        state.dontPassOdds={};
+      }
+      return winnings;
+    }
+    function resolveComeFamily(total){
+      let winnings=0;
+      const nextCome={};
+      const nextDont={};
+      Object.entries(state.comeContracts).forEach(([numberText,contract])=>{
+        const number=Number(numberText);
+        if(total===number){
+          winnings+=contract.base*2;
+          if(contract.odds)winnings+=contract.odds+Math.round(contract.odds*trueOdds(number));
+        }else if(total!==7){
+          nextCome[number]=contract;
+        }
+      });
+      Object.entries(state.dontComeContracts).forEach(([numberText,contract])=>{
+        const number=Number(numberText);
+        if(total===7){
+          winnings+=contract.base*2;
+          if(contract.odds)winnings+=contract.odds+Math.round(contract.odds/trueOdds(number));
+        }else if(total!==number){
+          nextDont[number]=contract;
+        }
+      });
+      if(state.unsettledCome){
+        if(state.mode==="craps"){
+          if(total===7||total===11)winnings+=state.unsettledCome*2;
+          else if(![2,3,12].includes(total))nextCome[total]={base:(nextCome[total]?.base||0)+state.unsettledCome,odds:nextCome[total]?.odds||0};
+        }else if(total===7){
+          winnings+=state.unsettledCome*2;
+        }else{
+          nextCome[total]={base:(nextCome[total]?.base||0)+state.unsettledCome,odds:nextCome[total]?.odds||0};
+        }
+      }
+      if(state.unsettledDontCome){
+        if(total===2||total===3)winnings+=state.unsettledDontCome*2;
+        else if(total===12)winnings+=state.unsettledDontCome;
+        else if(total!==7&&total!==11)nextDont[total]={base:(nextDont[total]?.base||0)+state.unsettledDontCome,odds:nextDont[total]?.odds||0};
+      }
+      state.comeContracts=nextCome;
+      state.dontComeContracts=nextDont;
+      state.unsettledCome=0;
+      state.unsettledDontCome=0;
+      return winnings;
+    }
+    function resolvePassLine(total){
+      let winnings=0;
+      if(!state.point){
+        if(state.mode==="craps"){
+          if(total===7||total===11){winnings+=(state.lineBets.pass||0)*2;state.lineBets.pass=0}
+          else if([2,3,12].includes(total)){state.lineBets.pass=0}
+          else if([4,5,6,8,9,10].includes(total))state.point=total;
+          if(state.lineBets.dontPass){
+            if(total===2||total===3){winnings+=state.lineBets.dontPass*2;state.lineBets.dontPass=0}
+            else if(total===7||total===11)state.lineBets.dontPass=0;
+            else if(total!==12)state.point=total;
+          }
+        }else{
+          if(total===7){winnings+=(state.lineBets.pass||0)*2;state.lineBets.pass=0}
+          else state.point=total;
+        }
+      }else{
+        if(total===state.point){
+          winnings+=(state.lineBets.pass||0)*2;
+          winnings+=resolvePassOdds(total);
+          state.lineBets.pass=0;
+          state.lineBets.dontPass=0;
+          state.point=null;
+        }else if(total===7){
+          if(state.lineBets.dontPass)winnings+=state.lineBets.dontPass*2;
+          winnings+=resolveDontPassOdds(total);
+          state.lineBets.pass=0;
+          state.lineBets.dontPass=0;
+          state.point=null;
+        }
+      }
+      return winnings;
+    }
+    function resolveRoll(d1,d2){
+      const total=d1+d2;
+      state.lastRoll=total;
+      state.rollHistory.unshift({total,d1,d2,point:state.point});
+      state.rollHistory=state.rollHistory.slice(0,16);
+      let winnings=0;
+      winnings+=resolveDirectBets(total,d1,d2);
+      winnings+=resolveNumberBets(total);
+      winnings+=resolveComeFamily(total);
+      winnings+=resolvePassLine(total);
+      if(winnings){add(winnings);celebrateWin(winnings>=80?"Table Hit!":"Craps Win!",winnings,"The felt paid out.")}
+      state.lastWin=winnings;
+      setTokens(getTokens());
+      addLog("Rolled "+d1+" + "+d2+" = "+total+(winnings?" and won "+money(winnings)+".":"."));
+      beep(winnings?760:260,.12);
+      render();
+    }
+    function rollDice(){
+      let count=0;
+      const interval=setInterval(()=>{
+        const d1=1+Math.floor(Math.random()*6);
+        const d2=1+Math.floor(Math.random()*6);
+        dieOne.textContent=d1;
+        dieTwo.textContent=d2;
+        count+=1;
+        if(count<10)return;
+        clearInterval(interval);
+        resolveRoll(d1,d2);
+      },80);
+    }
+    function renderHotspots(){
+      HOTSPOTS.common.concat(HOTSPOTS[state.mode]||[]).forEach((spot)=>{
+        const button=hotspotLayer.querySelector("[data-id='"+spot.id+"']");
+        if(!button)return;
+        button.classList.remove("invalid","active-target");
+        button.innerHTML="";
+        if(spot.kind==="number"){
+          if(!allowedNumber(spot.number))button.classList.add("invalid");
+          else button.classList.add("active-target");
+        }else if((spot.id==="dontPass"||spot.id==="dontCome")&&!allowedLine(spot.id)){
+          button.classList.add("invalid");
+        }
+        let amount=0;
+        let caption=spot.label;
+        if(spot.kind==="number"){
+          const number=spot.number;
+          if(numberAction.value==="comeOdds"&&state.comeContracts[number])amount=state.comeContracts[number].odds||0;
+          else if(numberAction.value==="dontComeOdds"&&state.dontComeContracts[number])amount=state.dontComeContracts[number].odds||0;
+          else if(numberAction.value==="passOdds")amount=state.passOdds[number]||0;
+          else if(numberAction.value==="dontPassOdds")amount=state.dontPassOdds[number]||0;
+          else amount=(state.numberBets[number]&&state.numberBets[number][numberAction.value])||0;
+          caption=placementTargetLabel(spot);
+        }else if(spot.id==="come"){
+          amount=state.unsettledCome;
+        }else if(spot.id==="dontCome"){
+          amount=state.unsettledDontCome;
+        }else if(spot.id==="pass"||spot.id==="dontPass"){
+          amount=state.lineBets[spot.id]||0;
+        }else{
+          amount=state.directBets[spot.id]||0;
+        }
+        if(amount>0){
+          const stack=document.createElement("div");
+          stack.className="chip-stack";
+          stack.innerHTML="<div class='chip-token "+state.lastChipTone+"'>"+amount+"</div><div class='chip-caption'>"+caption+"</div>";
+          button.appendChild(stack);
+        }
+      });
+    }
+    function renderBetsList(){
+      const rows=[];
+      Object.entries(state.lineBets).forEach(([key,amount])=>{if(amount&&allowedLine(key))rows.push({title:FRIENDLY[key],amount,meta:state.point?"Contract active":"Come-out line bet"})});
+      if(state.unsettledCome)rows.push({title:"Come",amount:state.unsettledCome,meta:"Waiting for next roll"});
+      if(state.unsettledDontCome)rows.push({title:"Don't Come",amount:state.unsettledDontCome,meta:"Waiting for next roll"});
+      Object.entries(state.directBets).forEach(([key,amount])=>rows.push({title:FRIENDLY[key]||key,amount,meta:"Direct felt action"}));
+      Object.entries(state.numberBets).forEach(([number,betSet])=>{Object.entries(betSet).forEach(([type,amount])=>{if(amount)rows.push({title:FRIENDLY[type]+" "+number,amount,meta:type==="lay"?"Working against the number":"Number-box wager"})})});
+      Object.entries(state.passOdds).forEach(([number,amount])=>{if(amount)rows.push({title:"Pass Odds "+number,amount,meta:"True odds"})});
+      Object.entries(state.dontPassOdds).forEach(([number,amount])=>{if(amount)rows.push({title:"Don't Pass Odds "+number,amount,meta:"True lay odds"})});
+      Object.entries(state.comeContracts).forEach(([number,contract])=>rows.push({title:"Come "+number,amount:contract.base,meta:contract.odds?"Odds behind: "+money(contract.odds):"Contract working"}));
+      Object.entries(state.dontComeContracts).forEach(([number,contract])=>rows.push({title:"Don't Come "+number,amount:contract.base,meta:contract.odds?"Odds behind: "+money(contract.odds):"Contract working"}));
+      betsList.innerHTML=rows.length?rows.map((row)=>"<div class='bet-card'><div><strong>"+row.title+"</strong><div class='bet-meta'>"+row.meta+"</div></div><strong>"+money(row.amount)+"</strong></div>").join(""):"<div class='hint'>No chips are working yet. Pick a chip and tap the felt.</div>";
+    }
+    function renderHistory(){
+      historyList.innerHTML=state.rollHistory.length?state.rollHistory.map((item)=>"<div class='history-card'><div><strong>"+item.total+"</strong><div class='bet-meta'>Dice "+item.d1+" + "+item.d2+(item.point?" | point was "+item.point:" | come out")+"</div></div><strong>"+(item.total===7?"Seven":"Roll")+"</strong></div>").join(""):"<div class='hint'>No rolls yet. Once the dice move, the latest 16 totals land here.</div>";
+    }
+    function render(){
+      selectionHint.textContent="Selected chip: "+money(state.selectedChip)+". "+(state.lastPlaced?"Last bet: "+state.lastPlaced.label+".":"Click a betting area to place it.");
+      pointDisplay.textContent=state.point||"OFF";
+      lastRollDisplay.textContent=state.lastRoll||"-";
+      lastWinDisplay.textContent=money(state.lastWin);
+      phaseDisplay.textContent=state.point?"Point "+state.point:"Come Out";
+      buildChipBank();
+      renderHotspots();
+      renderBetsList();
+      renderHistory();
+    }
+    repeatBtn.onclick=()=>{
+      if(!state.repeatSnapshot){addLog("There is no prior chip pattern to repeat yet.");return}
+      const desired=JSON.parse(JSON.stringify(state.repeatSnapshot));
+      const total=snapshotTotal(desired);
+      if(!total||!spendTokens(total))return;
+      restoreSnapshot(desired);
+      addLog("Repeated the last chip pattern for "+money(total)+".");
+      render();
+    };
+    clearBtn.onclick=()=>{
+      const snapshot=snapshotBets();
+      const total=snapshotTotal(snapshot);
+      if(total)add(total);
+      setTokens(getTokens());
+      restoreSnapshot({directBets:{},numberBets:{},lineBets:{pass:0,dontPass:0,come:0,dontCome:0},passOdds:{},dontPassOdds:{},comeContracts:{},dontComeContracts:{},unsettledCome:0,unsettledDontCome:0});
+      addLog("Cleared all live wagers and returned "+money(total)+".");
+      render();
+    };
+    removeLastBtn.onclick=()=>{
+      if(!state.lastBetSnapshot){addLog("Nothing to undo yet.");return}
+      const currentTotal=snapshotTotal(snapshotBets());
+      const priorTotal=snapshotTotal(state.lastBetSnapshot);
+      if(currentTotal>priorTotal)add(currentTotal-priorTotal);
+      setTokens(getTokens());
+      restoreSnapshot(state.lastBetSnapshot);
+      addLog("Reverted to the prior chip layout.");
+      render();
+    };
+    rollBtn.onclick=rollDice;
+    numberAction.onchange=renderHotspots;
+    modeSelect.onchange=()=>setMode(modeSelect.value);
+    document.getElementById("startBtn").onclick=()=>{document.getElementById("gate").style.display="none"};
+    buildQuickActions();
+    setMode("craps");
+    buildChipBank();
+    render();
+  </script>
+</body>
+</html>
