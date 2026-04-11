@@ -32,7 +32,11 @@
 
     .dim{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;place-items:center;z-index:89}
     .dim.show{display:grid}
-    .hitNum{font-size:5rem;color:#ffd166;text-shadow:0 0 12px #000;font-weight:900}
+    .hitNum{font-size:5rem;color:#fff;text-shadow:0 0 12px #000;font-weight:900;padding:18px 28px;border-radius:16px;border:2px solid #fff}
+    .hitRed{background:rgba(180,20,20,.96)}
+    .hitBlack{background:rgba(10,10,10,.96)}
+    .hitGreen{background:rgba(18,121,58,.96)}
+    .lastTile{margin:8px auto 0;width:96px;height:58px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
   </style>
 </head>
 <body>
@@ -70,6 +74,7 @@
             Last: <span id='last'>-</span><br>
             Bet: <span id='bet'>0</span><br>
             Total Win: <span id='totWin'>0</span>
+            <div id='lastTile' class='lastTile'>-</div>
           </div>
         </div>
       </div>
@@ -93,6 +98,7 @@
     let bets = {};
     let lastBet = {};
     let spinning = false;
+    let spinRotation = 0;
 
     const chipAsset = v => `images/chips/chip-${String(v).replace('.','_')}.svg`;
 
@@ -264,6 +270,17 @@
       });
     }
 
+
+    function winClass(n){
+      if(n==='0' || n==='00') return 'hitGreen';
+      return redSet.has(+n) ? 'hitRed' : 'hitBlack';
+    }
+
+    function tileColorClass(n){
+      if(n==='0' || n==='00') return 'green';
+      return redSet.has(+n) ? 'red' : 'black';
+    }
+
     spin.onclick=async()=>{
       if(spinning) return;
       spinning=true;
@@ -271,11 +288,15 @@
       const i=(Math.random()*s.length)|0;
       const n=s[i];
       const target=((360-(i*(360/s.length)))%360);
-      w.style.transform=`rotate(${(8+Math.random()*2)*360 + target}deg)`;
+      spinRotation += (8+Math.random()*2)*360 + target;
+      w.style.transform=`rotate(${spinRotation}deg)`;
 
       await sleep(2350);
       last.textContent=n;
+      lastTile.textContent=n;
+      lastTile.className='lastTile '+tileColorClass(n);
       hitNum.textContent=n;
+      hitNum.className='hitNum '+winClass(n);
       dim.classList.add('show');
       await sleep(1800);
       dim.classList.remove('show');
@@ -291,12 +312,7 @@
         lastBet={...bets};
         await sleep(1300);
       }else{
-        if(confirm('Re-Try same Bet?')){
-          lastBet={...bets};
-        }else{
-          Object.values(bets).forEach(add);
-          bets={};
-        }
+        bets={};
       }
 
       render();
