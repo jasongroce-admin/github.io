@@ -16,8 +16,8 @@
     .outside .o{height:40px;border:1px solid #dcefd1;display:grid;place-items:center;color:#fff;cursor:pointer;position:relative}
     .outside .redBox{background:#b91c1c}.outside .blackBox{background:#101010;color:#fff}.outside .other{background:#1d7a3d}
 
-    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:radial-gradient(circle at center,#111 0 28%,transparent 29%),conic-gradient(#d4af37 0 20deg,#111 20deg 40deg,#d4af37 40deg 60deg,#111 60deg 80deg,#d4af37 80deg 100deg,#111 100deg 120deg,#d4af37 120deg 140deg,#111 140deg 160deg,#d4af37 160deg 180deg,#111 180deg 200deg,#d4af37 200deg 220deg,#111 220deg 240deg,#d4af37 240deg 260deg,#111 260deg 280deg,#d4af37 280deg 300deg,#111 300deg 320deg,#d4af37 320deg 340deg,#111 340deg 360deg);position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
-    .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:9px}
+    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:radial-gradient(circle at center,#111 0 28%,transparent 29%),conic-gradient(#b91c1c 0 20deg,#111 20deg 40deg,#b91c1c 40deg 60deg,#111 60deg 80deg,#b91c1c 80deg 100deg,#111 100deg 120deg,#b91c1c 120deg 140deg,#111 140deg 160deg,#b91c1c 160deg 180deg,#111 180deg 200deg,#b91c1c 200deg 220deg,#111 220deg 240deg,#b91c1c 240deg 260deg,#111 260deg 280deg,#b91c1c 280deg 300deg,#111 300deg 320deg,#b91c1c 320deg 340deg,#111 340deg 360deg);position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
+    .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:12px}
     .orbit{position:absolute;left:50%;top:50%;width:0;height:0}
     .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-150px;margin:-5px;box-shadow:0 0 8px #fff}
     .spinBall{animation:counterspin 2.35s linear}
@@ -27,7 +27,7 @@
     .pickChip{width:44px;height:44px;border-radius:50%;border:2px solid #fff;color:#fff;font-weight:700;background-size:cover;background-position:center;text-shadow:0 0 3px #000}
     .lastTile{margin:10px auto 0;width:160px;height:92px;border-radius:12px;display:grid;place-items:center;font-size:3rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
     .status{font-size:.9rem;color:#cfe6ff}
-    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:8px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}
+    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:8px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}.top{justify-content:flex-start}.top>div:nth-child(2){margin-left:auto;order:90}
   </style>
 </head>
 <body>
@@ -55,22 +55,20 @@
                 <option value='corner'>Corner (4 numbers)</option>
               </select>
             </label>
-            <button class='btn' id='spin'>SPIN</button>
+            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:100%'></div>
+            <div style='display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%'><button class='btn' id='spin'>SPIN</button>
             <button class='btn' id='clear'>Remove Bets</button>
-            <button class='btn' id='repeat'>Repeat Bet</button>
-            <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-left:90px'></div>
+            <button class='btn' id='repeat'>Repeat Bet</button></div>
             <div id='pickHelp' class='status'>Pick numbers for current bet type.</div>
             <button class='btn' id='toggleSpecials' type='button'>Special Bets</button><div id='specials' class='status' style='display:none'> <button class='btn' data-special='snake'>Red Snake</button> <button class='btn' data-special='blackNeighbors'>Black Neighbors</button> <button class='btn' data-special='voisins'>Voisins du Zero</button> <button class='btn' data-special='tiers'>Tiers du Cylindre</button> <button class='btn' data-special='orphelins'>Orphelins</button> <button class='btn' data-special='jeuZero'>Jeu Zero</button></div>
             <div id='historyStrip' class='historyStrip'></div>
           </div>
         </div>
 
-        <div style='margin-left:-58px;margin-top:-6px'>
+        <div style='margin-left:-18px;margin-top:-6px'>
           <div class='wheel' id='w'><div class='orbit' id='orbit'><div class='ball'></div></div></div>
           <div style='text-align:center;margin-top:8px'>
             Last: <span id='last'>-</span><br>
-            Bet: <span id='bet'>0</span><br>
-            Total Win: <span id='totWin'>0</span>
             <div id='lastTile' class='lastTile'>-</div>
           </div>
         </div>
@@ -133,7 +131,7 @@
     function drawWheel(){
       w.querySelectorAll('.p').forEach(x=>x.remove());
       const s=seq(),step=360/s.length;
-      s.forEach((n,i)=>{const d=document.createElement('div');d.className='p';d.style.transform=`rotate(${i*step}deg) translate(138px) rotate(${-i*step}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');w.appendChild(d);});
+      s.forEach((n,i)=>{const d=document.createElement('div');d.className='p';d.style.transform=`rotate(${i*step}deg) translate(148px) rotate(${-i*step}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');w.appendChild(d);});
     }
 
 
@@ -192,7 +190,7 @@
     }
     function renderHistory(){historyStrip.innerHTML='';history.forEach((h,i)=>{const d=document.createElement('div');d.className='histTile '+(i===0?'latest':'');d.textContent=h.n;d.style.background=h.c;historyStrip.appendChild(d);});}
     function renderChips(){chipLayer.innerHTML='';const originX=0,originY=0,cellW=54,cellH=54;const dot=(x,y,val)=>{const d=document.createElement('div');d.style.cssText=`position:absolute;left:${x-12}px;top:${y-12}px;width:24px;height:24px;border-radius:50%;background:#ffd166;color:#111;display:grid;place-items:center;font-size:10px;font-weight:800;border:1px solid #222`;d.textContent=Number(val).toFixed(1);chipLayer.appendChild(d)};for(const [k,a] of Object.entries(bets)){if(k.startsWith('n:')){const n=k.split(':')[1];const p=coordsFor(n)[0];dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a);}else if(k.startsWith('split:')){const [x,y]=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);dot(originX+((x.c+y.c)/2-1)*cellW+26,originY+((x.r+y.r)/2-1)*cellH+26,a);}else if(k.startsWith('corner:')){const pts=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);const cx=pts.reduce((t,p)=>t+p.c,0)/4,cy=pts.reduce((t,p)=>t+p.r,0)/4;dot(originX+(cx-1)*cellW+26,originY+(cy-1)*cellH+26,a);}else if(k==='trio:0|00|2'){dot(originX+39,originY+80,a);}else if(k.startsWith('special:')){const arr=specialSets[k.split(':')[1]]||[];arr.forEach(n=>{const p=coordsFor(String(n))[0];if(p)dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a/Math.max(arr.length,1));});} } }
-    function render(){bet.textContent=Object.values(bets).reduce((a,b)=>a+b,0).toFixed(2);totWin.textContent=totalWin.toFixed(2);setTokens(getTokens());renderTable();renderOutside();renderHistory();renderChips();}
+    function render(){setTokens(getTokens());renderTable();renderOutside();renderHistory();renderChips();}
 
     function colKey(n){if(n%3===0)return 'col:1';if(n%3===2)return 'col:2';return 'col:3';}
     function pay(k,a,n){
@@ -219,14 +217,14 @@
       spinRotation += (8+Math.random()*2)*360 + target;
       w.style.transform=`rotate(${spinRotation}deg)`;
       orbit.classList.remove('spinBall'); void orbit.offsetWidth; orbit.classList.add('spinBall');
-      await sleep(2350);
+      for(let f=240;f<520;f+=40){beep(f,.03);} await sleep(2350);
 
       last.textContent=n; lastTile.textContent=n; lastTile.className='lastTile '+tileClass(n);
       history.forEach(h=>h.old=true); history.unshift(histMeta(n)); if(history.length>25)history.pop();
 
       let win=0; for(const [k,a] of Object.entries(bets)) win += pay(k,a,n);
-      if(win>0){add(win);moneyRain();totalWin+=win;celebrateWin(win>=50?'JACKPOT!':'WINNER!',win,'Roulette payout!');lastBet={...bets};}
-      else {bets={};}
+      if(win>0){moneyRain();for(let i=0;i<8;i++){beep(650+i*60,.04);}await sleep(500);let step=0;while(step<win){const inc=Math.max(0.5,win/12);step=Math.min(win,step+inc);add(inc);await sleep(35);}totalWin+=win;celebrateWin(win>=50?'JACKPOT!':'WINNER!',win,'Roulette payout!');lastBet={...bets};await sleep(900);}
+      else {chipLayer.style.transition='opacity .45s';chipLayer.style.opacity='0';for(let i=0;i<3;i++){beep(180-i*25,.05);}await sleep(460);chipLayer.style.opacity='1';bets={};}
 
       render(); beep(win?780:230,.16); spinning=false;
     };
