@@ -1,0 +1,17 @@
+*{box-sizing:border-box}
+body{margin:0;font-family:'Trebuchet MS',Arial,sans-serif;background:radial-gradient(circle at top,#1a1240,#050814 70%);color:#eef}
+.wrap{max-width:1200px;margin:0 auto;padding:10px 10px calc(90px + env(safe-area-inset-bottom))}
+.notice{font-size:.82rem;background:rgba(19,14,52,.9);border:1px solid #6b47ff;padding:8px;border-radius:10px;color:#e3dcff;box-shadow:0 0 12px #4c2aff55}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{padding:12px 14px;border-radius:12px;border:1px solid #57b3ff;background:linear-gradient(180deg,#225fbd,#123870);color:#fff;text-decoration:none;display:inline-block;box-shadow:0 0 10px #3ca6ff55}
+.panel{background:linear-gradient(180deg,#101b36,#0a1023);border:1px solid #3d63aa;border-radius:12px;padding:10px;margin-top:8px;box-shadow:0 0 15px #3f6fff33}
+.drawer{position:fixed;right:-340px;top:0;width:330px;height:100vh;background:#09192b;border-left:2px solid #335;padding:10px;transition:right .3s;overflow:auto;z-index:30}.drawer.open{right:0}
+.board{background:#0c7d37;border:2px solid #dcefd1;border-radius:10px;padding:8px}
+.token{color:#ffd166;font-weight:700;text-shadow:0 0 8px #ffcb3d}
+.bottom-actions{position:sticky;bottom:calc(env(safe-area-inset-bottom));background:#0a1830;border:1px solid #345;border-radius:12px;padding:8px;display:flex;gap:8px;flex-wrap:wrap}
+.gate{position:fixed;inset:0;background:rgba(2,8,16,.92);display:grid;place-items:center;z-index:60;padding:16px}.gate .box{max-width:560px;background:#10213a;border:1px solid #3d5f8f;border-radius:12px;padding:14px}
+.token-rail{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0}.chip-btn{width:42px;height:42px;border-radius:50%;border:2px solid #fff;color:#111;font-weight:700}
+
+.win-event{position:fixed;inset:0;display:none;place-items:center;background:rgba(2,8,16,.55);z-index:90}.win-event.show{display:grid}.win-event .box{background:#132746;border:2px solid #ffd166;border-radius:14px;padding:18px;max-width:520px;text-align:center;box-shadow:0 0 25px #ffd16666}.win-event .amt{font-size:2rem;color:#ffd166;font-weight:900}
+
+.arcade-dock{position:fixed;right:10px;bottom:10px;display:flex;gap:8px;z-index:95}.arcade-dock .btn{padding:10px}.advice-drawer{position:fixed;right:-360px;bottom:0;width:min(92vw,340px);height:78vh;background:#081a2d;border:2px solid #3c6da5;border-radius:14px 14px 0 0;padding:10px;z-index:96;transition:right .25s}.advice-drawer.open{right:0}.advice-drawer h4{margin:0 0 8px}
