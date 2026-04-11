@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Blackjack</title><link rel='stylesheet' href='common.css'>
+<style>
+.table{background:#0b4f95;border:2px solid #8dc0ff;border-radius:12px;padding:10px;max-width:980px;margin:0 auto}.felt{width:100%;border:1px solid #9fd0ff;border-radius:8px;margin-bottom:8px}
+.card{display:inline-flex;align-items:center;justify-content:center;width:60px;height:88px;background:#fff;border-radius:10px;color:#111;border:1px solid #aab;margin-right:5px;font-weight:700}.red{color:#c62828}
+.betRow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:8px 0}.circle{width:110px;height:110px;border-radius:55px;border:2px dashed #ffd166;display:grid;place-items:center;position:relative;background:#0a3c73;cursor:pointer}.chipTot{position:absolute;bottom:6px;background:#ffd166;color:#111;border-radius:10px;padding:1px 6px;font-weight:700}
+.hand{margin:8px 0}.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.deckBadge{font-size:.85rem;color:#ffd166}
+</style></head>
+<body><div class='wrap'><div class='notice'>Testing only: SpendTokens have no real-world value.</div><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div>
+<div class='panel table'><img src='images/blackjack-felt.svg' class='felt' alt='blackjack felt'>
+<div class='deckBadge'>Deck Mode: <span id='deckMode'>1 Deck</span></div>
+<div><b>Dealer</b> <span id='dScore'></span><div id='dCards'></div></div>
+<div class='betRow'><div class='circle' id='c1'>HAND 1<span class='chipTot' id='t1'>0</span></div><div class='circle' id='c2'>HAND 2<span class='chipTot' id='t2'>0</span></div></div>
+<div class='hand'><b>Hand 1</b> <span id='p1s'></span><div id='p1c'></div></div>
+<div class='hand'><b>Hand 2</b> <span id='p2s'></span><div id='p2c'></div></div>
+<div id='status' class='token'>Choose deck mode, place chips in circles, then Deal.</div></div>
+<div class='token-rail' id='rail'></div>
+<div class='controls'><button class='btn' id='deal'>DEAL</button><button class='btn' id='hit1'>HIT H1</button><button class='btn' id='stand1'>STAND H1</button><button class='btn' id='hit2'>HIT H2</button><button class='btn' id='stand2'>STAND H2</button><button class='btn' id='undo'>UNDO LAST CHIP</button></div></div>
+<script src='common.js'></script><script>
+initWallet();
+const chipVals=[1,3,5,10,25,50,100,250,500],chipColors=['#fff','#66f','#0cf','#ff9','#f96','#f33','#9f9','#f0f','#fc3'];
+let pick=5;chipVals.forEach((v,i)=>{let b=document.createElement('button');b.className='chip-btn';b.style.background=chipColors[i];b.textContent=v;b.onclick=()=>pick=v;rail.appendChild(b)});
+let deckCount=1,shoe=[],dealer=[],h1=[],h2=[],live=false,stand={h1:false,h2:false},bets={h1:0,h2:0},betStack=[];
+const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function fresh(){shoe=[];for(let x=0;x<deckCount;x++)for(const s of suits)for(const r of ranks)shoe.push({r,s});for(let i=shoe.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[shoe[i],shoe[j]]=[shoe[j],shoe[i]]}}
+fresh();
+const val=c=>c.r==='A'?11:(['J','Q','K'].includes(c.r)?10:+c.r),sc=h=>{let t=h.reduce((a,c)=>a+val(c),0),a=h.filter(c=>c.r==='A').length;while(t>21&&a--)t-=10;return t};
+const draw=()=>{if(shoe.length<deckCount*20)fresh();return shoe.pop()};
+function cardNode(c,hide){const d=document.createElement('div');d.className='card'+((c.s==='♥'||c.s==='♦')?' red':'');d.textContent=hide?'🂠':c.r+c.s;return d}
+function paint(){dCards.innerHTML='';dealer.forEach((c,i)=>dCards.appendChild(cardNode(c,live&&i===1)));p1c.innerHTML='';h1.forEach(c=>p1c.appendChild(cardNode(c,false)));p2c.innerHTML='';h2.forEach(c=>p2c.appendChild(cardNode(c,false)));dScore.textContent=live?'(?)':'('+sc(dealer)+')';p1s.textContent='('+sc(h1)+')';p2s.textContent='('+sc(h2)+')';t1.textContent=bets.h1.toFixed(0);t2.textContent=bets.h2.toFixed(0);setTokens(getTokens())}
+function place(hand){if(live)return; if(!spend(pick))return; bets[hand]+=pick;betStack.push({hand,amt:pick});beep(540);paint();}
+c1.onclick=()=>place('h1');c2.onclick=()=>place('h2');undo.onclick=()=>{if(live||!betStack.length)return;const b=betStack.pop();bets[b.hand]-=b.amt;add(b.amt);paint();};
+function payoutMult(hand,ps){const natural=(hand.length===2&&ps===21)?2.5:2;return deckCount===3?natural*0.97:natural;} // 3-deck slight house edge factor
+function settle(){live=false;while(sc(dealer)<17)dealer.push(draw());let totalWin=0;[['h1',h1],['h2',h2]].forEach(([k,h])=>{if(!bets[k])return;const ps=sc(h),ds=sc(dealer);let win=0;if(ps<=21&&(ds>21||ps>ds))win=bets[k]*payoutMult(h,ps);else if(ps===ds)win=bets[k];totalWin+=win;bets[k]=0;});add(totalWin);if(totalWin>0)celebrateWin(totalWin>=60?'BLACKJACK HOT TABLE!':'BLACKJACK WIN!',totalWin,deckCount===3?'3-deck odds applied':'Single-deck payout');status.textContent=totalWin?`Win ${totalWin.toFixed(2)} SpendTokens`:'No win this round';beep(totalWin?840:250,.15);paint();}
+function checkAuto(){if((stand.h1||!bets.h1||sc(h1)>=21)&&(stand.h2||!bets.h2||sc(h2)>=21))settle();}
+deal.onclick=()=>{if(live)return;if(!bets.h1&&!bets.h2){status.textContent='Add chips to Hand 1 or Hand 2 first.';return;}dealer=[draw(),draw()];h1=bets.h1?[draw(),draw()]:[];h2=bets.h2?[draw(),draw()]:[];stand={h1:!bets.h1,h2:!bets.h2};live=true;status.textContent='Hand live';beep(520);paint();checkAuto();};
+hit1.onclick=()=>{if(!live||stand.h1||!bets.h1)return;h1.push(draw());paint();if(sc(h1)>=21)stand.h1=true;checkAuto();};stand1.onclick=()=>{if(!live)return;stand.h1=true;checkAuto();};
+hit2.onclick=()=>{if(!live||stand.h2||!bets.h2)return;h2.push(draw());paint();if(sc(h2)>=21)stand.h2=true;checkAuto();};stand2.onclick=()=>{if(!live)return;stand.h2=true;checkAuto();};
+paint();
+</script>
+<div class='gate' id='gate'><div class='box'><h2>Blackjack Setup</h2><p>How to play: choose deck mode, pick a chip, tap Hand circles to bet, then Deal. Use hit/stand per hand and Undo to remove last chip.</p><div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn' id='oneDeck'>Play 1 Deck</button><button class='btn' id='threeDeck'>Play 3 Decks</button></div></div></div>
+<script>oneDeck.onclick=()=>{deckCount=1;deckMode.textContent='1 Deck';fresh();gate.style.display='none';};threeDeck.onclick=()=>{deckCount=3;deckMode.textContent='3 Decks';fresh();gate.style.display='none';};</script>
+</body></html>
