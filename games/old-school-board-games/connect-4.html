@@ -1,1 +1,494 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Connect 4</title><link rel='stylesheet' href='../../assets/css/site.css'><style>.b{display:grid;grid-template-columns:repeat(7,52px);gap:4px;background:#0b3e86;padding:8px;border-radius:8px}.c{width:52px;height:52px;border-radius:50%;background:#eee;border:0}.r{background:#ef4444}.y{background:#facc15}</style></head><body><main class='content'><section class='panel'><h1>Connect 4</h1><div id='how' class='card'><p>Tap any column to drop a disc. Connect four to win.</p><button id='close'>Start</button></div><div class='b' id='b'></div><div id='s' class='card'>Red turn.</div><a class='btn' href='index.html'>Back to Board Games</a></section></main><script>close.onclick=()=>how.style.display='none';let g=Array.from({length:6},()=>Array(7).fill('')),t='R';function w(r,c,p){for(const[d1,d2]of[[1,0],[0,1],[1,1],[1,-1]]){let n=1;for(let s=1;s<4;s++){if(g[r+d1*s]?.[c+d2*s]===p)n++;else break;}for(let s=1;s<4;s++){if(g[r-d1*s]?.[c-d2*s]===p)n++;else break;}if(n>=4)return true;}return false;}function render(){b.innerHTML='';for(let r=0;r<6;r++)for(let c=0;c<7;c++){let d=document.createElement('button');d.className='c '+(g[r][c]==='R'?'r':g[r][c]==='Y'?'y':'');d.dataset.c=c;d.onclick=()=>drop(+d.dataset.c);b.appendChild(d);}}function drop(c){for(let r=5;r>=0;r--)if(!g[r][c]){g[r][c]=t;render();if(w(r,c,t)){s.textContent=(t==='R'?'Red':'Yellow')+' wins!';return;}t=t==='R'?'Y':'R';s.textContent=(t==='R'?'Red':'Yellow')+' turn.';return;}}render();</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Connect 4</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
+    <style>
+      :root {
+        --board-width: min(92vw, 560px);
+      }
+
+      body {
+        padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .board-column {
+        display: grid;
+        gap: 0.9rem;
+        justify-items: center;
+      }
+
+      .turn-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+        width: min(100%, 620px);
+      }
+
+      .turn-tile {
+        border-radius: 20px;
+        padding: 0.85rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(11, 16, 36, 0.7);
+        display: grid;
+        gap: 0.15rem;
+      }
+
+      .turn-tile span {
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .turn-tile strong {
+        font-size: 1.1rem;
+      }
+
+      .turn-tile.player.active {
+        border-color: rgba(255, 123, 114, 0.92);
+        background: linear-gradient(180deg, rgba(135, 40, 40, 0.95), rgba(67, 15, 18, 0.95));
+      }
+
+      .turn-tile.cpu.active {
+        border-color: rgba(255, 209, 102, 0.92);
+        background: linear-gradient(180deg, rgba(125, 96, 21, 0.96), rgba(66, 45, 9, 0.96));
+      }
+
+      .board-wrap {
+        width: var(--board-width);
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .drop-row {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.35rem;
+      }
+
+      .drop-btn {
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #5f87ff, #2d46aa);
+        color: #fff;
+        font-weight: 700;
+        padding: 0.5rem 0;
+      }
+
+      .drop-btn:disabled {
+        opacity: 0.4;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.35rem;
+        background: linear-gradient(180deg, #1051b5, #0a2a63);
+        border: 2px solid rgba(170, 206, 255, 0.55);
+        border-radius: 28px;
+        padding: 0.7rem;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      }
+
+      .slot {
+        aspect-ratio: 1;
+        border-radius: 50%;
+        border: 0;
+        background: radial-gradient(circle at 35% 30%, #fefefe, #d6d8e7 70%, #c0c7de);
+      }
+
+      .slot.red {
+        background: radial-gradient(circle at 35% 30%, #ffd0ca, #f35b52 60%, #ae1717);
+      }
+
+      .slot.yellow {
+        background: radial-gradient(circle at 35% 30%, #fff7c2, #ffd54d 58%, #c98a00);
+      }
+
+      .info-column {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .hud-card {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+      }
+
+      select {
+        border-radius: 999px;
+        border: 1px solid #bda7ff;
+        background: rgba(14, 11, 31, 0.82);
+        color: var(--text);
+        padding: 0.55rem 0.9rem;
+      }
+
+      .status {
+        min-height: 3.3rem;
+        display: grid;
+        align-items: center;
+      }
+
+      .mini-rules {
+        margin: 0;
+        padding-left: 1rem;
+        color: var(--muted);
+      }
+
+      .mini-rules li + li {
+        margin-top: 0.35rem;
+      }
+
+      @media (min-width: 980px) and (orientation: landscape) {
+        .content {
+          width: min(1160px, 96vw);
+        }
+
+        .game-shell {
+          grid-template-columns: minmax(0, 1fr) 320px;
+        }
+
+        .info-column {
+          position: sticky;
+          top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content">
+      <section class="panel">
+        <div class="game-shell">
+          <div class="board-column">
+            <div>
+              <h1>Connect 4</h1>
+              <p class="subtitle">The board stays centered while the controls slide to the side on wider landscape screens.</p>
+            </div>
+
+            <div class="turn-strip" aria-label="Turn tracker">
+              <div class="turn-tile player active" id="playerTile">
+                <span>You</span>
+                <strong>Red discs</strong>
+              </div>
+              <div class="turn-tile cpu" id="cpuTile">
+                <span>Computer</span>
+                <strong>Gold discs</strong>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div class="drop-row" id="dropRow" aria-label="Drop controls"></div>
+              <div class="board" id="board" aria-label="Connect 4 board"></div>
+            </div>
+          </div>
+
+          <aside class="info-column">
+            <div class="card hud-card">
+              <h3>Match Setup</h3>
+              <div class="controls">
+                <label for="difficulty">Difficulty</label>
+                <select id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <button class="btn" id="resetBtn" type="button">New Round</button>
+              </div>
+              <div class="card status" id="status">Your move. Drop a red disc into any open column.</div>
+            </div>
+
+            <div class="card hud-card">
+              <h3>How It Plays</h3>
+              <ul class="mini-rules">
+                <li>You always play first as red.</li>
+                <li>Medium blocks immediate wins and leans toward stronger columns.</li>
+                <li>Hard looks ahead with a deeper search before answering.</li>
+              </ul>
+            </div>
+
+            <a class="btn" href="index.html">Back to Board Games</a>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const ROWS = 6;
+      const COLS = 7;
+      const boardEl = document.getElementById("board");
+      const dropRowEl = document.getElementById("dropRow");
+      const statusEl = document.getElementById("status");
+      const difficultyEl = document.getElementById("difficulty");
+      const playerTile = document.getElementById("playerTile");
+      const cpuTile = document.getElementById("cpuTile");
+      const resetBtn = document.getElementById("resetBtn");
+
+      let grid;
+      let current = "R";
+      let roundOver = false;
+
+      function createGrid() {
+        return Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+      }
+
+      function cloneGrid(source) {
+        return source.map((row) => row.slice());
+      }
+
+      function openColumns(state) {
+        return Array.from({ length: COLS }, (_, col) => col).filter((col) => !state[0][col]);
+      }
+
+      function setTurnTiles() {
+        playerTile.classList.toggle("active", current === "R" && !roundOver);
+        cpuTile.classList.toggle("active", current === "Y" && !roundOver);
+      }
+
+      function findLandingRow(state, col) {
+        for (let row = ROWS - 1; row >= 0; row -= 1) {
+          if (!state[row][col]) return row;
+        }
+        return -1;
+      }
+
+      function winnerAt(state, row, col, piece) {
+        const directions = [[1, 0], [0, 1], [1, 1], [1, -1]];
+        for (const [dr, dc] of directions) {
+          let count = 1;
+          for (const sign of [1, -1]) {
+            let r = row + dr * sign;
+            let c = col + dc * sign;
+            while (state[r]?.[c] === piece) {
+              count += 1;
+              r += dr * sign;
+              c += dc * sign;
+            }
+          }
+          if (count >= 4) return true;
+        }
+        return false;
+      }
+
+      function applyMove(state, col, piece) {
+        const row = findLandingRow(state, col);
+        if (row === -1) return null;
+        state[row][col] = piece;
+        return row;
+      }
+
+      function lineScore(windowValues) {
+        const cpuCount = windowValues.filter((value) => value === "Y").length;
+        const playerCount = windowValues.filter((value) => value === "R").length;
+        const emptyCount = windowValues.filter((value) => !value).length;
+
+        if (cpuCount === 4) return 1000;
+        if (cpuCount === 3 && emptyCount === 1) return 18;
+        if (cpuCount === 2 && emptyCount === 2) return 5;
+        if (playerCount === 3 && emptyCount === 1) return -24;
+        if (playerCount === 2 && emptyCount === 2) return -6;
+        return 0;
+      }
+
+      function evaluate(state) {
+        let score = 0;
+        const centerColumn = state.map((row) => row[3]);
+        score += centerColumn.filter((value) => value === "Y").length * 5;
+        score -= centerColumn.filter((value) => value === "R").length * 5;
+
+        for (let row = 0; row < ROWS; row += 1) {
+          for (let col = 0; col < COLS - 3; col += 1) {
+            score += lineScore([state[row][col], state[row][col + 1], state[row][col + 2], state[row][col + 3]]);
+          }
+        }
+        for (let row = 0; row < ROWS - 3; row += 1) {
+          for (let col = 0; col < COLS; col += 1) {
+            score += lineScore([state[row][col], state[row + 1][col], state[row + 2][col], state[row + 3][col]]);
+          }
+        }
+        for (let row = 0; row < ROWS - 3; row += 1) {
+          for (let col = 0; col < COLS - 3; col += 1) {
+            score += lineScore([state[row][col], state[row + 1][col + 1], state[row + 2][col + 2], state[row + 3][col + 3]]);
+          }
+        }
+        for (let row = 3; row < ROWS; row += 1) {
+          for (let col = 0; col < COLS - 3; col += 1) {
+            score += lineScore([state[row][col], state[row - 1][col + 1], state[row - 2][col + 2], state[row - 3][col + 3]]);
+          }
+        }
+        return score;
+      }
+
+      function checkTerminal(state) {
+        for (let row = 0; row < ROWS; row += 1) {
+          for (let col = 0; col < COLS; col += 1) {
+            const piece = state[row][col];
+            if (piece && winnerAt(state, row, col, piece)) return piece;
+          }
+        }
+        if (!openColumns(state).length) return "draw";
+        return null;
+      }
+
+      function minimax(state, depth, maximizing, alpha, beta) {
+        const outcome = checkTerminal(state);
+        if (outcome === "Y") return { score: 100000 + depth };
+        if (outcome === "R") return { score: -100000 - depth };
+        if (outcome === "draw" || depth === 0) return { score: evaluate(state) };
+
+        const moves = openColumns(state);
+        if (maximizing) {
+          let best = { score: -Infinity, column: moves[0] };
+          for (const col of moves) {
+            const next = cloneGrid(state);
+            applyMove(next, col, "Y");
+            const result = minimax(next, depth - 1, false, alpha, beta);
+            if (result.score > best.score) best = { score: result.score, column: col };
+            alpha = Math.max(alpha, result.score);
+            if (beta <= alpha) break;
+          }
+          return best;
+        }
+
+        let best = { score: Infinity, column: moves[0] };
+        for (const col of moves) {
+          const next = cloneGrid(state);
+          applyMove(next, col, "R");
+          const result = minimax(next, depth - 1, true, alpha, beta);
+          if (result.score < best.score) best = { score: result.score, column: col };
+          beta = Math.min(beta, result.score);
+          if (beta <= alpha) break;
+        }
+        return best;
+      }
+
+      function immediateMove(piece) {
+        for (const col of openColumns(grid)) {
+          const next = cloneGrid(grid);
+          const row = applyMove(next, col, piece);
+          if (row !== null && winnerAt(next, row, col, piece)) return col;
+        }
+        return null;
+      }
+
+      function cpuChoice() {
+        const difficulty = difficultyEl.value;
+        const options = openColumns(grid);
+        if (difficulty === "easy") {
+          return options[Math.floor(Math.random() * options.length)];
+        }
+
+        const winning = immediateMove("Y");
+        if (winning !== null) return winning;
+
+        const blocking = immediateMove("R");
+        if (blocking !== null) return blocking;
+
+        if (difficulty === "medium") {
+          const priority = [3, 2, 4, 1, 5, 0, 6];
+          return priority.find((col) => options.includes(col));
+        }
+
+        return minimax(cloneGrid(grid), 5, true, -Infinity, Infinity).column;
+      }
+
+      function renderBoard() {
+        dropRowEl.innerHTML = "";
+        boardEl.innerHTML = "";
+        const available = openColumns(grid);
+
+        for (let col = 0; col < COLS; col += 1) {
+          const button = document.createElement("button");
+          button.className = "drop-btn";
+          button.type = "button";
+          button.textContent = "Drop";
+          button.disabled = roundOver || current !== "R" || !available.includes(col);
+          button.addEventListener("click", () => playerMove(col));
+          dropRowEl.appendChild(button);
+        }
+
+        for (let row = 0; row < ROWS; row += 1) {
+          for (let col = 0; col < COLS; col += 1) {
+            const slot = document.createElement("div");
+            slot.className = "slot";
+            if (grid[row][col] === "R") slot.classList.add("red");
+            if (grid[row][col] === "Y") slot.classList.add("yellow");
+            boardEl.appendChild(slot);
+          }
+        }
+      }
+
+      function endRound(result) {
+        roundOver = true;
+        if (result === "R") {
+          statusEl.textContent = "You connected four. Strong line.";
+        } else if (result === "Y") {
+          statusEl.textContent = "Computer connected four. Try challenging the center sooner.";
+        } else {
+          statusEl.textContent = "Board is full. This round ends in a draw.";
+        }
+        setTurnTiles();
+        renderBoard();
+      }
+
+      function completeTurn(lastRow, lastCol, piece) {
+        if (winnerAt(grid, lastRow, lastCol, piece)) {
+          endRound(piece);
+          return;
+        }
+        if (!openColumns(grid).length) {
+          endRound("draw");
+          return;
+        }
+        current = current === "R" ? "Y" : "R";
+        statusEl.textContent = current === "R" ? "Your move. Choose a column." : "Computer evaluating the board...";
+        setTurnTiles();
+        renderBoard();
+        if (current === "Y") {
+          window.setTimeout(() => {
+            if (roundOver) return;
+            const col = cpuChoice();
+            const row = applyMove(grid, col, "Y");
+            completeTurn(row, col, "Y");
+          }, 350);
+        }
+      }
+
+      function playerMove(col) {
+        if (roundOver || current !== "R") return;
+        const row = applyMove(grid, col, "R");
+        if (row === null) return;
+        completeTurn(row, col, "R");
+      }
+
+      function resetRound() {
+        grid = createGrid();
+        current = "R";
+        roundOver = false;
+        statusEl.textContent = "Your move. Drop a red disc into any open column.";
+        setTurnTiles();
+        renderBoard();
+      }
+
+      resetBtn.addEventListener("click", resetRound);
+      difficultyEl.addEventListener("change", resetRound);
+
+      resetRound();
+    </script>
+  </body>
+</html>

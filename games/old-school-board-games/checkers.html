@@ -1,9 +1,530 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Checkers</title><link rel='stylesheet' href='../../assets/css/site.css'><style>.b{display:grid;grid-template-columns:repeat(8,min(11vw,64px));gap:3px;justify-content:center}.c{width:min(11vw,64px);height:min(11vw,64px);border:0;border-radius:10px;background:#d9b98f}.d{background:radial-gradient(circle at 40% 30%,#754c24,#3b2212)}.p{width:72%;height:72%;border-radius:50%;margin:auto;box-shadow:inset 0 0 10px #fff4}.r{background:radial-gradient(circle at 40% 30%,#ff8f8f,#d11f1f)}.k{background:radial-gradient(circle at 40% 30%,#999,#141414)}.sel{outline:3px solid #7cf3ff}.hint{box-shadow:inset 0 0 0 4px #67ff9a}</style></head><body><main class='content'><section class='panel'><h1>Checkers Deluxe</h1><div id='how' class='card'><p>Improved board texture + CPU opponent (Black). Select your red checker and highlighted diagonals show available moves.</p><button id='close'>Start</button></div><div style='display:flex;gap:8px;flex-wrap:wrap;margin:8px 0'><button class='btn' id='reset'>Reset</button></div><div id='b' class='b'></div><div id='s' class='card'>Red turn.</div><a class='btn' href='index.html'>Back to Board Games</a></section></main><script>close.onclick=()=>how.style.display='none';let B,sel=null,t='r';const king=p=>p==='R'||p==='B',owner=p=>p.toLowerCase();function init(){B=Array.from({length:8},(_,r)=>Array.from({length:8},(_,c)=>((r+c)%2?(r<3?'b':r>4?'r':'') : '')));sel=null;t='r';s.textContent='Red turn.';render()}reset.onclick=init;function dirs(p){if(p==='r')return [[-1,-1],[-1,1]];if(p==='b')return [[1,-1],[1,1]];if(p==='R'||p==='B')return [[-1,-1],[-1,1],[1,-1],[1,1]];return []}
-function moves(r,c){const p=B[r][c];if(!p)return[];const out=[];for(const[d1,d2] of dirs(p)){const r1=r+d1,c1=c+d2,r2=r+d1*2,c2=c+d2*2;if(r1>=0&&r1<8&&c1>=0&&c1<8&&!B[r1][c1])out.push([r1,c1,false]);if(r2>=0&&r2<8&&c2>=0&&c2<8&&B[r1][c1]&&owner(B[r1][c1])!==owner(p)&&!B[r2][c2])out.push([r2,c2,true]);}return out;}
-function allMoves(side){const out=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(owner(B[r][c]||'')===side)for(const m of moves(r,c))out.push([r,c,...m]);return out;}
-function promote(r,c){if(B[r][c]==='r'&&r===0)B[r][c]='R';if(B[r][c]==='b'&&r===7)B[r][c]='B';}
-function cpu(){const m=allMoves('b');if(!m.length){s.textContent='You win!';return;}const pick=m[Math.floor(Math.random()*m.length)];playMove(...pick);t='r';s.textContent='Red turn.';render();}
-function playMove(sr,sc,tr,tc,jump){const p=B[sr][sc];B[sr][sc]='';B[tr][tc]=p;if(jump){B[(sr+tr)/2][(sc+tc)/2]='';}promote(tr,tc);}
-function tap(r,c){if(t!=='r')return;if(!sel){if(owner(B[r][c]||'')==='r'){sel=[r,c];render();}return;}const[sr,sc]=sel;const mv=moves(sr,sc).find(m=>m[0]===r&&m[1]===c);if(mv){playMove(sr,sc,r,c,mv[2]);sel=null;t='b';render();setTimeout(cpu,280);return;}sel=owner(B[r][c]||'')==='r'?[r,c]:null;render();}
-function render(){b.innerHTML='';const hs=sel?moves(sel[0],sel[1]):[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('button');d.className='c '+((r+c)%2?'d':'');if(sel&&sel[0]===r&&sel[1]===c)d.classList.add('sel');if(hs.some(m=>m[0]===r&&m[1]===c))d.classList.add('hint');d.onclick=()=>tap(r,c);if(B[r][c]){const p=document.createElement('div');p.className='p '+(owner(B[r][c])==='r'?'r':'k');if(king(B[r][c]))p.textContent='♛';d.appendChild(p);}b.appendChild(d);}}
-init();</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Checkers Deluxe</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
+    <style>
+      :root {
+        --cell-size: min(10.7vw, 72px);
+      }
+
+      body {
+        padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .board-column {
+        display: grid;
+        gap: 0.9rem;
+        justify-items: center;
+      }
+
+      .turn-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+        width: min(100%, 620px);
+      }
+
+      .turn-tile {
+        border-radius: 20px;
+        padding: 0.85rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(11, 16, 36, 0.7);
+        display: grid;
+        gap: 0.15rem;
+      }
+
+      .turn-tile span {
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .turn-tile strong {
+        font-size: 1.1rem;
+      }
+
+      .turn-tile.player.active {
+        border-color: rgba(255, 123, 114, 0.92);
+        background: linear-gradient(180deg, rgba(140, 43, 43, 0.95), rgba(69, 16, 18, 0.95));
+      }
+
+      .turn-tile.cpu.active {
+        border-color: rgba(121, 211, 255, 0.92);
+        background: linear-gradient(180deg, rgba(56, 91, 121, 0.95), rgba(17, 37, 58, 0.95));
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(8, var(--cell-size));
+        gap: 4px;
+        padding: 0.8rem;
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(67, 46, 26, 0.94), rgba(30, 18, 11, 0.96));
+        border: 2px solid rgba(211, 178, 137, 0.45);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      }
+
+      .cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        border: 0;
+        border-radius: 16px;
+        background: #e6cfa8;
+        display: grid;
+        place-items: center;
+        padding: 0;
+      }
+
+      .cell.dark {
+        background: linear-gradient(180deg, #784c27, #4d2d15);
+      }
+
+      .cell.selected {
+        outline: 3px solid #79d3ff;
+      }
+
+      .cell.hint {
+        box-shadow: inset 0 0 0 4px #7dffb1;
+      }
+
+      .piece {
+        width: 72%;
+        height: 72%;
+        border-radius: 50%;
+        box-shadow: inset 0 10px 18px rgba(255, 255, 255, 0.22), 0 6px 12px rgba(0, 0, 0, 0.3);
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+      }
+
+      .piece.red {
+        background: radial-gradient(circle at 35% 30%, #ffc3bb, #ef5c51 62%, #8f1718);
+        color: #fff;
+      }
+
+      .piece.black {
+        background: radial-gradient(circle at 35% 30%, #c4cfde, #4d5d74 55%, #121c28);
+        color: #e8f3ff;
+      }
+
+      .info-column {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .hud-card {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+      }
+
+      select {
+        border-radius: 999px;
+        border: 1px solid #bda7ff;
+        background: rgba(14, 11, 31, 0.82);
+        color: var(--text);
+        padding: 0.55rem 0.9rem;
+      }
+
+      .status {
+        min-height: 3.3rem;
+        display: grid;
+        align-items: center;
+      }
+
+      .mini-rules {
+        margin: 0;
+        padding-left: 1rem;
+        color: var(--muted);
+      }
+
+      .mini-rules li + li {
+        margin-top: 0.35rem;
+      }
+
+      @media (min-width: 980px) and (orientation: landscape) {
+        .content {
+          width: min(1180px, 96vw);
+        }
+
+        .game-shell {
+          grid-template-columns: minmax(0, 1fr) 320px;
+        }
+
+        .info-column {
+          position: sticky;
+          top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content">
+      <section class="panel">
+        <div class="game-shell">
+          <div class="board-column">
+            <div>
+              <h1>Checkers Deluxe</h1>
+              <p class="subtitle">The board stays locked in place while the rules and controls shift above or beside it.</p>
+            </div>
+
+            <div class="turn-strip" aria-label="Turn tracker">
+              <div class="turn-tile player active" id="playerTile">
+                <span>You</span>
+                <strong>Red side</strong>
+              </div>
+              <div class="turn-tile cpu" id="cpuTile">
+                <span>Computer</span>
+                <strong>Black side</strong>
+              </div>
+            </div>
+
+            <div class="board" id="board" aria-label="Checkers board"></div>
+          </div>
+
+          <aside class="info-column">
+            <div class="card hud-card">
+              <h3>Match Setup</h3>
+              <div class="controls">
+                <label for="difficulty">Difficulty</label>
+                <select id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <button class="btn" id="resetBtn" type="button">New Round</button>
+              </div>
+              <div class="card status" id="status">Your turn. Red moves first.</div>
+            </div>
+
+            <div class="card hud-card">
+              <h3>How It Plays</h3>
+              <ul class="mini-rules">
+                <li>Select one of your red pieces to show valid destinations in green.</li>
+                <li>If any jump is available, you must take a jump.</li>
+                <li>Hard mode evaluates several replies ahead and values kings more aggressively.</li>
+              </ul>
+            </div>
+
+            <a class="btn" href="index.html">Back to Board Games</a>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const boardEl = document.getElementById("board");
+      const statusEl = document.getElementById("status");
+      const difficultyEl = document.getElementById("difficulty");
+      const playerTile = document.getElementById("playerTile");
+      const cpuTile = document.getElementById("cpuTile");
+      const resetBtn = document.getElementById("resetBtn");
+
+      let boardState;
+      let selected = null;
+      let current = "r";
+      let roundOver = false;
+
+      function createBoard() {
+        return Array.from({ length: 8 }, (_, row) =>
+          Array.from({ length: 8 }, (_, col) => {
+            if ((row + col) % 2 === 0) return "";
+            if (row < 3) return "b";
+            if (row > 4) return "r";
+            return "";
+          })
+        );
+      }
+
+      function cloneBoard(state) {
+        return state.map((row) => row.slice());
+      }
+
+      function owner(piece) {
+        return piece ? piece.toLowerCase() : "";
+      }
+
+      function isKing(piece) {
+        return piece === "R" || piece === "B";
+      }
+
+      function directions(piece) {
+        if (piece === "r") return [[-1, -1], [-1, 1]];
+        if (piece === "b") return [[1, -1], [1, 1]];
+        return [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+      }
+
+      function promote(state, row, col) {
+        if (state[row][col] === "r" && row === 0) state[row][col] = "R";
+        if (state[row][col] === "b" && row === 7) state[row][col] = "B";
+      }
+
+      function movesForPiece(state, row, col) {
+        const piece = state[row][col];
+        if (!piece) return [];
+        const moves = [];
+        for (const [dr, dc] of directions(piece)) {
+          const stepRow = row + dr;
+          const stepCol = col + dc;
+          const jumpRow = row + dr * 2;
+          const jumpCol = col + dc * 2;
+
+          if (state[stepRow]?.[stepCol] === "") {
+            moves.push({ from: [row, col], to: [stepRow, stepCol], jump: false });
+          } else if (
+            state[jumpRow]?.[jumpCol] === "" &&
+            owner(state[stepRow][stepCol]) &&
+            owner(state[stepRow][stepCol]) !== owner(piece)
+          ) {
+            moves.push({
+              from: [row, col],
+              to: [jumpRow, jumpCol],
+              jump: true,
+              captured: [stepRow, stepCol]
+            });
+          }
+        }
+        return moves;
+      }
+
+      function allMoves(state, side) {
+        const moves = [];
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            if (owner(state[row][col]) === side) {
+              moves.push(...movesForPiece(state, row, col));
+            }
+          }
+        }
+        const jumps = moves.filter((move) => move.jump);
+        return jumps.length ? jumps : moves;
+      }
+
+      function applyMove(state, move) {
+        const next = cloneBoard(state);
+        const [fromRow, fromCol] = move.from;
+        const [toRow, toCol] = move.to;
+        next[toRow][toCol] = next[fromRow][fromCol];
+        next[fromRow][fromCol] = "";
+        if (move.captured) {
+          next[move.captured[0]][move.captured[1]] = "";
+        }
+        promote(next, toRow, toCol);
+        return next;
+      }
+
+      function pieceScore(piece) {
+        if (piece === "r") return -4;
+        if (piece === "R") return -7;
+        if (piece === "b") return 4;
+        if (piece === "B") return 7;
+        return 0;
+      }
+
+      function evaluate(state) {
+        let score = 0;
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            score += pieceScore(state[row][col]);
+            if (owner(state[row][col]) === "b") score += row * 0.2;
+            if (owner(state[row][col]) === "r") score -= (7 - row) * 0.2;
+          }
+        }
+        return score;
+      }
+
+      function minimax(state, side, depth, alpha, beta) {
+        const moves = allMoves(state, side);
+        if (!moves.length) {
+          return { score: side === "b" ? -999 : 999 };
+        }
+        if (depth === 0) return { score: evaluate(state) };
+
+        if (side === "b") {
+          let best = { score: -Infinity, move: moves[0] };
+          for (const move of moves) {
+            const result = minimax(applyMove(state, move), "r", depth - 1, alpha, beta);
+            const moveScore = result.score + (move.jump ? 2.5 : 0);
+            if (moveScore > best.score) best = { score: moveScore, move };
+            alpha = Math.max(alpha, moveScore);
+            if (beta <= alpha) break;
+          }
+          return best;
+        }
+
+        let best = { score: Infinity, move: moves[0] };
+        for (const move of moves) {
+          const result = minimax(applyMove(state, move), "b", depth - 1, alpha, beta);
+          const moveScore = result.score - (move.jump ? 2.5 : 0);
+          if (moveScore < best.score) best = { score: moveScore, move };
+          beta = Math.min(beta, moveScore);
+          if (beta <= alpha) break;
+        }
+        return best;
+      }
+
+      function cpuChoice() {
+        const options = allMoves(boardState, "b");
+        if (!options.length) return null;
+        const difficulty = difficultyEl.value;
+        if (difficulty === "easy") {
+          const jumps = options.filter((move) => move.jump);
+          const pool = jumps.length ? jumps : options;
+          return pool[Math.floor(Math.random() * pool.length)];
+        }
+        if (difficulty === "medium") {
+          return options
+            .slice()
+            .sort((a, b) => {
+              const aScore = (a.jump ? 6 : 0) + (a.to[0] === 7 ? 3 : 0);
+              const bScore = (b.jump ? 6 : 0) + (b.to[0] === 7 ? 3 : 0);
+              return bScore - aScore;
+            })[0];
+        }
+        return minimax(cloneBoard(boardState), "b", 5, -Infinity, Infinity).move;
+      }
+
+      function setTurnTiles() {
+        playerTile.classList.toggle("active", current === "r" && !roundOver);
+        cpuTile.classList.toggle("active", current === "b" && !roundOver);
+      }
+
+      function selectedMoves() {
+        if (!selected) return [];
+        return allMoves(boardState, "r").filter(
+          (move) => move.from[0] === selected[0] && move.from[1] === selected[1]
+        );
+      }
+
+      function renderBoard() {
+        boardEl.innerHTML = "";
+        const hints = selectedMoves();
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            const button = document.createElement("button");
+            button.className = "cell";
+            if ((row + col) % 2 === 1) button.classList.add("dark");
+            if (selected && selected[0] === row && selected[1] === col) button.classList.add("selected");
+            if (hints.some((move) => move.to[0] === row && move.to[1] === col)) button.classList.add("hint");
+            button.type = "button";
+            button.addEventListener("click", () => tapCell(row, col));
+
+            const piece = boardState[row][col];
+            if (piece) {
+              const token = document.createElement("div");
+              token.className = `piece ${owner(piece) === "r" ? "red" : "black"}`;
+              token.textContent = isKing(piece) ? "K" : "";
+              button.appendChild(token);
+            }
+
+            boardEl.appendChild(button);
+          }
+        }
+      }
+
+      function endRound(message) {
+        roundOver = true;
+        selected = null;
+        statusEl.textContent = message;
+        setTurnTiles();
+        renderBoard();
+      }
+
+      function checkWinner() {
+        if (!allMoves(boardState, "r").length) {
+          endRound("Computer wins. Red has no legal moves left.");
+          return true;
+        }
+        if (!allMoves(boardState, "b").length) {
+          endRound("You win. Black has no legal moves left.");
+          return true;
+        }
+        return false;
+      }
+
+      function finishMove() {
+        if (checkWinner()) return;
+        current = current === "r" ? "b" : "r";
+        setTurnTiles();
+        renderBoard();
+        if (current === "r") {
+          statusEl.textContent = "Your turn. Pick a red checker.";
+        } else {
+          statusEl.textContent = "Computer planning its reply...";
+          window.setTimeout(cpuTurn, 320);
+        }
+      }
+
+      function cpuTurn() {
+        if (roundOver) return;
+        const move = cpuChoice();
+        if (!move) {
+          endRound("You win. Black has no legal moves left.");
+          return;
+        }
+        boardState = applyMove(boardState, move);
+        finishMove();
+      }
+
+      function tapCell(row, col) {
+        if (roundOver || current !== "r") return;
+
+        const legalMoves = allMoves(boardState, "r");
+        const pieceMoves = legalMoves.filter((move) => move.from[0] === row && move.from[1] === col);
+
+        if (pieceMoves.length) {
+          selected = [row, col];
+          statusEl.textContent = "Choose one of the highlighted landing squares.";
+          renderBoard();
+          return;
+        }
+
+        if (!selected) return;
+        const move = legalMoves.find(
+          (option) =>
+            option.from[0] === selected[0] &&
+            option.from[1] === selected[1] &&
+            option.to[0] === row &&
+            option.to[1] === col
+        );
+
+        if (!move) return;
+        boardState = applyMove(boardState, move);
+        selected = null;
+        finishMove();
+      }
+
+      function resetRound() {
+        boardState = createBoard();
+        selected = null;
+        current = "r";
+        roundOver = false;
+        statusEl.textContent = "Your turn. Red moves first.";
+        setTurnTiles();
+        renderBoard();
+      }
+
+      resetBtn.addEventListener("click", resetRound);
+      difficultyEl.addEventListener("change", resetRound);
+
+      resetRound();
+    </script>
+  </body>
+</html>

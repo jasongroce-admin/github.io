@@ -1,9 +1,547 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Chess</title><link rel='stylesheet' href='../../assets/css/site.css'><style>.wrap{display:grid;justify-content:center}.b{display:grid;grid-template-columns:repeat(8,min(11vw,64px));gap:3px;justify-content:center}.c{width:min(11vw,64px);height:min(11vw,64px);font-size:1.9rem;border:0;border-radius:12px}.d{background:#795548}.l{background:#d7b989}.sel{outline:3px solid #66d9ff}.hint{box-shadow:inset 0 0 0 4px #42f58d}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}</style></head><body><main class='content'><section class='panel'><h1>Chess Deluxe</h1><div id='how' class='card'><p>Larger board + optional move hints + CPU opponent (Black). Select a piece to see legal moves.</p><button id='close'>Start</button></div><div class='toolbar'><button id='toggleHints' class='btn'>Hints: On</button><button id='reset' class='btn'>Reset</button></div><div class='wrap'><div id='b' class='b'></div></div><div id='s' class='card'>White turn.</div><a class='btn' href='index.html'>Back to Board Games</a></section></main><script>close.onclick=()=>how.style.display='none';let hints=true;toggleHints.onclick=()=>{hints=!hints;toggleHints.textContent='Hints: '+(hints?'On':'Off');render()};const S={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟',K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙'};const col=p=>!p?'':(p===p.toUpperCase()?'W':'B');let B,sel=null,t='W';function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];sel=null;t='W';s.textContent='White turn.';render()}reset.onclick=init;
-function clearPath(sr,sc,tr,tc){const dr=Math.sign(tr-sr),dc=Math.sign(tc-sc);let r=sr+dr,c=sc+dc;while(r!==tr||c!==tc){if(B[r][c])return false;r+=dr;c+=dc;}return true}
-function legal(sr,sc,tr,tc){const p=B[sr][sc];if(!p||col(p)!==t||col(B[tr][tc])===t)return false;const dr=tr-sr,dc=tc-sc,a=Math.abs,l=p.toLowerCase();if(l==='p'){const dir=t==='W'?-1:1,start=t==='W'?6:1;return (dc===0&&!B[tr][tc]&&dr===dir)||(dc===0&&!B[tr][tc]&&sr===start&&dr===2*dir&&!B[sr+dir][sc])||(a(dc)===1&&dr===dir&&B[tr][tc]);}if(l==='r')return (dr===0||dc===0)&&clearPath(sr,sc,tr,tc);if(l==='b')return a(dr)===a(dc)&&clearPath(sr,sc,tr,tc);if(l==='q')return (dr===0||dc===0||a(dr)===a(dc))&&clearPath(sr,sc,tr,tc);if(l==='n')return (a(dr)===2&&a(dc)===1)||(a(dr)===1&&a(dc)===2);if(l==='k')return a(dr)<=1&&a(dc)<=1;return false;}
-function legalMoves(r,c){const out=[];for(let tr=0;tr<8;tr++)for(let tc=0;tc<8;tc++)if(legal(r,c,tr,tc))out.push([tr,tc]);return out}
-function allMoves(side){const keep=t;t=side;const out=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(col(B[r][c])===side)for(const [tr,tc] of legalMoves(r,c))out.push([r,c,tr,tc]);t=keep;return out;}
-function cpuTurn(){const m=allMoves('B');if(!m.length){s.textContent='Game over. White wins.';return;}const pick=m[Math.floor(Math.random()*m.length)];const[sr,sc,tr,tc]=pick;B[tr][tc]=B[sr][sc];B[sr][sc]='';t='W';s.textContent='White turn.';render();}
-function render(){b.innerHTML='';const hs=sel&&hints?legalMoves(sel[0],sel[1]):[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('button');d.className='c '+((r+c)%2?'d':'l');if(sel&&sel[0]===r&&sel[1]===c)d.classList.add('sel');if(hs.some(m=>m[0]===r&&m[1]===c))d.classList.add('hint');d.textContent=S[B[r][c]]||'';d.onclick=()=>tap(r,c);b.appendChild(d);}}
-function tap(r,c){if(t!=='W')return;if(!sel){if(col(B[r][c])==='W')sel=[r,c];render();return;}const[sr,sc]=sel;if(legal(sr,sc,r,c)){B[r][c]=B[sr][sc];B[sr][sc]='';t='B';s.textContent='CPU thinking...';sel=null;render();setTimeout(cpuTurn,280);return;}sel=col(B[r][c])==='W'?[r,c]:null;render();}
-init();</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Chess Deluxe</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
+    <style>
+      :root {
+        --cell-size: min(10.7vw, 72px);
+      }
+
+      body {
+        padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .board-column {
+        display: grid;
+        gap: 0.9rem;
+        justify-items: center;
+      }
+
+      .turn-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+        width: min(100%, 620px);
+      }
+
+      .turn-tile {
+        border-radius: 20px;
+        padding: 0.85rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(11, 16, 36, 0.7);
+        display: grid;
+        gap: 0.15rem;
+      }
+
+      .turn-tile span {
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .turn-tile strong {
+        font-size: 1.1rem;
+      }
+
+      .turn-tile.player.active {
+        border-color: rgba(239, 239, 239, 0.9);
+        background: linear-gradient(180deg, rgba(134, 143, 165, 0.93), rgba(55, 63, 83, 0.95));
+      }
+
+      .turn-tile.cpu.active {
+        border-color: rgba(95, 189, 255, 0.92);
+        background: linear-gradient(180deg, rgba(56, 91, 121, 0.95), rgba(17, 37, 58, 0.95));
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(8, var(--cell-size));
+        gap: 4px;
+        padding: 0.8rem;
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(61, 41, 24, 0.94), rgba(26, 17, 10, 0.97));
+        border: 2px solid rgba(208, 182, 139, 0.48);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        border: 0;
+        border-radius: 16px;
+        padding: 0;
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        display: grid;
+        place-items: center;
+      }
+
+      .cell.dark {
+        background: linear-gradient(180deg, #7f5735, #52331d);
+      }
+
+      .cell.light {
+        background: linear-gradient(180deg, #ecd7b2, #d8bb8e);
+      }
+
+      .cell.selected {
+        outline: 3px solid #79d3ff;
+      }
+
+      .cell.hint {
+        box-shadow: inset 0 0 0 4px #7dffb1;
+      }
+
+      .cell.last-move {
+        box-shadow: inset 0 0 0 4px rgba(255, 209, 102, 0.8);
+      }
+
+      .info-column {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .hud-card {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+      }
+
+      select {
+        border-radius: 999px;
+        border: 1px solid #bda7ff;
+        background: rgba(14, 11, 31, 0.82);
+        color: var(--text);
+        padding: 0.55rem 0.9rem;
+      }
+
+      .status {
+        min-height: 3.3rem;
+        display: grid;
+        align-items: center;
+      }
+
+      .mini-rules {
+        margin: 0;
+        padding-left: 1rem;
+        color: var(--muted);
+      }
+
+      .mini-rules li + li {
+        margin-top: 0.35rem;
+      }
+
+      @media (min-width: 980px) and (orientation: landscape) {
+        .content {
+          width: min(1180px, 96vw);
+        }
+
+        .game-shell {
+          grid-template-columns: minmax(0, 1fr) 320px;
+        }
+
+        .info-column {
+          position: sticky;
+          top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content">
+      <section class="panel">
+        <div class="game-shell">
+          <div class="board-column">
+            <div>
+              <h1>Chess Deluxe</h1>
+              <p class="subtitle">Single-side play with a centered board, better move guidance, and a CPU that scales up instead of just moving at random.</p>
+            </div>
+
+            <div class="turn-strip" aria-label="Turn tracker">
+              <div class="turn-tile player active" id="playerTile">
+                <span>You</span>
+                <strong>White pieces</strong>
+              </div>
+              <div class="turn-tile cpu" id="cpuTile">
+                <span>Computer</span>
+                <strong>Black pieces</strong>
+              </div>
+            </div>
+
+            <div class="board" id="board" aria-label="Chess board"></div>
+          </div>
+
+          <aside class="info-column">
+            <div class="card hud-card">
+              <h3>Match Setup</h3>
+              <div class="controls">
+                <label for="difficulty">Difficulty</label>
+                <select id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <button class="btn" id="resetBtn" type="button">New Round</button>
+              </div>
+              <div class="card status" id="status">Your turn. White opens the game.</div>
+            </div>
+
+            <div class="card hud-card">
+              <h3>How It Plays</h3>
+              <ul class="mini-rules">
+                <li>Select a white piece to highlight the legal moves available in this simplified ruleset.</li>
+                <li>Captured kings end the round immediately.</li>
+                <li>Hard mode values material and board control with a deeper search before moving.</li>
+              </ul>
+            </div>
+
+            <a class="btn" href="index.html">Back to Board Games</a>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const boardEl = document.getElementById("board");
+      const statusEl = document.getElementById("status");
+      const difficultyEl = document.getElementById("difficulty");
+      const playerTile = document.getElementById("playerTile");
+      const cpuTile = document.getElementById("cpuTile");
+      const resetBtn = document.getElementById("resetBtn");
+
+      const SYMBOLS = {
+        k: "BK",
+        q: "BQ",
+        r: "BR",
+        b: "BB",
+        n: "BN",
+        p: "BP",
+        K: "WK",
+        Q: "WQ",
+        R: "WR",
+        B: "WB",
+        N: "WN",
+        P: "WP"
+      };
+
+      let boardState;
+      let selected = null;
+      let current = "W";
+      let roundOver = false;
+      let lastMove = null;
+
+      function createBoard() {
+        return [
+          ["r", "n", "b", "q", "k", "b", "n", "r"],
+          ["p", "p", "p", "p", "p", "p", "p", "p"],
+          ["", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", ""],
+          ["P", "P", "P", "P", "P", "P", "P", "P"],
+          ["R", "N", "B", "Q", "K", "B", "N", "R"]
+        ];
+      }
+
+      function cloneBoard(state) {
+        return state.map((row) => row.slice());
+      }
+
+      function colorOf(piece) {
+        if (!piece) return "";
+        return piece === piece.toUpperCase() ? "W" : "B";
+      }
+
+      function pieceValue(piece) {
+        const key = piece.toLowerCase();
+        if (key === "p") return 1;
+        if (key === "n" || key === "b") return 3;
+        if (key === "r") return 5;
+        if (key === "q") return 9;
+        if (key === "k") return 50;
+        return 0;
+      }
+
+      function clearPath(state, fromRow, fromCol, toRow, toCol) {
+        const rowStep = Math.sign(toRow - fromRow);
+        const colStep = Math.sign(toCol - fromCol);
+        let row = fromRow + rowStep;
+        let col = fromCol + colStep;
+        while (row !== toRow || col !== toCol) {
+          if (state[row][col]) return false;
+          row += rowStep;
+          col += colStep;
+        }
+        return true;
+      }
+
+      function isLegal(state, fromRow, fromCol, toRow, toCol, side) {
+        const piece = state[fromRow][fromCol];
+        if (!piece || colorOf(piece) !== side) return false;
+        if (colorOf(state[toRow][toCol]) === side) return false;
+        const rowDelta = toRow - fromRow;
+        const colDelta = toCol - fromCol;
+        const absRow = Math.abs(rowDelta);
+        const absCol = Math.abs(colDelta);
+        const kind = piece.toLowerCase();
+
+        if (kind === "p") {
+          const direction = side === "W" ? -1 : 1;
+          const startRow = side === "W" ? 6 : 1;
+          if (colDelta === 0 && !state[toRow][toCol] && rowDelta === direction) return true;
+          if (
+            colDelta === 0 &&
+            !state[toRow][toCol] &&
+            fromRow === startRow &&
+            rowDelta === direction * 2 &&
+            !state[fromRow + direction][fromCol]
+          ) {
+            return true;
+          }
+          if (absCol === 1 && rowDelta === direction && state[toRow][toCol]) return true;
+          return false;
+        }
+
+        if (kind === "r") return (rowDelta === 0 || colDelta === 0) && clearPath(state, fromRow, fromCol, toRow, toCol);
+        if (kind === "b") return absRow === absCol && clearPath(state, fromRow, fromCol, toRow, toCol);
+        if (kind === "q") {
+          return (rowDelta === 0 || colDelta === 0 || absRow === absCol) && clearPath(state, fromRow, fromCol, toRow, toCol);
+        }
+        if (kind === "n") return (absRow === 2 && absCol === 1) || (absRow === 1 && absCol === 2);
+        if (kind === "k") return absRow <= 1 && absCol <= 1;
+        return false;
+      }
+
+      function legalMoves(state, row, col, side = colorOf(state[row][col])) {
+        const moves = [];
+        for (let toRow = 0; toRow < 8; toRow += 1) {
+          for (let toCol = 0; toCol < 8; toCol += 1) {
+            if (isLegal(state, row, col, toRow, toCol, side)) {
+              moves.push({ from: [row, col], to: [toRow, toCol], captured: state[toRow][toCol] });
+            }
+          }
+        }
+        return moves;
+      }
+
+      function allMoves(state, side) {
+        const moves = [];
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            if (colorOf(state[row][col]) === side) {
+              moves.push(...legalMoves(state, row, col, side));
+            }
+          }
+        }
+        return moves;
+      }
+
+      function applyMove(state, move) {
+        const next = cloneBoard(state);
+        const [fromRow, fromCol] = move.from;
+        const [toRow, toCol] = move.to;
+        next[toRow][toCol] = next[fromRow][fromCol];
+        next[fromRow][fromCol] = "";
+        return next;
+      }
+
+      function hasKing(state, side) {
+        return state.some((row) => row.some((piece) => piece === (side === "W" ? "K" : "k")));
+      }
+
+      function evaluate(state) {
+        let score = 0;
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            const piece = state[row][col];
+            if (!piece) continue;
+            const modifier = colorOf(piece) === "B" ? 1 : -1;
+            score += pieceValue(piece) * modifier;
+            if (piece.toLowerCase() === "p") {
+              score += modifier * (colorOf(piece) === "B" ? row : 7 - row) * 0.1;
+            }
+            if (piece.toLowerCase() === "n" || piece.toLowerCase() === "b") {
+              const distanceFromCenter = Math.abs(3.5 - row) + Math.abs(3.5 - col);
+              score += modifier * (2 - distanceFromCenter * 0.2);
+            }
+          }
+        }
+        return score;
+      }
+
+      function minimax(state, side, depth, alpha, beta) {
+        if (!hasKing(state, "W")) return { score: 99999 };
+        if (!hasKing(state, "B")) return { score: -99999 };
+        const moves = allMoves(state, side);
+        if (!moves.length) return { score: side === "B" ? -999 : 999 };
+        if (depth === 0) return { score: evaluate(state) };
+
+        if (side === "B") {
+          let best = { score: -Infinity, move: moves[0] };
+          for (const move of moves) {
+            const result = minimax(applyMove(state, move), "W", depth - 1, alpha, beta);
+            const moveScore = result.score + pieceValue(move.captured || "") * 0.4;
+            if (moveScore > best.score) best = { score: moveScore, move };
+            alpha = Math.max(alpha, moveScore);
+            if (beta <= alpha) break;
+          }
+          return best;
+        }
+
+        let best = { score: Infinity, move: moves[0] };
+        for (const move of moves) {
+          const result = minimax(applyMove(state, move), "B", depth - 1, alpha, beta);
+          const moveScore = result.score - pieceValue(move.captured || "") * 0.4;
+          if (moveScore < best.score) best = { score: moveScore, move };
+          beta = Math.min(beta, moveScore);
+          if (beta <= alpha) break;
+        }
+        return best;
+      }
+
+      function cpuChoice() {
+        const options = allMoves(boardState, "B");
+        if (!options.length) return null;
+        const difficulty = difficultyEl.value;
+        if (difficulty === "easy") {
+          return options[Math.floor(Math.random() * options.length)];
+        }
+        if (difficulty === "medium") {
+          return options.slice().sort((a, b) => pieceValue(b.captured || "") - pieceValue(a.captured || ""))[0];
+        }
+        return minimax(cloneBoard(boardState), "B", 3, -Infinity, Infinity).move;
+      }
+
+      function setTurnTiles() {
+        playerTile.classList.toggle("active", current === "W" && !roundOver);
+        cpuTile.classList.toggle("active", current === "B" && !roundOver);
+      }
+
+      function selectedMoves() {
+        if (!selected) return [];
+        return legalMoves(boardState, selected[0], selected[1], "W");
+      }
+
+      function renderBoard() {
+        boardEl.innerHTML = "";
+        const hints = selectedMoves();
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            const button = document.createElement("button");
+            button.className = `cell ${((row + col) % 2 === 0) ? "light" : "dark"}`;
+            if (selected && selected[0] === row && selected[1] === col) button.classList.add("selected");
+            if (hints.some((move) => move.to[0] === row && move.to[1] === col)) button.classList.add("hint");
+            if (lastMove && ((lastMove.from[0] === row && lastMove.from[1] === col) || (lastMove.to[0] === row && lastMove.to[1] === col))) {
+              button.classList.add("last-move");
+            }
+            button.type = "button";
+            button.textContent = SYMBOLS[boardState[row][col]] || "";
+            button.addEventListener("click", () => tapCell(row, col));
+            boardEl.appendChild(button);
+          }
+        }
+      }
+
+      function endRound(message) {
+        roundOver = true;
+        selected = null;
+        statusEl.textContent = message;
+        setTurnTiles();
+        renderBoard();
+      }
+
+      function postMoveCheck(sideJustMoved) {
+        if (!hasKing(boardState, sideJustMoved === "W" ? "B" : "W")) {
+          endRound(sideJustMoved === "W" ? "You win. Black king was captured." : "Computer wins. White king was captured.");
+          return true;
+        }
+        if (!allMoves(boardState, sideJustMoved === "W" ? "B" : "W").length) {
+          endRound(sideJustMoved === "W" ? "You win. Black has no legal moves." : "Computer wins. White has no legal moves.");
+          return true;
+        }
+        return false;
+      }
+
+      function finishMove(sideJustMoved) {
+        if (postMoveCheck(sideJustMoved)) return;
+        current = sideJustMoved === "W" ? "B" : "W";
+        setTurnTiles();
+        renderBoard();
+        if (current === "W") {
+          statusEl.textContent = "Your turn. Select a white piece.";
+        } else {
+          statusEl.textContent = "Computer is choosing its move...";
+          window.setTimeout(cpuTurn, 360);
+        }
+      }
+
+      function cpuTurn() {
+        if (roundOver) return;
+        const move = cpuChoice();
+        if (!move) {
+          endRound("You win. Black has no legal moves.");
+          return;
+        }
+        boardState = applyMove(boardState, move);
+        lastMove = move;
+        finishMove("B");
+      }
+
+      function tapCell(row, col) {
+        if (roundOver || current !== "W") return;
+        if (!selected) {
+          if (colorOf(boardState[row][col]) === "W") {
+            selected = [row, col];
+            statusEl.textContent = "Choose one of the highlighted moves.";
+            renderBoard();
+          }
+          return;
+        }
+
+        const move = selectedMoves().find((option) => option.to[0] === row && option.to[1] === col);
+        if (move) {
+          boardState = applyMove(boardState, move);
+          lastMove = move;
+          selected = null;
+          finishMove("W");
+          return;
+        }
+
+        selected = colorOf(boardState[row][col]) === "W" ? [row, col] : null;
+        statusEl.textContent = selected ? "Choose one of the highlighted moves." : "Your turn. Select a white piece.";
+        renderBoard();
+      }
+
+      function resetRound() {
+        boardState = createBoard();
+        selected = null;
+        current = "W";
+        roundOver = false;
+        lastMove = null;
+        statusEl.textContent = "Your turn. White opens the game.";
+        setTurnTiles();
+        renderBoard();
+      }
+
+      resetBtn.addEventListener("click", resetRound);
+      difficultyEl.addEventListener("change", resetRound);
+
+      resetRound();
+    </script>
+  </body>
+</html>
