@@ -12,6 +12,7 @@ const ui = {
   retryBtn: document.getElementById("retryBtn"),
   restartBtn: document.getElementById("restartBtn"),
   fullscreenBtn: document.getElementById("fullscreenBtn"),
+  timeOfDay: document.getElementById("timeOfDay"),
   tipModal: document.getElementById("tipModal"),
   tipTitle: document.getElementById("tipTitle"),
   tipText: document.getElementById("tipText"),

@@ -94,6 +94,25 @@ button,
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.time-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(17, 33, 46, 0.7);
+  border: 1px solid #4a6e7a;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+}
+
+.time-label select {
+  border-radius: 999px;
+  background: #12303f;
+  border: 1px solid #4f859a;
+  color: #e8f9ff;
+  padding: 0.25rem 0.5rem;
 }
 
 .portal-link {

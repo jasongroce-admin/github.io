@@ -6,10 +6,10 @@ export function buildLevel() {
     line(2, 2, 15, 2),
     line(3, 4, 14, 4),
     line(4, 7, 16, 7),
-    line(2, 9, 12, 9),
-    line(3, 2, 3, 9),
-    line(8, 2, 8, 9),
-    line(12, 4, 12, 9),
+    line(2, 8, 12, 8),
+    line(3, 2, 3, 8),
+    line(8, 2, 8, 8),
+    line(12, 4, 12, 8),
     line(15, 2, 15, 7)
   ];
 
@@ -18,12 +18,12 @@ export function buildLevel() {
   const brokenPipes = [
     makeBroken(3, 4),
     makeBroken(8, 7),
-    makeBroken(12, 9),
+    makeBroken(12, 8),
     makeBroken(15, 2)
   ];
 
   const enemies = [
-    makeEnemy("raccoon", 4, 9, 1.0),
+    makeEnemy("raccoon", 4, 8, 1.0),
     makeEnemy("spider", 14, 4, 1.2),
     makeEnemy("bug", 16, 7, 1.35)
   ];

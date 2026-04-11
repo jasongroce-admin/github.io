@@ -1,9 +1,9 @@
 export const GRID = {
   cols: 18,
-  rows: 11,
+  rows: 9,
   cell: 50,
   offsetX: 16,
-  offsetY: 16
+  offsetY: 116
 };
 
 export const PLAYER = {

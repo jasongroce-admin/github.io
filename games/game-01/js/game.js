@@ -15,6 +15,7 @@ export class PipeRescueGame {
     this.patchEquipped = false;
     this.repaired = 0;
     this.timeLeft = 0;
+    this.timeOfDay = "day";
 
     this.keys = new Set();
     this.joystick = { active: false, id: null, x: 115, y: canvas.height - 90, dx: 0, dy: 0, baseX: 115, baseY: canvas.height - 90 };
@@ -108,6 +109,9 @@ export class PipeRescueGame {
     this.ui.retryBtn.addEventListener("click", () => this.resetLevel());
     this.ui.restartBtn.addEventListener("click", () => this.restartGame());
     this.ui.fullscreenBtn?.addEventListener("click", () => this.enterFullscreen());
+    this.ui.timeOfDay?.addEventListener("change", (e) => {
+      this.timeOfDay = e.target.value;
+    });
     this.ui.nextLevelBtn.addEventListener("click", () => {
       this.ui.tipModal.classList.add("hidden");
       this.restartGame();
@@ -313,6 +317,7 @@ export class PipeRescueGame {
   draw() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawSky(ctx);
     this.drawGround(ctx);
     this.drawPipeNetwork(ctx);
     this.drawToolbox(ctx);
@@ -321,6 +326,57 @@ export class PipeRescueGame {
     this.drawPlayer(ctx);
     this.drawParticles(ctx);
     this.drawControls(ctx);
+    this.drawAtmosphere(ctx);
+  }
+
+  drawSky(ctx) {
+    const horizon = GRID.offsetY - 10;
+    const themes = {
+      day: { top: "#80d9ff", bottom: "#c8f0ff", glow: "#ffd85f", body: "#fff2a8", dim: 0 },
+      sunset: { top: "#ff8a62", bottom: "#ffcb89", glow: "#ff7b42", body: "#ffd7a8", dim: 0.08 },
+      night: { top: "#081126", bottom: "#25385e", glow: "#ccd9ff", body: "#eff5ff", dim: 0.32 }
+    };
+    const mode = themes[this.timeOfDay] ?? themes.day;
+    const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+    sky.addColorStop(0, mode.top);
+    sky.addColorStop(1, mode.bottom);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, this.canvas.width, horizon);
+
+    const bodyX = this.timeOfDay === "night" ? this.canvas.width - 120 : 120;
+    const glow = ctx.createRadialGradient(bodyX, 46, 3, bodyX, 46, 46);
+    glow.addColorStop(0, mode.glow);
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(bodyX, 46, 46, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = mode.body;
+    ctx.beginPath();
+    ctx.arc(bodyX, 46, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (this.timeOfDay === "night") {
+      ctx.fillStyle = "#f6fbff";
+      for (let i = 0; i < 20; i++) {
+        const x = ((i * 71) % this.canvas.width) + 8;
+        const y = 10 + ((i * 43) % (horizon - 24));
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+
+    ctx.fillStyle = "#2f6f47";
+    ctx.fillRect(0, horizon - 10, this.canvas.width, 12);
+  }
+
+
+  drawAtmosphere(ctx) {
+    const dimMap = { day: 0, sunset: 0.1, night: 0.32 };
+    const alpha = dimMap[this.timeOfDay] ?? 0;
+    if (!alpha) return;
+    ctx.fillStyle = `rgba(7, 12, 24, ${alpha})`;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   drawGround(ctx) {
