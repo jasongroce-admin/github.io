@@ -15,3 +15,5 @@ body{margin:0;font-family:'Trebuchet MS',Arial,sans-serif;background:radial-grad
 .win-event{position:fixed;inset:0;display:none;place-items:center;background:rgba(2,8,16,.55);z-index:90}.win-event.show{display:grid}.win-event .box{background:#132746;border:2px solid #ffd166;border-radius:14px;padding:18px;max-width:520px;text-align:center;box-shadow:0 0 25px #ffd16666}.win-event .amt{font-size:2rem;color:#ffd166;font-weight:900}
 
 .arcade-dock{position:fixed;right:10px;bottom:10px;display:flex;gap:8px;z-index:95}.arcade-dock .btn{padding:10px}.advice-drawer{position:fixed;right:-360px;bottom:0;width:min(92vw,340px);height:78vh;background:#081a2d;border:2px solid #3c6da5;border-radius:14px 14px 0 0;padding:10px;z-index:96;transition:right .25s}.advice-drawer.open{right:0}.advice-drawer h4{margin:0 0 8px}
+
+.money-rain{position:fixed;inset:0;pointer-events:none;z-index:88}.money-rain .m{position:absolute;top:-20px;animation:fall 1.6s linear forwards;font-size:20px}@keyframes fall{to{transform:translateY(110vh) rotate(180deg);opacity:0}}
