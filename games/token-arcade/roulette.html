@@ -16,10 +16,10 @@
     .outside .o{height:40px;border:1px solid #dcefd1;display:grid;place-items:center;color:#fff;cursor:pointer;position:relative}
     .outside .redBox{background:#b91c1c}.outside .blackBox{background:#101010;color:#fff}.outside .other{background:#1d7a3d}
 
-    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:#0f2238;position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
+    .wheel{width:320px;height:320px;border-radius:50%;border:6px solid #dcefd1;background:radial-gradient(circle at center,#111 0 28%,transparent 29%),conic-gradient(#d4af37 0 20deg,#111 20deg 40deg,#d4af37 40deg 60deg,#111 60deg 80deg,#d4af37 80deg 100deg,#111 100deg 120deg,#d4af37 120deg 140deg,#111 140deg 160deg,#d4af37 160deg 180deg,#111 180deg 200deg,#d4af37 200deg 220deg,#111 220deg 240deg,#d4af37 240deg 260deg,#111 260deg 280deg,#d4af37 280deg 300deg,#111 300deg 320deg,#d4af37 320deg 340deg,#111 340deg 360deg);position:relative;margin:auto;transition:transform 2.35s ease-out;overflow:hidden}
     .wheel .p{position:absolute;left:50%;top:50%;transform-origin:0 0;font-size:9px}
     .orbit{position:absolute;left:50%;top:50%;width:0;height:0}
-    .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-139px;margin:-5px;box-shadow:0 0 8px #fff}
+    .ball{position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;left:0;top:-150px;margin:-5px;box-shadow:0 0 8px #fff}
     .spinBall{animation:counterspin 2.35s linear}
     @keyframes counterspin{from{transform:rotate(0deg)}to{transform:rotate(-1440deg)}}
 
@@ -27,7 +27,7 @@
     .pickChip{width:44px;height:44px;border-radius:50%;border:2px solid #fff;color:#fff;font-weight:700;background-size:cover;background-position:center;text-shadow:0 0 3px #000}
     .lastTile{margin:10px auto 0;width:160px;height:92px;border-radius:12px;display:grid;place-items:center;font-size:3rem;font-weight:900;color:#fff;border:2px solid #eaf7dd;background:#1f2937}
     .status{font-size:.9rem;color:#cfe6ff}
-    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:14px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}
+    .historyStrip{width:100%;display:flex;gap:6px;overflow:auto;padding-top:8px;align-items:flex-end}.histTile{min-width:30px;height:30px;border-radius:7px;border:1px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.88rem}.histTile.latest{min-width:66px;height:66px;font-size:1.5rem}
   </style>
 </head>
 <body>
@@ -60,12 +60,12 @@
             <button class='btn' id='repeat'>Repeat Bet</button>
             <div id='rail' style='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-left:90px'></div>
             <div id='pickHelp' class='status'>Pick numbers for current bet type.</div>
-            <div id='specials' class='status'>Special Bets: <button class='btn' data-special='snake'>Red Snake</button> <button class='btn' data-special='blackNeighbors'>Black Neighbors</button> <button class='btn' data-special='voisins'>Voisins du Zero</button></div>
+            <button class='btn' id='toggleSpecials' type='button'>Special Bets</button><div id='specials' class='status' style='display:none'> <button class='btn' data-special='snake'>Red Snake</button> <button class='btn' data-special='blackNeighbors'>Black Neighbors</button> <button class='btn' data-special='voisins'>Voisins du Zero</button> <button class='btn' data-special='tiers'>Tiers du Cylindre</button> <button class='btn' data-special='orphelins'>Orphelins</button> <button class='btn' data-special='jeuZero'>Jeu Zero</button></div>
             <div id='historyStrip' class='historyStrip'></div>
           </div>
         </div>
 
-        <div style='margin-left:-98px;margin-top:-6px'>
+        <div style='margin-left:-58px;margin-top:-6px'>
           <div class='wheel' id='w'><div class='orbit' id='orbit'><div class='ball'></div></div></div>
           <div style='text-align:center;margin-top:8px'>
             Last: <span id='last'>-</span><br>
@@ -95,7 +95,10 @@
     const specialSets={
       snake:[1,5,9,12,14,16,19,23,27,30,32,34],
       blackNeighbors:[2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35],
-      voisins:[22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25]
+      voisins:[22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25],
+      tiers:[27,13,36,11,30,8,23,10,5,24,16,33],
+      orphelins:[1,20,14,31,9,17,34,6],
+      jeuZero:[12,35,3,26,0,32,15]
     };
 
     const chipAsset=v=>`images/chips/chip-${String(v).replace('.','_')}.svg`;
@@ -130,10 +133,24 @@
     function drawWheel(){
       w.querySelectorAll('.p').forEach(x=>x.remove());
       const s=seq(),step=360/s.length;
-      s.forEach((n,i)=>{const d=document.createElement('div');d.className='p';d.style.transform=`rotate(${i*step}deg) translate(90px) rotate(${-i*step}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');w.appendChild(d);});
+      s.forEach((n,i)=>{const d=document.createElement('div');d.className='p';d.style.transform=`rotate(${i*step}deg) translate(138px) rotate(${-i*step}deg)`;d.textContent=n;d.style.color=(n==='0'||n==='00')?'#7cffb2':(redSet.has(+n)?'#ff8d8d':'#fff');w.appendChild(d);});
     }
 
-    function place(key,amount){if(spinning)return;if(!spend(amount))return;bets[key]=(bets[key]||0)+amount;render();}
+
+    function outsideConflicts(key){
+      const pair={ 'out:red':'out:black','out:black':'out:red','out:odd':'out:even','out:even':'out:odd','out:low':'out:high','out:high':'out:low' };
+      return pair[key];
+    }
+
+    function place(key,amount){
+      if(spinning)return;
+      if(key.startsWith('col:')){const c=Object.keys(bets).filter(k=>k.startsWith('col:')&&bets[k]>0&&!Object.is(k,key));if(c.length>=2)return alert('Only 2 column bets at once.');}
+      if(key.startsWith('row:')){const r=Object.keys(bets).filter(k=>k.startsWith('row:')&&bets[k]>0&&!Object.is(k,key));if(r.length>=2)return alert('Only 2 dozen bets at once.');}
+      const conf=outsideConflicts(key); if(conf&&bets[conf]) return alert('Choose one side only for that outside bet pair.');
+      if(!spend(amount))return;
+      bets[key]=(bets[key]||0)+amount;
+      render();
+    }
     function addChipBadge(el,key){if(bets[key]){const c=document.createElement('span');c.className='chip';c.textContent=bets[key].toFixed(1);el.appendChild(c);}}
     function makeCell(label,key,cls='green',n=null){const d=document.createElement('button');d.className='cell '+cls;d.textContent=label;d.onclick=()=>onNumberClick(n??label);addChipBadge(d,key);return d}
 
@@ -174,7 +191,7 @@
       outside.innerHTML='';[['out:red','RED','redBox'],['out:black','BLACK','blackBox'],['out:odd','ODD','other'],['out:even','EVEN','other'],['out:low','1-18','other'],['out:high','19-36','other']].forEach(([k,t,cl])=>{const b=document.createElement('button');b.className='o '+cl;b.textContent=t;b.onclick=()=>place(k,currentChip);addChipBadge(b,k);outside.appendChild(b)});
     }
     function renderHistory(){historyStrip.innerHTML='';history.forEach((h,i)=>{const d=document.createElement('div');d.className='histTile '+(i===0?'latest':'');d.textContent=h.n;d.style.background=h.c;historyStrip.appendChild(d);});}
-    function renderChips(){chipLayer.innerHTML='';const originX=0,originY=0,cellW=54,cellH=54;const dot=(x,y,val)=>{const d=document.createElement('div');d.style.cssText=`position:absolute;left:${x-12}px;top:${y-12}px;width:24px;height:24px;border-radius:50%;background:#ffd166;color:#111;display:grid;place-items:center;font-size:10px;font-weight:800;border:1px solid #222`;d.textContent=Number(val).toFixed(1);chipLayer.appendChild(d)};for(const [k,a] of Object.entries(bets)){if(k.startsWith('n:')){const n=k.split(':')[1];const p=coordsFor(n)[0];dot(originX+(p.c-1)*cellW+26,originY+(p.r-1)*cellH+26,a);}else if(k.startsWith('split:')){const [x,y]=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);dot(originX+((x.c+y.c)/2-1)*cellW+26,originY+((x.r+y.r)/2-1)*cellH+26,a);}else if(k.startsWith('corner:')){const pts=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);const cx=pts.reduce((t,p)=>t+p.c,0)/4,cy=pts.reduce((t,p)=>t+p.r,0)/4;dot(originX+(cx-1)*cellW+26,originY+(cy-1)*cellH+26,a);}else if(k==='trio:0|00|2'){dot(originX+39,originY+80,a);} } }
+    function renderChips(){chipLayer.innerHTML='';const originX=0,originY=0,cellW=54,cellH=54;const dot=(x,y,val)=>{const d=document.createElement('div');d.style.cssText=`position:absolute;left:${x-12}px;top:${y-12}px;width:24px;height:24px;border-radius:50%;background:#ffd166;color:#111;display:grid;place-items:center;font-size:10px;font-weight:800;border:1px solid #222`;d.textContent=Number(val).toFixed(1);chipLayer.appendChild(d)};for(const [k,a] of Object.entries(bets)){if(k.startsWith('n:')){const n=k.split(':')[1];const p=coordsFor(n)[0];dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a);}else if(k.startsWith('split:')){const [x,y]=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);dot(originX+((x.c+y.c)/2-1)*cellW+26,originY+((x.r+y.r)/2-1)*cellH+26,a);}else if(k.startsWith('corner:')){const pts=k.split(':')[1].split('|').map(v=>coordsFor(v)[0]);const cx=pts.reduce((t,p)=>t+p.c,0)/4,cy=pts.reduce((t,p)=>t+p.r,0)/4;dot(originX+(cx-1)*cellW+26,originY+(cy-1)*cellH+26,a);}else if(k==='trio:0|00|2'){dot(originX+39,originY+80,a);}else if(k.startsWith('special:')){const arr=specialSets[k.split(':')[1]]||[];arr.forEach(n=>{const p=coordsFor(String(n))[0];if(p)dot(originX+(p.c-1)*cellW+27,originY+(p.r-1)*cellH+27,a/Math.max(arr.length,1));});} } }
     function render(){bet.textContent=Object.values(bets).reduce((a,b)=>a+b,0).toFixed(2);totWin.textContent=totalWin.toFixed(2);setTokens(getTokens());renderTable();renderOutside();renderHistory();renderChips();}
 
     function colKey(n){if(n%3===0)return 'col:1';if(n%3===2)return 'col:2';return 'col:3';}
@@ -218,6 +235,7 @@
     repeat.onclick=()=>{if(spinning)return;if(!Object.keys(lastBet).length)return;Object.entries(lastBet).forEach(([k,a])=>{if(spend(a))bets[k]=(bets[k]||0)+a});render();};
     wheel.onchange=()=>{drawWheel();render();};
     betType.onchange=()=>{pendingNums=[];pickHelp.textContent='Pick numbers for current bet type.';};
+    toggleSpecials.onclick=()=>{specials.style.display=specials.style.display==='none'?'block':'none';};
     document.querySelectorAll('#specials [data-special]').forEach(btn=>btn.onclick=()=>{const key=btn.dataset.special;place('special:'+key,currentChip);});
 
     drawWheel();render();
