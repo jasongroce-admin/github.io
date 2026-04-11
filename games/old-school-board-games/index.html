@@ -1,1 +1,114 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Old School Board Games</title><link rel='stylesheet' href='../../assets/css/site.css'></head><body><main class='content'><section class='panel'><h1>Old School Board Games</h1><p>Pick a board game. Each game is now a separate page for easier updates.</p><div class='projects-grid'><a class='card' href='tic-tac-toe.html'><h3>Tic Tac Toe</h3><p>Large tap-friendly board.</p></a><a class='card' href='connect-4.html'><h3>Connect 4</h3><p>Drop realistic discs in columns.</p></a><a class='card' href='chess.html'><h3>Chess</h3><p>Piece movement and turns.</p></a><a class='card' href='checkers.html'><h3>Checkers</h3><p>Diagonal captures and turns.</p></a><a class='card' href='../../index.html'><h3>Back Home</h3><p>Return to homepage.</p></a></div></section></main></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width,initial-scale=1'>
+    <title>Old School Board Games</title>
+    <link rel='stylesheet' href='../../assets/css/site.css'>
+    <style>
+      .old-school-panel {
+        text-align: center;
+      }
+
+      .old-school-grid {
+        margin: 1rem auto 0;
+        width: min(760px, 100%);
+        justify-content: center;
+        align-items: stretch;
+      }
+
+      .old-school-grid .card {
+        text-align: left;
+        display: grid;
+        gap: 0.5rem;
+        min-height: 150px;
+      }
+
+      .quality-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .quality {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        border: 1px solid rgba(189, 167, 255, 0.45);
+        background: rgba(94, 75, 160, 0.35);
+        color: var(--text);
+        font-size: 0.82rem;
+      }
+
+      .quality .sprite {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        display: inline-grid;
+        place-items: center;
+        font-size: 12px;
+        line-height: 1;
+        background: radial-gradient(circle at 30% 30%, #f3e8ff, #9d7fff);
+        color: #231252;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 1px 4px rgba(0, 0, 0, 0.35);
+      }
+    </style>
+  </head>
+  <body>
+    <main class='content'>
+      <section class='panel old-school-panel'>
+        <h1>Old School Board Games</h1>
+        <p>Pick a board game. Each game is now a separate page for easier updates.</p>
+
+        <div class='projects-grid old-school-grid'>
+          <a class='card' href='tic-tac-toe.html'>
+            <h3>Tic Tac Toe</h3>
+            <p>Large tap-friendly board.</p>
+            <div class='quality-row'>
+              <span class='quality'><span class='sprite'>✚</span>Fast Rounds</span>
+              <span class='quality'><span class='sprite'>☝</span>Simple Controls</span>
+            </div>
+          </a>
+
+          <a class='card' href='connect-4.html'>
+            <h3>Connect 4</h3>
+            <p>Drop realistic discs in columns.</p>
+            <div class='quality-row'>
+              <span class='quality'><span class='sprite'>⬤</span>Disc Physics</span>
+              <span class='quality'><span class='sprite'>🧠</span>Strategy Focus</span>
+            </div>
+          </a>
+
+          <a class='card' href='chess.html'>
+            <h3>Chess</h3>
+            <p>Piece movement and turns.</p>
+            <div class='quality-row'>
+              <span class='quality'><span class='sprite'>♞</span>Classic Pieces</span>
+              <span class='quality'><span class='sprite'>♜</span>Deep Tactics</span>
+            </div>
+          </a>
+
+          <a class='card' href='checkers.html'>
+            <h3>Checkers</h3>
+            <p>Diagonal captures and turns.</p>
+            <div class='quality-row'>
+              <span class='quality'><span class='sprite'>◉</span>Quick Matches</span>
+              <span class='quality'><span class='sprite'>↗</span>Smooth Moves</span>
+            </div>
+          </a>
+
+          <a class='card' href='../../index.html'>
+            <h3>Back Home</h3>
+            <p>Return to homepage.</p>
+            <div class='quality-row'>
+              <span class='quality'><span class='sprite'>⌂</span>Main Lobby</span>
+              <span class='quality'><span class='sprite'>★</span>More Games</span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
