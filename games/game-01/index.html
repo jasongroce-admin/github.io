@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>JR's #2 Rescue</title>
     <link rel="stylesheet" href="css/game.css" />
   </head>
@@ -13,33 +13,34 @@
         <div><strong>Score:</strong> <span id="scoreLabel">0</span></div>
         <div><strong>Leaks Fixed:</strong> <span id="fixedLabel">0</span>/<span id="totalLabel">0</span></div>
         <div><strong>Patch:</strong> <span id="patchLabel">None</span></div>
+        <div><strong>Timer:</strong> <span id="timerLabel">180s</span></div>
+        <div><strong>HP:</strong> <span id="hpLabel">❤️❤️❤️❤️❤️❤️</span></div>
       </header>
 
       <section class="game-wrap">
-        <canvas id="gameCanvas" width="900" height="580" aria-label="JR's #2 Rescue game area"></canvas>
+        <canvas id="gameCanvas" width="932" height="582" aria-label="JR's #2 Rescue game area"></canvas>
 
         <aside class="side-panel">
-          <h2>JR's #2 Rescue Mission</h2>
-          <p>
-            Find soggy spots, dig to reveal pipes, and patch leaks before they erupt. Some holes are fake, some hold treasure.
-          </p>
+          <h2>JR Rescue v2: Side Dig</h2>
+          <p>Dig Dug style mission. Pipes are visible in the dirt, but only broken sections need repairs before the timer ends.</p>
 
           <div class="table-card">
-            <h3>Patch Table</h3>
+            <h3>Toolbox</h3>
             <button id="equipPatchBtn" type="button">Equip Patch</button>
-            <p>Grab a patch here, then click/tap a broken pipe to repair.</p>
+            <p>Stand by the toolbox in the top-left zone and equip a patch before repairing a red broken pipe.</p>
           </div>
 
           <div class="controls-card">
             <h3>Controls</h3>
             <ul>
-              <li><strong>Move:</strong> WASD / Arrow Keys</li>
-              <li><strong>Dig:</strong> Hold mouse, touch, or Spacebar</li>
-              <li><strong>Repair:</strong> Click/tap pipe while carrying patch</li>
+              <li><strong>Left:</strong> movable joystick</li>
+              <li><strong>Right:</strong> shovel (close) and hose (range)</li>
+              <li><strong>Combat:</strong> 3 hose hits inflates + bursts enemies</li>
             </ul>
           </div>
 
           <div class="buttons">
+            <button id="fullscreenBtn" type="button">Fullscreen</button>
             <button id="retryBtn" type="button">Retry Level</button>
             <button id="restartBtn" type="button">Restart Game</button>
           </div>
@@ -52,7 +53,7 @@
         <div class="modal-content">
           <h3 id="tipTitle"></h3>
           <p id="tipText"></p>
-          <button id="nextLevelBtn" type="button">Next Level</button>
+          <button id="nextLevelBtn" type="button">Play Again</button>
         </div>
       </div>
     </div>
