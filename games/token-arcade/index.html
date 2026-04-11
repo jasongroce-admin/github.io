@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Arcade Games</title><link rel='stylesheet' href='common.css'></head>
+<body><div class='wrap'>
+<div class='notice'><b>Testing Notice:</b> SpendTokens only. Educational coding demo, no real-world value, no redemption or prizes.</div>
+<div class='top'><h1 style='margin:0'>Token Arcade Games</h1><div>Total SpendTokens: <span id='tokenTotal' class='token'>500.00</span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div>
+<div class='panel' style='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px'>
+<a class='btn' href='roulette.html'>Roulette</a><a class='btn' href='blackjack.html'>Blackjack</a><a class='btn' href='craps.html'>Craps</a><a class='btn' href='baccarat.html'>Baccarat</a><a class='btn' href='slots.html'>Slots 5x3</a><a class='btn' href='magic-draw.html'>Magic Draw</a><a class='btn' href='poker.html'>Poker</a><a class='btn' href='keno.html'>Keno</a><a class='btn' href='../../index.html'>Back Home</a>
+</div>
+<div class='panel'><h3>Golden Advice (Beefed Up)</h3>
+<div style='display:flex;gap:8px;flex-wrap:wrap;align-items:end'>
+<label>Game <select id='gaGame'><option>Roulette</option><option>Blackjack</option><option>Craps</option><option>Baccarat</option><option>Slots</option><option>Poker</option><option>Keno</option></select></label>
+<label>Strategy <select id='gaSystem'></select></label>
+<button class='btn' id='gaBuild'>Build Advice</button>
+<button class='btn' id='gaClear'>Clear History</button>
+</div>
+<div id='gaInputs' style='margin-top:8px'></div>
+<div id='gaHistory' class='notice' style='margin-top:8px'>History: none yet.</div>
+<div id='gaOut' class='notice' style='margin-top:8px'>Choose a game and enter a result.</div>
+</div>
+</div><script src='common.js'></script><script>
+initWallet();
+const systems={Roulette:['Flat','Martingale','Paroli','Fibonacci'],Blackjack:['Basic Strategy','Hi-Lo style count','Conservative Stand','Aggressive Double'],Craps:['Pass Line','Dont Pass','Come + Odds','Field Rotation'],Baccarat:['Banker Lean','Player Lean','Tie Chase (high risk)','Side Bet Probe'],Slots:['Low Vol','Medium Vol','Bonus Hunt','Max Line Sweep'],Poker:['Tight Value','Aggressive Draw','Bankroll Protect','High Variance'],Keno:['Low Spot Set','Mid Spot Mix','High Spot Chase','Pattern Rotation']};
+const state={history:{Roulette:[],Blackjack:[],Craps:[],Baccarat:[],Slots:[],Poker:[],Keno:[]},bjMode:'dealer',bjDealer:[],bjPlayer:[]};
+function opts(){gaSystem.innerHTML=systems[gaGame.value].map(s=>`<option>${s}</option>`).join('');}
+function renderInputs(){
+  if(gaGame.value==='Roulette') gaInputs.innerHTML=`<label>Last Color <select id='rColor'><option>Red</option><option>Black</option><option>Green</option></select></label> <label>Last Number <input id='rNum' type='number' min='0' max='36' value='17'></label>`;
+  else if(gaGame.value==='Craps') gaInputs.innerHTML=`<label>Dice 1 <input id='c1' type='number' min='1' max='6' value='3'></label> <label>Dice 2 <input id='c2' type='number' min='1' max='6' value='4'></label> <label>Point <input id='cPoint' type='number' min='0' max='10' value='0'></label>`;
+  else if(gaGame.value==='Blackjack'){gaInputs.innerHTML=`<div style='display:flex;gap:8px;flex-wrap:wrap'><label>${state.bjMode==='dealer'?'Dealer':'Player'} Card <select id='bjCard'><option>A</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>J</option><option>Q</option><option>K</option></select></label><button class='btn' id='bjAdd'>Add Card</button><button class='btn' id='bjSwitch'>Switch to ${state.bjMode==='dealer'?'Player':'Dealer'}</button></div><div id='bjState' class='notice' style='margin-top:6px'>Dealer: [${state.bjDealer.join(', ')}] | Player: [${state.bjPlayer.join(', ')}]</div>`;bjAdd.onclick=()=>{(state.bjMode==='dealer'?state.bjDealer:state.bjPlayer).push(bjCard.value);renderInputs();};bjSwitch.onclick=()=>{state.bjMode=state.bjMode==='dealer'?'player':'dealer';renderInputs();};}
+  else gaInputs.innerHTML=`<label>Recent result <input id='gGeneric' placeholder='e.g. banker win, 2 cherries, 4 keno hits'></label>`;
+}
+function scoreCards(arr){let t=0,a=0;arr.forEach(c=>{if(c==='A'){t+=11;a++;}else if(['K','Q','J','10'].includes(c))t+=10;else t+=+c});while(t>21&&a--)t-=10;return t;}
+function recommend(game,sys,e){if(game==='Roulette'){const reds=state.history.Roulette.filter(x=>x.color==='Red').length,blacks=state.history.Roulette.filter(x=>x.color==='Black').length;const trend=reds>blacks?'Red':'Black';return `${sys}: trend ${trend}. Suggested next: ${e.color==='Green'?'split Red/Black':e.color==='Red'?'Black':'Red'} for balance.`;}if(game==='Craps'){const sum=e.d1+e.d2;const hot=state.history.Craps.filter(x=>x.sum>=7).length>=Math.ceil(state.history.Craps.length/2);return `${sys}: rolled ${sum}${e.point?` (point ${e.point})`:''}. Suggested next: ${hot?'Pass/Come pressure':'Field or Dont control'}.`;}if(game==='Blackjack'){const ds=scoreCards(e.dealer),ps=scoreCards(e.player);let move='Hit';if(ps>=17)move='Stand';else if([4,5,6].includes(ds)&&ps>=12)move='Stand';if(sys.includes('Aggressive')&&ps>=9&&ps<=11)move='Double if allowed';return `${sys}: Dealer ${ds}, Player ${ps}. Suggested move: ${move}.`;}if(game==='Baccarat')return `${sys}: lean Banker in neutral shoes; reduce tie exposure unless streak data supports it.`;if(game==='Slots')return `${sys}: use controlled unit sizing and wait for bonus cadence rather than chasing losses.`;if(game==='Poker')return `${sys}: keep tighter ranges after cold runs; press only with strong made hands/draw odds.`;if(game==='Keno')return `${sys}: hold a stable spot count and rotate pattern every 5 rounds if hit rate drops.`;return `${sys}: track history and preserve bankroll.`;}
+function addHistory(game,e){const h=state.history[game];h.unshift(e);if(h.length>10)h.pop();gaHistory.textContent=`History (${game}): `+h.map(x=>game==='Roulette'?`${x.color} ${x.num}`:game==='Craps'?`${x.d1}+${x.d2}`:game==='Blackjack'?`D${x.dealer.join('')}/P${x.player.join('')}`:(x.note||'entry')).join(' | ')}
+gaBuild.onclick=()=>{const g=gaGame.value,s=gaSystem.value;let e={};if(g==='Roulette')e={color:rColor.value,num:+rNum.value};else if(g==='Craps')e={d1:+c1.value,d2:+c2.value,point:+cPoint.value||0,sum:+c1.value+ +c2.value};else if(g==='Blackjack')e={dealer:[...state.bjDealer],player:[...state.bjPlayer]};else e={note:(gGeneric&&gGeneric.value)||'result logged'};addHistory(g,e);gaOut.innerHTML=`<b>${g} • ${s}</b><br>${recommend(g,s,e)}<br><i>Pattern-aware suggestion only; no guarantees.</i>`;};
+gaClear.onclick=()=>{state.history={Roulette:[],Blackjack:[],Craps:[],Baccarat:[],Slots:[],Poker:[],Keno:[]};state.bjDealer=[];state.bjPlayer=[];gaHistory.textContent='History: none yet.';gaOut.textContent='History cleared.';renderInputs();};
+gaGame.onchange=()=>{opts();renderInputs();};opts();renderInputs();
+</script></body></html>
