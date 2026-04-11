@@ -45,7 +45,7 @@ h2 { margin: 1.25rem 0 0.6rem; }
   text-decoration: none;
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 26px;
   background: rgba(16, 12, 35, 0.45);
   padding: 0.8rem;
   transition: transform 120ms ease, border-color 120ms ease;
@@ -61,4 +61,15 @@ h2 { margin: 1.25rem 0 0.6rem; }
   font-size: 0.9rem;
   margin-top: 0.9rem;
   color: var(--muted);
+}
+
+
+.btn {
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  border: 1px solid #bda7ff;
+  background: radial-gradient(circle at 30% 25%, #8c72da, #4a3a8a);
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
 }
