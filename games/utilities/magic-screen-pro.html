@@ -2,23 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>Magic Screen PRO</title>
     <style>
-        :root {
-            --accent: #66ccff;
-            --panel: #0f1b32;
-            --text: #e3dcff;
-        }
-        * { box-sizing: border-box; }
+        :root { --accent: #66ccff; --panel: #0f1b32; }
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: radial-gradient(circle at top, rgba(102,204,255,0.15), transparent 45%), #050814;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #e3dcff;
             touch-action: none;
-            overflow: hidden;
         }
         .header {
             background: rgba(11,27,48,0.98);
@@ -27,12 +20,11 @@
             padding: 8px 12px;
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
             gap: 8px;
+            flex-wrap: wrap;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(102,204,255,0.15);
         }
         .header h1 {
             margin: 0;
@@ -50,45 +42,15 @@
             cursor: pointer;
             font-size: 0.93rem;
             transition: all 0.2s;
-            white-space: nowrap;
         }
         .btn:hover { background: #112b44; border-color: var(--accent); }
-        .main {
-            display: flex;
-            height: calc(100vh - 57px);
-            flex-direction: row;
-        }
-        .sidebar, .inspector {
-            background: #0b1b30f2;
-            border: 1px solid #335;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .sidebar { width: 280px; border-right: 1px solid #335; }
-        .inspector { width: 270px; border-left: 1px solid #335; }
-        .panel {
-            background: var(--panel);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .panel h3 {
-            margin: 0 0 10px;
-            font-size: 1.05rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .main { display: flex; height: calc(100vh - 57px); }
+        .sidebar { width: 280px; background: #0b1b30f2; border-right: 1px solid #335; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .inspector { width: 270px; background: #0b1b30f2; border-left: 1px solid #335; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .panel { background: var(--panel); border: 1px solid #335; border-radius: 12px; padding: 12px; }
+        .panel h3 { margin: 0 0 10px; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .panel.collapsed .content { display: none; }
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
-            gap: 8px;
-        }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 8px; }
         .tool-btn {
             padding: 12px 6px;
             background: #112b44;
@@ -97,86 +59,31 @@
             font-size: 0.9rem;
             color: #ffffff;
             text-align: center;
-            transition: all 0.2s;
             min-height: 72px;
+            transition: all 0.2s;
         }
         .tool-btn.active {
             border-color: #66ccff;
             background: #1e3a55;
-            box-shadow: 0 0 15px rgba(102,204,255,0.6);
+            box-shadow: 0 0 15px rgba(102,204,255,0.5);
         }
-        .control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .control label { flex: 1; font-size: 0.92rem; }
+        .control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .control label { flex: 1; font-size: 0.93rem; }
         .control input[type="range"] { flex: 2; }
-        .control input[type="number"] {
-            width: 62px;
-            background: #112b44;
-            border: 1px solid #446;
-            color: #e3dcff;
-            padding: 5px;
-            border-radius: 6px;
-        }
-        .canvas-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #070b14;
-            padding: 10px;
-            gap: 8px;
-        }
-        .canvasWrap {
-            flex: 1;
-            background: #070b14;
-            border: 2px solid #335;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 0 40px rgba(102,204,255,0.2);
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: #080b18;
-            touch-action: none;
-        }
-        .preview {
-            width: 100%;
-            height: 120px;
-            background: #112b44;
-            border-radius: 10px;
-            border: 1px solid #446;
-            overflow: hidden;
-        }
-        .hint {
-            font-size: 0.8rem;
-            opacity: 0.75;
-            text-align: center;
-        }
-        .layer-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px;
-            background: #112b44;
-            border-radius: 8px;
-            margin-bottom: 6px;
-            font-size: 0.92rem;
-        }
-        .layer-item.active {
-            border: 2px solid var(--accent);
-        }
+        .control input[type="number"] { width: 62px; background: #112b44; border: 1px solid #446; color: #e3dcff; padding: 5px; border-radius: 6px; }
+        .canvas-container { flex: 1; display: flex; flex-direction: column; background: #070b14; padding: 10px; gap: 8px; }
+        .canvasWrap { flex: 1; background: #070b14; border: 2px solid #335; border-radius: 16px; overflow: hidden; position: relative; }
+        canvas { width: 100%; height: 100%; display: block; background: #080b18; touch-action: none; }
+        .preview { width: 100%; height: 120px; background: #112b44; border-radius: 10px; border: 1px solid #446; overflow: hidden; }
+        .hint { font-size: 0.82rem; opacity: 0.8; text-align: center; }
+        .layer-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: #112b44; border-radius: 8px; margin-bottom: 6px; font-size: 0.93rem; }
+        .layer-item.active { border: 2px solid var(--accent); }
         .copyright {
             position: fixed;
             bottom: 10px;
             left: 14px;
-            font-size: 0.7rem;
-            opacity: 0.6;
+            font-size: 0.72rem;
+            opacity: 0.65;
             color: #a0b0d0;
             z-index: 1000;
             pointer-events: none;
@@ -192,11 +99,6 @@
             box-shadow: 0 0 30px rgba(102,204,255,0.5);
             gap: 8px;
             flex-wrap: wrap;
-        }
-        @media (max-width: 768px) {
-            .main { flex-direction: column; }
-            .sidebar, .inspector { width: 100%; max-height: 40vh; border: none; border-bottom: 1px solid #335; }
-            .tool-btn { min-height: 58px; font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -217,7 +119,7 @@
         <!-- LEFT SIDEBAR -->
         <div class="sidebar">
             <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools &amp; Tips <span style="margin-left:auto">▼</span></h3>
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools & Tips <span style="margin-left:auto">▼</span></h3>
                 <div class="content tools-grid">
                     <button class="tool-btn active" data-tool="brush" data-tip="soft">🖌️ Soft</button>
                     <button class="tool-btn" data-tool="brush" data-tip="hard">🖌️ Hard</button>
@@ -248,7 +150,7 @@
                 <div class="content">
                     <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
                         <option value="none" selected>None (Plain)</option>
-                        <option value="neon">Neon Glow</option>
+                        <option value="neon">Neon Glow (Original)</option>
                         <option value="rainbow">Rainbow Rope</option>
                         <option value="prism">Prism Split</option>
                         <option value="spark">Spark Burst</option>
@@ -284,7 +186,7 @@
             <div class="panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <h3 style="margin:0;">📑 Layers</h3>
-                    <button id="addLayerBtn" class="btn" style="padding:4px 12px;font-size:0.85rem;">+ Add Layer</button>
+                    <button id="addLayerBtn" class="btn" style="padding:4px 12px;font-size:0.85rem;">+ Add</button>
                 </div>
                 <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
             </div>
@@ -295,25 +197,17 @@
                 <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
             </div>
 
-            <div id="arrowControls" class="panel" style="display:none;">
-                <h3>➜ Arrow Tool</h3>
-                <div class="control"><label>Width</label><input id="arrowWidth" type="range" min="4" max="40" value="14"><input id="arrowWidthNum" type="number" value="14"></div>
-                <div class="control"><label>Color</label><input id="arrowColor" type="color" value="#ff3366" style="width:60px;height:34px;border:none;cursor:pointer;"></div>
-            </div>
-
             <div id="transformControls" class="panel" style="display:none;">
-                <h3>✏️ Transform Pasted Item</h3>
+                <h3>✏️ Move / Resize Pasted Item</h3>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-                    <button onclick="movePasted(-25,0)" class="btn">←</button>
-                    <button onclick="movePasted(25,0)" class="btn">→</button>
-                    <button onclick="movePasted(0,-25)" class="btn">↑</button>
-                    <button onclick="movePasted(0,25)" class="btn">↓</button>
-                    <button onclick="resizePasted(0.9)" class="btn">Shrink</button>
-                    <button onclick="resizePasted(1.1)" class="btn">Grow</button>
-                    <button onclick="rotatePasted(-15)" class="btn">↻ Left</button>
-                    <button onclick="rotatePasted(15)" class="btn">↻ Right</button>
-                    <button onclick="flipHorizontal()" class="btn">↔ Flip H</button>
-                    <button onclick="flipVertical()" class="btn">↕ Flip V</button>
+                    <button onclick="movePasted(-30,0)" class="btn">←</button>
+                    <button onclick="movePasted(30,0)" class="btn">→</button>
+                    <button onclick="movePasted(0,-30)" class="btn">↑</button>
+                    <button onclick="movePasted(0,30)" class="btn">↓</button>
+                    <button onclick="resizePasted(0.85)" class="btn">Shrink</button>
+                    <button onclick="resizePasted(1.15)" class="btn">Grow</button>
+                    <button onclick="rotatePasted(-15)" class="btn">↻</button>
+                    <button onclick="rotatePasted(15)" class="btn">↻</button>
                     <button onclick="confirmPaste()" style="background:#22c55e;color:white;width:100%;">✅ Place It</button>
                     <button onclick="cancelPaste()" style="background:#ef4444;color:white;width:100%;">❌ Cancel</button>
                 </div>
@@ -324,19 +218,6 @@
                 <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
                 <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
             </div>
-
-            <div class="panel">
-                <h3>✨ Symmetry</h3>
-                <select id="symmetry" style="width:100%;padding:10px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
-                    <option value="none">None</option>
-                    <option value="mirror-x">Mirror X</option>
-                    <option value="mirror-y">Mirror Y</option>
-                    <option value="quad">Quad Mirror</option>
-                    <option value="radial-6">Radial 6</option>
-                    <option value="radial-8">Radial 8</option>
-                    <option value="kaleido-6">Kaleido 6</option>
-                </select>
-            </div>
         </div>
     </div>
 
@@ -346,7 +227,7 @@
     </div>
 
     <script>
-        // ====================== CORE SETUP ======================
+        // ====================== CORE ======================
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         const previewCanvas = document.getElementById('preview');
@@ -358,41 +239,29 @@
         let history = [], redoStack = [];
         let drawing = false;
         let lastPos = null;
-        let currentAngle = 0;
 
         let currentTool = 'brush';
         let currentTip = 'soft';
 
-        // Selection & Paste Transform
         let selectionMode = false;
         let selectionStart = null;
         let selectionRect = null;
         let copiedImage = null;
+
         let pastedImage = null;
-        let pastedX = 120, pastedY = 120;
+        let pastedX = 150, pastedY = 150;
         let pastedRotation = 0;
         let pastedScale = 1;
 
-        // Arrow
-        let arrowStart = null;
-        let arrowColor = '#ff3366';
-        let arrowWidth = 14;
-
         let settings = {
-            size: 22,
+            size: 24,
             alpha: 0.94,
             flow: 0.96,
-            glow: 35,
+            glow: 38,
             hueShift: 0,
             color: '#66ccff',
             effect: 'none',
-            symmetry: 'none',
-            fade: 0,
-            rotSpeed: 0,
-            rotOffset: 0,
-            symCenterX: 50,
-            symCenterY: 50,
-            neonLayers: 5
+            symmetry: 'none'
         };
 
         function createNewLayer(name = "Layer") {
@@ -408,22 +277,20 @@
             };
         }
 
-        function resizeCanvas() {
+        function resize() {
             const rect = canvas.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
 
-            layers.forEach(layer => {
+            layers.forEach(l => {
                 const temp = document.createElement('canvas');
-                temp.width = layer.canvas.width;
-                temp.height = layer.canvas.height;
-                temp.getContext('2d').drawImage(layer.canvas, 0, 0);
-                layer.canvas.width = canvas.width;
-                layer.canvas.height = canvas.height;
-                layer.ctx.scale(dpr, dpr);
-                layer.ctx.drawImage(temp, 0, 0);
+                temp.width = l.canvas.width; temp.height = l.canvas.height;
+                temp.getContext('2d').drawImage(l.canvas, 0, 0);
+                l.canvas.width = canvas.width; l.canvas.height = canvas.height;
+                l.ctx.scale(dpr, dpr);
+                l.ctx.drawImage(temp, 0, 0);
             });
         }
 
@@ -450,13 +317,12 @@
         function saveState() {
             const state = layers.map(l => {
                 const c = document.createElement('canvas');
-                c.width = l.canvas.width;
-                c.height = l.canvas.height;
+                c.width = l.canvas.width; c.height = l.canvas.height;
                 c.getContext('2d').drawImage(l.canvas, 0, 0);
                 return c;
             });
             history.push(state);
-            if (history.length > 28) history.shift();
+            if (history.length > 25) history.shift();
             redoStack = [];
         }
 
@@ -496,18 +362,18 @@
 
             let width = settings.size * settings.flow * pressure;
 
-            // === DISTINCT BRUSH TIPS ===
+            // Distinct brush tips
             if (currentTip === 'hard') width *= 0.9;
-            if (currentTip === 'textured') width *= 1.2;
-            if (currentTip === 'watercolor') width *= 1.4;
-            if (currentTip === 'chisel') width *= 1.65;
-            if (currentTip === 'calligraphy') width *= 0.65 + Math.abs(Math.sin(Date.now()/130)) * 1.45;
-            if (currentTip === 'airbrush') width *= 2.6;
+            if (currentTip === 'textured') width *= 1.22;
+            if (currentTip === 'watercolor') width *= 1.38;
+            if (currentTip === 'chisel') width *= 1.6;
+            if (currentTip === 'calligraphy') width *= 0.68 + Math.abs(Math.sin(Date.now()/130)) * 1.5;
+            if (currentTip === 'airbrush') width *= 2.5;
 
             symFrom.forEach((p1, i) => {
                 const p2 = symTo[i % symTo.length];
 
-                layerCtx.lineCap = (currentTip === 'calligraphy') ? 'butt' : 'round';
+                layerCtx.lineCap = currentTip === 'calligraphy' ? 'butt' : 'round';
                 layerCtx.lineJoin = 'round';
 
                 if (settings.effect === 'neon') {
@@ -526,7 +392,10 @@
                     layerCtx.strokeStyle = `hsla(${hue + i*28}, 96%, 70%, ${settings.alpha})`;
                     layerCtx.shadowBlur = settings.glow + 14;
                     layerCtx.lineWidth = width;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    layerCtx.beginPath();
+                    layerCtx.moveTo(p1[0], p1[1]);
+                    layerCtx.lineTo(p2[0], p2[1]);
+                    layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.strokeStyle = settings.color;
@@ -538,11 +407,11 @@
                     layerCtx.stroke();
                 }
 
-                // Textured grain overlay
+                // Texture grain
                 if (currentTip === 'textured') {
                     layerCtx.shadowBlur = 4;
                     for (let n = 0; n < 6; n++) {
-                        layerCtx.globalAlpha = 0.25 + Math.random() * 0.35;
+                        layerCtx.globalAlpha = 0.25 + Math.random() * 0.4;
                         layerCtx.lineWidth = width * (0.5 + Math.random() * 0.7);
                         layerCtx.beginPath();
                         layerCtx.moveTo(p1[0] + (Math.random()-0.5)*8, p1[1] + (Math.random()-0.5)*8);
@@ -593,7 +462,7 @@
                 };
                 renderAllLayers();
                 ctx.save();
-                ctx.setLineDash([4, 4]);
+                ctx.setLineDash([4,4]);
                 ctx.strokeStyle = '#66ccff';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
@@ -628,40 +497,7 @@
             lastPos = {x, y, pressure};
         }
 
-        function pointerUp(e) {
-            if (currentTool === 'select' && selectionMode) {
-                selectionMode = false;
-                if (selectionRect && selectionRect.w > 15 && selectionRect.h > 15) {
-                    document.getElementById('selectionControls').style.display = 'block';
-                }
-                return;
-            }
-
-            if (currentTool === 'arrow' && arrowStart) {
-                const activeLayer = layers[currentLayerIndex];
-                const layerCtx = activeLayer.ctx;
-                layerCtx.strokeStyle = arrowColor;
-                layerCtx.lineWidth = arrowWidth;
-                layerCtx.lineCap = 'round';
-                layerCtx.beginPath();
-                layerCtx.moveTo(arrowStart.x, arrowStart.y);
-                layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-                layerCtx.stroke();
-                const angle = Math.atan2(
-                    e.clientY - canvas.getBoundingClientRect().top - arrowStart.y,
-                    e.clientX - canvas.getBoundingClientRect().left - arrowStart.x
-                );
-                layerCtx.beginPath();
-                layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-                layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left - 22*Math.cos(angle - Math.PI/6), e.clientY - canvas.getBoundingClientRect().top - 22*Math.sin(angle - Math.PI/6));
-                layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-                layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left - 22*Math.cos(angle + Math.PI/6), e.clientY - canvas.getBoundingClientRect().top - 22*Math.sin(angle + Math.PI/6));
-                layerCtx.stroke();
-                arrowStart = null;
-                saveState();
-                renderAllLayers();
-            }
-
+        function pointerUp() {
             drawing = false;
             lastPos = null;
         }
@@ -678,8 +514,8 @@
         function pasteSelection() {
             if (!copiedImage) return;
             pastedImage = copiedImage;
-            pastedX = 120;
-            pastedY = 120;
+            pastedX = 150;
+            pastedY = 150;
             pastedRotation = 0;
             pastedScale = 1;
             document.getElementById('transformControls').style.display = 'block';
@@ -700,16 +536,6 @@
 
         function rotatePasted(deg) {
             pastedRotation += deg;
-            renderAllLayers();
-        }
-
-        function flipHorizontal() {
-            pastedScale *= -1;
-            renderAllLayers();
-        }
-
-        function flipVertical() {
-            pastedScale *= -1;
             renderAllLayers();
         }
 
@@ -762,7 +588,6 @@
         }
 
         function attachUI() {
-            // Tool selection
             document.querySelectorAll('.tool-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -771,12 +596,10 @@
                     currentTip = btn.dataset.tip || 'soft';
 
                     document.getElementById('selectionControls').style.display = currentTool === 'select' ? 'block' : 'none';
-                    document.getElementById('arrowControls').style.display = currentTool === 'arrow' ? 'block' : 'none';
                     document.getElementById('transformControls').style.display = 'none';
                 });
             });
 
-            // Sliders
             const sliderIds = ['size','alpha','flow','glow','hueShift','fade','rotSpeed','rotOffset','symCenterX','symCenterY','depth','angleX','angleY','zOffset','perspective'];
             sliderIds.forEach(id => {
                 const s = document.getElementById(id);
@@ -792,24 +615,11 @@
             document.getElementById('effect').addEventListener('change', () => { settings.effect = document.getElementById('effect').value; updatePreview(); });
 
             document.getElementById('addLayerBtn').onclick = addNewLayer;
-
-            document.getElementById('copySelectionBtn').onclick = () => {
-                if (!selectionRect) return;
-                const temp = document.createElement('canvas');
-                temp.width = selectionRect.w;
-                temp.height = selectionRect.h;
-                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
-                copiedImage = temp;
-            };
-
+            document.getElementById('copySelectionBtn').onclick = copySelection;
             document.getElementById('pasteBtn').onclick = pasteSelection;
 
-            document.getElementById('arrowWidth').oninput = e => { arrowWidth = parseFloat(e.target.value); document.getElementById('arrowWidthNum').value = arrowWidth; };
-            document.getElementById('arrowColor').oninput = e => { arrowColor = e.target.value; };
-
-            // Top buttons
             document.getElementById('newBtn').onclick = () => {
-                if (confirm('Start a fresh canvas?')) {
+                if (confirm('Start fresh canvas?')) {
                     layers = [createNewLayer("Background")];
                     currentLayerIndex = 0;
                     history = [];
@@ -881,7 +691,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Fully polished, ADA compliant, mobile adaptive, all features working', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Drawing restored + Paste transform working', 'color:#66ccff');
         }
 
         function updatePreview() {
