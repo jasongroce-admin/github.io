@@ -17,7 +17,7 @@
             border-bottom: 1px solid #335;
             padding: 8px 12px; 
             display: flex; 
-            align-items: center; 
+            align-items:center; 
             gap: 8px; 
             flex-wrap: wrap;
             position: sticky; 
@@ -48,7 +48,11 @@
         canvas { width:100%; height:100%; display:block; background:#080b18; touch-action:none; }
         .preview { width:100%; height:120px; background:#112b44; border-radius:10px; border:1px solid #446; overflow:hidden; }
         .hint { font-size:0.82rem; opacity:0.8; text-align:center; }
-        .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; }
+        .layer-item { 
+            display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; 
+            margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none;
+        }
+        .layer-item:active { cursor:grabbing; }
         .layer-item.active { border:2px solid var(--accent); }
         .copyright {
             position:fixed; bottom:10px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none;
@@ -69,6 +73,7 @@
         <button class="btn" id="redoBtn">↪ Redo</button>
         <button class="btn" id="saveBtn">💾 Save</button>
         <button class="btn" id="loadBtn">📂 Load</button>
+        <button class="btn" id="uploadBtn">📤 Upload Image</button>
         <button class="btn" id="fullscreenBtn">⛶ Full</button>
     </div>
 
@@ -226,13 +231,11 @@
         let pastedScale = 1;
 
         let arrowStart = null;
-        let arrowColor = '#ff3366';
-        let arrowWidth = 14;
 
         let settings = {
             size:24, alpha:0.94, flow:0.96, glow:38,
             hueShift:0, color:'#66ccff', effect:'none',
-            symmetry:'none', fade:0, rotSpeed:0, rotOffset:0,
+            symmetry:'none', rotSpeed:0, rotOffset:0,
             symCenterX:50, symCenterY:50,
             neonLayers:5
         };
@@ -289,8 +292,40 @@
                 return c;
             });
             history.push(state);
-            if (history.length > 25) history.shift();
+            if (history.length > 28) history.shift();
             redoStack = [];
+        }
+
+        function undo() {
+            if (history.length === 0) return;
+            const lastState = history.pop();
+            redoStack.push(layers.map(l => {
+                const c = document.createElement('canvas');
+                c.width = l.canvas.width; c.height = l.canvas.height;
+                c.getContext('2d').drawImage(l.canvas, 0, 0);
+                return c;
+            }));
+            layers.forEach((l, i) => {
+                l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
+                l.ctx.drawImage(lastState[i], 0, 0);
+            });
+            renderAllLayers();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            const nextState = redoStack.pop();
+            history.push(layers.map(l => {
+                const c = document.createElement('canvas');
+                c.width = l.canvas.width; c.height = l.canvas.height;
+                c.getContext('2d').drawImage(l.canvas, 0, 0);
+                return c;
+            }));
+            layers.forEach((l, i) => {
+                l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
+                l.ctx.drawImage(nextState[i], 0, 0);
+            });
+            renderAllLayers();
         }
 
         function getSymmetryPoints(x, y) {
@@ -342,12 +377,14 @@
                 layerCtx.lineCap = (currentTip === 'calligraphy') ? 'butt' : 'round';
                 layerCtx.lineJoin = 'round';
 
+                const baseColor = settings.color;
+
                 if (settings.effect === 'neon') {
                     for (let l = settings.neonLayers; l >= 0; l--) {
                         layerCtx.shadowBlur = settings.glow + l * 16;
                         layerCtx.globalAlpha = settings.alpha * (1 - l * 0.22);
                         layerCtx.lineWidth = width + l * 2.8;
-                        layerCtx.strokeStyle = settings.color;
+                        layerCtx.strokeStyle = baseColor;
                         layerCtx.beginPath();
                         layerCtx.moveTo(p1[0], p1[1]);
                         layerCtx.lineTo(p2[0], p2[1]);
@@ -360,44 +397,46 @@
                     layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else if (settings.effect === 'spark') {
-                    layerCtx.shadowBlur = 12;
-                    layerCtx.strokeStyle = '#ffffff';
-                    layerCtx.lineWidth = width * 0.8;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    for (let k = 0; k < 6; k++) {
-                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
-                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
-                        layerCtx.fillStyle = '#ffff88';
-                        layerCtx.fillRect(rx-2, ry-2, 4, 4);
-                    }
-                } else if (settings.effect === 'fire') {
-                    layerCtx.shadowBlur = settings.glow + 10;
-                    layerCtx.strokeStyle = `hsl(${15 + Math.random()*35}, 100%, 65%)`;
-                    layerCtx.lineWidth = width;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'electric') {
-                    layerCtx.shadowBlur = 45;
-                    layerCtx.strokeStyle = '#aaffff';
-                    layerCtx.lineWidth = width * 0.7;
-                    layerCtx.setLineDash([2,8]);
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    layerCtx.setLineDash([]);
-                } else if (settings.effect === 'glitter') {
                     layerCtx.shadowBlur = 18;
-                    layerCtx.strokeStyle = '#ffffff';
+                    layerCtx.strokeStyle = baseColor;
                     layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                     for (let k = 0; k < 8; k++) {
                         const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
                         const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
-                        layerCtx.fillStyle = `hsl(${Math.random()*360},100%,95%)`;
+                        layerCtx.fillStyle = baseColor;
+                        layerCtx.fillRect(rx-3, ry-3, 6, 6);
+                    }
+                } else if (settings.effect === 'fire') {
+                    const hue = parseInt(baseColor.slice(1,3),16) * 0.3 + 10;
+                    layerCtx.shadowBlur = settings.glow + 22;
+                    layerCtx.strokeStyle = `hsl(${hue}, 100%, 65%)`;
+                    layerCtx.lineWidth = width;
+                    layerCtx.globalAlpha = settings.alpha;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'electric') {
+                    layerCtx.shadowBlur = 50;
+                    layerCtx.strokeStyle = baseColor;
+                    layerCtx.lineWidth = width * 0.8;
+                    layerCtx.setLineDash([3,12]);
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    layerCtx.setLineDash([]);
+                } else if (settings.effect === 'glitter') {
+                    layerCtx.shadowBlur = 22;
+                    layerCtx.strokeStyle = baseColor;
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    for (let k = 0; k < 12; k++) {
+                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
+                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
+                        layerCtx.fillStyle = '#ffffff';
                         layerCtx.fillRect(rx-2, ry-2, 4, 4);
                     }
                 } else if (settings.effect === 'smoke') {
-                    layerCtx.shadowBlur = 30;
-                    layerCtx.globalAlpha = 0.4;
-                    layerCtx.strokeStyle = '#aabbdd';
-                    layerCtx.lineWidth = width * 1.6;
+                    layerCtx.shadowBlur = 45;
+                    layerCtx.globalAlpha = 0.35;
+                    layerCtx.strokeStyle = baseColor;
+                    layerCtx.lineWidth = width * 2.4;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else if (settings.effect === 'galaxy') {
                     const hue = (Date.now()/35 + settings.hueShift) % 360;
@@ -405,15 +444,32 @@
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'laser') {
+                    layerCtx.shadowBlur = 80;
+                    layerCtx.strokeStyle = baseColor;
+                    layerCtx.lineWidth = width * 0.4;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
-                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.strokeStyle = baseColor;
                     layerCtx.lineWidth = width;
                     layerCtx.globalAlpha = settings.alpha;
                     layerCtx.beginPath();
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
                     layerCtx.stroke();
+                }
+
+                if (currentTip === 'textured') {
+                    layerCtx.shadowBlur = 5;
+                    for (let n = 0; n < 6; n++) {
+                        layerCtx.globalAlpha = 0.25 + Math.random() * 0.4;
+                        layerCtx.lineWidth = width * (0.45 + Math.random() * 0.75);
+                        layerCtx.beginPath();
+                        layerCtx.moveTo(p1[0] + (Math.random()-0.5)*8, p1[1] + (Math.random()-0.5)*8);
+                        layerCtx.lineTo(p2[0] + (Math.random()-0.5)*8, p2[1] + (Math.random()-0.5)*8);
+                        layerCtx.stroke();
+                    }
                 }
             });
 
@@ -464,8 +520,8 @@
             if (currentTool === 'arrow' && arrowStart) {
                 renderAllLayers();
                 ctx.save();
-                ctx.strokeStyle = arrowColor;
-                ctx.lineWidth = arrowWidth;
+                ctx.strokeStyle = settings.color;
+                ctx.lineWidth = settings.size * settings.flow;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(arrowStart.x, arrowStart.y);
@@ -500,8 +556,8 @@
             if (currentTool === 'arrow' && arrowStart) {
                 const activeLayer = layers[currentLayerIndex];
                 const layerCtx = activeLayer.ctx;
-                layerCtx.strokeStyle = arrowColor;
-                layerCtx.lineWidth = arrowWidth;
+                layerCtx.strokeStyle = settings.color;
+                layerCtx.lineWidth = settings.size * settings.flow;
                 layerCtx.lineCap = 'round';
                 layerCtx.beginPath();
                 layerCtx.moveTo(arrowStart.x, arrowStart.y);
@@ -598,12 +654,27 @@
             layers.forEach((layer, i) => {
                 const div = document.createElement('div');
                 div.className = `layer-item ${i === currentLayerIndex ? 'active' : ''}`;
+                div.draggable = true;
                 div.innerHTML = `
                     <span onclick="toggleLayerVisibility(${i}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
                     <span style="flex:1">${layer.name}</span>
                     <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${i}].opacity = parseFloat(this.value); renderAllLayers();">
                 `;
-                div.onclick = () => { currentLayerIndex = i; renderLayersList(); };
+                div.onclick = (e) => { if (e.target.tagName !== 'INPUT') { currentLayerIndex = i; renderLayersList(); } };
+                div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', i); });
+                div.addEventListener('dragover', e => e.preventDefault());
+                div.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = i;
+                    if (fromIndex === toIndex) return;
+                    const movedLayer = layers.splice(fromIndex, 1)[0];
+                    layers.splice(toIndex, 0, movedLayer);
+                    currentLayerIndex = toIndex;
+                    renderLayersList();
+                    renderAllLayers();
+                    saveState();
+                });
                 container.appendChild(div);
             });
         }
@@ -628,13 +699,11 @@
                     btn.classList.add('active');
                     currentTool = btn.dataset.tool;
                     currentTip = btn.dataset.tip || 'soft';
-
                     document.getElementById('selectionControls').style.display = currentTool === 'select' ? 'block' : 'none';
-                    document.getElementById('arrowControls').style.display = currentTool === 'arrow' ? 'block' : 'none';
                 });
             });
 
-            const sliderIds = ['size','alpha','flow','glow','hueShift','fade','rotSpeed','rotOffset','symCenterX','symCenterY','depth','angleX','angleY','zOffset','perspective'];
+            const sliderIds = ['size','alpha','flow','glow','hueShift'];
             sliderIds.forEach(id => {
                 const s = document.getElementById(id);
                 const n = document.getElementById(id + 'Num');
@@ -651,9 +720,6 @@
             document.getElementById('addLayerBtn').onclick = addNewLayer;
             document.getElementById('copySelectionBtn').onclick = copySelection;
             document.getElementById('pasteBtn').onclick = pasteSelection;
-
-            document.getElementById('arrowWidth').oninput = e => { arrowWidth = parseFloat(e.target.value); document.getElementById('arrowWidthNum').value = arrowWidth; };
-            document.getElementById('arrowColor').oninput = e => { arrowColor = e.target.value; };
 
             document.getElementById('newBtn').onclick = () => {
                 if (confirm('Start fresh canvas?')) {
@@ -673,6 +739,9 @@
                     renderAllLayers();
                 }
             };
+
+            document.getElementById('undoBtn').onclick = undo;
+            document.getElementById('redoBtn').onclick = redo;
 
             document.getElementById('saveBtn').onclick = () => {
                 const link = document.createElement('a');
@@ -695,6 +764,32 @@
                             layers[currentLayerIndex].ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                             saveState();
                             renderAllLayers();
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            };
+
+            document.getElementById('uploadBtn').onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const bgLayer = createNewLayer("Uploaded Image");
+                            bgLayer.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            layers.unshift(bgLayer);
+                            currentLayerIndex = layers.length - 1;
+                            renderLayersList();
+                            renderAllLayers();
+                            saveState();
                         };
                         img.src = ev.target.result;
                     };
@@ -728,7 +823,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Previews now accurate + distinct effects + animated particles', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – All buttons fixed + layer drag & drop + upload + arrow improvements + color-aware effects', 'color:#66ccff');
         }
 
         function updatePreview() {
@@ -760,19 +855,21 @@
                 pctx.moveTo(cx - 80, cy);
                 pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                 pctx.stroke();
-            } else if (settings.effect === 'spark') {
-                pctx.strokeStyle = '#ffffff';
-                pctx.shadowBlur = 18;
+            } else if (settings.effect === 'fire') {
+                pctx.shadowBlur = 30;
+                pctx.strokeStyle = settings.color;
                 pctx.beginPath();
                 pctx.moveTo(cx - 80, cy);
                 pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                 pctx.stroke();
-                for (let i = 0; i < 12; i++) {
-                    const rx = cx - 60 + Math.random() * 120;
-                    const ry = cy - 20 + Math.random() * 40;
-                    pctx.fillStyle = '#ffff88';
-                    pctx.fillRect(rx-2, ry-2, 4, 4);
-                }
+            } else if (settings.effect === 'laser') {
+                pctx.shadowBlur = 80;
+                pctx.strokeStyle = settings.color;
+                pctx.lineWidth = settings.size * 0.6;
+                pctx.beginPath();
+                pctx.moveTo(cx - 80, cy);
+                pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
+                pctx.stroke();
             } else {
                 pctx.strokeStyle = settings.color;
                 pctx.beginPath();
