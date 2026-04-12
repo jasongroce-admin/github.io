@@ -158,12 +158,11 @@
             </div>
         </div>
 
-        <!-- CANVAS AREA - now properly centered and full size -->
+        <!-- CANVAS AREA - widened -->
         <div class="canvas-container" id="canvasContainer">
             <div class="canvasWrap" id="canvasWrap">
                 <canvas id="board"></canvas>
             </div>
-            <div class="hint">Pressure sensitive • Drag to draw • Shift = straight line</div>
         </div>
 
         <!-- RIGHT PANEL -->
@@ -276,8 +275,8 @@
 
         function createNewLayer(name = "Layer") {
             const c = document.createElement('canvas');
-            c.width = canvas.width || 1200;
-            c.height = canvas.height || 800;
+            c.width = 1600;  // generous default
+            c.height = 1000;
             return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1 };
         }
 
@@ -285,9 +284,9 @@
             const containerRect = canvasContainer.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
 
-            // Make canvas fill the available space in the container
-            canvas.width = Math.max(800, containerRect.width * dpr - 40);
-            canvas.height = Math.max(600, containerRect.height * dpr - 80);
+            // Make canvas as large as possible while staying inside the container
+            canvas.width = Math.floor((containerRect.width - 40) * dpr);
+            canvas.height = Math.floor((containerRect.height - 60) * dpr);
 
             ctx.scale(dpr, dpr);
 
@@ -981,7 +980,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Canvas now fills full drawing area', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Drawing area widened + hint removed', 'color:#66ccff');
         }
 
         function updatePreview() {
