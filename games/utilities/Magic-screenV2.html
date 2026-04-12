@@ -1,0 +1,742 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>✨ Magic Screen PRO ✨</title>
+    <link rel="stylesheet" href="../../assets/css/site.css" />
+    <style>
+      :root {
+        --accent: #66ccff;
+      }
+      body {
+        background: radial-gradient(circle at top, rgba(102, 204, 255, 0.15), transparent 45%), #050814;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #e3dcff;
+      }
+      .header {
+        background: rgba(11, 27, 48, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #335;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(102, 204, 255, 0.15);
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        background: linear-gradient(90deg, #66ccff, #ff66cc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .header .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #0b1b30;
+        border: 1px solid #446;
+        border-radius: 8px;
+        color: #e3dcff;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .header .btn:hover {
+        background: #112b44;
+        border-color: var(--accent);
+        box-shadow: 0 0 12px rgba(102, 204, 255, 0.4);
+      }
+      .main {
+        display: flex;
+        height: calc(100vh - 57px);
+      }
+      .sidebar {
+        width: 240px;
+        background: #0b1b30f2;
+        border-right: 1px solid #335;
+        padding: 12px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .panel {
+        background: linear-gradient(180deg, #101b36, #0a1023);
+        border: 1px solid #335;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .panel h3 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .control label {
+        flex: 1;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .control input[type="range"] {
+        flex: 2;
+      }
+      .control input[type="number"] {
+        width: 68px;
+        background: #112b44;
+        border: 1px solid #446;
+        color: #e3dcff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+      .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 8px;
+      }
+      .tool-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px;
+        background: #112b44;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        transition: all 0.2s;
+      }
+      .tool-btn.active {
+        border-color: var(--accent);
+        background: #1e3a55;
+        box-shadow: 0 0 15px rgba(102, 204, 255, 0.5);
+      }
+      .canvas-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #070b14;
+        padding: 12px;
+        gap: 8px;
+      }
+      .canvasWrap {
+        flex: 1;
+        background: #070b14;
+        border: 2px solid #335;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 0 40px rgba(102, 204, 255, 0.2);
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #080b18;
+        touch-action: none;
+      }
+      .inspector {
+        width: 260px;
+        background: #0b1b30f2;
+        border-left: 1px solid #335;
+        padding: 12px;
+        overflow-y: auto;
+      }
+      .preview {
+        width: 100%;
+        height: 120px;
+        background: #112b44;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        position: relative;
+        border: 1px solid #446;
+      }
+      .value-display {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: var(--accent);
+      }
+      .magic-btn {
+        background: linear-gradient(90deg, #ff66cc, #66ccff);
+        color: #fff;
+        border: none;
+        box-shadow: 0 0 20px rgba(255, 102, 204, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>✨ Magic Screen PRO ✨</h1>
+      <div style="flex:1"></div>
+      <button class="btn" id="newBtn">🆕 New Canvas</button>
+      <button class="btn" id="undoBtn">↩️ Undo</button>
+      <button class="btn" id="redoBtn">↪️ Redo</button>
+      <button class="btn" id="clearBtn">🗑️ Clear</button>
+      <button class="btn" id="saveBtn">💾 Save PNG</button>
+      <button class="btn" id="magicBtn" style="background: linear-gradient(90deg,#ff66cc,#66ccff);color:#fff;border:none;">🪄 Cast Magic!</button>
+      <button class="btn" id="fullscreenBtn">⛶ Fullscreen</button>
+      <div style="flex:1"></div>
+      <span id="status" class="hint" style="font-size:0.8rem;opacity:0.7;"></span>
+    </div>
+
+    <div class="main">
+      <!-- LEFT TOOL PALETTE -->
+      <div class="sidebar">
+        <div class="panel">
+          <h3>🖌️ Tools</h3>
+          <div class="tools-grid">
+            <button class="tool-btn active" id="tool-brush" data-tool="brush">🖌️<span>Brush</span></button>
+            <button class="tool-btn" id="tool-eraser" data-tool="eraser">🧼<span>Eraser</span></button>
+            <button class="tool-btn" id="tool-fill" data-tool="fill">🪣<span>Fill</span></button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🎨 Brush</h3>
+          <div class="control">
+            <label>Size</label>
+            <input id="size" type="range" min="1" max="120" value="12" />
+            <input id="sizeNum" type="number" value="12" />
+          </div>
+          <div class="control">
+            <label>Opacity</label>
+            <input id="alpha" type="range" min="0.05" max="1" step="0.01" value="1" />
+            <input id="alphaNum" type="number" value="1" step="0.01" />
+          </div>
+          <div class="control">
+            <label>Flow</label>
+            <input id="flow" type="range" min="0.1" max="1" step="0.05" value="1" />
+            <input id="flowNum" type="number" value="1" step="0.05" />
+          </div>
+          <div class="control">
+            <label>Glow Intensity</label>
+            <input id="glow" type="range" min="0" max="80" value="22" />
+            <input id="glowNum" type="number" value="22" />
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🌈 Effects</h3>
+          <select id="effect" style="width:100%;padding:8px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
+            <option value="neon">Neon Glow</option>
+            <option value="rainbow">Rainbow Flow</option>
+            <option value="spark">Spark Burst</option>
+            <option value="fire">Dragon Fire</option>
+            <option value="electric">Electric Arc</option>
+            <option value="velvet">Velvet Ink</option>
+            <option value="comet">Comet Trail</option>
+            <option value="glitter">Stardust Glitter</option>
+            <option value="prism">Prism Shift</option>
+            <option value="smoke">Mystic Smoke</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CANVAS AREA -->
+      <div class="canvas-container">
+        <div class="canvasWrap">
+          <canvas id="board"></canvas>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;font-size:0.8rem;opacity:0.8;">
+          <span>Draw with mouse, stylus or finger • Pressure sensitive • Symmetry magic enabled</span>
+        </div>
+      </div>
+
+      <!-- RIGHT INSPECTOR -->
+      <div class="inspector">
+        <div class="panel">
+          <h3>🔮 Brush Preview</h3>
+          <div class="preview" id="previewCanvasContainer">
+            <canvas id="preview" width="220" height="110"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🌟 Color &amp; Hue</h3>
+          <div class="control">
+            <label>Base Color</label>
+            <input id="color" type="color" value="#66ccff" style="width:60px;height:32px;border:none;background:transparent;cursor:pointer;" />
+          </div>
+          <div class="control">
+            <label>Hue Shift</label>
+            <input id="hueShift" type="range" min="0" max="360" value="0" />
+            <input id="hueShiftNum" type="number" value="0" />
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>✨ Symmetry</h3>
+          <select id="symmetry" style="width:100%;padding:8px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
+            <option value="none">None</option>
+            <option value="mirror-x">Mirror X</option>
+            <option value="mirror-y">Mirror Y</option>
+            <option value="quad">Quad Mirror</option>
+            <option value="radial-6">Radial 6</option>
+            <option value="radial-8">Radial 8</option>
+            <option value="radial-12">Radial 12</option>
+            <option value="kaleido-6">Kaleido 6</option>
+            <option value="kaleido-8">Kaleido 8</option>
+          </select>
+          <div class="control" style="margin-top:12px;">
+            <label>Rotation Speed</label>
+            <input id="rotSpeed" type="range" min="0" max="5" step="0.1" value="0" />
+            <input id="rotSpeedNum" type="number" value="0" step="0.1" />
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🎥 Canvas</h3>
+          <div class="control">
+            <label>Fade (seconds)</label>
+            <input id="fade" type="range" min="0" max="30" value="0" />
+            <input id="fadeNum" type="number" value="0" />
+          </div>
+          <div class="control">
+            <label>BG Color</label>
+            <input id="bgColor" type="color" value="#080b18" style="width:60px;height:32px;border:none;background:transparent;cursor:pointer;" />
+          </div>
+          <button id="resetSettings" class="btn" style="width:100%;margin-top:8px;">Reset All Tools</button>
+        </div>
+
+        <div class="hint" style="text-align:center;font-size:0.75rem;opacity:0.7;margin-top:auto;padding-top:16px;">
+          Pro tip: Hold Shift for straight lines • Pressure stylus = natural feel<br>
+          Everything auto-saves locally. Pure magic. ✨
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ====================== CORE SETUP ======================
+      const canvas = document.getElementById('board');
+      const ctx = canvas.getContext('2d', { alpha: true });
+      const previewCanvas = document.getElementById('preview');
+      const pctx = previewCanvas.getContext('2d');
+
+      let history = [];
+      let redoStack = [];
+      let drawing = false;
+      let points = [];
+      let lastPos = null;
+      let currentTool = 'brush';
+      let currentAngle = 0;
+
+      // Settings with defaults
+      let settings = {
+        size: 12, alpha: 1, flow: 1, glow: 22,
+        hueShift: 0, color: '#66ccff', effect: 'neon',
+        symmetry: 'none', fade: 0, rotSpeed: 0,
+        bgColor: '#080b18'
+      };
+
+      // ====================== LOCAL STORAGE ======================
+      function loadSettings() {
+        const saved = localStorage.getItem('magicScreenPro');
+        if (saved) {
+          Object.assign(settings, JSON.parse(saved));
+        }
+        syncAllControls();
+      }
+      function saveSettings() {
+        localStorage.setItem('magicScreenPro', JSON.stringify(settings));
+      }
+
+      // ====================== UI SYNC ======================
+      function syncAllControls() {
+        ['size','alpha','flow','glow','hueShift','fade','rotSpeed'].forEach(key => {
+          const slider = document.getElementById(key);
+          const num = document.getElementById(key + 'Num');
+          if (slider) slider.value = settings[key];
+          if (num) num.value = settings[key];
+        });
+        document.getElementById('color').value = settings.color;
+        document.getElementById('effect').value = settings.effect;
+        document.getElementById('symmetry').value = settings.symmetry;
+        document.getElementById('bgColor').value = settings.bgColor;
+      }
+
+      function attachControlListeners() {
+        const keys = ['size','alpha','flow','glow','hueShift','fade','rotSpeed'];
+        keys.forEach(key => {
+          const slider = document.getElementById(key);
+          const num = document.getElementById(key + 'Num');
+          if (!slider) return;
+          const update = (val) => {
+            settings[key] = parseFloat(val);
+            if (slider) slider.value = settings[key];
+            if (num) num.value = settings[key];
+            saveSettings();
+            updatePreview();
+          };
+          slider.addEventListener('input', () => update(slider.value));
+          num.addEventListener('input', () => update(num.value));
+        });
+
+        document.getElementById('color').addEventListener('input', e => {
+          settings.color = e.target.value; saveSettings(); updatePreview();
+        });
+        document.getElementById('effect').addEventListener('change', e => {
+          settings.effect = e.target.value; saveSettings(); updatePreview();
+        });
+        document.getElementById('symmetry').addEventListener('change', e => {
+          settings.symmetry = e.target.value; saveSettings();
+        });
+        document.getElementById('bgColor').addEventListener('input', e => {
+          settings.bgColor = e.target.value;
+          saveSettings();
+          redrawBackground();
+        });
+      }
+
+      // ====================== RESIZE & BACKGROUND ======================
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const scale = window.devicePixelRatio || 1;
+        canvas.width = rect.width * scale;
+        canvas.height = rect.height * scale;
+        ctx.scale(scale, scale);
+        redrawBackground();
+      }
+
+      function redrawBackground() {
+        ctx.save();
+        ctx.fillStyle = settings.bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      // ====================== HISTORY ======================
+      function saveState() {
+        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        if (history.length > 30) history.shift();
+        redoStack = [];
+        document.getElementById('status').textContent = '✓ Saved';
+        setTimeout(() => document.getElementById('status').textContent = '', 800);
+      }
+
+      // ====================== BRUSH PREVIEW ======================
+      function updatePreview() {
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.fillStyle = '#112b44';
+        pctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+        const cx = previewCanvas.width / 2;
+        const cy = previewCanvas.height / 2;
+        pctx.shadowBlur = settings.glow;
+        pctx.shadowColor = settings.color;
+
+        if (settings.effect === 'rainbow' || settings.effect === 'prism') {
+          const hue = (Date.now() / 30 + settings.hueShift) % 360;
+          pctx.strokeStyle = `hsla(${hue}, 90%, 65%, ${settings.alpha})`;
+        } else {
+          pctx.strokeStyle = settings.color;
+        }
+        pctx.lineWidth = Math.min(settings.size * 1.8, 70);
+        pctx.lineCap = 'round';
+        pctx.beginPath();
+        pctx.moveTo(cx - 40, cy);
+        pctx.quadraticCurveTo(cx - 10, cy - 20, cx + 40, cy);
+        pctx.stroke();
+      }
+
+      // ====================== ADVANCED DRAWING ENGINE ======================
+      function getSymmetryPoints(x, y) {
+        const w = canvas.width / (window.devicePixelRatio || 1);
+        const h = canvas.height / (window.devicePixelRatio || 1);
+        const points = [];
+        const sym = settings.symmetry;
+
+        points.push([x, y]);
+
+        if (sym === 'mirror-x') points.push([w - x, y]);
+        else if (sym === 'mirror-y') points.push([x, h - y]);
+        else if (sym === 'quad') {
+          points.push([w - x, y], [x, h - y], [w - x, h - y]);
+        }
+        else if (sym.startsWith('radial') || sym.startsWith('kaleido')) {
+          const count = sym.includes('12') ? 12 : sym.includes('8') ? 8 : 6;
+          const cx = w / 2, cy = h / 2;
+          const dx = x - cx, dy = y - cy;
+          for (let i = 1; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const rx = dx * Math.cos(angle) - dy * Math.sin(angle);
+            const ry = dx * Math.sin(angle) + dy * Math.cos(angle);
+            points.push([cx + rx, cy + ry]);
+            if (sym.startsWith('kaleido')) points.push([cx - rx, cy + ry]);
+          }
+        }
+        return points;
+      }
+
+      function drawNeonStroke(pointsArray) {
+        ctx.shadowBlur = settings.glow;
+        ctx.shadowColor = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Multiple passes for rich neon bloom
+        for (let pass = 3; pass >= 0; pass--) {
+          const alpha = settings.alpha * (1 - pass * 0.25);
+          ctx.shadowBlur = settings.glow + pass * 12;
+          ctx.globalAlpha = alpha * 0.6;
+
+          if (settings.effect === 'rainbow' || settings.effect === 'prism') {
+            const hue = (Date.now() / 25 + settings.hueShift + pass * 30) % 360;
+            ctx.strokeStyle = `hsla(${hue}, 95%, 68%, ${alpha})`;
+          } else if (settings.effect === 'fire') {
+            ctx.shadowColor = '#ffaa00';
+            ctx.strokeStyle = `rgba(255,${80 + pass*40},0,${alpha})`;
+          } else if (settings.effect === 'electric') {
+            ctx.shadowColor = '#aaffff';
+            ctx.strokeStyle = `rgba(170,255,255,${alpha})`;
+          } else {
+            ctx.strokeStyle = settings.color;
+          }
+
+          pointsArray.forEach(symPoints => {
+            ctx.beginPath();
+            ctx.moveTo(symPoints[0][0], symPoints[0][1]);
+            for (let i = 1; i < symPoints.length; i++) {
+              ctx.quadraticCurveTo(
+                (symPoints[i-1][0] + symPoints[i][0]) / 2,
+                (symPoints[i-1][1] + symPoints[i][1]) / 2,
+                symPoints[i][0],
+                symPoints[i][1]
+              );
+            }
+            ctx.stroke();
+          });
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawExtraEffect(pointsArray) {
+        if (settings.effect === 'spark' || settings.effect === 'glitter') {
+          ctx.shadowBlur = 8;
+          pointsArray.forEach(symPoints => {
+            for (let i = 1; i < symPoints.length; i += 3) {
+              const x = symPoints[i][0];
+              const y = symPoints[i][1];
+              ctx.fillStyle = `hsla(${Math.random()*360},100%,90%,0.9)`;
+              ctx.fillRect(x - 2, y - 2, 4, 4);
+            }
+          });
+        }
+        if (settings.effect === 'comet' || settings.effect === 'smoke') {
+          ctx.globalAlpha = 0.4;
+          pointsArray.forEach(symPoints => {
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < symPoints.length - 1; i++) {
+              const dx = symPoints[i+1][0] - symPoints[i][0];
+              const dy = symPoints[i+1][1] - symPoints[i][1];
+              ctx.fillRect(symPoints[i][0] + dx * 0.6, symPoints[i][1] + dy * 0.6, 6, 6);
+            }
+          });
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      function drawLineSegment(fromPoints, toPoints) {
+        const allSym = [];
+        for (let i = 0; i < fromPoints.length; i++) {
+          allSym.push([fromPoints[i], toPoints[i % toPoints.length]]);
+        }
+        drawNeonStroke(allSym);
+        drawExtraEffect(allSym);
+      }
+
+      // ====================== POINTER HANDLERS ======================
+      function pointerDown(e) {
+        drawing = true;
+        points = [];
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        lastPos = { x, y };
+        points.push([x, y]);
+
+        saveState();
+        ctx.globalCompositeOperation = currentTool === 'eraser' ? 'destination-out' : 'source-over';
+      }
+
+      function pointerMove(e) {
+        if (!drawing) return;
+
+        const rect = canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+
+        // Pressure support (stylus / Apple Pencil)
+        const pressure = e.pressure || 1;
+        const dynamicSize = settings.size * pressure * settings.flow;
+
+        // Straight line helper (Shift)
+        if (e.shiftKey && lastPos) {
+          x = lastPos.x;
+          y = lastPos.y;
+        }
+
+        points.push([x, y]);
+
+        // Draw smoothed segment
+        ctx.lineWidth = dynamicSize;
+        const symFrom = getSymmetryPoints(lastPos.x, lastPos.y);
+        const symTo = getSymmetryPoints(x, y);
+        drawLineSegment(symFrom, symTo);
+
+        lastPos = { x, y };
+
+        // Update preview live
+        if (Math.random() > 0.7) updatePreview();
+      }
+
+      function pointerUp() {
+        if (!drawing) return;
+        drawing = false;
+        lastPos = null;
+        ctx.globalCompositeOperation = 'source-over';
+        saveState();
+      }
+
+      // ====================== TOOLBAR & BUTTONS ======================
+      function attachButtons() {
+        document.getElementById('undoBtn').onclick = () => {
+          if (history.length <= 1) return;
+          redoStack.push(history.pop());
+          ctx.putImageData(history[history.length - 1], 0, 0);
+        };
+        document.getElementById('redoBtn').onclick = () => {
+          if (!redoStack.length) return;
+          history.push(redoStack.pop());
+          ctx.putImageData(history[history.length - 1], 0, 0);
+        };
+        document.getElementById('clearBtn').onclick = () => {
+          redrawBackground();
+          saveState();
+        };
+        document.getElementById('saveBtn').onclick = () => {
+          const link = document.createElement('a');
+          link.download = 'magic-screen-pro-' + Date.now() + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        };
+        document.getElementById('newBtn').onclick = () => {
+          if (confirm('Clear everything and start fresh? ✨')) {
+            history = [];
+            redoStack = [];
+            redrawBackground();
+            saveState();
+          }
+        };
+        document.getElementById('fullscreenBtn').onclick = () => {
+          if (!document.fullscreenElement) canvas.requestFullscreen();
+          else document.exitFullscreen();
+        };
+        document.getElementById('magicBtn').onclick = () => {
+          // Random magical preset
+          settings.effect = ['neon','fire','electric','spark','glitter'][Math.floor(Math.random()*5)];
+          settings.symmetry = ['radial-8','kaleido-6','quad','none'][Math.floor(Math.random()*4)];
+          settings.glow = 30 + Math.random() * 40;
+          settings.hueShift = Math.random() * 360;
+          settings.size = 8 + Math.random() * 30;
+          syncAllControls();
+          saveSettings();
+          updatePreview();
+          document.getElementById('status').innerHTML = '🪄 <b>Magic cast!</b> Random enchantment applied!';
+          setTimeout(() => document.getElementById('status').textContent = '', 1800);
+        };
+
+        // Tool buttons
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTool = btn.dataset.tool;
+          });
+        });
+
+        document.getElementById('resetSettings').onclick = () => {
+          settings = { size:12, alpha:1, flow:1, glow:22, hueShift:0, color:'#66ccff', effect:'neon', symmetry:'none', fade:0, rotSpeed:0, bgColor:'#080b18' };
+          syncAllControls();
+          saveSettings();
+          updatePreview();
+        };
+      }
+
+      // ====================== FADE & ANIMATION ======================
+      function tickFade() {
+        const fadeSec = parseFloat(settings.fade);
+        if (fadeSec <= 0) return;
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = `rgba(8,11,24,${1 / (fadeSec * 55)})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      function animate() {
+        tickFade();
+        // Gentle rotation for symmetry (fun!)
+        if (settings.rotSpeed > 0) {
+          currentAngle += settings.rotSpeed * 0.008;
+        }
+        requestAnimationFrame(animate);
+      }
+
+      // ====================== START ======================
+      function init() {
+        loadSettings();
+        resizeCanvas();
+        window.addEventListener('resize', () => {
+          const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          resizeCanvas();
+          ctx.putImageData(snapshot, 0, 0);
+        });
+
+        attachControlListeners();
+        attachButtons();
+
+        // Pointer events
+        canvas.addEventListener('pointerdown', pointerDown);
+        canvas.addEventListener('pointermove', pointerMove);
+        canvas.addEventListener('pointerup', pointerUp);
+        canvas.addEventListener('pointerleave', pointerUp);
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', e => {
+          if (e.key === 'z' && e.ctrlKey) { e.preventDefault(); document.getElementById('undoBtn').click(); }
+          if (e.key === 'y' && e.ctrlKey) { e.preventDefault(); document.getElementById('redoBtn').click(); }
+        });
+
+        redrawBackground();
+        saveState();
+        updatePreview();
+        animate();
+
+        console.log('%c✨ Magic Screen PRO initialized – enjoy the glow!', 'color:#66ccff;font-size:11px');
+      }
+
+      init();
+    </script>
+  </body>
+</html>
