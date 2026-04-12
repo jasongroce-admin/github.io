@@ -1,0 +1,241 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>
+  <title>Golden Advice</title>
+  <link rel='stylesheet' href='common.css'>
+</head>
+<body>
+  <div class='wrap'>
+    <div class='top'>
+      <a class='btn' href='index.html'>&larr; Arcade Menu</a>
+      <div>SpendTokens: <span id='tokenTotal' class='token'>500.00</span></div>
+      <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
+    </div>
+
+    <div class='advisor-shell'>
+      <div class='advisor-card'>
+        <h1 style='margin:0'>Golden Advice</h1>
+        <p class='subtle'>Track recent results, compare canned strategies, and keep one history lane per game without crowding the arcade menu.</p>
+      </div>
+
+      <div class='advisor-grid'>
+        <div class='advisor-card'>
+          <h3>Build Advice</h3>
+          <div class='form-row'>
+            <label>Game
+              <select id='gaGame'></select>
+            </label>
+            <label>Strategy
+              <select id='gaSystem'></select>
+            </label>
+            <button class='btn btn-gold' id='gaBuild'>Build Advice</button>
+            <button class='btn' id='gaClear'>Clear History</button>
+          </div>
+          <div id='gaInputs' style='margin-top:10px'></div>
+        </div>
+
+        <div class='advisor-card'>
+          <h3>Recent History</h3>
+          <div id='gaHistory' class='notice'>History: none yet.</div>
+        </div>
+
+        <div class='advisor-card'>
+          <h3>Recommendation</h3>
+          <div id='gaOut' class='notice advice-output'>Choose a game, log a recent result, and build advice.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src='common.js'></script>
+  <script>
+    initWallet();
+
+    const gaGame = document.getElementById('gaGame');
+    const gaSystem = document.getElementById('gaSystem');
+    const gaInputs = document.getElementById('gaInputs');
+    const gaBuild = document.getElementById('gaBuild');
+    const gaClear = document.getElementById('gaClear');
+    const gaHistory = document.getElementById('gaHistory');
+    const gaOut = document.getElementById('gaOut');
+
+    const systems = {
+      Roulette: ['Flat', 'Martingale', 'Paroli', 'Fibonacci'],
+      Blackjack: ['Basic Strategy', 'Hi-Lo style count', 'Conservative Stand', 'Aggressive Double'],
+      Craps: ['Pass Line', 'Dont Pass', 'Come + Odds', 'Field Rotation'],
+      Baccarat: ['Banker Lean', 'Player Lean', 'Tie Chase (high risk)', 'Side Bet Probe'],
+      Slots: ['Low Vol', 'Medium Vol', 'Bonus Hunt', 'Max Line Sweep'],
+      Poker: ['Tight Value', 'Aggressive Draw', 'Bankroll Protect', 'High Variance'],
+      Keno: ['Low Spot Set', 'Mid Spot Mix', 'High Spot Chase', 'Pattern Rotation']
+    };
+
+    const state = {
+      history: {
+        Roulette: [],
+        Blackjack: [],
+        Craps: [],
+        Baccarat: [],
+        Slots: [],
+        Poker: [],
+        Keno: []
+      },
+      bjMode: 'dealer',
+      bjDealer: [],
+      bjPlayer: []
+    };
+
+    gaGame.innerHTML = Object.keys(systems).map((game) => `<option>${game}</option>`).join('');
+
+    function renderSystems() {
+      gaSystem.innerHTML = systems[gaGame.value].map((system) => `<option>${system}</option>`).join('');
+    }
+
+    function scoreCards(cards) {
+      let total = 0;
+      let aces = 0;
+      cards.forEach((card) => {
+        if (card === 'A') {
+          total += 11;
+          aces += 1;
+        } else if (['K', 'Q', 'J', '10'].includes(card)) {
+          total += 10;
+        } else {
+          total += Number(card);
+        }
+      });
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces -= 1;
+      }
+      return total;
+    }
+
+    function renderInputs() {
+      if (gaGame.value === 'Roulette') {
+        gaInputs.innerHTML = "<div class='form-row'><label>Last Color <select id='rColor'><option>Red</option><option>Black</option><option>Green</option></select></label><label>Last Number <input id='rNum' type='number' min='0' max='36' value='17'></label></div>";
+        return;
+      }
+
+      if (gaGame.value === 'Craps') {
+        gaInputs.innerHTML = "<div class='form-row'><label>Dice 1 <input id='c1' type='number' min='1' max='6' value='3'></label><label>Dice 2 <input id='c2' type='number' min='1' max='6' value='4'></label><label>Point <input id='cPoint' type='number' min='0' max='12' value='0'></label></div>";
+        return;
+      }
+
+      if (gaGame.value === 'Blackjack') {
+        gaInputs.innerHTML = "<div class='form-row'><label>Card <select id='bjCard'><option>A</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>J</option><option>Q</option><option>K</option></select></label><button class='btn' id='bjAdd'>Add Card</button><button class='btn' id='bjSwitch'>Switch to " + (state.bjMode === 'dealer' ? 'Player' : 'Dealer') + "</button></div><div class='notice' style='margin-top:8px'>Dealer: [" + state.bjDealer.join(', ') + "] | Player: [" + state.bjPlayer.join(', ') + "]</div>";
+        document.getElementById('bjAdd').onclick = () => {
+          const target = state.bjMode === 'dealer' ? state.bjDealer : state.bjPlayer;
+          target.push(document.getElementById('bjCard').value);
+          renderInputs();
+        };
+        document.getElementById('bjSwitch').onclick = () => {
+          state.bjMode = state.bjMode === 'dealer' ? 'player' : 'dealer';
+          renderInputs();
+        };
+        return;
+      }
+
+      gaInputs.innerHTML = "<div class='form-row'><label>Recent result <input id='gGeneric' placeholder='e.g. banker win, 2 cherries, 4 keno hits'></label></div>";
+    }
+
+    function recommend(game, system, entry) {
+      if (game === 'Roulette') {
+        const reds = state.history.Roulette.filter((item) => item.color === 'Red').length;
+        const blacks = state.history.Roulette.filter((item) => item.color === 'Black').length;
+        const trend = reds > blacks ? 'Red' : 'Black';
+        return `${system}: trend leans ${trend}. Suggested next move: ${entry.color === 'Green' ? 'split attention between red and black' : entry.color === 'Red' ? 'watch black for balance' : 'watch red for balance'}.`;
+      }
+
+      if (game === 'Craps') {
+        const sum = entry.d1 + entry.d2;
+        const hot = state.history.Craps.filter((item) => item.sum >= 7).length >= Math.ceil(state.history.Craps.length / 2);
+        return `${system}: rolled ${sum}${entry.point ? ` with point ${entry.point}` : ''}. Suggested next look: ${hot ? 'lean into pass-line pressure and supporting odds' : 'keep the field and dark-side protection in view'}.`;
+      }
+
+      if (game === 'Blackjack') {
+        const dealerScore = scoreCards(entry.dealer);
+        const playerScore = scoreCards(entry.player);
+        let move = 'Hit';
+        if (playerScore >= 17) move = 'Stand';
+        else if ([4, 5, 6].includes(dealerScore) && playerScore >= 12) move = 'Stand';
+        if (system.includes('Aggressive') && playerScore >= 9 && playerScore <= 11) move = 'Double if allowed';
+        return `${system}: dealer ${dealerScore}, player ${playerScore}. Suggested move: ${move}.`;
+      }
+
+      if (game === 'Baccarat') return `${system}: banker still carries the classic edge in neutral shoes. Keep tie exposure low unless you are explicitly probing volatility.`;
+      if (game === 'Slots') return `${system}: control unit size, wait for bonus cadence, and stop pressing a cold machine.`;
+      if (game === 'Poker') return `${system}: tighten up after cold rounds and expand only when the draw price or made-hand strength clearly justifies it.`;
+      if (game === 'Keno') return `${system}: keep the same spot count for several rounds before rotating patterns.`;
+      return `${system}: preserve bankroll and keep the sample size large before changing pace.`;
+    }
+
+    function addHistory(game, entry) {
+      const history = state.history[game];
+      history.unshift(entry);
+      if (history.length > 10) history.pop();
+      gaHistory.textContent = `History (${game}): ` + history.map((item) => {
+        if (game === 'Roulette') return `${item.color} ${item.num}`;
+        if (game === 'Craps') return `${item.d1}+${item.d2}`;
+        if (game === 'Blackjack') return `D${item.dealer.join('')}/P${item.player.join('')}`;
+        return item.note || 'entry';
+      }).join(' | ');
+    }
+
+    gaBuild.onclick = () => {
+      const game = gaGame.value;
+      const system = gaSystem.value;
+      let entry;
+
+      if (game === 'Roulette') {
+        entry = {
+          color: document.getElementById('rColor').value,
+          num: Number(document.getElementById('rNum').value)
+        };
+      } else if (game === 'Craps') {
+        const d1 = Number(document.getElementById('c1').value);
+        const d2 = Number(document.getElementById('c2').value);
+        entry = {
+          d1,
+          d2,
+          point: Number(document.getElementById('cPoint').value) || 0,
+          sum: d1 + d2
+        };
+      } else if (game === 'Blackjack') {
+        entry = {
+          dealer: [...state.bjDealer],
+          player: [...state.bjPlayer]
+        };
+      } else {
+        entry = {
+          note: document.getElementById('gGeneric').value || 'result logged'
+        };
+      }
+
+      addHistory(game, entry);
+      gaOut.innerHTML = `<b>${game} • ${system}</b>\n${recommend(game, system, entry)}\nPattern-aware suggestion only; no guarantees.`;
+    };
+
+    gaClear.onclick = () => {
+      Object.keys(state.history).forEach((game) => {
+        state.history[game] = [];
+      });
+      state.bjDealer = [];
+      state.bjPlayer = [];
+      state.bjMode = 'dealer';
+      gaHistory.textContent = 'History: none yet.';
+      gaOut.textContent = 'History cleared.';
+      renderInputs();
+    };
+
+    gaGame.onchange = () => {
+      renderSystems();
+      renderInputs();
+    };
+
+    renderSystems();
+    renderInputs();
+  </script>
+</body>
+</html>
