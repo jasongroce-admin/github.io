@@ -54,12 +54,24 @@
         }
         .layer-item:active { cursor:grabbing; }
         .layer-item.active { border:2px solid var(--accent); }
+        .delete-layer { margin-left:auto; color:#ff6666; cursor:pointer; font-size:1.1rem; }
         .copyright {
             position:fixed; bottom:10px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none;
         }
         .transform-controls {
             position:absolute; background:rgba(15,27,50,0.98); border:2px solid #66ccff; border-radius:12px; 
             padding:12px; display:none; z-index:300; box-shadow:0 0 30px rgba(102,204,255,0.5); gap:8px; flex-wrap:wrap;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+        .anchor {
+            position: absolute;
+            width: 12px; height: 12px;
+            background: #66ccff;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            box-shadow: 0 0 8px #66ccff;
+            z-index: 400;
         }
     </style>
 </head>
@@ -159,8 +171,8 @@
                 <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
             </div>
 
-            <div id="transformControls" class="panel" style="display:none;">
-                <h3>✏️ Transform Pasted Item</h3>
+            <div id="transformControls" class="panel transform-controls">
+                <h3 style="margin-bottom:12px;">✏️ Transform Selection</h3>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
                     <button onclick="movePasted(-25,0)" class="btn">←</button>
                     <button onclick="movePasted(25,0)" class="btn">→</button>
@@ -226,9 +238,11 @@
         let copiedImage = null;
 
         let pastedImage = null;
-        let pastedX = 150, pastedY = 150;
+        let pastedX = 200, pastedY = 200;
         let pastedRotation = 0;
         let pastedScale = 1;
+        let isDraggingPasted = false;
+        let dragOffsetX = 0, dragOffsetY = 0;
 
         let arrowStart = null;
 
@@ -478,9 +492,21 @@
 
         function pointerDown(e) {
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
             const pressure = e.pressure || 1;
+
+            if (pastedImage) {
+                const centerX = pastedX + pastedImage.width / 2;
+                const centerY = pastedY + pastedImage.height / 2;
+                if (Math.abs(x - centerX) < pastedImage.width * pastedScale / 2 + 20 &&
+                    Math.abs(y - centerY) < pastedImage.height * pastedScale / 2 + 20) {
+                    isDraggingPasted = true;
+                    dragOffsetX = x - pastedX;
+                    dragOffsetY = y - pastedY;
+                    return;
+                }
+            }
 
             if (currentTool === 'select') {
                 selectionMode = true;
@@ -501,9 +527,16 @@
 
         function pointerMove(e) {
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
             const pressure = e.pressure || 1;
+
+            if (isDraggingPasted && pastedImage) {
+                pastedX = x - dragOffsetX;
+                pastedY = y - dragOffsetY;
+                renderAllLayers();
+                return;
+            }
 
             if (currentTool === 'select' && selectionMode && selectionStart) {
                 selectionRect = {x: Math.min(selectionStart.x, x), y: Math.min(selectionStart.y, y), w: Math.abs(x - selectionStart.x), h: Math.abs(y - selectionStart.y)};
@@ -545,6 +578,11 @@
         }
 
         function pointerUp(e) {
+            if (isDraggingPasted) {
+                isDraggingPasted = false;
+                return;
+            }
+
             if (currentTool === 'select' && selectionMode) {
                 selectionMode = false;
                 if (selectionRect && selectionRect.w > 15 && selectionRect.h > 15) {
@@ -594,8 +632,8 @@
         function pasteSelection() {
             if (!copiedImage) return;
             pastedImage = copiedImage;
-            pastedX = 150;
-            pastedY = 150;
+            pastedX = 200;
+            pastedY = 200;
             pastedRotation = 0;
             pastedScale = 1;
             document.getElementById('transformControls').style.display = 'block';
@@ -659,8 +697,9 @@
                     <span onclick="toggleLayerVisibility(${i}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
                     <span style="flex:1">${layer.name}</span>
                     <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${i}].opacity = parseFloat(this.value); renderAllLayers();">
+                    <span class="delete-layer" onclick="deleteLayer(${i}); event.stopImmediatePropagation();">🗑️</span>
                 `;
-                div.onclick = (e) => { if (e.target.tagName !== 'INPUT') { currentLayerIndex = i; renderLayersList(); } };
+                div.onclick = (e) => { if (e.target.tagName !== 'INPUT' && !e.target.classList.contains('delete-layer')) { currentLayerIndex = i; renderLayersList(); } };
                 div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', i); });
                 div.addEventListener('dragover', e => e.preventDefault());
                 div.addEventListener('drop', e => {
@@ -683,6 +722,17 @@
             layers[i].visible = !layers[i].visible;
             renderLayersList();
             renderAllLayers();
+        }
+
+        function deleteLayer(i) {
+            if (layers.length <= 1) return;
+            if (confirm(`Delete layer "${layers[i].name}"?`)) {
+                layers.splice(i, 1);
+                if (currentLayerIndex >= layers.length) currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+            }
         }
 
         function addNewLayer() {
@@ -823,7 +873,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – All buttons fixed + layer drag & drop + upload + arrow improvements + color-aware effects', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Paste drag + anchor-ready + separate Flip H/V + delete layers', 'color:#66ccff');
         }
 
         function updatePreview() {
