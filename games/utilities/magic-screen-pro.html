@@ -25,6 +25,7 @@
         z-index: 100;
       }
       .header h1 { margin:0; font-size:1.3rem; background:linear-gradient(90deg,#66ccff,#ff66cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+      .credit { font-size:0.72rem; opacity:0.65; margin-left:8px; white-space:nowrap; color:#a0b0d0; }
       .btn { padding:7px 12px; background:#0b1b30; border:1px solid #446; border-radius:8px; color:#e3dcff; cursor:pointer; font-size:0.92rem; transition:all .2s; }
       .btn:hover { background:#112b44; border-color:var(--accent); }
       .main { display:flex; height:calc(100vh - 57px); }
@@ -73,10 +74,12 @@
         background: rgba(15,27,50,0.95);
         border: 2px solid #66ccff;
         border-radius: 10px;
-        padding: 8px;
+        padding: 10px;
         display: none;
-        z-index: 100;
-        box-shadow: 0 0 20px rgba(102,204,255,0.4);
+        z-index: 200;
+        box-shadow: 0 0 25px rgba(102,204,255,0.5);
+        gap: 8px;
+        flex-wrap: wrap;
       }
     </style>
   </head>
@@ -202,13 +205,17 @@
       </div>
     </div>
 
-    <!-- Transform Controls (appear after paste) -->
-    <div id="transformControls" class="transform-controls" style="display:none;">
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button onclick="rotatePasted(-15)" class="btn">↻ Rotate Left</button>
-        <button onclick="rotatePasted(15)" class="btn">↻ Rotate Right</button>
-        <button onclick="flipHorizontal()" class="btn">↔ Flip H</button>
-        <button onclick="flipVertical()" class="btn">↕ Flip V</button>
+    <!-- Transform Controls (appears after paste) -->
+    <div id="transformControls" class="transform-controls" style="display:none; left:50%; top:50%; transform:translate(-50%,-50%);">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+        <button onclick="movePasted(-20,0)" class="btn">← Left</button>
+        <button onclick="movePasted(20,0)" class="btn">→ Right</button>
+        <button onclick="movePasted(0,-20)" class="btn">↑ Up</button>
+        <button onclick="movePasted(0,20)" class="btn">↓ Down</button>
+        <button onclick="resizePasted(0.9)" class="btn">Shrink</button>
+        <button onclick="resizePasted(1.1)" class="btn">Grow</button>
+        <button onclick="rotatePasted(-15)" class="btn">↻ Left</button>
+        <button onclick="rotatePasted(15)" class="btn">↻ Right</button>
         <button onclick="confirmPaste()" style="background:#22c55e;color:white;">✅ Done</button>
         <button onclick="cancelPaste()" style="background:#ef4444;color:white;">❌ Cancel</button>
       </div>
@@ -239,8 +246,9 @@
       let selectionStart = null;
       let selectionRect = null;
       let copiedImage = null;
+
       let pastedImage = null;
-      let pastedX = 0, pastedY = 0;
+      let pastedX = 100, pastedY = 100;
       let pastedRotation = 0;
       let pastedScale = 1;
 
@@ -389,7 +397,6 @@
             layerCtx.stroke();
           }
 
-          // Texture grain on top of any effect
           if (currentTip === 'textured') {
             layerCtx.shadowBlur = 3;
             for (let n = 0; n < 5; n++) {
@@ -524,12 +531,23 @@
       function pasteSelection() {
         if (!copiedImage) return;
         pastedImage = copiedImage;
-        pastedX = 100;
-        pastedY = 100;
+        pastedX = 120;
+        pastedY = 120;
         pastedRotation = 0;
         pastedScale = 1;
         document.getElementById('transformControls').style.display = 'block';
         document.getElementById('selectionControls').style.display = 'none';
+        renderAllLayers();
+      }
+
+      function movePasted(dx, dy) {
+        pastedX += dx;
+        pastedY += dy;
+        renderAllLayers();
+      }
+
+      function resizePasted(factor) {
+        pastedScale *= factor;
         renderAllLayers();
       }
 
@@ -538,22 +556,12 @@
         renderAllLayers();
       }
 
-      function flipHorizontal() {
-        pastedScale *= -1;
-        renderAllLayers();
-      }
-
-      function flipVertical() {
-        pastedScale *= -1;
-        renderAllLayers();
-      }
-
       function confirmPaste() {
         const activeLayer = layers[currentLayerIndex];
         activeLayer.ctx.save();
         activeLayer.ctx.translate(pastedX + pastedImage.width/2, pastedY + pastedImage.height/2);
         activeLayer.ctx.rotate(pastedRotation * Math.PI / 180);
-        activeLayer.ctx.scale(pastedScale, 1);
+        activeLayer.ctx.scale(pastedScale, pastedScale);
         activeLayer.ctx.drawImage(pastedImage, -pastedImage.width/2, -pastedImage.height/2);
         activeLayer.ctx.restore();
         saveState();
@@ -564,6 +572,7 @@
       function cancelPaste() {
         pastedImage = null;
         document.getElementById('transformControls').style.display = 'none';
+        selectionRect = null;
       }
 
       function renderLayersList() {
@@ -702,7 +711,7 @@
         renderAllLayers();
         animate();
 
-        console.log('%cMagic Screen PRO – Eraser fixed + Rainbow + Texture working + Transform mode added', 'color:#66ccff');
+        console.log('%cMagic Screen PRO – Paste transform mode + fixed eraser + distinct brushes', 'color:#66ccff');
       }
 
       function updatePreview() {
