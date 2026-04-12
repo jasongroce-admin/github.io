@@ -36,7 +36,6 @@
         transition:all .2s; 
       }
       .btn:hover { background:#112b44; border-color:var(--accent); }
-      .credit { font-size:0.78rem; opacity:0.75; margin-left:8px; white-space:nowrap; }
       .main { display:flex; height:calc(100vh - 57px); }
       .sidebar { width:270px; background:#0b1b30f2; border-right:1px solid #335; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
       .inspector { width:260px; background:#0b1b30f2; border-left:1px solid #335; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
@@ -48,8 +47,23 @@
       .control input[type="range"] { flex:2; height:6px; }
       .control input[type="number"] { width:60px; background:#112b44; border:1px solid #446; color:#e3dcff; padding:5px; border-radius:6px; font-size:0.9rem; }
       .tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); gap:8px; }
-      .tool-btn { padding:10px 6px; background:#112b44; border:2px solid transparent; border-radius:10px; font-size:0.85rem; transition:all .2s; text-align:center; min-height:68px; }
-      .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 12px rgba(102,204,255,0.5); }
+      .tool-btn { 
+        padding:10px 6px; 
+        background:#112b44; 
+        border:2px solid transparent; 
+        border-radius:10px; 
+        font-size:0.88rem; 
+        color: #ffffff; 
+        font-weight: 500;
+        transition:all .2s; 
+        text-align:center;
+        min-height:68px;
+      }
+      .tool-btn.active { 
+        border-color:#66ccff; 
+        background:#1e3a55; 
+        box-shadow:0 0 12px rgba(102,204,255,0.5); 
+      }
       .canvas-container { flex:1; display:flex; flex-direction:column; background:#070b14; padding:8px; gap:6px; }
       .canvasWrap { flex:1; background:#070b14; border:2px solid #335; border-radius:14px; overflow:hidden; position:relative; }
       canvas { width:100%; height:100%; display:block; background:#080b18; touch-action:none; }
@@ -57,19 +71,27 @@
       .hint { font-size:0.8rem; opacity:0.8; text-align:center; margin-top:4px; }
       .layer-item { display:flex; align-items:center; gap:8px; padding:6px 8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.9rem; }
       .layer-item.active { border:2px solid var(--accent); }
-      .history-slider { width:100%; margin:8px 0; }
+      .copyright {
+        position: fixed;
+        bottom: 8px;
+        left: 12px;
+        font-size: 0.72rem;
+        opacity: 0.65;
+        color: #a0b0d0;
+        z-index: 10;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
     <div class="header">
       <h1>✨ Magic Screen PRO ✨</h1>
-      <span class="credit">by Jason Groce — Kennard, IN • Free to use with credit</span>
       <div style="flex:1"></div>
       <button class="btn" id="newBtn">🆕 New</button>
       <button class="btn" id="clearBtn">🗑️ Clear</button>
       <button class="btn" id="undoBtn">↩ Undo</button>
       <button class="btn" id="redoBtn">↪ Redo</button>
-      <button class="btn" id="saveBtn">💾 Save PNG</button>
+      <button class="btn" id="saveBtn">💾 Save</button>
       <button class="btn" id="loadBtn">📂 Load</button>
       <button class="btn" id="fullscreenBtn">⛶ Full</button>
     </div>
@@ -131,10 +153,6 @@
         <div class="canvasWrap" id="canvasWrap">
           <canvas id="board"></canvas>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
-          <input type="range" id="historySlider" class="history-slider" min="0" max="100" value="100" style="flex:1;">
-          <span id="historyLabel" style="font-size:0.8rem; white-space:nowrap;">History</span>
-        </div>
         <div class="hint">Pressure sensitive • Drag to draw • Shift = straight line</div>
       </div>
 
@@ -145,7 +163,7 @@
           <div class="preview"><canvas id="preview" width="230" height="105"></canvas></div>
         </div>
 
-        <!-- LAYERS -->
+        <!-- Layers -->
         <div class="panel">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <h3 style="margin:0;">📑 Layers</h3>
@@ -154,15 +172,16 @@
           <div id="layersList" style="max-height:320px;overflow-y:auto;"></div>
         </div>
 
-        <!-- SELECTION & STICKER CONTROLS (appear when needed) -->
+        <!-- Selection Controls -->
         <div id="selectionControls" class="panel" style="display:none;">
           <h3>🔲 Selection</h3>
           <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:6px;">📋 Copy Selection</button>
           <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
         </div>
 
+        <!-- Arrow Controls -->
         <div id="arrowControls" class="panel" style="display:none;">
-          <h3>➜ Arrow Settings</h3>
+          <h3>➜ Arrow</h3>
           <div class="control"><label>Width</label><input id="arrowWidth" type="range" min="4" max="40" value="12"><input id="arrowWidthNum" type="number" value="12"></div>
           <div class="control"><label>Color</label><input id="arrowColor" type="color" value="#ff3366" style="width:60px;height:34px;border:none;cursor:pointer;"></div>
         </div>
@@ -188,6 +207,11 @@
       </div>
     </div>
 
+    <!-- Copyright -->
+    <div class="copyright">
+      © 2026 Jason Groce. All rights reserved. Use permitted with attribution.
+    </div>
+
     <script>
       const canvas = document.getElementById('board');
       const ctx = canvas.getContext('2d');
@@ -204,13 +228,11 @@
       let currentTool = 'brush';
       let currentTip = 'soft';
 
-      // Selection state
       let selectionMode = false;
       let selectionStart = null;
       let selectionRect = null;
       let copiedImage = null;
 
-      // Arrow state
       let arrowStart = null;
       let arrowColor = '#ff3366';
       let arrowWidth = 12;
@@ -275,14 +297,6 @@
         history.push(state);
         if (history.length > 25) history.shift();
         redoStack = [];
-        updateHistorySlider();
-        renderAllLayers();
-      }
-
-      function updateHistorySlider() {
-        const slider = document.getElementById('historySlider');
-        slider.max = Math.max(0, history.length - 1);
-        slider.value = history.length - 1;
       }
 
       function getSymmetryPoints(x, y) {
@@ -314,7 +328,7 @@
       function drawStroke(from, to, pressure = 1) {
         const activeLayer = layers[currentLayerIndex];
         if (!activeLayer) return;
-        const ctx2 = activeLayer.ctx;
+        const layerCtx = activeLayer.ctx;
 
         const symFrom = getSymmetryPoints(from.x, from.y);
         const symTo = getSymmetryPoints(to.x, to.y);
@@ -330,35 +344,36 @@
 
         symFrom.forEach((p1, i) => {
           const p2 = symTo[i % symTo.length];
-          ctx2.lineCap = currentTip === 'calligraphy' ? 'butt' : 'round';
-          ctx2.lineJoin = 'round';
+
+          layerCtx.lineCap = (currentTip === 'calligraphy') ? 'butt' : 'round';
+          layerCtx.lineJoin = 'round';
 
           if (settings.effect === 'neon') {
             for (let l = settings.neonLayers; l >= 0; l--) {
-              ctx2.shadowBlur = settings.glow + l * 15;
-              ctx2.globalAlpha = settings.alpha * (1 - l * 0.2);
-              ctx2.lineWidth = width + l * 2.5;
-              ctx2.strokeStyle = settings.color;
-              ctx2.beginPath();
-              ctx2.moveTo(p1[0], p1[1]);
-              ctx2.lineTo(p2[0], p2[1]);
-              ctx2.stroke();
+              layerCtx.shadowBlur = settings.glow + l * 15;
+              layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
+              layerCtx.lineWidth = width + l * 2.5;
+              layerCtx.strokeStyle = settings.color;
+              layerCtx.beginPath();
+              layerCtx.moveTo(p1[0], p1[1]);
+              layerCtx.lineTo(p2[0], p2[1]);
+              layerCtx.stroke();
             }
           } else if (settings.effect === 'rainbow' || settings.effect === 'prism') {
             const hue = (Date.now() / 20 + settings.hueShift) % 360;
-            ctx2.strokeStyle = `hsla(${hue + (settings.effect==='prism'? i*30 : 0)}, 95%, 68%, ${settings.alpha})`;
-            ctx2.shadowBlur = settings.glow + 10;
-            ctx2.lineWidth = width;
-            ctx2.beginPath(); ctx2.moveTo(p1[0],p1[1]); ctx2.lineTo(p2[0],p2[1]); ctx2.stroke();
+            layerCtx.strokeStyle = `hsla(${hue + (settings.effect==='prism'? i*30 : 0)}, 95%, 68%, ${settings.alpha})`;
+            layerCtx.shadowBlur = settings.glow + 10;
+            layerCtx.lineWidth = width;
+            layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
           } else {
-            ctx2.shadowBlur = settings.glow;
-            ctx2.strokeStyle = settings.color;
-            ctx2.lineWidth = width;
-            ctx2.globalAlpha = settings.alpha;
-            ctx2.beginPath();
-            ctx2.moveTo(p1[0], p1[1]);
-            ctx2.lineTo(p2[0], p2[1]);
-            ctx2.stroke();
+            layerCtx.shadowBlur = settings.glow;
+            layerCtx.strokeStyle = settings.color;
+            layerCtx.lineWidth = width;
+            layerCtx.globalAlpha = settings.alpha;
+            layerCtx.beginPath();
+            layerCtx.moveTo(p1[0], p1[1]);
+            layerCtx.lineTo(p2[0], p2[1]);
+            layerCtx.stroke();
           }
         });
 
@@ -392,20 +407,24 @@
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+        const pressure = e.pressure || 1;
 
         if (currentTool === 'select' && selectionMode && selectionStart) {
-          selectionRect = {x: Math.min(selectionStart.x, x), y: Math.min(selectionStart.y, y), w: Math.abs(x - selectionStart.x), h: Math.abs(y - selectionStart.y)};
+          selectionRect = {
+            x: Math.min(selectionStart.x, x),
+            y: Math.min(selectionStart.y, y),
+            w: Math.abs(x - selectionStart.x),
+            h: Math.abs(y - selectionStart.y)
+          };
           renderAllLayers();
           ctx.save();
-          ctx.setLineDash([4, 4]);
+          ctx.setLineDash([4,4]);
           ctx.strokeStyle = '#66ccff';
           ctx.lineWidth = 2;
           ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
           ctx.restore();
           return;
         }
-
-        if (!drawing || !lastPos) return;
 
         if (currentTool === 'arrow' && arrowStart) {
           renderAllLayers();
@@ -417,82 +436,89 @@
           ctx.moveTo(arrowStart.x, arrowStart.y);
           ctx.lineTo(x, y);
           ctx.stroke();
-          // Arrowhead
+
           const angle = Math.atan2(y - arrowStart.y, x - arrowStart.x);
           ctx.beginPath();
           ctx.moveTo(x, y);
-          ctx.lineTo(x - 20 * Math.cos(angle - Math.PI / 6), y - 20 * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(x - 20*Math.cos(angle - Math.PI/6), y - 20*Math.sin(angle - Math.PI/6));
           ctx.moveTo(x, y);
-          ctx.lineTo(x - 20 * Math.cos(angle + Math.PI / 6), y - 20 * Math.sin(angle + Math.PI / 6));
+          ctx.lineTo(x - 20*Math.cos(angle + Math.PI/6), y - 20*Math.sin(angle + Math.PI/6));
           ctx.stroke();
           ctx.restore();
           return;
         }
 
-        drawStroke(lastPos, {x, y, pressure}, pressure);
-        lastPos = {x, y, pressure: e.pressure || 1};
+        if (!drawing || !lastPos) return;
+
+        drawStroke(lastPos, {x, y}, pressure);
+        lastPos = {x, y, pressure};
       }
 
       function pointerUp(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        if (currentTool === 'select' && selectionMode) {
-          selectionMode = false;
-          document.getElementById('selectionControls').style.display = 'block';
-          return;
-        }
-
         if (currentTool === 'arrow' && arrowStart) {
           const activeLayer = layers[currentLayerIndex];
-          const ctx2 = activeLayer.ctx;
+          const layerCtx = activeLayer.ctx;
 
-          ctx2.strokeStyle = arrowColor;
-          ctx2.lineWidth = arrowWidth;
-          ctx2.lineCap = 'round';
-          ctx2.beginPath();
-          ctx2.moveTo(arrowStart.x, arrowStart.y);
-          ctx2.lineTo(x, y);
-          ctx2.stroke();
+          layerCtx.strokeStyle = arrowColor;
+          layerCtx.lineWidth = arrowWidth;
+          layerCtx.lineCap = 'round';
+          layerCtx.beginPath();
+          layerCtx.moveTo(arrowStart.x, arrowStart.y);
+          layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+          layerCtx.stroke();
 
-          // Arrowhead
-          const angle = Math.atan2(y - arrowStart.y, x - arrowStart.x);
-          ctx2.beginPath();
-          ctx2.moveTo(x, y);
-          ctx2.lineTo(x - 20 * Math.cos(angle - Math.PI / 6), y - 20 * Math.sin(angle - Math.PI / 6));
-          ctx2.moveTo(x, y);
-          ctx2.lineTo(x - 20 * Math.cos(angle + Math.PI / 6), y - 20 * Math.sin(angle + Math.PI / 6));
-          ctx2.stroke();
+          const angle = Math.atan2(
+            e.clientY - canvas.getBoundingClientRect().top - arrowStart.y,
+            e.clientX - canvas.getBoundingClientRect().left - arrowStart.x
+          );
+          layerCtx.beginPath();
+          layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+          layerCtx.lineTo(
+            e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle - Math.PI/6),
+            e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle - Math.PI/6)
+          );
+          layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+          layerCtx.lineTo(
+            e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle + Math.PI/6),
+            e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle + Math.PI/6)
+          );
+          layerCtx.stroke();
 
           arrowStart = null;
           saveState();
           renderAllLayers();
-          return;
         }
 
         drawing = false;
         lastPos = null;
       }
 
-      function copySelection() {
-        if (!selectionRect) return;
-        const temp = document.createElement('canvas');
-        temp.width = selectionRect.w;
-        temp.height = selectionRect.h;
-        const tctx = temp.getContext('2d');
-        tctx.drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
-        copiedImage = temp;
+      function renderAllLayers() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        layers.forEach(layer => {
+          if (layer.visible) {
+            ctx.globalAlpha = layer.opacity;
+            ctx.drawImage(layer.canvas, 0, 0);
+          }
+        });
+        ctx.globalAlpha = 1;
       }
 
-      function pasteSelection() {
-        if (!copiedImage) return;
-        const activeLayer = layers[currentLayerIndex];
-        activeLayer.ctx.drawImage(copiedImage, 50, 50); // offset so it's visible
-        saveState();
-        renderAllLayers();
-        document.getElementById('selectionControls').style.display = 'none';
-        selectionRect = null;
+      function updatePreview() {
+        pctx.fillStyle = '#112b44';
+        pctx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+        pctx.shadowBlur = 28;
+        pctx.shadowColor = settings.color;
+        pctx.lineWidth = 26;
+        pctx.strokeStyle = settings.color;
+        if (settings.effect === 'rainbow') {
+          const h = (Date.now()/26)%360;
+          pctx.strokeStyle = `hsl(${h},95%,68%)`;
+        }
+        pctx.beginPath();
+        pctx.moveTo(30,55);
+        pctx.quadraticCurveTo(90,25,200,70);
+        pctx.stroke();
       }
 
       function renderLayersList() {
@@ -537,7 +563,6 @@
           });
         });
 
-        // Sliders
         const sliderIds = ['size','alpha','flow','glow','hueShift','fade','rotSpeed','rotOffset','symCenterX','symCenterY','depth','angleX','angleY','zOffset','perspective'];
         sliderIds.forEach(id => {
           const s = document.getElementById(id);
@@ -554,16 +579,29 @@
 
         document.getElementById('addLayerBtn').onclick = addNewLayer;
 
-        document.getElementById('copySelectionBtn').onclick = copySelection;
-        document.getElementById('pasteBtn').onclick = pasteSelection;
+        document.getElementById('copySelectionBtn').onclick = () => {
+          if (!selectionRect) return;
+          const temp = document.createElement('canvas');
+          temp.width = selectionRect.w;
+          temp.height = selectionRect.h;
+          temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
+          copiedImage = temp;
+        };
 
-        // Arrow controls
+        document.getElementById('pasteBtn').onclick = () => {
+          if (!copiedImage) return;
+          layers[currentLayerIndex].ctx.drawImage(copiedImage, 80, 80);
+          saveState();
+          renderAllLayers();
+          document.getElementById('selectionControls').style.display = 'none';
+          selectionRect = null;
+        };
+
         document.getElementById('arrowWidth').oninput = e => { arrowWidth = parseFloat(e.target.value); document.getElementById('arrowWidthNum').value = arrowWidth; };
         document.getElementById('arrowColor').oninput = e => { arrowColor = e.target.value; };
 
-        // Top buttons
         document.getElementById('newBtn').onclick = () => {
-          if (confirm('Start completely fresh?')) {
+          if (confirm('Start fresh canvas?')) {
             layers = [createNewLayer("Background")];
             currentLayerIndex = 0;
             history = [];
@@ -614,34 +652,6 @@
           if (!document.fullscreenElement) canvasWrap.requestFullscreen();
           else document.exitFullscreen();
         };
-
-        document.getElementById('undoBtn').onclick = () => {
-          if (history.length > 1) {
-            redoStack.push(history.pop());
-            const state = history[history.length-1];
-            layers.forEach((l,i) => {
-              if (state[i]) l.ctx.drawImage(state[i], 0, 0);
-            });
-            renderAllLayers();
-            updateHistorySlider();
-          }
-        };
-
-        document.getElementById('redoBtn').onclick = () => {
-          if (redoStack.length) {
-            history.push(redoStack.pop());
-            const state = history[history.length-1];
-            layers.forEach((l,i) => {
-              if (state[i]) l.ctx.drawImage(state[i], 0, 0);
-            });
-            renderAllLayers();
-            updateHistorySlider();
-          }
-        };
-
-        document.getElementById('historySlider').addEventListener('input', e => {
-          loadHistoryState(parseInt(e.target.value));
-        });
       }
 
       function init() {
@@ -663,7 +673,7 @@
         renderAllLayers();
         animate();
 
-        console.log('%cMagic Screen PRO – Layers + Selection + Adaptive Arrows + Credit added!', 'color:#66ccff');
+        console.log('%cMagic Screen PRO – Final version with copyright & improved visibility', 'color:#66ccff');
       }
 
       function updatePreview() {
