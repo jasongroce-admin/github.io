@@ -11,10 +11,19 @@
 .card-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .card{display:inline-flex;align-items:center;justify-content:center;width:62px;height:90px;background:#fff;border-radius:10px;color:#111;border:1px solid #aab;font-weight:700}
 .red{color:#c62828}
-.bet-circle{width:120px;height:120px;border-radius:60px;border:2px dashed #ffd166;display:grid;place-items:center;position:relative;background:#0a3c73;cursor:pointer;text-align:center;font-weight:700}
+.bet-circle{width:140px;height:140px;border-radius:70px;border:2px dashed #ffd166;display:grid;place-items:center;position:relative;background:#0a3c73;cursor:pointer;text-align:center;font-weight:700;overflow:hidden}
+.chip-stack{position:absolute;inset:10px;display:grid;place-items:center;pointer-events:none}
+.table-chip{width:38px;height:38px;border-radius:50%;border:2px dashed rgba(255,255,255,.8);box-shadow:0 0 10px rgba(0,0,0,.35);display:grid;place-items:center;font-size:.75rem;font-weight:800;color:#111}
+.chip-white{background:linear-gradient(180deg,#fff,#e3e3e3)}
+.chip-red{background:linear-gradient(180deg,#ff6464,#b51414)}
+.chip-green{background:linear-gradient(180deg,#53e38b,#0f7a3b)}
+.chip-black{background:linear-gradient(180deg,#4b4b4b,#121212);color:#fff}
+.chip-purple{background:linear-gradient(180deg,#b78cff,#5b2ca8);color:#fff}
+.chip-blue{background:linear-gradient(180deg,#86c5ff,#216bb6);color:#fff}
+.chip-gold{background:linear-gradient(180deg,#ffd87a,#b37700)}
 .bet-circle.left{grid-area:betL;justify-self:start}
 .bet-circle.right{grid-area:betR;justify-self:end}
-.chipTot{position:absolute;bottom:6px;background:#ffd166;color:#111;border-radius:10px;padding:1px 6px;font-weight:700}
+.chipTot{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.35);color:#ffd166;font-size:1.05rem;font-weight:800;text-shadow:0 0 8px rgba(0,0,0,.6)}
 .hand-area{display:flex;flex-direction:column;gap:6px}
 .hand-area.left{grid-area:handL;justify-self:start}
 .hand-area.right{grid-area:handR;justify-self:end}
@@ -58,8 +67,8 @@
       <div class='boss-label'><b>Boss</b> <span id='dScore'></span></div>
       <div id='dCards' class='card-row'></div>
     </div>
-    <div class='bet-circle left' id='c1'>HAND 1<span class='chipTot' id='t1'>0</span></div>
-    <div class='bet-circle right' id='c2'>HAND 2<span class='chipTot' id='t2'>0</span></div>
+  <div class='bet-circle left' id='c1'>HAND 1<div class='chip-stack' id='stack1'></div><span class='chipTot' id='t1'>0</span></div>
+  <div class='bet-circle right' id='c2'>HAND 2<div class='chip-stack' id='stack2'></div><span class='chipTot' id='t2'>0</span></div>
     <button class='btn btn-gold play-btn' id='deal'>MAKE YOUR PLAY</button>
     <div class='hand-area left'>
       <div class='hand-title'>Hand 1 <span id='p1s'></span></div>
@@ -74,76 +83,137 @@
 </div>
 <div class='twoone-controls'>
   <div class='ctrl-side left'>
-    <button class='btn' id='stand1'>STAND H1</button>
-    <button class='btn' id='hit1'>HIT H1</button>
-    <button class='btn' id='split1'>SPLIT H1</button>
+    <button class='btn' id='stand1'>STAND</button>
+    <button class='btn' id='hit1'>HIT</button>
+    <button class='btn' id='double1'>DOUBLE</button>
+    <button class='btn' id='split1'>SPLIT</button>
   </div>
   <div class='token-rail' id='rail'></div>
   <div class='ctrl-side right'>
-    <button class='btn' id='split2'>SPLIT H2</button>
-    <button class='btn' id='hit2'>HIT H2</button>
-    <button class='btn' id='stand2'>STAND H2</button>
+    <button class='btn' id='split2'>SPLIT</button>
+    <button class='btn' id='double2'>DOUBLE</button>
+    <button class='btn' id='hit2'>HIT</button>
+    <button class='btn' id='stand2'>STAND</button>
   </div>
 </div>
 <div class='secondary-actions'><button class='btn' id='undo'>UNDO LAST CHIP</button></div></div>
 <script src='common.js'></script><script>
 initWallet();
-const chipVals=[1,3,5,10,25,50,100,250,500],chipColors=['#fff','#66f','#0cf','#ff9','#f96','#f33','#9f9','#f0f','#fc3'];
-let pick=5;chipVals.forEach((v,i)=>{let b=document.createElement('button');b.className='chip-btn';b.style.background=chipColors[i];b.textContent=v;b.onclick=()=>pick=v;rail.appendChild(b)});
-let deckCount=1,shoe=[],dealer=[],h1=[],h2=[],live=false,stand={h1:false,h2:false},bets={h1:0,h2:0},betStack=[],activeHand='h1';
+const chipVals=[1,5,25,100,500];
+const chipStyles=['chip-white','chip-red','chip-green','chip-black','chip-purple'];
+let pick=5;
+let pickStyle='chip-red';
+chipVals.forEach((v,i)=>{
+  let b=document.createElement('button');
+  b.className='chip-btn '+chipStyles[i];
+  b.textContent=v;
+  b.draggable=true;
+  b.onclick=()=>{pick=v;pickStyle=chipStyles[i];};
+  b.addEventListener('dragstart',(ev)=>{ev.dataTransfer.setData('text/plain',JSON.stringify({value:v,style:chipStyles[i]}));});
+  rail.appendChild(b)
+});
+let deckCount=1,shoe=[],dealer=[],h1=[],h2=[],live=false,stand={h1:[false],h2:[false]},bets={h1:[0],h2:[0]},betChips={h1:[[]],h2:[[]]},betStack=[],activeHand={side:'h1',index:0};
 const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 function fresh(){shoe=[];for(let x=0;x<deckCount;x++)for(const s of suits)for(const r of ranks)shoe.push({r,s});for(let i=shoe.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[shoe[i],shoe[j]]=[shoe[j],shoe[i]]}}
 fresh();
 const val=c=>c.r==='A'?11:(['J','Q','K'].includes(c.r)?10:+c.r),sc=h=>{let t=h.reduce((a,c)=>a+val(c),0),a=h.filter(c=>c.r==='A').length;while(t>21&&a--)t-=10;return t};
 const draw=()=>{if(shoe.length<deckCount*20)fresh();return shoe.pop()};
 function cardNode(c,hide){const d=document.createElement('div');d.className='card'+((c.s==='♥'||c.s==='♦')?' red':'');d.textContent=hide?'🂠':c.r+c.s;return d}
-function paint(){dCards.innerHTML='';dealer.forEach((c,i)=>dCards.appendChild(cardNode(c,live&&i===1)));p1c.innerHTML='';h1.forEach(c=>p1c.appendChild(cardNode(c,false)));p2c.innerHTML='';h2.forEach(c=>p2c.appendChild(cardNode(c,false)));dScore.textContent=live?'(?)':'('+sc(dealer)+')';p1s.textContent='('+sc(h1)+')';p2s.textContent='('+sc(h2)+')';t1.textContent=bets.h1.toFixed(0);t2.textContent=bets.h2.toFixed(0);setTokens(getTokens())}
-function place(hand){if(live)return; if(!spend(pick))return; bets[hand]+=pick;betStack.push({hand,amt:pick});beep(540);paint();}
-c1.onclick=()=>place('h1');c2.onclick=()=>place('h2');undo.onclick=()=>{if(live||!betStack.length)return;const b=betStack.pop();bets[b.hand]-=b.amt;add(b.amt);paint();};
-function payoutMult(hand,ps){const natural=(hand.length===2&&ps===21)?2.5:2;return deckCount===3?natural*0.97:natural;} // 3-deck slight house edge factor
-function settle(){live=false;while(sc(dealer)<17)dealer.push(draw());let totalWin=0;[['h1',h1],['h2',h2]].forEach(([k,h])=>{if(!bets[k])return;const ps=sc(h),ds=sc(dealer);let win=0;if(ps<=21&&(ds>21||ps>ds))win=bets[k]*payoutMult(h,ps);else if(ps===ds)win=bets[k];totalWin+=win;bets[k]=0;});add(totalWin);if(totalWin>0)celebrateWin(totalWin>=60?'TWO ONE HOT TABLE!':'TWO ONE WIN!',totalWin,deckCount===3?'3-deck odds applied':'Single-deck payout');status.textContent=totalWin?`Win ${totalWin.toFixed(2)} SpendTokens`:'No win this round';beep(totalWin?840:250,.15);paint();}
-function checkAuto(){
-  const h1Done = stand.h1 || !bets.h1 || sc(h1) >= 21;
-  const h2Done = stand.h2 || !bets.h2 || sc(h2) >= 21;
-  if (activeHand === 'h1' && h1Done && !h2Done) activeHand = 'h2';
-  if (activeHand === 'h2' && h2Done && !h1Done) activeHand = 'h1';
-  if (h1Done && h2Done) settle();
+function renderStack(el, chips) {
+  el.innerHTML='';
+  const max=4;
+  chips.slice(-max).forEach((chip,idx)=>{
+    const d=document.createElement('div');
+    d.className='table-chip '+chip.style;
+    d.style.transform=`translateY(${(max-idx-1)*-4}px)`;
+    d.textContent=chip.value;
+    el.appendChild(d);
+  });
 }
-function canSplit(handKey, handArr, otherArr) {
-  if (!live || stand[handKey]) return false;
-  if (!bets[handKey] || otherArr.length) return false;
+function paint(){
+  dCards.innerHTML='';dealer.forEach((c,i)=>dCards.appendChild(cardNode(c,live&&i===1)));
+  const h1Index = activeHand.side === 'h1' ? activeHand.index : 0;
+  const h2Index = activeHand.side === 'h2' ? activeHand.index : 0;
+  const h1View = h1[h1Index] || [];
+  const h2View = h2[h2Index] || [];
+  p1c.innerHTML='';h1View.forEach(c=>p1c.appendChild(cardNode(c,false)));
+  p2c.innerHTML='';h2View.forEach(c=>p2c.appendChild(cardNode(c,false)));
+  dScore.textContent=live?'(?)':'('+sc(dealer)+')';
+  p1s.textContent='('+sc(h1View)+')';
+  p2s.textContent='('+sc(h2View)+')';
+  const sum1 = bets.h1.reduce((a,b)=>a+b,0);
+  const sum2 = bets.h2.reduce((a,b)=>a+b,0);
+  t1.textContent=sum1.toFixed(0);
+  t2.textContent=sum2.toFixed(0);
+  renderStack(stack1, betChips.h1.flat());
+  renderStack(stack2, betChips.h2.flat());
+  setTokens(getTokens());
+}
+function place(hand, value, style){if(live)return; const amt=value??pick; const s=style??pickStyle; if(!spend(amt))return; bets[hand][0]+=amt;betChips[hand][0].push({value:amt,style:s});betStack.push({hand,amt,style:s});beep(540);paint();}
+c1.onclick=()=>place('h1');c2.onclick=()=>place('h2');
+;[c1,c2].forEach((el,idx)=>{el.addEventListener('dragover',(ev)=>ev.preventDefault());el.addEventListener('drop',(ev)=>{ev.preventDefault();const data=JSON.parse(ev.dataTransfer.getData('text/plain'));place(idx===0?'h1':'h2',data.value,data.style);});});
+undo.onclick=()=>{if(live||!betStack.length)return;const b=betStack.pop();bets[b.hand][0]-=b.amt;betChips[b.hand][0].pop();add(b.amt);paint();};
+function payoutMult(hand,ps){const natural=(hand.length===2&&ps===21)?2.5:2;return deckCount===3?natural*0.97:natural;} // 3-deck slight house edge factor
+function settle(){live=false;while(sc(dealer)<17)dealer.push(draw());let totalWin=0;['h1','h2'].forEach((k)=>{bets[k].forEach((amt,idx)=>{if(!amt)return;const handArr=(k==='h1'?h1:h2)[idx];const ps=sc(handArr),ds=sc(dealer);let win=0;if(ps<=21&&(ds>21||ps>ds))win=amt*payoutMult(handArr,ps);else if(ps===ds)win=amt;totalWin+=win;bets[k][idx]=0;});});add(totalWin);if(totalWin>0)celebrateWin(totalWin>=60?'TWO ONE HOT TABLE!':'TWO ONE WIN!',totalWin,deckCount===3?'3-deck odds applied':'Single-deck payout');status.textContent=totalWin?`Win ${totalWin.toFixed(2)} SpendTokens`:'No win this round';beep(totalWin?840:250,.15);betChips={h1:[[]],h2:[[]]};h1=[[]];h2=[[]];stand={h1:[false],h2:[false]};activeHand={side:'h1',index:0};paint();}
+function checkAuto(){
+  const h1Done = stand.h1.every((s,i)=>s || !bets.h1[i] || sc(h1[i])>=21);
+  const h2Done = stand.h2.every((s,i)=>s || !bets.h2[i] || sc(h2[i])>=21);
+  if (h1Done && h2Done) { settle(); return; }
+  if (activeHand.side==='h1' && (stand.h1[activeHand.index] || sc(h1[activeHand.index])>=21 || !bets.h1[activeHand.index])) {
+    if (activeHand.index < h1.length-1) activeHand.index += 1;
+    else activeHand = {side:'h2',index:0};
+  }
+  if (activeHand.side==='h2' && (stand.h2[activeHand.index] || sc(h2[activeHand.index])>=21 || !bets.h2[activeHand.index])) {
+    if (activeHand.index < h2.length-1) activeHand.index += 1;
+    else activeHand = {side:'h1',index:0};
+  }
+}
+function canSplit(handKey, handArr, idx) {
+  if (!live || stand[handKey][idx]) return false;
+  if (!bets[handKey][idx]) return false;
   if (handArr.length !== 2) return false;
   if (handArr[0].r !== handArr[1].r) return false;
-  return getTokens() >= bets[handKey];
+  return getTokens() >= bets[handKey][idx] && (handKey==='h1'?h1.length:h2.length) < 4;
 }
 function doSplit(handKey) {
+  if (activeHand.side !== handKey) {status.textContent='Finish the active side before splitting the other side.';return;}
+  const idx = activeHand.index;
   const handArr = handKey === 'h1' ? h1 : h2;
-  const otherArr = handKey === 'h1' ? h2 : h1;
-  if (!canSplit(handKey, handArr, otherArr)) {
+  if (!canSplit(handKey, handArr[idx], idx)) {
     status.textContent = 'Split requires a matched pair and enough tokens for the second hand.';
     return;
   }
-  spend(bets[handKey]);
-  bets[handKey === 'h1' ? 'h2' : 'h1'] = bets[handKey];
-  otherArr.push(handArr.pop());
-  handArr.push(draw());
-  otherArr.push(draw());
-  stand.h1 = false;
-  stand.h2 = false;
-  activeHand = handKey;
-  status.textContent = handKey === 'h1' ? 'Split: play Hand 1, then Hand 2.' : 'Split: play Hand 2, then Hand 1.';
+  const amt = bets[handKey][idx];
+  spend(amt);
+  const newHand = [handArr[idx].pop()];
+  handArr[idx].push(draw());
+  newHand.push(draw());
+  if (handKey === 'h1') {
+    h1.push(newHand);
+    bets.h1.push(amt);
+    betChips.h1.push([...betChips.h1[idx]]);
+    stand.h1.push(false);
+  } else {
+    h2.push(newHand);
+    bets.h2.push(amt);
+    betChips.h2.push([...betChips.h2[idx]]);
+    stand.h2.push(false);
+  }
+  status.textContent = handKey === 'h1' ? 'Split: play Hand 1 hands in order.' : 'Split: play Hand 2 hands in order.';
   paint();
 }
-deal.onclick=()=>{if(live)return;if(!bets.h1&&!bets.h2){status.textContent='Add chips to Hand 1 or Hand 2 first.';return;}dealer=[draw(),draw()];h1=bets.h1?[draw(),draw()]:[];h2=bets.h2?[draw(),draw()]:[];stand={h1:!bets.h1,h2:!bets.h2};activeHand=bets.h1?'h1':'h2';live=true;status.textContent='Hand live';beep(520);paint();checkAuto();};
-hit1.onclick=()=>{if(!live||activeHand!=='h1'||stand.h1||!bets.h1)return;h1.push(draw());paint();if(sc(h1)>=21)stand.h1=true;checkAuto();};
-stand1.onclick=()=>{if(!live||activeHand!=='h1')return;stand.h1=true;checkAuto();};
-hit2.onclick=()=>{if(!live||activeHand!=='h2'||stand.h2||!bets.h2)return;h2.push(draw());paint();if(sc(h2)>=21)stand.h2=true;checkAuto();};
-stand2.onclick=()=>{if(!live||activeHand!=='h2')return;stand.h2=true;checkAuto();};
+deal.onclick=()=>{if(live)return;if(!bets.h1[0]&&!bets.h2[0]){status.textContent='Add chips to Hand 1 or Hand 2 first.';return;}dealer=[draw(),draw()];h1=bets.h1[0]?[draw(),draw()]:[[]];h2=bets.h2[0]?[draw(),draw()]:[[]];stand={h1:[!bets.h1[0]],h2:[!bets.h2[0]]};activeHand={side:bets.h1[0]?'h1':'h2',index:0};live=true;status.textContent='Hand live';beep(520);paint();checkAuto();};
+hit1.onclick=()=>{if(!live||activeHand.side!=='h1')return;const idx=activeHand.index;if(stand.h1[idx]||!bets.h1[idx])return;h1[idx].push(draw());paint();if(sc(h1[idx])>=21)stand.h1[idx]=true;checkAuto();};
+stand1.onclick=()=>{if(!live||activeHand.side!=='h1')return;stand.h1[activeHand.index]=true;checkAuto();};
+hit2.onclick=()=>{if(!live||activeHand.side!=='h2')return;const idx=activeHand.index;if(stand.h2[idx]||!bets.h2[idx])return;h2[idx].push(draw());paint();if(sc(h2[idx])>=21)stand.h2[idx]=true;checkAuto();};
+stand2.onclick=()=>{if(!live||activeHand.side!=='h2')return;stand.h2[activeHand.index]=true;checkAuto();};
+double1.onclick=()=>{if(!live||activeHand.side!=='h1')return;const idx=activeHand.index;const hand=h1[idx];if(hand.length!==2||!bets.h1[idx])return;const amt=bets.h1[idx];if(!spend(amt)){status.textContent='Not enough tokens to double.';return;}bets.h1[idx]+=amt;const style=betChips.h1[idx][0]?.style||pickStyle;betChips.h1[idx].push({value:amt,style});hand.push(draw());stand.h1[idx]=true;paint();checkAuto();};
+double2.onclick=()=>{if(!live||activeHand.side!=='h2')return;const idx=activeHand.index;const hand=h2[idx];if(hand.length!==2||!bets.h2[idx])return;const amt=bets.h2[idx];if(!spend(amt)){status.textContent='Not enough tokens to double.';return;}bets.h2[idx]+=amt;const style=betChips.h2[idx][0]?.style||pickStyle;betChips.h2[idx].push({value:amt,style});hand.push(draw());stand.h2[idx]=true;paint();checkAuto();};
 split1.onclick=()=>doSplit('h1');
 split2.onclick=()=>doSplit('h2');
 paint();
 </script>
-<div class='gate' id='gate'><div class='box'><h2>Two One Setup</h2><p>How to play: choose deck mode, pick a chip, tap Hand circles to bet, then MAKE YOUR PLAY. Use hit/stand per hand, Split when pairs appear, and Undo to remove last chip.</p><div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn' id='oneDeck'>Play 1 Deck</button><button class='btn' id='threeDeck'>Play 3 Decks</button></div></div></div>
+<div class='gate' id='gate'><div class='box'><h2>Two One Setup</h2><p>How to play: choose deck mode, pick a chip, tap Hand circles to bet, then MAKE YOUR PLAY. Use hit/stand per hand, Double on your first two cards, and Split pairs up to three times.</p><div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn' id='oneDeck'>Play 1 Deck</button><button class='btn' id='threeDeck'>Play 3 Decks</button></div></div></div>
 <script>oneDeck.onclick=()=>{deckCount=1;deckMode.textContent='1 Deck';fresh();gate.style.display='none';};threeDeck.onclick=()=>{deckCount=3;deckMode.textContent='3 Decks';fresh();gate.style.display='none';};</script>
 </div>
 <script>
