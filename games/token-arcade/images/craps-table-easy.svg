@@ -1,74 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Easy craps table">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Easy craps table">
   <defs>
-    <linearGradient id="rail" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#744622"/>
-      <stop offset="1" stop-color="#2b1507"/>
-    </linearGradient>
     <linearGradient id="felt" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#0f653d"/>
-      <stop offset="1" stop-color="#083420"/>
+      <stop offset="0" stop-color="#116b43"/>
+      <stop offset="1" stop-color="#08331f"/>
     </linearGradient>
   </defs>
-  <rect width="1600" height="900" rx="48" fill="url(#rail)"/>
-  <rect x="54" y="54" width="1492" height="792" rx="36" fill="url(#felt)" stroke="#d9c57d" stroke-width="5"/>
-  <g fill="none" stroke="#f7f0c6" stroke-width="4" opacity=".92">
-    <rect x="100" y="720" width="1400" height="92" rx="18"/>
-    <rect x="220" y="560" width="1160" height="118" rx="18"/>
-    <rect x="220" y="424" width="1160" height="96" rx="18"/>
-    <rect x="100" y="680" width="300" height="70" rx="18"/>
-    <rect x="1200" y="680" width="300" height="70" rx="18"/>
-    <rect x="600" y="680" width="400" height="70" rx="18"/>
-    <rect x="590" y="124" width="420" height="82" rx="18"/>
-    <rect x="250" y="124" width="210" height="82" rx="18"/>
-    <rect x="1140" y="124" width="210" height="82" rx="18"/>
+  <rect width="1600" height="1000" fill="url(#felt)"/>
+  <g fill="none" stroke="#efe6bd" stroke-width="4">
+    <rect x="58" y="108" width="370" height="760" rx="22"/>
+    <rect x="510" y="108" width="980" height="168"/>
+    <rect x="510" y="276" width="980" height="256"/>
+    <rect x="510" y="532" width="980" height="190"/>
+    <path d="M510 722h760v102H510z"/>
+  </g>
+  <g stroke="#efe6bd" stroke-width="3">
+    <line x1="608" y1="108" x2="608" y2="276"/>
+    <line x1="706" y1="108" x2="706" y2="276"/>
+    <line x1="804" y1="108" x2="804" y2="276"/>
+    <line x1="902" y1="108" x2="902" y2="276"/>
+    <line x1="1000" y1="108" x2="1000" y2="276"/>
+    <line x1="1098" y1="108" x2="1098" y2="276"/>
+    <line x1="1196" y1="108" x2="1196" y2="276"/>
+    <line x1="1294" y1="108" x2="1294" y2="276"/>
+    <line x1="1392" y1="108" x2="1392" y2="276"/>
+    <line x1="58" y1="218" x2="428" y2="218"/>
+    <line x1="58" y1="430" x2="428" y2="430"/>
+    <line x1="58" y1="650" x2="428" y2="650"/>
+  </g>
+  <g fill="#ffcf54" font-family="Georgia, serif" text-anchor="middle">
+    <text x="559" y="214" font-size="52">2</text>
+    <text x="657" y="214" font-size="52">3</text>
+    <text x="755" y="214" font-size="52">4</text>
+    <text x="853" y="214" font-size="52">5</text>
+    <text x="951" y="214" font-size="42">SIX</text>
+    <text x="1049" y="214" font-size="52">8</text>
+    <text x="1147" y="214" font-size="42">NINE</text>
+    <text x="1245" y="214" font-size="52">10</text>
+    <text x="1343" y="214" font-size="52">11</text>
+    <text x="1441" y="214" font-size="52">12</text>
+    <text x="1000" y="424" font-size="88" fill="#ff704b">COME</text>
+    <text x="720" y="640" font-size="44">LOW FIELD</text>
+    <text x="1000" y="640" font-size="62">FIELD</text>
+    <text x="1298" y="640" font-size="44">HIGH FIELD</text>
+    <text x="812" y="794" font-size="70" fill="#f7f0c6">PASS LINE</text>
+    <text x="1460" y="92" font-size="28" fill="#ffcf54" text-anchor="end">EASY CRAPS</text>
   </g>
   <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
-    <text x="800" y="775" font-size="54" letter-spacing="8">PASS LINE</text>
-    <text x="800" y="488" font-size="42" letter-spacing="6">COME</text>
-    <text x="800" y="727" font-size="34" letter-spacing="5">FIELD</text>
-    <text x="250" y="727" font-size="28" letter-spacing="5">LOW FIELD</text>
-    <text x="1350" y="727" font-size="28" letter-spacing="5">HIGH FIELD</text>
-    <text x="800" y="175" font-size="34" letter-spacing="6">ANY SEVEN</text>
-    <text x="355" y="175" font-size="30" letter-spacing="5">HORN</text>
-    <text x="1245" y="175" font-size="30" letter-spacing="5">C &amp; E</text>
+    <text x="243" y="162" font-size="28">HARDWAYS</text>
+    <text x="243" y="326" font-size="40" fill="#ff704b">ANY SEVEN</text>
+    <text x="243" y="540" font-size="38">HORN BET</text>
+    <text x="243" y="782" font-size="48" fill="#ff704b">ANY CRAPS</text>
   </g>
-  <g fill="none" stroke="#f7f0c6" stroke-width="4">
-    <rect x="100" y="560" width="108" height="118"/>
-    <rect x="208" y="560" width="108" height="118"/>
-    <rect x="316" y="560" width="108" height="118"/>
-    <rect x="424" y="560" width="108" height="118"/>
-    <rect x="532" y="560" width="108" height="118"/>
-    <rect x="640" y="560" width="108" height="118"/>
-    <rect x="748" y="560" width="108" height="118"/>
-    <rect x="856" y="560" width="108" height="118"/>
-    <rect x="964" y="560" width="108" height="118"/>
-    <rect x="1072" y="560" width="108" height="118"/>
-    <rect x="1180" y="560" width="108" height="118"/>
-    <rect x="1292" y="560" width="208" height="118"/>
-  </g>
-  <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
-    <text x="154" y="624" font-size="38">2</text>
-    <text x="262" y="624" font-size="38">3</text>
-    <text x="370" y="624" font-size="38">4</text>
-    <text x="478" y="624" font-size="38">5</text>
-    <text x="586" y="624" font-size="38">6</text>
-    <text x="694" y="624" font-size="38">8</text>
-    <text x="802" y="624" font-size="38">9</text>
-    <text x="910" y="624" font-size="38">10</text>
-    <text x="1018" y="624" font-size="38">11</text>
-    <text x="1126" y="624" font-size="38">12</text>
-    <text x="1396" y="617" font-size="30">EASY CRAPS</text>
-    <text x="1396" y="650" font-size="24">PLACE TO WIN</text>
-  </g>
-  <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
-    <text x="260" y="335" font-size="30">HARD 4</text>
-    <text x="530" y="335" font-size="30">HARD 6</text>
-    <text x="1070" y="335" font-size="30">HARD 8</text>
-    <text x="1340" y="335" font-size="30">HARD 10</text>
-    <text x="530" y="250" font-size="30">2</text>
-    <text x="650" y="250" font-size="30">3</text>
-    <text x="950" y="250" font-size="30">11</text>
-    <text x="1070" y="250" font-size="30">12</text>
-  </g>
-  <text x="800" y="92" fill="#ffcf54" font-family="Georgia, serif" font-size="36" text-anchor="middle" letter-spacing="7">EASY CRAPS</text>
 </svg>
