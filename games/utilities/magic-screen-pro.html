@@ -115,8 +115,8 @@
                         <option value="electric">Electric Arc</option>
                         <option value="velvet">Velvet Ink</option>
                         <option value="comet">Comet Trail</option>
-                        <option value="glitter">Glitter</option>
-                        <option value="smoke">Mystic Smoke</option>
+                        <option value="glitter">Glitter Stars</option>
+                        <option value="smoke">Fluffy Clouds</option>
                         <option value="galaxy">Cosmic Galaxy</option>
                         <option value="inkbleed">Ink Bleed</option>
                         <option value="laser">Laser Beam</option>
@@ -228,28 +228,6 @@
         let arrowStart = null;
         let arrowColor = '#ff3366';
         let arrowWidth = 14;
-
-        let particles = [];
-
-        class Particle {
-            constructor(x, y, vx, vy, life, color, type) {
-                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-                this.life = life; this.maxLife = life; this.color = color; this.type = type;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.type === 'cloud') this.vy -= 0.08;
-                this.life--;
-            }
-            draw() {
-                const alpha = this.life / this.maxLife;
-                ctx.globalAlpha = alpha * 0.9;
-                ctx.fillStyle = this.color;
-                const sz = this.type === 'star' ? 3 : 5;
-                ctx.fillRect(this.x, this.y, sz, sz);
-            }
-        }
 
         let settings = {
             size:24, alpha:0.94, flow:0.96, glow:38,
@@ -381,6 +359,52 @@
                     layerCtx.shadowBlur = settings.glow + 14;
                     layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'spark') {
+                    layerCtx.shadowBlur = 12;
+                    layerCtx.strokeStyle = '#ffffff';
+                    layerCtx.lineWidth = width * 0.8;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    for (let k = 0; k < 6; k++) {
+                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
+                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
+                        layerCtx.fillStyle = '#ffff88';
+                        layerCtx.fillRect(rx-2, ry-2, 4, 4);
+                    }
+                } else if (settings.effect === 'fire') {
+                    layerCtx.shadowBlur = settings.glow + 10;
+                    layerCtx.strokeStyle = `hsl(${15 + Math.random()*35}, 100%, 65%)`;
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'electric') {
+                    layerCtx.shadowBlur = 45;
+                    layerCtx.strokeStyle = '#aaffff';
+                    layerCtx.lineWidth = width * 0.7;
+                    layerCtx.setLineDash([2,8]);
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    layerCtx.setLineDash([]);
+                } else if (settings.effect === 'glitter') {
+                    layerCtx.shadowBlur = 18;
+                    layerCtx.strokeStyle = '#ffffff';
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    for (let k = 0; k < 8; k++) {
+                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
+                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
+                        layerCtx.fillStyle = `hsl(${Math.random()*360},100%,95%)`;
+                        layerCtx.fillRect(rx-2, ry-2, 4, 4);
+                    }
+                } else if (settings.effect === 'smoke') {
+                    layerCtx.shadowBlur = 30;
+                    layerCtx.globalAlpha = 0.4;
+                    layerCtx.strokeStyle = '#aabbdd';
+                    layerCtx.lineWidth = width * 1.6;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'galaxy') {
+                    const hue = (Date.now()/35 + settings.hueShift) % 360;
+                    layerCtx.strokeStyle = `hsla(${hue},85%,72%,${settings.alpha})`;
+                    layerCtx.shadowBlur = settings.glow;
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.strokeStyle = settings.color;
@@ -390,18 +414,6 @@
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
                     layerCtx.stroke();
-                }
-
-                if (currentTip === 'textured') {
-                    layerCtx.shadowBlur = 5;
-                    for (let n = 0; n < 6; n++) {
-                        layerCtx.globalAlpha = 0.25 + Math.random() * 0.4;
-                        layerCtx.lineWidth = width * (0.45 + Math.random() * 0.75);
-                        layerCtx.beginPath();
-                        layerCtx.moveTo(p1[0] + (Math.random()-0.5)*8, p1[1] + (Math.random()-0.5)*8);
-                        layerCtx.lineTo(p2[0] + (Math.random()-0.5)*8, p2[1] + (Math.random()-0.5)*8);
-                        layerCtx.stroke();
-                    }
                 }
             });
 
@@ -716,7 +728,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Preview now accurate + animated effects added', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Previews now accurate + distinct effects + animated particles', 'color:#66ccff');
         }
 
         function updatePreview() {
@@ -728,31 +740,44 @@
 
             pctx.shadowBlur = settings.glow;
             pctx.shadowColor = settings.color;
-            pctx.lineWidth = settings.size * 1.2;
+            pctx.lineWidth = settings.size * 1.3;
             pctx.lineCap = 'round';
 
             if (settings.effect === 'neon') {
                 for (let l = 4; l >= 0; l--) {
-                    pctx.shadowBlur = settings.glow + l * 12;
-                    pctx.globalAlpha = 0.9 - l * 0.2;
+                    pctx.shadowBlur = settings.glow + l * 14;
+                    pctx.globalAlpha = 0.9 - l * 0.22;
                     pctx.strokeStyle = settings.color;
                     pctx.beginPath();
-                    pctx.moveTo(cx - 70, cy);
-                    pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                    pctx.moveTo(cx - 80, cy);
+                    pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                     pctx.stroke();
                 }
             } else if (settings.effect === 'rainbow') {
                 const hue = (Date.now() / 25) % 360;
                 pctx.strokeStyle = `hsla(${hue}, 95%, 68%, 0.95)`;
                 pctx.beginPath();
-                pctx.moveTo(cx - 70, cy);
-                pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                pctx.moveTo(cx - 80, cy);
+                pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                 pctx.stroke();
+            } else if (settings.effect === 'spark') {
+                pctx.strokeStyle = '#ffffff';
+                pctx.shadowBlur = 18;
+                pctx.beginPath();
+                pctx.moveTo(cx - 80, cy);
+                pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
+                pctx.stroke();
+                for (let i = 0; i < 12; i++) {
+                    const rx = cx - 60 + Math.random() * 120;
+                    const ry = cy - 20 + Math.random() * 40;
+                    pctx.fillStyle = '#ffff88';
+                    pctx.fillRect(rx-2, ry-2, 4, 4);
+                }
             } else {
                 pctx.strokeStyle = settings.color;
                 pctx.beginPath();
-                pctx.moveTo(cx - 70, cy);
-                pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                pctx.moveTo(cx - 80, cy);
+                pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                 pctx.stroke();
             }
             pctx.globalAlpha = 1;
