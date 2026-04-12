@@ -25,16 +25,8 @@
         z-index: 100;
       }
       .header h1 { margin:0; font-size:1.3rem; background:linear-gradient(90deg,#66ccff,#ff66cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-      .btn { 
-        padding:7px 12px; 
-        background:#0b1b30; 
-        border:1px solid #446; 
-        border-radius:8px; 
-        color:#e3dcff; 
-        cursor:pointer; 
-        font-size:0.92rem; 
-        transition:all .2s; 
-      }
+      .credit { font-size:0.72rem; opacity:0.65; margin-left:8px; white-space:nowrap; color:#a0b0d0; }
+      .btn { padding:7px 12px; background:#0b1b30; border:1px solid #446; border-radius:8px; color:#e3dcff; cursor:pointer; font-size:0.92rem; transition:all .2s; }
       .btn:hover { background:#112b44; border-color:var(--accent); }
       .main { display:flex; height:calc(100vh - 57px); }
       .sidebar { width:270px; background:#0b1b30f2; border-right:1px solid #335; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
@@ -59,11 +51,7 @@
         text-align:center;
         min-height:68px;
       }
-      .tool-btn.active { 
-        border-color:#66ccff; 
-        background:#1e3a55; 
-        box-shadow:0 0 12px rgba(102,204,255,0.5); 
-      }
+      .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 12px rgba(102,204,255,0.5); }
       .canvas-container { flex:1; display:flex; flex-direction:column; background:#070b14; padding:8px; gap:6px; }
       .canvasWrap { flex:1; background:#070b14; border:2px solid #335; border-radius:14px; overflow:hidden; position:relative; }
       canvas { width:100%; height:100%; display:block; background:#080b18; touch-action:none; }
@@ -130,8 +118,9 @@
           <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌈 Effect <span style="margin-left:auto">▼</span></h3>
           <div class="content">
             <select id="effect" style="width:100%;padding:10px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
+              <option value="none" selected>None (Plain)</option>
               <option value="neon">Neon Glow (Original)</option>
-              <option value="rainbow">Rainbow Flow</option>
+              <option value="rainbow">Rainbow Rope (Classic)</option>
               <option value="prism">Prism Split</option>
               <option value="spark">Spark Burst</option>
               <option value="fire">Dragon Fire</option>
@@ -172,14 +161,14 @@
           <div id="layersList" style="max-height:320px;overflow-y:auto;"></div>
         </div>
 
-        <!-- Selection Controls -->
+        <!-- Selection -->
         <div id="selectionControls" class="panel" style="display:none;">
           <h3>🔲 Selection</h3>
           <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:6px;">📋 Copy Selection</button>
           <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
         </div>
 
-        <!-- Arrow Controls -->
+        <!-- Arrow -->
         <div id="arrowControls" class="panel" style="display:none;">
           <h3>➜ Arrow</h3>
           <div class="control"><label>Width</label><input id="arrowWidth" type="range" min="4" max="40" value="12"><input id="arrowWidthNum" type="number" value="12"></div>
@@ -228,18 +217,20 @@
       let currentTool = 'brush';
       let currentTip = 'soft';
 
+      // Selection
       let selectionMode = false;
       let selectionStart = null;
       let selectionRect = null;
       let copiedImage = null;
 
+      // Arrow
       let arrowStart = null;
       let arrowColor = '#ff3366';
       let arrowWidth = 12;
 
       let settings = {
         size:22, alpha:0.94, flow:0.96, glow:35,
-        hueShift:0, color:'#66ccff', effect:'neon',
+        hueShift:0, color:'#66ccff', effect:'none',   // ← default to None
         symmetry:'none', fade:0, rotSpeed:0, rotOffset:0,
         symCenterX:50, symCenterY:50,
         neonLayers:5, particleDensity:0.8,
@@ -250,13 +241,7 @@
         const c = document.createElement('canvas');
         c.width = canvas.width;
         c.height = canvas.height;
-        return {
-          canvas: c,
-          ctx: c.getContext('2d'),
-          name: name,
-          visible: true,
-          opacity: 1
-        };
+        return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1 };
       }
 
       function resize() {
@@ -335,20 +320,56 @@
 
         let width = settings.size * settings.flow * pressure;
 
-        if (currentTip === 'hard') width *= 0.88;
-        if (currentTip === 'textured') width *= 1.18;
-        if (currentTip === 'watercolor') width *= 1.35;
-        if (currentTip === 'chisel') width *= 1.55;
-        if (currentTip === 'calligraphy') width *= 0.7 + Math.abs(Math.sin(Date.now()/140)) * 1.4;
-        if (currentTip === 'airbrush') width *= 2.2;
+        // === DISTINCT BRUSH TIPS ===
+        if (currentTip === 'soft') {
+          layerCtx.lineCap = 'round';
+          layerCtx.lineJoin = 'round';
+        } else if (currentTip === 'hard') {
+          layerCtx.lineCap = 'butt';
+          layerCtx.lineJoin = 'miter';
+          width *= 0.92;
+        } else if (currentTip === 'textured') {
+          layerCtx.lineCap = 'round';
+          width *= 1.15;
+        } else if (currentTip === 'watercolor') {
+          layerCtx.lineCap = 'round';
+          width *= 1.3;
+        } else if (currentTip === 'chisel') {
+          layerCtx.lineCap = 'butt';
+          width *= 1.55;
+        } else if (currentTip === 'calligraphy') {
+          layerCtx.lineCap = 'butt';
+          width *= 0.7 + Math.abs(Math.sin(Date.now()/140)) * 1.4;
+        } else if (currentTip === 'airbrush') {
+          layerCtx.lineCap = 'round';
+          width *= 2.4;
+        }
 
         symFrom.forEach((p1, i) => {
           const p2 = symTo[i % symTo.length];
 
-          layerCtx.lineCap = (currentTip === 'calligraphy') ? 'butt' : 'round';
-          layerCtx.lineJoin = 'round';
-
-          if (settings.effect === 'neon') {
+          if (currentTip === 'textured') {
+            // Grain effect
+            for (let n = 0; n < 4; n++) {
+              layerCtx.shadowBlur = 4;
+              layerCtx.globalAlpha = settings.alpha * (0.4 + Math.random() * 0.4);
+              layerCtx.lineWidth = width * (0.6 + Math.random() * 0.6);
+              layerCtx.beginPath();
+              layerCtx.moveTo(p1[0] + (Math.random()-0.5)*3, p1[1] + (Math.random()-0.5)*3);
+              layerCtx.lineTo(p2[0] + (Math.random()-0.5)*3, p2[1] + (Math.random()-0.5)*3);
+              layerCtx.strokeStyle = settings.color;
+              layerCtx.stroke();
+            }
+          } else if (currentTip === 'watercolor') {
+            layerCtx.shadowBlur = 22;
+            layerCtx.globalAlpha = settings.alpha * 0.65;
+            layerCtx.lineWidth = width;
+            layerCtx.strokeStyle = settings.color;
+            layerCtx.beginPath();
+            layerCtx.moveTo(p1[0], p1[1]);
+            layerCtx.lineTo(p2[0], p2[1]);
+            layerCtx.stroke();
+          } else if (settings.effect === 'neon') {
             for (let l = settings.neonLayers; l >= 0; l--) {
               layerCtx.shadowBlur = settings.glow + l * 15;
               layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
@@ -359,10 +380,10 @@
               layerCtx.lineTo(p2[0], p2[1]);
               layerCtx.stroke();
             }
-          } else if (settings.effect === 'rainbow' || settings.effect === 'prism') {
-            const hue = (Date.now() / 20 + settings.hueShift) % 360;
-            layerCtx.strokeStyle = `hsla(${hue + (settings.effect==='prism'? i*30 : 0)}, 95%, 68%, ${settings.alpha})`;
-            layerCtx.shadowBlur = settings.glow + 10;
+          } else if (settings.effect === 'rainbow') {
+            const hue = (Date.now() / 18 + settings.hueShift) % 360;
+            layerCtx.strokeStyle = `hsla(${hue + i*25}, 95%, 68%, ${settings.alpha})`;
+            layerCtx.shadowBlur = settings.glow + 12;
             layerCtx.lineWidth = width;
             layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
           } else {
@@ -436,7 +457,6 @@
           ctx.moveTo(arrowStart.x, arrowStart.y);
           ctx.lineTo(x, y);
           ctx.stroke();
-
           const angle = Math.atan2(y - arrowStart.y, x - arrowStart.x);
           ctx.beginPath();
           ctx.moveTo(x, y);
@@ -455,10 +475,17 @@
       }
 
       function pointerUp(e) {
+        if (currentTool === 'select' && selectionMode && selectionStart) {
+          selectionMode = false;
+          if (selectionRect && selectionRect.w > 10 && selectionRect.h > 10) {
+            document.getElementById('selectionControls').style.display = 'block';
+          }
+          return;
+        }
+
         if (currentTool === 'arrow' && arrowStart) {
           const activeLayer = layers[currentLayerIndex];
           const layerCtx = activeLayer.ctx;
-
           layerCtx.strokeStyle = arrowColor;
           layerCtx.lineWidth = arrowWidth;
           layerCtx.lineCap = 'round';
@@ -466,24 +493,16 @@
           layerCtx.moveTo(arrowStart.x, arrowStart.y);
           layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
           layerCtx.stroke();
-
           const angle = Math.atan2(
             e.clientY - canvas.getBoundingClientRect().top - arrowStart.y,
             e.clientX - canvas.getBoundingClientRect().left - arrowStart.x
           );
           layerCtx.beginPath();
           layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-          layerCtx.lineTo(
-            e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle - Math.PI/6),
-            e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle - Math.PI/6)
-          );
+          layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle - Math.PI/6), e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle - Math.PI/6));
           layerCtx.moveTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-          layerCtx.lineTo(
-            e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle + Math.PI/6),
-            e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle + Math.PI/6)
-          );
+          layerCtx.lineTo(e.clientX - canvas.getBoundingClientRect().left - 20*Math.cos(angle + Math.PI/6), e.clientY - canvas.getBoundingClientRect().top - 20*Math.sin(angle + Math.PI/6));
           layerCtx.stroke();
-
           arrowStart = null;
           saveState();
           renderAllLayers();
@@ -673,7 +692,7 @@
         renderAllLayers();
         animate();
 
-        console.log('%cMagic Screen PRO – Final version with copyright & improved visibility', 'color:#66ccff');
+        console.log('%cMagic Screen PRO – Brushes now distinct + Rainbow rope restored + Default None', 'color:#66ccff');
       }
 
       function updatePreview() {
