@@ -568,20 +568,16 @@
             const pressure = e.pressure || 1;
 
             if (activeAnchor !== null && pastedImage) {
-                const centerX = pastedX + pastedImage.width * pastedScale / 2;
-                const centerY = pastedY + pastedImage.height * pastedScale / 2;
-
-                if (activeAnchor === 0) {
+                if (activeAnchor === 0) { // top-left
                     pastedX = x;
                     pastedY = y;
-                    pastedScale = Math.max(0.2, (pastedImage.width * pastedScale - (x - pastedX)) / pastedImage.width);
-                } else if (activeAnchor === 1) {
+                } else if (activeAnchor === 1) { // top-right
                     pastedScale = Math.max(0.2, (x - pastedX) / pastedImage.width);
                     pastedY = y;
-                } else if (activeAnchor === 2) {
+                } else if (activeAnchor === 2) { // bottom-left
                     pastedScale = Math.max(0.2, (y - pastedY) / pastedImage.height);
                     pastedX = x;
-                } else if (activeAnchor === 3) {
+                } else if (activeAnchor === 3) { // bottom-right
                     pastedScale = Math.max(0.2, Math.hypot(x - pastedX, y - pastedY) / (pastedImage.width * 0.7));
                 }
                 renderAllLayers();
@@ -819,9 +815,7 @@
                 navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(() => {
                     const originalText = document.getElementById('copyAllBtn').innerHTML;
                     document.getElementById('copyAllBtn').innerHTML = '✅ Copied!';
-                    setTimeout(() => {
-                        document.getElementById('copyAllBtn').innerHTML = originalText;
-                    }, 1500);
+                    setTimeout(() => document.getElementById('copyAllBtn').innerHTML = originalText, 1500);
                 });
             }, 'image/png');
         }
@@ -935,22 +929,24 @@
 
             document.getElementById('fullscreenBtn').onclick = () => {
                 if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
+                    document.documentElement.requestFullscreen().catch(() => {});
                 } else {
                     document.exitFullscreen();
                 }
             };
-
-            // Fullscreen redraw fix
-            document.addEventListener('fullscreenchange', () => {
-                resize();
-                renderAllLayers();
-            });
         }
 
         function init() {
             resize();
             window.addEventListener('resize', resize);
+
+            // Fixed fullscreen handler
+            document.addEventListener('fullscreenchange', () => {
+                setTimeout(() => {
+                    resize();
+                    renderAllLayers();
+                }, 50);
+            });
 
             layers = [createNewLayer("Background")];
             currentLayerIndex = 0;
@@ -967,7 +963,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Fullscreen redraw fixed + Copy All + scrollable canvas for large images', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Crash on draw fixed + stable fullscreen', 'color:#66ccff');
         }
 
         function updatePreview() {
