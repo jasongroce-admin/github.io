@@ -74,7 +74,7 @@
         .canvas-container { flex: 1; display: flex; flex-direction: column; background: #070b14; padding: 10px; gap: 8px; }
         .canvasWrap { flex: 1; background: #070b14; border: 2px solid #335; border-radius: 16px; overflow: hidden; position: relative; }
         canvas { width: 100%; height: 100%; display: block; background: #080b18; touch-action: none; }
-        .preview { width: 100%; height: 120px; background: #112b44; border-radius: 10px; border: 1px solid #446; overflow: hidden; }
+        .preview { width: 100%; height: 110px; background: #112b44; border-radius: 10px; border: 1px solid #446; overflow: hidden; }
         .hint { font-size: 0.82rem; opacity: 0.8; text-align: center; }
         .layer-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: #112b44; border-radius: 8px; margin-bottom: 6px; font-size: 0.93rem; }
         .layer-item.active { border: 2px solid var(--accent); }
@@ -87,18 +87,6 @@
             color: #a0b0d0;
             z-index: 1000;
             pointer-events: none;
-        }
-        .transform-controls {
-            position: absolute;
-            background: rgba(15,27,50,0.98);
-            border: 2px solid #66ccff;
-            border-radius: 12px;
-            padding: 12px;
-            display: none;
-            z-index: 300;
-            box-shadow: 0 0 30px rgba(102,204,255,0.5);
-            gap: 8px;
-            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -150,7 +138,7 @@
                 <div class="content">
                     <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
                         <option value="none" selected>None (Plain)</option>
-                        <option value="neon">Neon Glow (Original)</option>
+                        <option value="neon">Neon Glow</option>
                         <option value="rainbow">Rainbow Rope</option>
                         <option value="prism">Prism Split</option>
                         <option value="spark">Spark Burst</option>
@@ -197,22 +185,6 @@
                 <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
             </div>
 
-            <div id="transformControls" class="panel" style="display:none;">
-                <h3>✏️ Move / Resize Pasted Item</h3>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-                    <button onclick="movePasted(-30,0)" class="btn">←</button>
-                    <button onclick="movePasted(30,0)" class="btn">→</button>
-                    <button onclick="movePasted(0,-30)" class="btn">↑</button>
-                    <button onclick="movePasted(0,30)" class="btn">↓</button>
-                    <button onclick="resizePasted(0.85)" class="btn">Shrink</button>
-                    <button onclick="resizePasted(1.15)" class="btn">Grow</button>
-                    <button onclick="rotatePasted(-15)" class="btn">↻</button>
-                    <button onclick="rotatePasted(15)" class="btn">↻</button>
-                    <button onclick="confirmPaste()" style="background:#22c55e;color:white;width:100%;">✅ Place It</button>
-                    <button onclick="cancelPaste()" style="background:#ef4444;color:white;width:100%;">❌ Cancel</button>
-                </div>
-            </div>
-
             <div class="panel">
                 <h3>🌟 Color</h3>
                 <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
@@ -227,7 +199,6 @@
     </div>
 
     <script>
-        // ====================== CORE ======================
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         const previewCanvas = document.getElementById('preview');
@@ -247,11 +218,6 @@
         let selectionStart = null;
         let selectionRect = null;
         let copiedImage = null;
-
-        let pastedImage = null;
-        let pastedX = 150, pastedY = 150;
-        let pastedRotation = 0;
-        let pastedScale = 1;
 
         let settings = {
             size: 24,
@@ -303,15 +269,6 @@
                 }
             });
             ctx.globalAlpha = 1;
-
-            if (pastedImage) {
-                ctx.save();
-                ctx.translate(pastedX + pastedImage.width/2, pastedY + pastedImage.height/2);
-                ctx.rotate(pastedRotation * Math.PI / 180);
-                ctx.scale(pastedScale, pastedScale);
-                ctx.drawImage(pastedImage, -pastedImage.width/2, -pastedImage.height/2);
-                ctx.restore();
-            }
         }
 
         function saveState() {
@@ -365,10 +322,10 @@
             // Distinct brush tips
             if (currentTip === 'hard') width *= 0.9;
             if (currentTip === 'textured') width *= 1.22;
-            if (currentTip === 'watercolor') width *= 1.38;
+            if (currentTip === 'watercolor') width *= 1.4;
             if (currentTip === 'chisel') width *= 1.6;
             if (currentTip === 'calligraphy') width *= 0.68 + Math.abs(Math.sin(Date.now()/130)) * 1.5;
-            if (currentTip === 'airbrush') width *= 2.5;
+            if (currentTip === 'airbrush') width *= 2.6;
 
             symFrom.forEach((p1, i) => {
                 const p2 = symTo[i % symTo.length];
@@ -407,7 +364,7 @@
                     layerCtx.stroke();
                 }
 
-                // Texture grain
+                // Textured grain
                 if (currentTip === 'textured') {
                     layerCtx.shadowBlur = 4;
                     for (let n = 0; n < 6; n++) {
@@ -434,11 +391,6 @@
                 selectionMode = true;
                 selectionStart = {x, y};
                 selectionRect = null;
-                return;
-            }
-
-            if (currentTool === 'arrow') {
-                arrowStart = {x, y};
                 return;
             }
 
@@ -470,27 +422,6 @@
                 return;
             }
 
-            if (currentTool === 'arrow' && arrowStart) {
-                renderAllLayers();
-                ctx.save();
-                ctx.strokeStyle = arrowColor;
-                ctx.lineWidth = arrowWidth;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(arrowStart.x, arrowStart.y);
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                const angle = Math.atan2(y - arrowStart.y, x - arrowStart.x);
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x - 22*Math.cos(angle - Math.PI/6), y - 22*Math.sin(angle - Math.PI/6));
-                ctx.moveTo(x, y);
-                ctx.lineTo(x - 22*Math.cos(angle + Math.PI/6), y - 22*Math.sin(angle + Math.PI/6));
-                ctx.stroke();
-                ctx.restore();
-                return;
-            }
-
             if (!drawing || !lastPos) return;
 
             drawStroke(lastPos, {x, y}, pressure);
@@ -513,49 +444,11 @@
 
         function pasteSelection() {
             if (!copiedImage) return;
-            pastedImage = copiedImage;
-            pastedX = 150;
-            pastedY = 150;
-            pastedRotation = 0;
-            pastedScale = 1;
-            document.getElementById('transformControls').style.display = 'block';
-            document.getElementById('selectionControls').style.display = 'none';
-            renderAllLayers();
-        }
-
-        function movePasted(dx, dy) {
-            pastedX += dx;
-            pastedY += dy;
-            renderAllLayers();
-        }
-
-        function resizePasted(factor) {
-            pastedScale *= factor;
-            renderAllLayers();
-        }
-
-        function rotatePasted(deg) {
-            pastedRotation += deg;
-            renderAllLayers();
-        }
-
-        function confirmPaste() {
             const activeLayer = layers[currentLayerIndex];
-            activeLayer.ctx.save();
-            activeLayer.ctx.translate(pastedX + pastedImage.width/2, pastedY + pastedImage.height/2);
-            activeLayer.ctx.rotate(pastedRotation * Math.PI / 180);
-            activeLayer.ctx.scale(pastedScale, pastedScale);
-            activeLayer.ctx.drawImage(pastedImage, -pastedImage.width/2, -pastedImage.height/2);
-            activeLayer.ctx.restore();
+            activeLayer.ctx.drawImage(copiedImage, 100, 100);
             saveState();
             renderAllLayers();
-            cancelPaste();
-        }
-
-        function cancelPaste() {
-            pastedImage = null;
-            document.getElementById('transformControls').style.display = 'none';
-            selectionRect = null;
+            document.getElementById('selectionControls').style.display = 'none';
         }
 
         function renderLayersList() {
@@ -596,7 +489,6 @@
                     currentTip = btn.dataset.tip || 'soft';
 
                     document.getElementById('selectionControls').style.display = currentTool === 'select' ? 'block' : 'none';
-                    document.getElementById('transformControls').style.display = 'none';
                 });
             });
 
@@ -691,7 +583,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Drawing restored + Paste transform working', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Drawing restored and stable', 'color:#66ccff');
         }
 
         function updatePreview() {
@@ -712,7 +604,6 @@
         }
 
         function animate() {
-            currentAngle += settings.rotSpeed * 0.7;
             requestAnimationFrame(animate);
         }
 
