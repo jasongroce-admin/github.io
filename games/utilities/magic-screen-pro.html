@@ -43,8 +43,8 @@
             font-size:0.9rem; color:#ffffff; font-weight:500; text-align:center; min-height:72px; transition:all .2s;
         }
         .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 15px rgba(102,204,255,0.6); }
-        .canvas-container { flex:1; display:flex; flex-direction:column; background:#070b14; padding:10px; gap:8px; }
-        .canvasWrap { flex:1; background:#070b14; border:2px solid #335; border-radius:16px; overflow:hidden; position:relative; box-shadow:0 0 40px rgba(102,204,255,0.2); }
+        .canvas-container { flex:1; display:flex; flex-direction:column; background:#070b14; padding:10px; gap:8px; position:relative; }
+        .canvasWrap { flex:1; background:#070b14; border:2px solid #335; border-radius:16px; overflow:hidden; box-shadow:0 0 40px rgba(102,204,255,0.2); }
         canvas { width:100%; height:100%; display:block; background:#080b18; touch-action:none; }
         .preview { width:100%; height:120px; background:#112b44; border-radius:10px; border:1px solid #446; overflow:hidden; }
         .hint { font-size:0.82rem; opacity:0.8; text-align:center; }
@@ -59,19 +59,19 @@
             position:fixed; bottom:10px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none;
         }
         .transform-controls {
-            position:absolute; background:rgba(15,27,50,0.98); border:2px solid #66ccff; border-radius:12px; 
+            background:rgba(15,27,50,0.98); border:2px solid #66ccff; border-radius:12px; 
             padding:12px; display:none; z-index:300; box-shadow:0 0 30px rgba(102,204,255,0.5); gap:8px; flex-wrap:wrap;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; right: 12px; top: 280px; width: 240px;
         }
         .anchor {
             position: absolute;
-            width: 12px; height: 12px;
+            width: 14px; height: 14px;
             background: #66ccff;
-            border: 2px solid #fff;
+            border: 3px solid #fff;
             border-radius: 50%;
-            cursor: nwse-resize;
-            box-shadow: 0 0 8px #66ccff;
+            box-shadow: 0 0 10px #66ccff;
             z-index: 400;
+            cursor: nwse-resize;
         }
     </style>
 </head>
@@ -171,8 +171,9 @@
                 <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
             </div>
 
-            <div id="transformControls" class="panel transform-controls">
-                <h3 style="margin-bottom:12px;">✏️ Transform Selection</h3>
+            <!-- Transform panel now directly under Layers -->
+            <div id="transformControls" class="panel" style="display:none;">
+                <h3>✏️ Transform Pasted Selection</h3>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
                     <button onclick="movePasted(-25,0)" class="btn">←</button>
                     <button onclick="movePasted(25,0)" class="btn">→</button>
@@ -244,6 +245,10 @@
         let isDraggingPasted = false;
         let dragOffsetX = 0, dragOffsetY = 0;
 
+        // Anchor points for resizing pasted selection
+        let anchors = [];
+        let activeAnchor = null;
+
         let arrowStart = null;
 
         let settings = {
@@ -295,6 +300,27 @@
                 ctx.scale(pastedScale, pastedScale);
                 ctx.drawImage(pastedImage, -pastedImage.width/2, -pastedImage.height/2);
                 ctx.restore();
+
+                // Draw corner anchors when pasted item is active
+                if (document.getElementById('transformControls').style.display === 'block') {
+                    anchors = [
+                        {x: pastedX, y: pastedY, cursor: 'nwse-resize'},           // top-left
+                        {x: pastedX + pastedImage.width * pastedScale, y: pastedY, cursor: 'nesw-resize'}, // top-right
+                        {x: pastedX, y: pastedY + pastedImage.height * pastedScale, cursor: 'nesw-resize'}, // bottom-left
+                        {x: pastedX + pastedImage.width * pastedScale, y: pastedY + pastedImage.height * pastedScale, cursor: 'nwse-resize'} // bottom-right
+                    ];
+                    anchors.forEach((a, i) => {
+                        ctx.save();
+                        ctx.fillStyle = '#66ccff';
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.restore();
+                    });
+                }
             }
         }
 
@@ -496,11 +522,23 @@
             let y = e.clientY - rect.top;
             const pressure = e.pressure || 1;
 
-            if (pastedImage) {
+            // Check for anchor interaction first
+            if (pastedImage && document.getElementById('transformControls').style.display === 'block') {
+                for (let i = 0; i < anchors.length; i++) {
+                    const a = anchors[i];
+                    if (Math.hypot(x - a.x, y - a.y) < 20) {
+                        activeAnchor = i;
+                        return;
+                    }
+                }
+            }
+
+            // Check for dragging pasted image
+            if (pastedImage && document.getElementById('transformControls').style.display === 'block') {
                 const centerX = pastedX + pastedImage.width / 2;
                 const centerY = pastedY + pastedImage.height / 2;
-                if (Math.abs(x - centerX) < pastedImage.width * pastedScale / 2 + 20 &&
-                    Math.abs(y - centerY) < pastedImage.height * pastedScale / 2 + 20) {
+                if (Math.abs(x - centerX) < pastedImage.width * pastedScale / 2 + 30 &&
+                    Math.abs(y - centerY) < pastedImage.height * pastedScale / 2 + 30) {
                     isDraggingPasted = true;
                     dragOffsetX = x - pastedX;
                     dragOffsetY = y - pastedY;
@@ -530,6 +568,28 @@
             let x = e.clientX - rect.left;
             let y = e.clientY - rect.top;
             const pressure = e.pressure || 1;
+
+            if (activeAnchor !== null && pastedImage) {
+                const centerX = pastedX + pastedImage.width * pastedScale / 2;
+                const centerY = pastedY + pastedImage.height * pastedScale / 2;
+
+                if (activeAnchor === 0) { // top-left
+                    pastedX = x;
+                    pastedY = y;
+                    pastedScale = Math.max(0.2, (pastedImage.width * pastedScale - (x - pastedX)) / pastedImage.width);
+                } else if (activeAnchor === 1) { // top-right
+                    pastedScale = Math.max(0.2, (x - pastedX) / pastedImage.width);
+                    pastedY = y;
+                } else if (activeAnchor === 2) { // bottom-left
+                    pastedScale = Math.max(0.2, (y - pastedY) / pastedImage.height);
+                    pastedX = x;
+                } else if (activeAnchor === 3) { // bottom-right
+                    pastedScale = Math.max(0.2, Math.hypot(x - pastedX, y - pastedY) / (pastedImage.width * 0.7));
+                }
+
+                renderAllLayers();
+                return;
+            }
 
             if (isDraggingPasted && pastedImage) {
                 pastedX = x - dragOffsetX;
@@ -578,6 +638,7 @@
         }
 
         function pointerUp(e) {
+            activeAnchor = null;
             if (isDraggingPasted) {
                 isDraggingPasted = false;
                 return;
@@ -684,28 +745,31 @@
             pastedImage = null;
             document.getElementById('transformControls').style.display = 'none';
             selectionRect = null;
+            anchors = [];
         }
 
         function renderLayersList() {
             const container = document.getElementById('layersList');
             container.innerHTML = '';
-            layers.forEach((layer, i) => {
+            // Reverse order for display (top layer at top of list)
+            [...layers].reverse().forEach((layer, idx) => {
+                const realIndex = layers.length - 1 - idx;
                 const div = document.createElement('div');
-                div.className = `layer-item ${i === currentLayerIndex ? 'active' : ''}`;
+                div.className = `layer-item ${realIndex === currentLayerIndex ? 'active' : ''}`;
                 div.draggable = true;
                 div.innerHTML = `
-                    <span onclick="toggleLayerVisibility(${i}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
+                    <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
                     <span style="flex:1">${layer.name}</span>
-                    <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${i}].opacity = parseFloat(this.value); renderAllLayers();">
-                    <span class="delete-layer" onclick="deleteLayer(${i}); event.stopImmediatePropagation();">🗑️</span>
+                    <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
+                    <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
                 `;
-                div.onclick = (e) => { if (e.target.tagName !== 'INPUT' && !e.target.classList.contains('delete-layer')) { currentLayerIndex = i; renderLayersList(); } };
-                div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', i); });
+                div.onclick = (e) => { if (e.target.tagName !== 'INPUT' && !e.target.classList.contains('delete-layer')) { currentLayerIndex = realIndex; renderLayersList(); } };
+                div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', realIndex); });
                 div.addEventListener('dragover', e => e.preventDefault());
                 div.addEventListener('drop', e => {
                     e.preventDefault();
                     const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                    const toIndex = i;
+                    const toIndex = realIndex;
                     if (fromIndex === toIndex) return;
                     const movedLayer = layers.splice(fromIndex, 1)[0];
                     layers.splice(toIndex, 0, movedLayer);
@@ -736,8 +800,8 @@
         }
 
         function addNewLayer() {
-            layers.push(createNewLayer());
-            currentLayerIndex = layers.length - 1;
+            layers.push(createNewLayer(`Layer ${layers.length + 1}`));
+            currentLayerIndex = layers.length - 1;  // New layer on top
             renderLayersList();
             renderAllLayers();
         }
@@ -849,8 +913,11 @@
             };
 
             document.getElementById('fullscreenBtn').onclick = () => {
-                if (!document.fullscreenElement) canvasWrap.requestFullscreen();
-                else document.exitFullscreen();
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
             };
         }
 
@@ -873,7 +940,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Paste drag + anchor-ready + separate Flip H/V + delete layers', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – New layers on top + Transform panel under Layers + Anchor corners for resize + Fullscreen improved', 'color:#66ccff');
         }
 
         function updatePreview() {
