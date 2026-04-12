@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Blackjack</title><link rel='stylesheet' href='common.css'>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Two One</title><link rel='stylesheet' href='common.css'>
 <style>
 .table{background:#0b4f95;border:2px solid #8dc0ff;border-radius:12px;padding:10px;max-width:980px;margin:0 auto}.felt{width:100%;border:1px solid #9fd0ff;border-radius:8px;margin-bottom:8px}
 .card{display:inline-flex;align-items:center;justify-content:center;width:60px;height:88px;background:#fff;border-radius:10px;color:#111;border:1px solid #aab;margin-right:5px;font-weight:700}.red{color:#c62828}
@@ -7,9 +7,9 @@
 .hand{margin:8px 0}.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.deckBadge{font-size:.85rem;color:#ffd166}
 </style></head>
 <body>
-<div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-  DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
-</div>
+  <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
+    DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
+  </div>
 <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
   <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
     <h2 style="margin:0 0 12px;">Private Arcade</h2>
@@ -22,8 +22,8 @@
     </div>
   </div>
 </div>
-<div id="privateGame" style="display:none;"><div class='wrap'><div class='notice'>Testing only: SpendTokens have no real-world value.</div><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div>
-<div class='panel table'><img src='images/blackjack-felt.svg' class='felt' alt='blackjack felt'>
+<div id="privateGame" style="display:none;"><div class='wrap'><div class='notice'>Testing only: SpendTokens have no real-world value.</div><div class='top'><a class='btn' href='index.html'>← Toolbox Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div>
+<div class='panel table'><img src='images/blackjack-felt.svg' class='felt' alt='two one felt'>
 <div class='deckBadge'>Deck Mode: <span id='deckMode'>1 Deck</span></div>
 <div><b>Dealer</b> <span id='dScore'></span><div id='dCards'></div></div>
 <div class='betRow'><div class='circle' id='c1'>HAND 1<span class='chipTot' id='t1'>0</span></div><div class='circle' id='c2'>HAND 2<span class='chipTot' id='t2'>0</span></div></div>
@@ -47,14 +47,14 @@ function paint(){dCards.innerHTML='';dealer.forEach((c,i)=>dCards.appendChild(ca
 function place(hand){if(live)return; if(!spend(pick))return; bets[hand]+=pick;betStack.push({hand,amt:pick});beep(540);paint();}
 c1.onclick=()=>place('h1');c2.onclick=()=>place('h2');undo.onclick=()=>{if(live||!betStack.length)return;const b=betStack.pop();bets[b.hand]-=b.amt;add(b.amt);paint();};
 function payoutMult(hand,ps){const natural=(hand.length===2&&ps===21)?2.5:2;return deckCount===3?natural*0.97:natural;} // 3-deck slight house edge factor
-function settle(){live=false;while(sc(dealer)<17)dealer.push(draw());let totalWin=0;[['h1',h1],['h2',h2]].forEach(([k,h])=>{if(!bets[k])return;const ps=sc(h),ds=sc(dealer);let win=0;if(ps<=21&&(ds>21||ps>ds))win=bets[k]*payoutMult(h,ps);else if(ps===ds)win=bets[k];totalWin+=win;bets[k]=0;});add(totalWin);if(totalWin>0)celebrateWin(totalWin>=60?'BLACKJACK HOT TABLE!':'BLACKJACK WIN!',totalWin,deckCount===3?'3-deck odds applied':'Single-deck payout');status.textContent=totalWin?`Win ${totalWin.toFixed(2)} SpendTokens`:'No win this round';beep(totalWin?840:250,.15);paint();}
+function settle(){live=false;while(sc(dealer)<17)dealer.push(draw());let totalWin=0;[['h1',h1],['h2',h2]].forEach(([k,h])=>{if(!bets[k])return;const ps=sc(h),ds=sc(dealer);let win=0;if(ps<=21&&(ds>21||ps>ds))win=bets[k]*payoutMult(h,ps);else if(ps===ds)win=bets[k];totalWin+=win;bets[k]=0;});add(totalWin);if(totalWin>0)celebrateWin(totalWin>=60?'TWO ONE HOT TABLE!':'TWO ONE WIN!',totalWin,deckCount===3?'3-deck odds applied':'Single-deck payout');status.textContent=totalWin?`Win ${totalWin.toFixed(2)} SpendTokens`:'No win this round';beep(totalWin?840:250,.15);paint();}
 function checkAuto(){if((stand.h1||!bets.h1||sc(h1)>=21)&&(stand.h2||!bets.h2||sc(h2)>=21))settle();}
 deal.onclick=()=>{if(live)return;if(!bets.h1&&!bets.h2){status.textContent='Add chips to Hand 1 or Hand 2 first.';return;}dealer=[draw(),draw()];h1=bets.h1?[draw(),draw()]:[];h2=bets.h2?[draw(),draw()]:[];stand={h1:!bets.h1,h2:!bets.h2};live=true;status.textContent='Hand live';beep(520);paint();checkAuto();};
 hit1.onclick=()=>{if(!live||stand.h1||!bets.h1)return;h1.push(draw());paint();if(sc(h1)>=21)stand.h1=true;checkAuto();};stand1.onclick=()=>{if(!live)return;stand.h1=true;checkAuto();};
 hit2.onclick=()=>{if(!live||stand.h2||!bets.h2)return;h2.push(draw());paint();if(sc(h2)>=21)stand.h2=true;checkAuto();};stand2.onclick=()=>{if(!live)return;stand.h2=true;checkAuto();};
 paint();
 </script>
-<div class='gate' id='gate'><div class='box'><h2>Blackjack Setup</h2><p>How to play: choose deck mode, pick a chip, tap Hand circles to bet, then Deal. Use hit/stand per hand and Undo to remove last chip.</p><div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn' id='oneDeck'>Play 1 Deck</button><button class='btn' id='threeDeck'>Play 3 Decks</button></div></div></div>
+<div class='gate' id='gate'><div class='box'><h2>Two One Setup</h2><p>How to play: choose deck mode, pick a chip, tap Hand circles to bet, then Deal. Use hit/stand per hand and Undo to remove last chip.</p><div style='display:flex;gap:8px;flex-wrap:wrap'><button class='btn' id='oneDeck'>Play 1 Deck</button><button class='btn' id='threeDeck'>Play 3 Decks</button></div></div></div>
 <script>oneDeck.onclick=()=>{deckCount=1;deckMode.textContent='1 Deck';fresh();gate.style.display='none';};threeDeck.onclick=()=>{deckCount=3;deckMode.textContent='3 Decks';fresh();gate.style.display='none';};</script>
 </div>
 <script>

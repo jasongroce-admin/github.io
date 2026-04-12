@@ -1,7 +1,7 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Token Keno</title><link rel='stylesheet' href='common.css'></head><body>
-<div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-  DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
-</div>
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><title>Lucky Guess</title><link rel='stylesheet' href='common.css'></head><body>
+  <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
+    DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
+  </div>
 <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
   <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
     <h2 style="margin:0 0 12px;">Private Arcade</h2>
@@ -14,7 +14,7 @@
     </div>
   </div>
 </div>
-<div id="privateGame" style="display:none;"><div class='wrap'><div class='top'><a class='btn' href='index.html'>← Arcade Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div><div class='panel'><h2>Keno Section</h2><p>Choose one of four distinct Keno versions.</p><div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px'><a class='btn' href='keno-classic.html'>Classic Keno</a><a class='btn' href='keno-neon.html'>Neon Keno</a><a class='btn' href='keno-western.html'>Old West Keno</a><a class='btn' href='keno-lucky.html'>Lucky Clover Keno</a></div></div></div><script src='common.js'></script><script>initWallet();</script></div>
+<div id="privateGame" style="display:none;"><div class='wrap'><div class='top'><a class='btn' href='index.html'>← Toolbox Menu</a><div>SpendTokens: <span id='tokenTotal' class='token'></span></div><button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button></div><div class='panel'><h2>Lucky Guess</h2><p>Choose one of four distinct Lucky Guess styles.</p><div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px'><a class='btn' href='keno-classic.html'>Lucky Guess Classic</a><a class='btn' href='keno-neon.html'>Lucky Guess Neon</a><a class='btn' href='keno-western.html'>Lucky Guess Western</a><a class='btn' href='keno-lucky.html'>Lucky Guess Clover</a></div></div></div><script src='common.js'></script><script>initWallet();</script></div>
 <script>
   (function () {
     const PASSWORD_HASH = '80042fe163e5640f9f8ed7139e1a78214337f34c16f7dddc2c3260cd7a3f11d0';

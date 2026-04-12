@@ -8,7 +8,7 @@
 </head>
 <body>
   <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-    DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
+    DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
   </div>
   <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
     <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
@@ -25,7 +25,7 @@
   <div id="privateGame" style="display:none;">
   <div class='wrap'>
     <div class='top'>
-      <a class='btn' href='index.html'>&larr; Arcade Menu</a>
+      <a class='btn' href='index.html'>&larr; Toolbox Menu</a>
       <div>SpendTokens: <span id='tokenTotal' class='token'>500.00</span></div>
       <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
     </div>
@@ -33,7 +33,7 @@
     <div class='advisor-shell'>
       <div class='advisor-card'>
         <h1 style='margin:0'>Golden Advice</h1>
-        <p class='subtle'>Track recent results, compare canned strategies, and keep one history lane per game without crowding the arcade menu.</p>
+        <p class='subtle'>Track recent results, compare canned strategies, and keep one history lane per tool without crowding the toolbox menu.</p>
       </div>
 
       <div class='advisor-grid'>
@@ -78,24 +78,24 @@
     const gaOut = document.getElementById('gaOut');
 
     const systems = {
-      Roulette: ['Flat', 'Martingale', 'Paroli', 'Fibonacci'],
-      Blackjack: ['Basic Strategy', 'Hi-Lo style count', 'Conservative Stand', 'Aggressive Double'],
-      Craps: ['Pass Line', 'Dont Pass', 'Come + Odds', 'Field Rotation'],
-      Baccarat: ['Banker Lean', 'Player Lean', 'Tie Chase (high risk)', 'Side Bet Probe'],
-      Slots: ['Low Vol', 'Medium Vol', 'Bonus Hunt', 'Max Line Sweep'],
-      Poker: ['Tight Value', 'Aggressive Draw', 'Bankroll Protect', 'High Variance'],
-      Keno: ['Low Spot Set', 'Mid Spot Mix', 'High Spot Chase', 'Pattern Rotation']
+      "Marble Wheel": ['Flat', 'Wave', 'Paroli', 'Fibonacci'],
+      "Two One": ['Basic Flow', 'Hi-Lo style count', 'Conservative Stand', 'Aggressive Double'],
+      "Red Dragon": ['Pass Line', 'Dont Pass', 'Come + Odds', 'Field Rotation'],
+      "Card 9": ['Left Lean', 'Right Lean', 'Tie Chase (high risk)', 'Side Probe'],
+      "Spins": ['Low Vol', 'Medium Vol', 'Bonus Hunt', 'Max Line Sweep'],
+      "Cards": ['Tight Value', 'Aggressive Draw', 'Bankroll Protect', 'High Variance'],
+      "Lucky Guess": ['Low Spot Set', 'Mid Spot Mix', 'High Spot Chase', 'Pattern Rotation']
     };
 
     const state = {
       history: {
-        Roulette: [],
-        Blackjack: [],
-        Craps: [],
-        Baccarat: [],
-        Slots: [],
-        Poker: [],
-        Keno: []
+        "Marble Wheel": [],
+        "Two One": [],
+        "Red Dragon": [],
+        "Card 9": [],
+        "Spins": [],
+        "Cards": [],
+        "Lucky Guess": []
       },
       bjMode: 'dealer',
       bjDealer: [],
@@ -129,17 +129,17 @@
     }
 
     function renderInputs() {
-      if (gaGame.value === 'Roulette') {
+      if (gaGame.value === 'Marble Wheel') {
         gaInputs.innerHTML = "<div class='form-row'><label>Last Color <select id='rColor'><option>Red</option><option>Black</option><option>Green</option></select></label><label>Last Number <input id='rNum' type='number' min='0' max='36' value='17'></label></div>";
         return;
       }
 
-      if (gaGame.value === 'Craps') {
+      if (gaGame.value === 'Red Dragon') {
         gaInputs.innerHTML = "<div class='form-row'><label>Dice 1 <input id='c1' type='number' min='1' max='6' value='3'></label><label>Dice 2 <input id='c2' type='number' min='1' max='6' value='4'></label><label>Point <input id='cPoint' type='number' min='0' max='12' value='0'></label></div>";
         return;
       }
 
-      if (gaGame.value === 'Blackjack') {
+      if (gaGame.value === 'Two One') {
         gaInputs.innerHTML = "<div class='form-row'><label>Card <select id='bjCard'><option>A</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>J</option><option>Q</option><option>K</option></select></label><button class='btn' id='bjAdd'>Add Card</button><button class='btn' id='bjSwitch'>Switch to " + (state.bjMode === 'dealer' ? 'Player' : 'Dealer') + "</button></div><div class='notice' style='margin-top:8px'>Dealer: [" + state.bjDealer.join(', ') + "] | Player: [" + state.bjPlayer.join(', ') + "]</div>";
         document.getElementById('bjAdd').onclick = () => {
           const target = state.bjMode === 'dealer' ? state.bjDealer : state.bjPlayer;
@@ -153,24 +153,24 @@
         return;
       }
 
-      gaInputs.innerHTML = "<div class='form-row'><label>Recent result <input id='gGeneric' placeholder='e.g. banker win, 2 cherries, 4 keno hits'></label></div>";
+      gaInputs.innerHTML = "<div class='form-row'><label>Recent result <input id='gGeneric' placeholder='e.g. blue tile, 2 bonus icons, 4 hits'></label></div>";
     }
 
     function recommend(game, system, entry) {
-      if (game === 'Roulette') {
-        const reds = state.history.Roulette.filter((item) => item.color === 'Red').length;
-        const blacks = state.history.Roulette.filter((item) => item.color === 'Black').length;
+      if (game === 'Marble Wheel') {
+        const reds = state.history['Marble Wheel'].filter((item) => item.color === 'Red').length;
+        const blacks = state.history['Marble Wheel'].filter((item) => item.color === 'Black').length;
         const trend = reds > blacks ? 'Red' : 'Black';
-        return `${system}: trend leans ${trend}. Suggested next move: ${entry.color === 'Green' ? 'split attention between red and black' : entry.color === 'Red' ? 'watch black for balance' : 'watch red for balance'}.`;
+        return `${system}: trend leans ${trend}. Suggested next look: ${entry.color === 'Green' ? 'split attention between red and black' : entry.color === 'Red' ? 'watch black for balance' : 'watch red for balance'}.`;
       }
 
-      if (game === 'Craps') {
+      if (game === 'Red Dragon') {
         const sum = entry.d1 + entry.d2;
-        const hot = state.history.Craps.filter((item) => item.sum >= 7).length >= Math.ceil(state.history.Craps.length / 2);
-        return `${system}: rolled ${sum}${entry.point ? ` with point ${entry.point}` : ''}. Suggested next look: ${hot ? 'lean into pass-line pressure and supporting odds' : 'keep the field and dark-side protection in view'}.`;
+        const hot = state.history['Red Dragon'].filter((item) => item.sum >= 7).length >= Math.ceil(state.history['Red Dragon'].length / 2);
+        return `${system}: rolled ${sum}${entry.point ? ` with point ${entry.point}` : ''}. Suggested next look: ${hot ? 'lean into steady pressure and supporting odds' : 'keep rotation and defensive pacing in view'}.`;
       }
 
-      if (game === 'Blackjack') {
+      if (game === 'Two One') {
         const dealerScore = scoreCards(entry.dealer);
         const playerScore = scoreCards(entry.player);
         let move = 'Hit';
@@ -180,10 +180,10 @@
         return `${system}: dealer ${dealerScore}, player ${playerScore}. Suggested move: ${move}.`;
       }
 
-      if (game === 'Baccarat') return `${system}: banker still carries the classic edge in neutral shoes. Keep tie exposure low unless you are explicitly probing volatility.`;
-      if (game === 'Slots') return `${system}: control unit size, wait for bonus cadence, and stop pressing a cold machine.`;
-      if (game === 'Poker') return `${system}: tighten up after cold rounds and expand only when the draw price or made-hand strength clearly justifies it.`;
-      if (game === 'Keno') return `${system}: keep the same spot count for several rounds before rotating patterns.`;
+      if (game === 'Card 9') return `${system}: the right lane often stays slightly steadier in neutral shoes. Keep tie exposure low unless you are explicitly probing volatility.`;
+      if (game === 'Spins') return `${system}: control unit size, wait for bonus cadence, and stop pressing a cold bank.`;
+      if (game === 'Cards') return `${system}: tighten up after cold rounds and expand only when the draw price or made-hand strength clearly justifies it.`;
+      if (game === 'Lucky Guess') return `${system}: keep the same spot count for several rounds before rotating patterns.`;
       return `${system}: preserve bankroll and keep the sample size large before changing pace.`;
     }
 
@@ -192,9 +192,9 @@
       history.unshift(entry);
       if (history.length > 10) history.pop();
       gaHistory.textContent = `History (${game}): ` + history.map((item) => {
-        if (game === 'Roulette') return `${item.color} ${item.num}`;
-        if (game === 'Craps') return `${item.d1}+${item.d2}`;
-        if (game === 'Blackjack') return `D${item.dealer.join('')}/P${item.player.join('')}`;
+        if (game === 'Marble Wheel') return `${item.color} ${item.num}`;
+        if (game === 'Red Dragon') return `${item.d1}+${item.d2}`;
+        if (game === 'Two One') return `D${item.dealer.join('')}/P${item.player.join('')}`;
         return item.note || 'entry';
       }).join(' | ');
     }
@@ -204,12 +204,12 @@
       const system = gaSystem.value;
       let entry;
 
-      if (game === 'Roulette') {
+      if (game === 'Marble Wheel') {
         entry = {
           color: document.getElementById('rColor').value,
           num: Number(document.getElementById('rNum').value)
         };
-      } else if (game === 'Craps') {
+      } else if (game === 'Red Dragon') {
         const d1 = Number(document.getElementById('c1').value);
         const d2 = Number(document.getElementById('c2').value);
         entry = {
@@ -218,7 +218,7 @@
           point: Number(document.getElementById('cPoint').value) || 0,
           sum: d1 + d2
         };
-      } else if (game === 'Blackjack') {
+      } else if (game === 'Two One') {
         entry = {
           dealer: [...state.bjDealer],
           player: [...state.bjPlayer]
@@ -230,7 +230,7 @@
       }
 
       addHistory(game, entry);
-      gaOut.innerHTML = `<b>${game} • ${system}</b>\n${recommend(game, system, entry)}\nPattern-aware suggestion only; no guarantees.`;
+      gaOut.innerHTML = `<b>${game} - ${system}</b><br>${recommend(game, system, entry)}<br>Pattern-aware suggestion only; no guarantees.`;
     };
 
     gaClear.onclick = () => {

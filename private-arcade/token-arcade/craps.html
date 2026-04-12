@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Token Craps</title>
+  <title>Red Dragon</title>
   <link rel="stylesheet" href="common.css">
   <style>
     :root{--felt:#0e5934;--felt-dark:#09341f;--chalk:#f7f2cf;--gold:#ffcf54;--accent:#7fe7bd;--danger:#ef6a6a;--chip-red:#d45144;--chip-black:#1d2228;--chip-white:#f8f7f0;--chip-green:#24845d;--chip-purple:#6d4fd1}
@@ -120,7 +120,7 @@
 </head>
 <body>
   <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-    DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
+    DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
   </div>
   <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
     <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
@@ -138,25 +138,25 @@
   <div class="wrap craps-shell">
     <div class="notice">Testing only: SpendTokens have no real-world value.</div>
     <div class="top">
-      <a class="btn" href="index.html">&larr; Arcade Menu</a>
+      <a class="btn" href="index.html">&larr; Toolbox Menu</a>
       <div>SpendTokens: <span id="tokenTotal" class="token"></span></div>
       <button id="soundBtn" class="btn" onclick="toggleSound()">Sound</button>
     </div>
     <div class="panel">
       <div class="panel-title">
         <div>
-          <h2 style="margin:0;color:var(--chalk)">Bubble Craps Tables</h2>
+          <h2 style="margin:0;color:var(--chalk)">Red Dragon Tables</h2>
         </div>
       </div>
       <div class="craps-layout">
         <section class="table-panel">
           <div class="control-grid" style="margin-bottom:12px">
-            <label>Table variant<select id="modeSelect"><option value="crapless">Crapless Craps</option><option value="craps">Regular Craps</option></select></label>
+            <label>Table variant<select id="modeSelect"><option value="crapless">Extended Rails</option><option value="craps">Standard Rails</option></select></label>
             <label>Number-box action<select id="numberAction"></select></label>
           </div>
           <div class="menu-bar"><button class="btn menu-toggle" id="menuToggle">&#9776; Table Menu</button></div>
           <div class="table-stage" style="margin-top:14px">
-            <img id="tableImage" src="images/craps-table-craps.svg" alt="craps felt">
+            <img id="tableImage" src="images/craps-table-craps.svg" alt="table felt">
             <div class="off-marker" id="offMarker">OFF</div>
             <div class="roll-tape">
               <h4>Recent Rolls</h4>
@@ -167,7 +167,7 @@
             <div class="special-panel">
               <div class="special-tabs">
                 <button class="btn" id="tabHardways">Hardways</button>
-                <button class="btn" id="tabProps">Horn / Craps</button>
+                <button class="btn" id="tabProps">Horn / Dragon</button>
               </div>
               <div class="special-grid" id="specialGrid"></div>
             </div>
@@ -201,7 +201,7 @@
     </div>
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-  <div class="gate" id="gate"><div class="box"><h2>Craps</h2><p>Use the bubble-style felt, stack token chips directly on the board, and swap between regular craps and crapless without losing the centered layout.</p><button class="btn" id="startBtn">Start Game</button></div></div>
+  <div class="gate" id="gate"><div class="box"><h2>Red Dragon</h2><p>Use the bubble-style felt, stack token chips directly on the board, and swap between standard and extended rails without losing the centered layout.</p><button class="btn" id="startBtn">Start Game</button></div></div>
   <script src="common.js"></script>
   <script>
     initWallet();
@@ -243,7 +243,7 @@
     const HOTSPOTS={
       specials:[
         {id:"anySeven",label:"Any Seven",left:1340,top:380,width:200,height:78,kind:"direct"},
-        {id:"anyCraps",label:"Any Craps",left:1340,top:470,width:200,height:78,kind:"direct"},
+        {id:"anyCraps",label:"Any Dragon",left:1340,top:470,width:200,height:78,kind:"direct"},
         {id:"horn",label:"Horn",left:1340,top:560,width:200,height:78,kind:"direct"},
         {id:"ce",label:"C and E",left:1340,top:650,width:200,height:78,kind:"direct"},
         {id:"craps2",label:"2",left:1340,top:740,width:95,height:78,kind:"direct"},
@@ -296,10 +296,10 @@
       return HOTSPOTS.specials.concat(HOTSPOTS.lanes[state.mode]||[]).concat(HOTSPOTS[state.mode]||[]);
     }
     const MODE_RULES={
-      craps:{image:"images/craps-table-craps.svg",hint:"Regular craps uses the dark-side bars on the left, the 4 through 10 rail on top, and the point puck moves off OFF onto the rolled point after the come-out.",note:"Core payouts: Place 4/10 pay 9:5, 5/9 pay 7:5, and 6/8 pay 7:6. Buy and lay use true odds with a 5% vig.",lineIds:["pass","dontPass","come","dontCome"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"lay",label:"Lay Bet"},{value:"passOdds",label:"Pass Odds"},{value:"dontPassOdds",label:"Don't Pass Odds"},{value:"comeOdds",label:"Come Odds"},{value:"dontComeOdds",label:"Don't Come Odds"}],numbers:[4,5,6,8,9,10]},
-      crapless:{image:"images/craps-table-crapless.svg",hint:"Crapless stretches the top rail from 2 through 12 and still moves the puck off OFF onto the established point after the come-out unless the roll is an immediate winner or seven-out.",note:"Extended number rails use the crapless payout map: 2/12 pay 6:1, 3/11 pay 3:1, 4/10 pay 2:1, 5/9 pay 3:2, and 6/8 pay 6:5.",lineIds:["pass","come"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"lay",label:"Lay Bet"},{value:"passOdds",label:"Pass Odds"},{value:"comeOdds",label:"Come Odds"}],numbers:[2,3,4,5,6,8,9,10,11,12]}
+      craps:{image:"images/craps-table-craps.svg",hint:"Standard rails use the dark-side bars on the left, the 4 through 10 rail on top, and the point puck moves off OFF onto the rolled point after the opener.",note:"Core payouts: Place 4/10 pay 9:5, 5/9 pay 7:5, and 6/8 pay 7:6. Buy and lay use true odds with a 5% vig.",lineIds:["pass","dontPass","come","dontCome"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"lay",label:"Lay Bet"},{value:"passOdds",label:"Pass Odds"},{value:"dontPassOdds",label:"Don't Pass Odds"},{value:"comeOdds",label:"Come Odds"},{value:"dontComeOdds",label:"Don't Come Odds"}],numbers:[4,5,6,8,9,10]},
+      crapless:{image:"images/craps-table-crapless.svg",hint:"Extended rails stretch the top rail from 2 through 12 and still move the puck off OFF onto the established point after the opener unless the roll is an immediate winner or seven-out.",note:"Extended number rails use the payout map: 2/12 pay 6:1, 3/11 pay 3:1, 4/10 pay 2:1, 5/9 pay 3:2, and 6/8 pay 6:5.",lineIds:["pass","come"],numberActions:[{value:"place",label:"Place Bet"},{value:"buy",label:"Buy Bet"},{value:"lay",label:"Lay Bet"},{value:"passOdds",label:"Pass Odds"},{value:"comeOdds",label:"Come Odds"}],numbers:[2,3,4,5,6,8,9,10,11,12]}
     };
-    const FRIENDLY={pass:"Pass Line",dontPass:"Don't Pass",come:"Come",dontCome:"Don't Come",field:"Field",lowField:"Low Field",highField:"High Field",anyCraps:"Any Craps",anySeven:"Any Seven",horn:"Horn",ce:"C and E",craps2:"Craps 2",craps3:"Craps 3",yo11:"Yo 11",craps12:"Craps 12",hard4:"Hard 4",hard6:"Hard 6",hard8:"Hard 8",hard10:"Hard 10",big6:"Big 6",big8:"Big 8",place:"Place",buy:"Buy",lay:"Lay",passOdds:"Pass Odds",dontPassOdds:"Don't Pass Odds",comeOdds:"Come Odds",dontComeOdds:"Don't Come Odds"};
+    const FRIENDLY={pass:"Pass Line",dontPass:"Don't Pass",come:"Come",dontCome:"Don't Come",field:"Field",lowField:"Low Field",highField:"High Field",anyCraps:"Any Dragon",anySeven:"Any Seven",horn:"Horn",ce:"C and E",craps2:"Dragon 2",craps3:"Dragon 3",yo11:"Yo 11",craps12:"Dragon 12",hard4:"Hard 4",hard6:"Hard 6",hard8:"Hard 8",hard10:"Hard 10",big6:"Big 6",big8:"Big 8",place:"Place",buy:"Buy",lay:"Lay",passOdds:"Pass Odds",dontPassOdds:"Don't Pass Odds",comeOdds:"Come Odds",dontComeOdds:"Don't Come Odds"};
     const SPECIAL_SETS={
       hardways:[
         {id:"hard4",label:"Hard 4",tile:"2:2"},
@@ -309,7 +309,7 @@
       ],
       props:[
         {id:"horn",label:"Horn",tile:"H"},
-        {id:"anyCraps",label:"Any Craps",tile:"C"},
+        {id:"anyCraps",label:"Any Dragon",tile:"C"},
         {id:"craps2",label:"2",tile:"1:1"},
         {id:"craps3",label:"3",tile:"1:2"},
         {id:"yo11",label:"11",tile:"5:6"},
@@ -888,7 +888,7 @@
       const outcome=winnings>0?"won":afterTotal<beforeTotal?"loss":"push";
       state.rollHistory.unshift({total,d1,d2,point:state.point,outcome,winnings});
       state.rollHistory=state.rollHistory.slice(0,35);
-      if(winnings){add(winnings);celebrateWin(winnings>=80?"Table Hit!":"Craps Win!",winnings,"The felt paid out in virtual tokens.");makeTokenRain();}
+      if(winnings){add(winnings);celebrateWin(winnings>=80?"Table Hit!":"Red Dragon Win!",winnings,"The felt paid out in virtual tokens.");makeTokenRain();}
       state.lastWin=winnings;
       setTokens(getTokens());
       bubbleTotal.textContent=String(total);

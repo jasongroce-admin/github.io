@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Easy craps table">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Easy rail table">
   <defs>
     <linearGradient id="felt" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#116b43"/>
@@ -43,12 +43,12 @@
     <text x="1000" y="640" font-size="62">FIELD</text>
     <text x="1298" y="640" font-size="44">HIGH FIELD</text>
     <text x="812" y="794" font-size="70" fill="#f7f0c6">PASS LINE</text>
-    <text x="1460" y="92" font-size="28" fill="#ffcf54" text-anchor="end">EASY CRAPS</text>
+    <text x="1460" y="92" font-size="28" fill="#ffcf54" text-anchor="end">EASY DRAGON</text>
   </g>
   <g fill="#f7f0c6" font-family="Georgia, serif" text-anchor="middle">
     <text x="243" y="162" font-size="28">HARDWAYS</text>
     <text x="243" y="326" font-size="40" fill="#ff704b">ANY SEVEN</text>
     <text x="243" y="540" font-size="38">HORN BET</text>
-    <text x="243" y="782" font-size="48" fill="#ff704b">ANY CRAPS</text>
+    <text x="243" y="782" font-size="48" fill="#ff704b">ANY DRAGON</text>
   </g>
 </svg>
