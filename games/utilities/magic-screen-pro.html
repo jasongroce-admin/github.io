@@ -221,13 +221,35 @@
         let copiedImage = null;
 
         let pastedImage = null;
-        let pastedX = 120, pastedY = 120;
+        let pastedX = 150, pastedY = 150;
         let pastedRotation = 0;
         let pastedScale = 1;
 
         let arrowStart = null;
         let arrowColor = '#ff3366';
         let arrowWidth = 14;
+
+        let particles = [];
+
+        class Particle {
+            constructor(x, y, vx, vy, life, color, type) {
+                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+                this.life = life; this.maxLife = life; this.color = color; this.type = type;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.type === 'cloud') this.vy -= 0.08;
+                this.life--;
+            }
+            draw() {
+                const alpha = this.life / this.maxLife;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.fillStyle = this.color;
+                const sz = this.type === 'star' ? 3 : 5;
+                ctx.fillRect(this.x, this.y, sz, sz);
+            }
+        }
 
         let settings = {
             size:24, alpha:0.94, flow:0.96, glow:38,
@@ -416,12 +438,7 @@
             const pressure = e.pressure || 1;
 
             if (currentTool === 'select' && selectionMode && selectionStart) {
-                selectionRect = {
-                    x: Math.min(selectionStart.x, x),
-                    y: Math.min(selectionStart.y, y),
-                    w: Math.abs(x - selectionStart.x),
-                    h: Math.abs(y - selectionStart.y)
-                };
+                selectionRect = {x: Math.min(selectionStart.x, x), y: Math.min(selectionStart.y, y), w: Math.abs(x - selectionStart.x), h: Math.abs(y - selectionStart.y)};
                 renderAllLayers();
                 ctx.save();
                 ctx.setLineDash([4,4]);
@@ -699,24 +716,46 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Drawing restored + Paste transform working', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – Preview now accurate + animated effects added', 'color:#66ccff');
         }
 
         function updatePreview() {
             pctx.fillStyle = '#112b44';
             pctx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
-            pctx.shadowBlur = 28;
+
+            const cx = previewCanvas.width / 2;
+            const cy = previewCanvas.height / 2;
+
+            pctx.shadowBlur = settings.glow;
             pctx.shadowColor = settings.color;
-            pctx.lineWidth = 26;
-            pctx.strokeStyle = settings.color;
-            if (settings.effect === 'rainbow') {
-                const h = (Date.now()/26)%360;
-                pctx.strokeStyle = `hsl(${h},95%,68%)`;
+            pctx.lineWidth = settings.size * 1.2;
+            pctx.lineCap = 'round';
+
+            if (settings.effect === 'neon') {
+                for (let l = 4; l >= 0; l--) {
+                    pctx.shadowBlur = settings.glow + l * 12;
+                    pctx.globalAlpha = 0.9 - l * 0.2;
+                    pctx.strokeStyle = settings.color;
+                    pctx.beginPath();
+                    pctx.moveTo(cx - 70, cy);
+                    pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                    pctx.stroke();
+                }
+            } else if (settings.effect === 'rainbow') {
+                const hue = (Date.now() / 25) % 360;
+                pctx.strokeStyle = `hsla(${hue}, 95%, 68%, 0.95)`;
+                pctx.beginPath();
+                pctx.moveTo(cx - 70, cy);
+                pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                pctx.stroke();
+            } else {
+                pctx.strokeStyle = settings.color;
+                pctx.beginPath();
+                pctx.moveTo(cx - 70, cy);
+                pctx.quadraticCurveTo(cx - 20, cy - 30, cx + 70, cy);
+                pctx.stroke();
             }
-            pctx.beginPath();
-            pctx.moveTo(30,55);
-            pctx.quadraticCurveTo(90,25,200,70);
-            pctx.stroke();
+            pctx.globalAlpha = 1;
         }
 
         function animate() {
