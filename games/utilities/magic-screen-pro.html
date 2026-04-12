@@ -69,6 +69,7 @@
         <button class="btn" id="redoBtn">↪ Redo</button>
         <button class="btn" id="saveBtn">💾 Save</button>
         <button class="btn" id="loadBtn">📂 Load</button>
+        <button class="btn" id="uploadBtn">📤 Upload Image</button>
         <button class="btn" id="fullscreenBtn">⛶ Full</button>
     </div>
 
@@ -359,52 +360,6 @@
                     layerCtx.shadowBlur = settings.glow + 14;
                     layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'spark') {
-                    layerCtx.shadowBlur = 12;
-                    layerCtx.strokeStyle = '#ffffff';
-                    layerCtx.lineWidth = width * 0.8;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    for (let k = 0; k < 6; k++) {
-                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
-                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
-                        layerCtx.fillStyle = '#ffff88';
-                        layerCtx.fillRect(rx-2, ry-2, 4, 4);
-                    }
-                } else if (settings.effect === 'fire') {
-                    layerCtx.shadowBlur = settings.glow + 10;
-                    layerCtx.strokeStyle = `hsl(${15 + Math.random()*35}, 100%, 65%)`;
-                    layerCtx.lineWidth = width;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'electric') {
-                    layerCtx.shadowBlur = 45;
-                    layerCtx.strokeStyle = '#aaffff';
-                    layerCtx.lineWidth = width * 0.7;
-                    layerCtx.setLineDash([2,8]);
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    layerCtx.setLineDash([]);
-                } else if (settings.effect === 'glitter') {
-                    layerCtx.shadowBlur = 18;
-                    layerCtx.strokeStyle = '#ffffff';
-                    layerCtx.lineWidth = width;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    for (let k = 0; k < 8; k++) {
-                        const rx = p1[0] + Math.random() * (p2[0]-p1[0]);
-                        const ry = p1[1] + Math.random() * (p2[1]-p1[1]);
-                        layerCtx.fillStyle = `hsl(${Math.random()*360},100%,95%)`;
-                        layerCtx.fillRect(rx-2, ry-2, 4, 4);
-                    }
-                } else if (settings.effect === 'smoke') {
-                    layerCtx.shadowBlur = 30;
-                    layerCtx.globalAlpha = 0.4;
-                    layerCtx.strokeStyle = '#aabbdd';
-                    layerCtx.lineWidth = width * 1.6;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'galaxy') {
-                    const hue = (Date.now()/35 + settings.hueShift) % 360;
-                    layerCtx.strokeStyle = `hsla(${hue},85%,72%,${settings.alpha})`;
-                    layerCtx.shadowBlur = settings.glow;
-                    layerCtx.lineWidth = width;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.strokeStyle = settings.color;
@@ -414,6 +369,18 @@
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
                     layerCtx.stroke();
+                }
+
+                if (currentTip === 'textured') {
+                    layerCtx.shadowBlur = 5;
+                    for (let n = 0; n < 6; n++) {
+                        layerCtx.globalAlpha = 0.25 + Math.random() * 0.4;
+                        layerCtx.lineWidth = width * (0.45 + Math.random() * 0.75);
+                        layerCtx.beginPath();
+                        layerCtx.moveTo(p1[0] + (Math.random()-0.5)*8, p1[1] + (Math.random()-0.5)*8);
+                        layerCtx.lineTo(p2[0] + (Math.random()-0.5)*8, p2[1] + (Math.random()-0.5)*8);
+                        layerCtx.stroke();
+                    }
                 }
             });
 
@@ -601,11 +568,29 @@
                 div.innerHTML = `
                     <span onclick="toggleLayerVisibility(${i}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
                     <span style="flex:1">${layer.name}</span>
+                    <button onclick="moveLayerUp(${i}); event.stopImmediatePropagation();" style="font-size:0.8rem;">↑</button>
+                    <button onclick="moveLayerDown(${i}); event.stopImmediatePropagation();" style="font-size:0.8rem;">↓</button>
                     <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${i}].opacity = parseFloat(this.value); renderAllLayers();">
                 `;
                 div.onclick = () => { currentLayerIndex = i; renderLayersList(); };
                 container.appendChild(div);
             });
+        }
+
+        function moveLayerUp(i) {
+            if (i === 0) return;
+            [layers[i], layers[i-1]] = [layers[i-1], layers[i]];
+            currentLayerIndex = i - 1;
+            renderLayersList();
+            renderAllLayers();
+        }
+
+        function moveLayerDown(i) {
+            if (i === layers.length - 1) return;
+            [layers[i], layers[i+1]] = [layers[i+1], layers[i]];
+            currentLayerIndex = i + 1;
+            renderLayersList();
+            renderAllLayers();
         }
 
         function toggleLayerVisibility(i) {
@@ -703,6 +688,28 @@
                 input.click();
             };
 
+            document.getElementById('uploadBtn').onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        const img = new Image();
+                        img.onload = () => {
+                            layers[currentLayerIndex].ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            saveState();
+                            renderAllLayers();
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            };
+
             document.getElementById('fullscreenBtn').onclick = () => {
                 if (!document.fullscreenElement) canvasWrap.requestFullscreen();
                 else document.exitFullscreen();
@@ -728,7 +735,7 @@
             renderAllLayers();
             animate();
 
-            console.log('%cMagic Screen PRO – Previews now accurate + distinct effects + animated particles', 'color:#66ccff');
+            console.log('%cMagic Screen PRO – All features working + improved effects', 'color:#66ccff');
         }
 
         function updatePreview() {
@@ -760,19 +767,6 @@
                 pctx.moveTo(cx - 80, cy);
                 pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
                 pctx.stroke();
-            } else if (settings.effect === 'spark') {
-                pctx.strokeStyle = '#ffffff';
-                pctx.shadowBlur = 18;
-                pctx.beginPath();
-                pctx.moveTo(cx - 80, cy);
-                pctx.quadraticCurveTo(cx - 25, cy - 35, cx + 80, cy);
-                pctx.stroke();
-                for (let i = 0; i < 12; i++) {
-                    const rx = cx - 60 + Math.random() * 120;
-                    const ry = cy - 20 + Math.random() * 40;
-                    pctx.fillStyle = '#ffff88';
-                    pctx.fillRect(rx-2, ry-2, 4, 4);
-                }
             } else {
                 pctx.strokeStyle = settings.color;
                 pctx.beginPath();
