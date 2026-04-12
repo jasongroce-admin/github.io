@@ -3,7 +3,7 @@
   <head>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover' />
-    <title>Token Baccarat</title>
+    <title>Card 9</title>
     <link rel='stylesheet' href='common.css' />
     <style>
       .table { background:#0b6f96; border:2px solid #9dd8ff; border-radius:12px; padding:10px; }
@@ -28,7 +28,7 @@
   </head>
 <body>
   <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-    DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
+    DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
   </div>
   <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
     <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
@@ -46,7 +46,7 @@
     <div class='wrap'>
       <div class='notice'>Testing only: SpendTokens have no real-world value.</div>
       <div class='top'>
-        <a class='btn' href='index.html'>← Arcade Menu</a>
+        <a class='btn' href='index.html'>← Toolbox Menu</a>
         <div>SpendTokens: <span id='tokenTotal' class='token'></span></div>
         <button id='soundBtn' class='btn' onclick='toggleSound()'>Sound</button>
       </div>
@@ -99,7 +99,7 @@
     </div>
 
     <div class='drawer' id='tipd'>
-      <h3>Baccarat Tips</h3>
+      <h3>Card 9 Tips</h3>
       <p>Common electronic layout: Player, Banker, Tie. Banker often has lowest house edge in standard rules.</p>
     </div>
 
@@ -233,7 +233,7 @@
         setTimeout(()=>{wLine.style.height='0';wLine.innerHTML='';},1500);
 
         status.textContent=`Result: ${win.toUpperCase()} (${pv} - ${bv}) ${paid?`+${paid.toFixed(2)} SpendTokens`:'no payout'}`;hist.unshift({win,pv,bv});hist=hist.slice(0,20);roadmap.innerHTML=hist.map(h=>`<span class='btn' style='padding:6px;background:${h.win==='player'?'#2453ff':h.win==='banker'?'#bb2a2a':'#7d7d7d'}'>${h.win[0].toUpperCase()} ${h.pv}-${h.bv}</span>`).join('');
-        if(paid>0)celebrateWin(paid>=80?'BACCARAT JACKPOT!':'BACCARAT WIN!',paid,'Congratulations!');beep(paid?780:260,.12);
+        if(paid>0)celebrateWin(paid>=80?'CARD 9 JACKPOT!':'CARD 9 WIN!',paid,'Congratulations!');beep(paid?780:260,.12);
 
         last={...bet};
         bet={player:0,banker:0,tie:0,seven:0,panda:0};
@@ -272,7 +272,7 @@
 
     <div class='gate' id='gate'>
       <div class='box'>
-        <h2>Baccarat</h2>
+        <h2>Card 9</h2>
         <p>Cards deal face down. Click each to reveal and watch the large right-side totals update.</p>
         <button class='btn' id='startBtn'>Start Game</button>
       </div>

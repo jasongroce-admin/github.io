@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Token Slots 5x3</title>
+    <title>Spins</title>
     <link rel="stylesheet" href="common.css" />
     <style>
       :root {
@@ -480,8 +480,8 @@
     </style>
   </head>
   <body>
-<div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
-  DISCLAIMER: These are private personal entertainment games only. They use free virtual tokens that have no real-world value and cannot be redeemed for anything. No real money is involved, wagered, or redeemable. This is NOT a casino and does not offer gambling. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. If you are in a jurisdiction where even free simulated casino games are restricted, please leave.
+  <div style="background:#ffebee; color:#b71c1c; padding:15px; margin:10px; border:2px solid #b71c1c; text-align:center; font-weight:bold;">
+  DISCLAIMER: These are private personal entertainment projects only. They use free virtual tokens that have no real-world value and cannot be redeemed. No real money is involved, wagered, or redeemable. Access is restricted to the site owner only. Unauthorized use is prohibited. You must be 18+. These are experimental coding projects in different testing stages and are not considered functional on any official level. They are private educational experiments and do not represent any real-world wagering activity. If you are in a jurisdiction where even free simulated games are restricted, please leave.
 </div>
 <div id="passOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999;">
   <div style="background:#111; color:#fff; padding:24px; border-radius:12px; width:min(420px, 92vw); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center;">
@@ -499,14 +499,14 @@
     <div class="wrap">
       <div class="notice">Testing only: SpendTokens have no real-world value.</div>
       <div class="top">
-        <a class="btn" href="index.html">← Arcade Menu</a>
+        <a class="btn" href="index.html">← Toolbox Menu</a>
         <div>SpendTokens: <span id="tokenTotal" class="token"></span></div>
         <button id="soundBtn" class="btn sound-btn" aria-label="Sound toggle">🔊</button>
       </div>
 
       <div class="panel cabinet theme-Scary" id="cabinet">
         <div class="marquee">
-          <span class="marquee-title">Neon Slots</span>
+          <span class="marquee-title">Neon Spins</span>
           <div class="marquee-lights">
             <span></span><span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span><span></span>
@@ -659,7 +659,7 @@
         '💿': { name: 'Disc', pays: [0, 0, 7, 16, 34] },
         '🎛️': { name: 'Mixer', pays: [0, 0, 7, 18, 38] },
         '🥁': { name: 'Drums', pays: [0, 0, 8, 20, 45] },
-        '🎰': { name: 'Slots', pays: [0, 0, 9, 24, 50], scatter: true },
+        '🎰': { name: 'Spins', pays: [0, 0, 9, 24, 50], scatter: true },
         '🎉': { name: 'Pop', pays: [0, 0, 5, 12, 22] },
         '⭐': { name: 'Star', pays: [0, 0, 8, 20, 45] },
         '🎁': { name: 'Gift', pays: [0, 0, 6, 14, 30] },
@@ -1092,7 +1092,7 @@
           add(totalGain);
           totalWin += totalGain;
           play(totalGain >= 1000 ? 'grand' : totalGain >= 200 ? 'large' : totalGain >= 60 ? 'med' : 'small');
-          celebrateWin(totalGain >= 1000 ? 'SLOTS JACKPOT' : 'SLOTS WIN', totalGain, 'Winning line paid out in virtual tokens.');
+          celebrateWin(totalGain >= 1000 ? 'SPINS JACKPOT' : 'SPINS WIN', totalGain, 'Winning line paid out in virtual tokens.');
         }
 
         lastWinTop.textContent = `Last Win: ${totalGain.toFixed(2)}`;
