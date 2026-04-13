@@ -6,25 +6,13 @@
     <title>Checkers Deluxe</title>
     <link rel="stylesheet" href="../../assets/css/site.css">
     <style>
-      :root {
-        --cell-size: min(10.7vw, 72px);
-      }
+      :root { --cell-size: min(10.7vw, 72px); }
 
       body {
         padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
       }
 
-      .game-shell {
-        display: grid;
-        gap: 1rem;
-        align-items: start;
-      }
-
-      .board-column {
-        display: grid;
-        gap: 0.9rem;
-        justify-items: center;
-      }
+      .game-shell { display: grid; gap: 1rem; align-items: start; }
 
       .turn-strip {
         display: grid;
@@ -40,17 +28,6 @@
         background: rgba(11, 16, 36, 0.7);
         display: grid;
         gap: 0.15rem;
-      }
-
-      .turn-tile span {
-        color: var(--muted);
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .turn-tile strong {
-        font-size: 1.1rem;
       }
 
       .turn-tile.player.active {
@@ -82,57 +59,32 @@
         background: #e6cfa8;
         display: grid;
         place-items: center;
-        padding: 0;
       }
 
-      .cell.dark {
-        background: linear-gradient(180deg, #784c27, #4d2d15);
-      }
+      .cell.dark { background: linear-gradient(180deg, #784c27, #4d2d15); }
 
-      .cell.selected {
-        outline: 3px solid #79d3ff;
-      }
-
-      .cell.hint {
-        box-shadow: inset 0 0 0 4px #7dffb1;
-      }
+      .cell.selected { outline: 3px solid #79d3ff; }
+      .cell.hint     { box-shadow: inset 0 0 0 4px #7dffb1; }
 
       .piece {
-        width: 72%;
-        height: 72%;
+        width: 74%;
+        height: 74%;
         border-radius: 50%;
-        box-shadow: inset 0 10px 18px rgba(255, 255, 255, 0.22), 0 6px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: inset 0 10px 18px rgba(255,255,255,0.25), 0 6px 12px rgba(0,0,0,0.35);
         display: grid;
         place-items: center;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 900;
-      }
-
-      .piece.red {
-        background: radial-gradient(circle at 35% 30%, #ffc3bb, #ef5c51 62%, #8f1718);
         color: #fff;
       }
 
-      .piece.black {
-        background: radial-gradient(circle at 35% 30%, #c4cfde, #4d5d74 55%, #121c28);
-        color: #e8f3ff;
-      }
+      .piece.red   { background: radial-gradient(circle at 35% 30%, #ffc3bb, #ef5c51 62%, #8f1718); }
+      .piece.black { background: radial-gradient(circle at 35% 30%, #c4cfde, #4d5d74 55%, #121c28); }
 
-      .info-column {
-        display: grid;
-        gap: 0.9rem;
-      }
-
-      .hud-card {
-        display: grid;
-        gap: 0.75rem;
-      }
+      .info-column { display: grid; gap: 0.9rem; }
 
       .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.65rem;
-        align-items: center;
+        display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center;
       }
 
       select {
@@ -149,29 +101,10 @@
         align-items: center;
       }
 
-      .mini-rules {
-        margin: 0;
-        padding-left: 1rem;
-        color: var(--muted);
-      }
-
-      .mini-rules li + li {
-        margin-top: 0.35rem;
-      }
-
       @media (min-width: 980px) and (orientation: landscape) {
-        .content {
-          width: min(1180px, 96vw);
-        }
-
-        .game-shell {
-          grid-template-columns: minmax(0, 1fr) 320px;
-        }
-
-        .info-column {
-          position: sticky;
-          top: 1rem;
-        }
+        .content { width: min(1180px, 96vw); }
+        .game-shell { grid-template-columns: minmax(0, 1fr) 320px; }
+        .info-column { position: sticky; top: 1rem; }
       }
     </style>
   </head>
@@ -182,10 +115,10 @@
           <div class="board-column">
             <div>
               <h1>Checkers Deluxe</h1>
-              <p class="subtitle">The board stays locked in place while the rules and controls shift above or beside it.</p>
+              <p class="subtitle">Classic checkers with forced jumps and improved AI.</p>
             </div>
 
-            <div class="turn-strip" aria-label="Turn tracker">
+            <div class="turn-strip">
               <div class="turn-tile player active" id="playerTile">
                 <span>You</span>
                 <strong>Red side</strong>
@@ -217,9 +150,9 @@
             <div class="card hud-card">
               <h3>How It Plays</h3>
               <ul class="mini-rules">
-                <li>Select one of your red pieces to show valid destinations in green.</li>
-                <li>If any jump is available, you must take a jump.</li>
-                <li>Hard mode evaluates several replies ahead and values kings more aggressively.</li>
+                <li>Tap a red piece to see possible moves.</li>
+                <li>You must jump if a jump is available.</li>
+                <li>Hard mode looks several moves ahead.</li>
               </ul>
             </div>
 
@@ -253,22 +186,15 @@
         );
       }
 
-      function cloneBoard(state) {
-        return state.map((row) => row.slice());
-      }
+      function cloneBoard(state) { return state.map(r => r.slice()); }
 
-      function owner(piece) {
-        return piece ? piece.toLowerCase() : "";
-      }
-
-      function isKing(piece) {
-        return piece === "R" || piece === "B";
-      }
+      function owner(piece) { return piece ? piece.toLowerCase() : ""; }
+      function isKing(piece) { return piece === "R" || piece === "B"; }
 
       function directions(piece) {
-        if (piece === "r") return [[-1, -1], [-1, 1]];
-        if (piece === "b") return [[1, -1], [1, 1]];
-        return [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+        if (piece === "r") return [[-1,-1], [-1,1]];
+        if (piece === "b") return [[1,-1], [1,1]];
+        return [[-1,-1],[-1,1],[1,-1],[1,1]]; // king
       }
 
       function promote(state, row, col) {
@@ -281,23 +207,23 @@
         if (!piece) return [];
         const moves = [];
         for (const [dr, dc] of directions(piece)) {
-          const stepRow = row + dr;
-          const stepCol = col + dc;
-          const jumpRow = row + dr * 2;
-          const jumpCol = col + dc * 2;
+          const stepR = row + dr;
+          const stepC = col + dc;
+          const jumpR = row + dr * 2;
+          const jumpC = col + dc * 2;
 
-          if (state[stepRow]?.[stepCol] === "") {
-            moves.push({ from: [row, col], to: [stepRow, stepCol], jump: false });
+          if (state[stepR]?.[stepC] === "") {
+            moves.push({ from: [row,col], to: [stepR,stepC], jump: false });
           } else if (
-            state[jumpRow]?.[jumpCol] === "" &&
-            owner(state[stepRow][stepCol]) &&
-            owner(state[stepRow][stepCol]) !== owner(piece)
+            state[jumpR]?.[jumpC] === "" &&
+            owner(state[stepR]?.[stepC]) &&
+            owner(state[stepR][stepC]) !== owner(piece)
           ) {
             moves.push({
-              from: [row, col],
-              to: [jumpRow, jumpCol],
+              from: [row,col],
+              to: [jumpR, jumpC],
               jump: true,
-              captured: [stepRow, stepCol]
+              captured: [stepR, stepC]
             });
           }
         }
@@ -305,46 +231,45 @@
       }
 
       function allMoves(state, side) {
-        const moves = [];
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            if (owner(state[row][col]) === side) {
-              moves.push(...movesForPiece(state, row, col));
+        let moves = [];
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            if (owner(state[r][c]) === side) {
+              moves.push(...movesForPiece(state, r, c));
             }
           }
         }
-        const jumps = moves.filter((move) => move.jump);
+        const jumps = moves.filter(m => m.jump);
         return jumps.length ? jumps : moves;
       }
 
       function applyMove(state, move) {
         const next = cloneBoard(state);
-        const [fromRow, fromCol] = move.from;
-        const [toRow, toCol] = move.to;
-        next[toRow][toCol] = next[fromRow][fromCol];
-        next[fromRow][fromCol] = "";
-        if (move.captured) {
-          next[move.captured[0]][move.captured[1]] = "";
-        }
-        promote(next, toRow, toCol);
+        const [fr, fc] = move.from;
+        const [tr, tc] = move.to;
+        next[tr][tc] = next[fr][fc];
+        next[fr][fc] = "";
+        if (move.captured) next[move.captured[0]][move.captured[1]] = "";
+        promote(next, tr, tc);
         return next;
       }
 
       function pieceScore(piece) {
+        if (!piece) return 0;
         if (piece === "r") return -4;
-        if (piece === "R") return -7;
+        if (piece === "R") return -8;
         if (piece === "b") return 4;
-        if (piece === "B") return 7;
+        if (piece === "B") return 8;
         return 0;
       }
 
       function evaluate(state) {
         let score = 0;
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            score += pieceScore(state[row][col]);
-            if (owner(state[row][col]) === "b") score += row * 0.2;
-            if (owner(state[row][col]) === "r") score -= (7 - row) * 0.2;
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            score += pieceScore(state[r][c]);
+            if (owner(state[r][c]) === "b") score += r * 0.25;
+            if (owner(state[r][c]) === "r") score -= (7 - r) * 0.25;
           }
         }
         return score;
@@ -352,51 +277,43 @@
 
       function minimax(state, side, depth, alpha, beta) {
         const moves = allMoves(state, side);
-        if (!moves.length) {
-          return { score: side === "b" ? -999 : 999 };
-        }
+        if (!moves.length) return { score: side === "b" ? -999 : 999 };
         if (depth === 0) return { score: evaluate(state) };
 
         if (side === "b") {
           let best = { score: -Infinity, move: moves[0] };
           for (const move of moves) {
-            const result = minimax(applyMove(state, move), "r", depth - 1, alpha, beta);
-            const moveScore = result.score + (move.jump ? 2.5 : 0);
-            if (moveScore > best.score) best = { score: moveScore, move };
-            alpha = Math.max(alpha, moveScore);
+            const res = minimax(applyMove(state, move), "r", depth-1, alpha, beta);
+            const s = res.score + (move.jump ? 3 : 0);
+            if (s > best.score) best = { score: s, move };
+            alpha = Math.max(alpha, s);
+            if (beta <= alpha) break;
+          }
+          return best;
+        } else {
+          let best = { score: Infinity, move: moves[0] };
+          for (const move of moves) {
+            const res = minimax(applyMove(state, move), "b", depth-1, alpha, beta);
+            const s = res.score - (move.jump ? 3 : 0);
+            if (s < best.score) best = { score: s, move };
+            beta = Math.min(beta, s);
             if (beta <= alpha) break;
           }
           return best;
         }
-
-        let best = { score: Infinity, move: moves[0] };
-        for (const move of moves) {
-          const result = minimax(applyMove(state, move), "b", depth - 1, alpha, beta);
-          const moveScore = result.score - (move.jump ? 2.5 : 0);
-          if (moveScore < best.score) best = { score: moveScore, move };
-          beta = Math.min(beta, moveScore);
-          if (beta <= alpha) break;
-        }
-        return best;
       }
 
       function cpuChoice() {
-        const options = allMoves(boardState, "b");
-        if (!options.length) return null;
-        const difficulty = difficultyEl.value;
-        if (difficulty === "easy") {
-          const jumps = options.filter((move) => move.jump);
-          const pool = jumps.length ? jumps : options;
-          return pool[Math.floor(Math.random() * pool.length)];
+        let moves = allMoves(boardState, "b");
+        if (!moves.length) return null;
+
+        const diff = difficultyEl.value;
+        if (diff === "easy") {
+          const jumps = moves.filter(m => m.jump);
+          return (jumps.length ? jumps : moves)[Math.floor(Math.random() * (jumps.length || moves.length))];
         }
-        if (difficulty === "medium") {
-          return options
-            .slice()
-            .sort((a, b) => {
-              const aScore = (a.jump ? 6 : 0) + (a.to[0] === 7 ? 3 : 0);
-              const bScore = (b.jump ? 6 : 0) + (b.to[0] === 7 ? 3 : 0);
-              return bScore - aScore;
-            })[0];
+        if (diff === "medium") {
+          return moves.sort((a,b) => (b.jump ? 10 : 0) + (b.to[0]===7 ? 5 : 0) - (a.jump ? 10 : 0) - (a.to[0]===7 ? 5 : 0))[0];
         }
         return minimax(cloneBoard(boardState), "b", 5, -Infinity, Infinity).move;
       }
@@ -406,56 +323,42 @@
         cpuTile.classList.toggle("active", current === "b" && !roundOver);
       }
 
-      function selectedMoves() {
-        if (!selected) return [];
-        return allMoves(boardState, "r").filter(
-          (move) => move.from[0] === selected[0] && move.from[1] === selected[1]
-        );
-      }
-
       function renderBoard() {
         boardEl.innerHTML = "";
-        const hints = selectedMoves();
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            const button = document.createElement("button");
-            button.className = "cell";
-            if ((row + col) % 2 === 1) button.classList.add("dark");
-            if (selected && selected[0] === row && selected[1] === col) button.classList.add("selected");
-            if (hints.some((move) => move.to[0] === row && move.to[1] === col)) button.classList.add("hint");
-            button.type = "button";
-            button.addEventListener("click", () => tapCell(row, col));
+        const hints = selected ? allMoves(boardState, "r").filter(m => m.from[0] === selected[0] && m.from[1] === selected[1]) : [];
 
-            const piece = boardState[row][col];
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const cell = document.createElement("button");
+            cell.className = `cell ${ (r+c)%2 === 1 ? "dark" : "" }`;
+            if (selected && selected[0] === r && selected[1] === c) cell.classList.add("selected");
+            if (hints.some(m => m.to[0] === r && m.to[1] === c)) cell.classList.add("hint");
+
+            cell.addEventListener("click", () => tapCell(r, c));
+
+            const piece = boardState[r][c];
             if (piece) {
-              const token = document.createElement("div");
-              token.className = `piece ${owner(piece) === "r" ? "red" : "black"}`;
-              token.textContent = isKing(piece) ? "K" : "";
-              button.appendChild(token);
+              const el = document.createElement("div");
+              el.className = `piece ${owner(piece) === "r" ? "red" : "black"}`;
+              el.textContent = isKing(piece) ? "K" : "";
+              cell.appendChild(el);
             }
-
-            boardEl.appendChild(button);
+            boardEl.appendChild(cell);
           }
         }
       }
 
-      function endRound(message) {
+      function endRound(msg) {
         roundOver = true;
         selected = null;
-        statusEl.textContent = message;
+        statusEl.textContent = msg;
         setTurnTiles();
         renderBoard();
       }
 
       function checkWinner() {
-        if (!allMoves(boardState, "r").length) {
-          endRound("Computer wins. Red has no legal moves left.");
-          return true;
-        }
-        if (!allMoves(boardState, "b").length) {
-          endRound("You win. Black has no legal moves left.");
-          return true;
-        }
+        if (!allMoves(boardState, "r").length) { endRound("Computer wins. Red has no moves left."); return true; }
+        if (!allMoves(boardState, "b").length) { endRound("You win! Black has no moves left."); return true; }
         return false;
       }
 
@@ -464,21 +367,16 @@
         current = current === "r" ? "b" : "r";
         setTurnTiles();
         renderBoard();
-        if (current === "r") {
-          statusEl.textContent = "Your turn. Pick a red checker.";
-        } else {
-          statusEl.textContent = "Computer planning its reply...";
-          window.setTimeout(cpuTurn, 320);
-        }
+        statusEl.textContent = current === "r" 
+          ? "Your turn. Pick a red piece." 
+          : "Computer is thinking...";
+        if (current === "b") setTimeout(cpuTurn, 350);
       }
 
       function cpuTurn() {
         if (roundOver) return;
         const move = cpuChoice();
-        if (!move) {
-          endRound("You win. Black has no legal moves left.");
-          return;
-        }
+        if (!move) { endRound("You win. Black has no moves."); return; }
         boardState = applyMove(boardState, move);
         finishMove();
       }
@@ -486,29 +384,28 @@
       function tapCell(row, col) {
         if (roundOver || current !== "r") return;
 
-        const legalMoves = allMoves(boardState, "r");
-        const pieceMoves = legalMoves.filter((move) => move.from[0] === row && move.from[1] === col);
+        const allLegal = allMoves(boardState, "r");
 
-        if (pieceMoves.length) {
+        // Selecting a piece
+        if (allLegal.some(m => m.from[0] === row && m.from[1] === col)) {
           selected = [row, col];
-          statusEl.textContent = "Choose one of the highlighted landing squares.";
+          statusEl.textContent = "Choose a highlighted square.";
           renderBoard();
           return;
         }
 
         if (!selected) return;
-        const move = legalMoves.find(
-          (option) =>
-            option.from[0] === selected[0] &&
-            option.from[1] === selected[1] &&
-            option.to[0] === row &&
-            option.to[1] === col
+
+        const move = allLegal.find(m => 
+          m.from[0] === selected[0] && m.from[1] === selected[1] &&
+          m.to[0] === row && m.to[1] === col
         );
 
-        if (!move) return;
-        boardState = applyMove(boardState, move);
-        selected = null;
-        finishMove();
+        if (move) {
+          boardState = applyMove(boardState, move);
+          selected = null;
+          finishMove();
+        }
       }
 
       function resetRound() {
