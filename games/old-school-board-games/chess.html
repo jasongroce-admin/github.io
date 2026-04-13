@@ -20,12 +20,6 @@
         align-items: start;
       }
 
-      .board-column {
-        display: grid;
-        gap: 0.9rem;
-        justify-items: center;
-      }
-
       .turn-strip {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -40,17 +34,6 @@
         background: rgba(11, 16, 36, 0.7);
         display: grid;
         gap: 0.15rem;
-      }
-
-      .turn-tile span {
-        color: var(--muted);
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .turn-tile strong {
-        font-size: 1.1rem;
       }
 
       .turn-tile.player.active {
@@ -79,41 +62,20 @@
         height: var(--cell-size);
         border: 0;
         border-radius: 16px;
-        padding: 0;
         font-size: clamp(1.8rem, 4vw, 2.4rem);
         display: grid;
         place-items: center;
+        transition: all 0.15s;
       }
 
-      .cell.dark {
-        background: linear-gradient(180deg, #7f5735, #52331d);
-      }
+      .cell.dark  { background: linear-gradient(180deg, #7f5735, #52331d); }
+      .cell.light { background: linear-gradient(180deg, #ecd7b2, #d8bb8e); }
 
-      .cell.light {
-        background: linear-gradient(180deg, #ecd7b2, #d8bb8e);
-      }
+      .cell.selected { outline: 3px solid #79d3ff; }
+      .cell.hint     { box-shadow: inset 0 0 0 4px #7dffb1; }
+      .cell.last-move{ box-shadow: inset 0 0 0 4px rgba(255, 209, 102, 0.85); }
 
-      .cell.selected {
-        outline: 3px solid #79d3ff;
-      }
-
-      .cell.hint {
-        box-shadow: inset 0 0 0 4px #7dffb1;
-      }
-
-      .cell.last-move {
-        box-shadow: inset 0 0 0 4px rgba(255, 209, 102, 0.8);
-      }
-
-      .info-column {
-        display: grid;
-        gap: 0.9rem;
-      }
-
-      .hud-card {
-        display: grid;
-        gap: 0.75rem;
-      }
+      .info-column { display: grid; gap: 0.9rem; }
 
       .controls {
         display: flex;
@@ -136,29 +98,10 @@
         align-items: center;
       }
 
-      .mini-rules {
-        margin: 0;
-        padding-left: 1rem;
-        color: var(--muted);
-      }
-
-      .mini-rules li + li {
-        margin-top: 0.35rem;
-      }
-
       @media (min-width: 980px) and (orientation: landscape) {
-        .content {
-          width: min(1180px, 96vw);
-        }
-
-        .game-shell {
-          grid-template-columns: minmax(0, 1fr) 320px;
-        }
-
-        .info-column {
-          position: sticky;
-          top: 1rem;
-        }
+        .content { width: min(1180px, 96vw); }
+        .game-shell { grid-template-columns: minmax(0, 1fr) 320px; }
+        .info-column { position: sticky; top: 1rem; }
       }
     </style>
   </head>
@@ -169,10 +112,10 @@
           <div class="board-column">
             <div>
               <h1>Chess Deluxe</h1>
-              <p class="subtitle">Single-side play with a centered board, better move guidance, and a CPU that scales up instead of just moving at random.</p>
+              <p class="subtitle">Play as White against a smarter computer opponent.</p>
             </div>
 
-            <div class="turn-strip" aria-label="Turn tracker">
+            <div class="turn-strip">
               <div class="turn-tile player active" id="playerTile">
                 <span>You</span>
                 <strong>White pieces</strong>
@@ -198,15 +141,15 @@
                 </select>
                 <button class="btn" id="resetBtn" type="button">New Round</button>
               </div>
-              <div class="card status" id="status">Your turn. White opens the game.</div>
+              <div class="card status" id="status">Your turn. White moves first.</div>
             </div>
 
             <div class="card hud-card">
               <h3>How It Plays</h3>
               <ul class="mini-rules">
-                <li>Select a white piece to highlight the legal moves available in this simplified ruleset.</li>
-                <li>Captured kings end the round immediately.</li>
-                <li>Hard mode values material and board control with a deeper search before moving.</li>
+                <li>Tap a white piece to see legal moves (highlighted in green).</li>
+                <li>Capturing the king ends the game immediately.</li>
+                <li>Hard mode uses minimax search for stronger play.</li>
               </ul>
             </div>
 
@@ -225,18 +168,8 @@
       const resetBtn = document.getElementById("resetBtn");
 
       const SYMBOLS = {
-        k: "BK",
-        q: "BQ",
-        r: "BR",
-        b: "BB",
-        n: "BN",
-        p: "BP",
-        K: "WK",
-        Q: "WQ",
-        R: "WR",
-        B: "WB",
-        N: "WN",
-        P: "WP"
+        k:"♚", q:"♛", r:"♜", b:"♝", n:"♞", p:"♟︎",
+        K:"♔", Q:"♕", R:"♖", B:"♗", N:"♘", P:"♙"
       };
 
       let boardState;
@@ -247,20 +180,18 @@
 
       function createBoard() {
         return [
-          ["r", "n", "b", "q", "k", "b", "n", "r"],
-          ["p", "p", "p", "p", "p", "p", "p", "p"],
-          ["", "", "", "", "", "", "", ""],
-          ["", "", "", "", "", "", "", ""],
-          ["", "", "", "", "", "", "", ""],
-          ["", "", "", "", "", "", "", ""],
-          ["P", "P", "P", "P", "P", "P", "P", "P"],
-          ["R", "N", "B", "Q", "K", "B", "N", "R"]
+          ["r","n","b","q","k","b","n","r"],
+          ["p","p","p","p","p","p","p","p"],
+          ["","","","","","","",""],
+          ["","","","","","","",""],
+          ["","","","","","","",""],
+          ["","","","","","","",""],
+          ["P","P","P","P","P","P","P","P"],
+          ["R","N","B","Q","K","B","N","R"]
         ];
       }
 
-      function cloneBoard(state) {
-        return state.map((row) => row.slice());
-      }
+      function cloneBoard(state) { return state.map(row => row.slice()); }
 
       function colorOf(piece) {
         if (!piece) return "";
@@ -268,24 +199,18 @@
       }
 
       function pieceValue(piece) {
-        const key = piece.toLowerCase();
-        if (key === "p") return 1;
-        if (key === "n" || key === "b") return 3;
-        if (key === "r") return 5;
-        if (key === "q") return 9;
-        if (key === "k") return 50;
-        return 0;
+        const val = { p:1, n:3, b:3, r:5, q:9, k:50 };
+        return val[piece.toLowerCase()] || 0;
       }
 
-      function clearPath(state, fromRow, fromCol, toRow, toCol) {
-        const rowStep = Math.sign(toRow - fromRow);
-        const colStep = Math.sign(toCol - fromCol);
-        let row = fromRow + rowStep;
-        let col = fromCol + colStep;
-        while (row !== toRow || col !== toCol) {
-          if (state[row][col]) return false;
-          row += rowStep;
-          col += colStep;
+      function isClearPath(state, fromRow, fromCol, toRow, toCol) {
+        const dr = Math.sign(toRow - fromRow);
+        const dc = Math.sign(toCol - fromCol);
+        let r = fromRow + dr;
+        let c = fromCol + dc;
+        while (r !== toRow || c !== toCol) {
+          if (state[r][c]) return false;
+          r += dr; c += dc;
         }
         return true;
       }
@@ -294,45 +219,41 @@
         const piece = state[fromRow][fromCol];
         if (!piece || colorOf(piece) !== side) return false;
         if (colorOf(state[toRow][toCol]) === side) return false;
-        const rowDelta = toRow - fromRow;
-        const colDelta = toCol - fromCol;
-        const absRow = Math.abs(rowDelta);
-        const absCol = Math.abs(colDelta);
+
+        const dr = toRow - fromRow;
+        const dc = toCol - fromCol;
+        const absDr = Math.abs(dr);
+        const absDc = Math.abs(dc);
         const kind = piece.toLowerCase();
 
         if (kind === "p") {
-          const direction = side === "W" ? -1 : 1;
-          const startRow = side === "W" ? 6 : 1;
-          if (colDelta === 0 && !state[toRow][toCol] && rowDelta === direction) return true;
-          if (
-            colDelta === 0 &&
-            !state[toRow][toCol] &&
-            fromRow === startRow &&
-            rowDelta === direction * 2 &&
-            !state[fromRow + direction][fromCol]
-          ) {
-            return true;
-          }
-          if (absCol === 1 && rowDelta === direction && state[toRow][toCol]) return true;
+          const dir = side === "W" ? -1 : 1;
+          const start = side === "W" ? 6 : 1;
+          // Normal move
+          if (dc === 0 && !state[toRow][toCol] && dr === dir) return true;
+          // Double push
+          if (dc === 0 && fromRow === start && dr === dir*2 && !state[fromRow+dir][fromCol] && !state[toRow][toCol]) return true;
+          // Capture
+          if (absDc === 1 && dr === dir && state[toRow][toCol]) return true;
           return false;
         }
 
-        if (kind === "r") return (rowDelta === 0 || colDelta === 0) && clearPath(state, fromRow, fromCol, toRow, toCol);
-        if (kind === "b") return absRow === absCol && clearPath(state, fromRow, fromCol, toRow, toCol);
-        if (kind === "q") {
-          return (rowDelta === 0 || colDelta === 0 || absRow === absCol) && clearPath(state, fromRow, fromCol, toRow, toCol);
-        }
-        if (kind === "n") return (absRow === 2 && absCol === 1) || (absRow === 1 && absCol === 2);
-        if (kind === "k") return absRow <= 1 && absCol <= 1;
+        if (kind === "r") return (dr === 0 || dc === 0) && isClearPath(state, fromRow, fromCol, toRow, toCol);
+        if (kind === "b") return absDr === absDc && isClearPath(state, fromRow, fromCol, toRow, toCol);
+        if (kind === "q") return (dr === 0 || dc === 0 || absDr === absDc) && isClearPath(state, fromRow, fromCol, toRow, toCol);
+        if (kind === "n") return (absDr === 2 && absDc === 1) || (absDr === 1 && absDc === 2);
+        if (kind === "k") return absDr <= 1 && absDc <= 1;
+
         return false;
       }
 
-      function legalMoves(state, row, col, side = colorOf(state[row][col])) {
+      function legalMoves(state, row, col) {
         const moves = [];
-        for (let toRow = 0; toRow < 8; toRow += 1) {
-          for (let toCol = 0; toCol < 8; toCol += 1) {
-            if (isLegal(state, row, col, toRow, toCol, side)) {
-              moves.push({ from: [row, col], to: [toRow, toCol], captured: state[toRow][toCol] });
+        const side = colorOf(state[row][col]);
+        for (let tr = 0; tr < 8; tr++) {
+          for (let tc = 0; tc < 8; tc++) {
+            if (isLegal(state, row, col, tr, tc, side)) {
+              moves.push({ from: [row, col], to: [tr, tc], captured: state[tr][tc] });
             }
           }
         }
@@ -341,10 +262,10 @@
 
       function allMoves(state, side) {
         const moves = [];
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            if (colorOf(state[row][col]) === side) {
-              moves.push(...legalMoves(state, row, col, side));
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            if (colorOf(state[r][c]) === side) {
+              moves.push(...legalMoves(state, r, c));
             }
           }
         }
@@ -353,31 +274,31 @@
 
       function applyMove(state, move) {
         const next = cloneBoard(state);
-        const [fromRow, fromCol] = move.from;
-        const [toRow, toCol] = move.to;
-        next[toRow][toCol] = next[fromRow][fromCol];
-        next[fromRow][fromCol] = "";
+        const [fr, fc] = move.from;
+        const [tr, tc] = move.to;
+        next[tr][tc] = next[fr][fc];
+        next[fr][fc] = "";
         return next;
       }
 
       function hasKing(state, side) {
-        return state.some((row) => row.some((piece) => piece === (side === "W" ? "K" : "k")));
+        const king = side === "W" ? "K" : "k";
+        return state.flat().includes(king);
       }
 
       function evaluate(state) {
         let score = 0;
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            const piece = state[row][col];
-            if (!piece) continue;
-            const modifier = colorOf(piece) === "B" ? 1 : -1;
-            score += pieceValue(piece) * modifier;
-            if (piece.toLowerCase() === "p") {
-              score += modifier * (colorOf(piece) === "B" ? row : 7 - row) * 0.1;
-            }
-            if (piece.toLowerCase() === "n" || piece.toLowerCase() === "b") {
-              const distanceFromCenter = Math.abs(3.5 - row) + Math.abs(3.5 - col);
-              score += modifier * (2 - distanceFromCenter * 0.2);
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const p = state[r][c];
+            if (!p) continue;
+            const val = pieceValue(p);
+            const mod = colorOf(p) === "B" ? 1 : -1;
+            score += val * mod;
+
+            // Pawn position bonus
+            if (p.toLowerCase() === "p") {
+              score += mod * (colorOf(p) === "B" ? r : 7 - r) * 0.15;
             }
           }
         }
@@ -387,44 +308,50 @@
       function minimax(state, side, depth, alpha, beta) {
         if (!hasKing(state, "W")) return { score: 99999 };
         if (!hasKing(state, "B")) return { score: -99999 };
+
         const moves = allMoves(state, side);
-        if (!moves.length) return { score: side === "B" ? -999 : 999 };
+        if (!moves.length) return { score: side === "B" ? -99999 : 99999 };
         if (depth === 0) return { score: evaluate(state) };
 
-        if (side === "B") {
+        if (side === "B") { // maximizing
           let best = { score: -Infinity, move: moves[0] };
           for (const move of moves) {
-            const result = minimax(applyMove(state, move), "W", depth - 1, alpha, beta);
-            const moveScore = result.score + pieceValue(move.captured || "") * 0.4;
-            if (moveScore > best.score) best = { score: moveScore, move };
-            alpha = Math.max(alpha, moveScore);
+            const nextState = applyMove(state, move);
+            const res = minimax(nextState, "W", depth-1, alpha, beta);
+            const score = res.score + pieceValue(move.captured || "") * 0.6;
+            if (score > best.score) best = { score, move };
+            alpha = Math.max(alpha, score);
+            if (beta <= alpha) break;
+          }
+          return best;
+        } else { // minimizing
+          let best = { score: Infinity, move: moves[0] };
+          for (const move of moves) {
+            const nextState = applyMove(state, move);
+            const res = minimax(nextState, "B", depth-1, alpha, beta);
+            const score = res.score - pieceValue(move.captured || "") * 0.6;
+            if (score < best.score) best = { score, move };
+            beta = Math.min(beta, score);
             if (beta <= alpha) break;
           }
           return best;
         }
-
-        let best = { score: Infinity, move: moves[0] };
-        for (const move of moves) {
-          const result = minimax(applyMove(state, move), "B", depth - 1, alpha, beta);
-          const moveScore = result.score - pieceValue(move.captured || "") * 0.4;
-          if (moveScore < best.score) best = { score: moveScore, move };
-          beta = Math.min(beta, moveScore);
-          if (beta <= alpha) break;
-        }
-        return best;
       }
 
       function cpuChoice() {
-        const options = allMoves(boardState, "B");
-        if (!options.length) return null;
-        const difficulty = difficultyEl.value;
-        if (difficulty === "easy") {
-          return options[Math.floor(Math.random() * options.length)];
+        const moves = allMoves(boardState, "B");
+        if (!moves.length) return null;
+
+        const diff = difficultyEl.value;
+        if (diff === "easy") {
+          return moves[Math.floor(Math.random() * moves.length)];
         }
-        if (difficulty === "medium") {
-          return options.slice().sort((a, b) => pieceValue(b.captured || "") - pieceValue(a.captured || ""))[0];
+        if (diff === "medium") {
+          // Prefer captures
+          return moves.sort((a,b) => pieceValue(b.captured||"") - pieceValue(a.captured||"") )[0];
         }
-        return minimax(cloneBoard(boardState), "B", 3, -Infinity, Infinity).move;
+        // hard
+        return minimax(cloneBoard(boardState), "B", 4, -Infinity, Infinity).move;
       }
 
       function setTurnTiles() {
@@ -432,27 +359,23 @@
         cpuTile.classList.toggle("active", current === "B" && !roundOver);
       }
 
-      function selectedMoves() {
-        if (!selected) return [];
-        return legalMoves(boardState, selected[0], selected[1], "W");
-      }
-
       function renderBoard() {
         boardEl.innerHTML = "";
-        const hints = selectedMoves();
-        for (let row = 0; row < 8; row += 1) {
-          for (let col = 0; col < 8; col += 1) {
-            const button = document.createElement("button");
-            button.className = `cell ${((row + col) % 2 === 0) ? "light" : "dark"}`;
-            if (selected && selected[0] === row && selected[1] === col) button.classList.add("selected");
-            if (hints.some((move) => move.to[0] === row && move.to[1] === col)) button.classList.add("hint");
-            if (lastMove && ((lastMove.from[0] === row && lastMove.from[1] === col) || (lastMove.to[0] === row && lastMove.to[1] === col))) {
-              button.classList.add("last-move");
+        const hints = selected ? legalMoves(boardState, selected[0], selected[1]) : [];
+
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const cell = document.createElement("button");
+            cell.className = `cell ${((r + c) % 2 === 0) ? "light" : "dark"}`;
+            if (selected && selected[0] === r && selected[1] === c) cell.classList.add("selected");
+            if (hints.some(m => m.to[0] === r && m.to[1] === c)) cell.classList.add("hint");
+            if (lastMove && ((lastMove.from[0] === r && lastMove.from[1] === c) || (lastMove.to[0] === r && lastMove.to[1] === c))) {
+              cell.classList.add("last-move");
             }
-            button.type = "button";
-            button.textContent = SYMBOLS[boardState[row][col]] || "";
-            button.addEventListener("click", () => tapCell(row, col));
-            boardEl.appendChild(button);
+
+            cell.textContent = SYMBOLS[boardState[r][c]] || "";
+            cell.addEventListener("click", () => tapCell(r, c));
+            boardEl.appendChild(cell);
           }
         }
       }
@@ -466,12 +389,13 @@
       }
 
       function postMoveCheck(sideJustMoved) {
-        if (!hasKing(boardState, sideJustMoved === "W" ? "B" : "W")) {
-          endRound(sideJustMoved === "W" ? "You win. Black king was captured." : "Computer wins. White king was captured.");
+        const opponent = sideJustMoved === "W" ? "B" : "W";
+        if (!hasKing(boardState, opponent)) {
+          endRound(sideJustMoved === "W" ? "You win! Black king captured." : "Computer wins. White king captured.");
           return true;
         }
-        if (!allMoves(boardState, sideJustMoved === "W" ? "B" : "W").length) {
-          endRound(sideJustMoved === "W" ? "You win. Black has no legal moves." : "Computer wins. White has no legal moves.");
+        if (allMoves(boardState, opponent).length === 0) {
+          endRound(sideJustMoved === "W" ? "You win. Black has no moves." : "Computer wins. White has no moves.");
           return true;
         }
         return false;
@@ -479,14 +403,17 @@
 
       function finishMove(sideJustMoved) {
         if (postMoveCheck(sideJustMoved)) return;
+
         current = sideJustMoved === "W" ? "B" : "W";
         setTurnTiles();
         renderBoard();
-        if (current === "W") {
-          statusEl.textContent = "Your turn. Select a white piece.";
-        } else {
-          statusEl.textContent = "Computer is choosing its move...";
-          window.setTimeout(cpuTurn, 360);
+
+        statusEl.textContent = current === "W" 
+          ? "Your turn. Select a white piece." 
+          : "Computer is thinking...";
+
+        if (current === "B") {
+          setTimeout(cpuTurn, 380);
         }
       }
 
@@ -504,27 +431,30 @@
 
       function tapCell(row, col) {
         if (roundOver || current !== "W") return;
+
         if (!selected) {
           if (colorOf(boardState[row][col]) === "W") {
             selected = [row, col];
-            statusEl.textContent = "Choose one of the highlighted moves.";
+            statusEl.textContent = "Select a highlighted square to move.";
             renderBoard();
           }
           return;
         }
 
-        const move = selectedMoves().find((option) => option.to[0] === row && option.to[1] === col);
-        if (move) {
-          boardState = applyMove(boardState, move);
-          lastMove = move;
+        const possible = legalMoves(boardState, selected[0], selected[1]);
+        const chosenMove = possible.find(m => m.to[0] === row && m.to[1] === col);
+
+        if (chosenMove) {
+          boardState = applyMove(boardState, chosenMove);
+          lastMove = chosenMove;
           selected = null;
           finishMove("W");
-          return;
+        } else {
+          // Reselect if clicking another white piece
+          selected = colorOf(boardState[row][col]) === "W" ? [row, col] : null;
+          statusEl.textContent = selected ? "Select a highlighted square." : "Your turn. Select a white piece.";
+          renderBoard();
         }
-
-        selected = colorOf(boardState[row][col]) === "W" ? [row, col] : null;
-        statusEl.textContent = selected ? "Choose one of the highlighted moves." : "Your turn. Select a white piece.";
-        renderBoard();
       }
 
       function resetRound() {
@@ -533,7 +463,7 @@
         current = "W";
         roundOver = false;
         lastMove = null;
-        statusEl.textContent = "Your turn. White opens the game.";
+        statusEl.textContent = "Your turn. White moves first.";
         setTurnTiles();
         renderBoard();
       }
