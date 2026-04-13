@@ -29,17 +29,18 @@
         .btn:hover { background:#112b44; border-color:var(--accent); }
         .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
-        /* Collapsible Sidebar */
-        .sidebar {
-            width: 280px; background:#0b1b30f2; border-right:1px solid #335; padding:12px;
+        /* Collapsible Sidebars */
+        .sidebar, .inspector {
+            background:#0b1b30f2; border:1px solid #335; padding:12px;
             overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
             transition: width 0.3s ease, padding 0.3s ease;
         }
-        .sidebar.collapsed { width: 52px; padding: 12px 6px; }
-        .sidebar.collapsed .panel h3 span, .sidebar.collapsed .content, .sidebar.collapsed .hint { display: none; }
-        .sidebar.collapsed .panel h3 { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
+        .sidebar { width: 280px; border-right:1px solid #335; }
+        .inspector { width: 270px; border-left:1px solid #335; }
+        .sidebar.collapsed, .inspector.collapsed { width: 52px; padding: 12px 6px; }
+        .sidebar.collapsed .panel h3 span, .sidebar.collapsed .content, .inspector.collapsed .content { display: none; }
+        .sidebar.collapsed .panel h3, .inspector.collapsed .panel h3 { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
 
-        .inspector { width:270px; background:#0b1b30f2; border-left:1px solid #335; padding:12px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0; }
         .panel { background:var(--panel); border:1px solid #335; border-radius:12px; padding:12px; }
         .panel h3 { margin:0 0 10px; font-size:1.05rem; cursor:pointer; display:flex; align-items:center; gap:8px; }
         .panel.collapsed .content { display:none; }
@@ -61,7 +62,6 @@
             position: relative;
         }
         canvas { display:block; background:#080b18; touch-action: pinch-zoom; }
-        .preview { width:100%; height:120px; background:#112b44; border-radius:10px; border:1px solid #446; overflow:hidden; }
         .hint { font-size:0.82rem; opacity:0.8; text-align:center; margin-top:8px; }
         .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
         .layer-item.active { border:2px solid var(--accent); }
@@ -86,7 +86,7 @@
     </div>
 
     <div class="main">
-        <!-- LEFT SIDEBAR - Collapsible -->
+        <!-- LEFT SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <div class="panel">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools <span style="margin-left:auto">▼</span></h3>
@@ -119,14 +119,14 @@
                     <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
                         <option value="none">None</option>
                         <option value="neon">Neon Glow</option>
-                        <option value="rainbow">Rainbow</option>
-                        <option value="prism">Prism</option>
+                        <option value="rainbow">Rainbow Cycle</option>
+                        <option value="prism">Prism Shift</option>
                         <option value="spark">Spark Burst</option>
                         <option value="fire">Fire Flicker</option>
                         <option value="starburst">Starburst</option>
                         <option value="smoke">Smoke Drift</option>
-                        <option value="comet">Comet</option>
-                        <option value="velvet">Velvet</option>
+                        <option value="comet">Comet Trail</option>
+                        <option value="velvet">Velvet Ink</option>
                     </select>
                 </div>
             </div>
@@ -144,6 +144,13 @@
                     </select>
                 </div>
             </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌟 Color <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
+                    <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
+                </div>
+            </div>
         </div>
 
         <!-- CANVAS AREA -->
@@ -153,22 +160,18 @@
             </div>
         </div>
 
-        <!-- RIGHT INSPECTOR (condensed) -->
-        <div class="inspector">
+        <!-- RIGHT INSPECTOR - Also collapsible -->
+        <div class="inspector" id="inspector">
             <div class="panel">
-                <h3>🔮 Preview</h3>
-                <div class="preview"><canvas id="preview" width="230" height="110"></canvas></div>
-            </div>
-            <div class="panel">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <h3 style="margin:0;">📑 Layers</h3>
-                    <button id="addLayerBtn" class="btn" style="padding:4px 12px;font-size:0.85rem;">+ Add</button>
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">📑 Layers <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
+                    <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
                 </div>
-                <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
             </div>
             <div id="transformControls" class="panel" style="display:none;">
-                <h3>✏️ Transform Selection</h3>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">✏️ Transform <span style="margin-left:auto">▼</span></h3>
+                <div class="content" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
                     <button onclick="movePasted(-25,0)" class="btn">←</button>
                     <button onclick="movePasted(25,0)" class="btn">→</button>
                     <button onclick="movePasted(0,-25)" class="btn">↑</button>
@@ -183,22 +186,20 @@
                     <button onclick="cancelPaste()" style="background:#ef4444;color:white;width:100%;">❌ Cancel</button>
                 </div>
             </div>
-            <div class="panel">
-                <h3>🌟 Color</h3>
-                <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
-                <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
-            </div>
         </div>
     </div>
 
     <div class="copyright">© 2026 Jason Groce • Magic Screen PRO with GPU Particles</div>
-<script>
+
+
+
+
+        <script>
         // ==================== CORE SETUP ====================
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         const sidebar = document.getElementById('sidebar');
-        const previewCanvas = document.getElementById('preview');
-        const pctx = previewCanvas.getContext('2d');
+        const inspector = document.getElementById('inspector');
 
         let layers = [];
         let currentLayerIndex = 0;
@@ -215,20 +216,10 @@
             hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
         };
 
-        // GPU Particles (lightweight optimized)
-        let gl = null, useGPU = false;
+        // GPU Particles - optimized with unique behavior per effect
         let particlesData = [];
         const MAX_PARTICLES = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 6500 : 22000;
         let lastEmit = 0;
-
-        function initWebGL() {
-            try {
-                gl = canvas.getContext('webgl2');
-                if (!gl) return false;
-                useGPU = true;
-                return true;
-            } catch(e) { return false; }
-        }
 
         function resize() {
             const rect = document.getElementById('canvasContainer').getBoundingClientRect();
@@ -285,9 +276,10 @@
             for (let i = 0; i < count && particlesData.length < MAX_PARTICLES; i++) {
                 particlesData.push({
                     x, y,
-                    vx: (Math.random()-0.5) * (eff==='smoke'?2:5.5),
-                    vy: (Math.random()-0.5) * (eff==='smoke'?-3.5:4.8),
-                    life: 20 + Math.random()*32,
+                    vx: (Math.random()-0.5) * (eff==='smoke'?1.8:5.2),
+                    vy: (Math.random()-0.5) * (eff==='smoke'?-3.2:4.5),
+                    life: eff === 'starburst' ? 12 + Math.random()*18 : 22 + Math.random()*30,
+                    size: eff === 'starburst' ? 4 + Math.random()*3 : 2.5 + Math.random()*3,
                     effect: eff
                 });
             }
@@ -299,9 +291,10 @@
             for (let i = particlesData.length - 1; i >= 0; i--) {
                 const p = particlesData[i];
                 p.x += p.vx; p.y += p.vy; p.life--;
-                if (p.effect === 'smoke') p.vy -= 0.12;
-                if (p.effect === 'fire') { p.vy -= 0.18; p.vx *= 0.94; }
-                if (p.x < -50 || p.x > w+50 || p.y < -50 || p.y > h+50) p.life -= 3;
+                if (p.effect === 'smoke') p.vy -= 0.11;
+                if (p.effect === 'fire') { p.vy -= 0.19; p.vx *= 0.93; }
+                if (p.effect === 'starburst') p.size *= 0.94;
+                if (p.x < -60 || p.x > w+60 || p.y < -60 || p.y > h+60) p.life -= 4;
                 if (p.life <= 0) particlesData.splice(i, 1);
             }
         }
@@ -329,18 +322,61 @@
                 const p2 = symTo[i % symTo.length];
                 layerCtx.lineCap = 'round';
                 layerCtx.lineJoin = 'round';
-                layerCtx.shadowBlur = settings.glow;
-                layerCtx.strokeStyle = settings.color;
-                layerCtx.globalAlpha = settings.alpha;
-                layerCtx.lineWidth = width;
-                layerCtx.beginPath();
-                layerCtx.moveTo(p1[0], p1[1]);
-                layerCtx.lineTo(p2[0], p2[1]);
-                layerCtx.stroke();
+
+                if (settings.effect === 'neon') {
+                    for (let l = 4; l >= 0; l--) {
+                        layerCtx.shadowBlur = settings.glow + l * 18;
+                        layerCtx.globalAlpha = settings.alpha * (1 - l * 0.18);
+                        layerCtx.lineWidth = width + l * 3;
+                        layerCtx.strokeStyle = settings.color;
+                        layerCtx.beginPath();
+                        layerCtx.moveTo(p1[0], p1[1]);
+                        layerCtx.lineTo(p2[0], p2[1]);
+                        layerCtx.stroke();
+                    }
+                } else if (settings.effect === 'rainbow') {
+                    const hue = (Date.now() / 25 + settings.hueShift + i*40) % 360;
+                    layerCtx.strokeStyle = `hsla(${hue}, 95%, 68%, ${settings.alpha})`;
+                    layerCtx.shadowBlur = settings.glow + 12;
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'fire') {
+                    layerCtx.shadowBlur = settings.glow + 25;
+                    layerCtx.strokeStyle = `hsl(${15 + Math.random()*30}, 100%, 65%)`;
+                    layerCtx.lineWidth = width;
+                    layerCtx.globalAlpha = settings.alpha * 0.9;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'starburst') {
+                    layerCtx.shadowBlur = 30;
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.lineWidth = width * 0.7;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'smoke') {
+                    layerCtx.shadowBlur = 50;
+                    layerCtx.globalAlpha = 0.45;
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.lineWidth = width * 2.8;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'comet') {
+                    layerCtx.shadowBlur = 15;
+                    layerCtx.strokeStyle = '#ffffff';
+                    layerCtx.lineWidth = width * 0.6;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else {
+                    // default
+                    layerCtx.shadowBlur = settings.glow;
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.globalAlpha = settings.alpha;
+                    layerCtx.lineWidth = width;
+                    layerCtx.beginPath();
+                    layerCtx.moveTo(p1[0], p1[1]);
+                    layerCtx.lineTo(p2[0], p2[1]);
+                    layerCtx.stroke();
+                }
             });
 
             const dist = Math.hypot(to.x - from.x, to.y - from.y);
-            if (dist > 10) emitParticles((from.x + to.x)/2, (from.y + to.y)/2, 6);
+            if (dist > 12) emitParticles((from.x + to.x)/2, (from.y + to.y)/2, 7);
 
             renderAllLayers();
         }
@@ -352,7 +388,7 @@
             drawing = true;
             lastPos = {x, y};
             saveState();
-            emitParticles(x, y, 12);
+            emitParticles(x, y, 14);
         }
 
         function pointerMove(e) {
@@ -383,13 +419,13 @@
         }
 
         function attachUI() {
+            // Camera & Upload
             document.getElementById('cameraBtn').onclick = () => {
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
                 input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
                 input.click();
             };
-
             document.getElementById('uploadBtn').onclick = () => {
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*';
@@ -408,13 +444,15 @@
                 if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
             });
 
-            // Sidebar toggle on mobile
+            // Collapsible sidebars
             sidebar.addEventListener('click', (e) => {
-                if (sidebar.classList.contains('collapsed') && e.target.closest('h3')) {
-                    sidebar.classList.remove('collapsed');
-                }
+                if (sidebar.classList.contains('collapsed') && e.target.closest('h3')) sidebar.classList.remove('collapsed');
+            });
+            inspector.addEventListener('click', (e) => {
+                if (inspector.classList.contains('collapsed') && e.target.closest('h3')) inspector.classList.remove('collapsed');
             });
 
+            // Other buttons
             document.getElementById('newBtn').onclick = () => {
                 if (confirm('Start new drawing?')) {
                     layers = [createNewLayer("Background")];
@@ -445,9 +483,9 @@
         }
 
         function init() {
-            initWebGL();
             if (window.innerWidth < 900 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                 sidebar.classList.add('collapsed');
+                inspector.classList.add('collapsed');
             }
             resize();
             window.addEventListener('resize', resize);
