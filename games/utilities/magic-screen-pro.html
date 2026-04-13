@@ -107,12 +107,15 @@
                     <button class="tool-btn active" data-tool="pencil">✏️ Pencil</button>
                     <button class="tool-btn" data-tool="pen">🖊️ Pen</button>
                     <button class="tool-btn" data-tool="marker">🖍️ Marker</button>
-                    <button class="tool-btn" data-tool="fine">Fine Tip</button>
-                    <button class="tool-btn" data-tool="broad">Broad Tip</button>
-                    <button class="tool-btn" data-tool="chisel">Chisel Tip</button>
-                    <button class="tool-btn" data-tool="eraser">🧼 Erase</button>
-                    <button class="tool-btn" data-tool="select">🔲 Select</button>
-                    <button class="tool-btn" data-tool="arrow">➜ Arrow</button>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">Tip <span style="margin-left:auto">▼</span></h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn" data-tip="fine">Fine</button>
+                    <button class="tool-btn active" data-tip="normal">Normal</button>
+                    <button class="tool-btn" data-tip="broad">Broad</button>
+                    <button class="tool-btn" data-tip="chisel">Chisel</button>
                 </div>
             </div>
             <div class="panel">
@@ -184,11 +187,6 @@
                     <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
                 </div>
             </div>
-            <div id="selectionControls" class="panel" style="display:none;">
-                <h3>🔲 Selection</h3>
-                <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
-                <button id="retrySelectionBtn" class="btn" style="width:100%;">🔄 Retry Selection</button>
-            </div>
         </div>
     </div>
 
@@ -204,7 +202,8 @@
         let history = [], redoStack = [];
         let drawing = false;
         let lastPos = null;
-        let currentTool = 'pencil';
+        let currentTool = 'pencil';   // Pencil, Pen, Marker
+        let currentTip = 'normal';    // fine, normal, broad, chisel
         let selectionMode = false;
         let selectionStart = null;
         let selectionRect = null;
@@ -282,33 +281,36 @@
                 return;
             }
 
-            if (currentTool === 'select' || currentTool === 'arrow') return;
-
             const symFrom = getSymmetryPoints(from.x, from.y);
             const symTo = getSymmetryPoints(to.x, to.y);
             let width = settings.size * settings.flow;
 
+            // Tool + Tip specific adjustments
+            if (currentTool === 'pencil') {
+                width *= 0.65;
+                layerCtx.strokeStyle = '#555555';
+            } else if (currentTool === 'pen') {
+                width *= 0.85;
+                layerCtx.strokeStyle = '#111111';
+            } else if (currentTool === 'marker') {
+                width *= 1.3;
+            }
+
+            if (currentTip === 'fine') width *= 0.55;
+            if (currentTip === 'broad') width *= 1.9;
+            if (currentTip === 'chisel') {
+                width *= 1.4;
+                layerCtx.lineCap = 'butt';
+            } else {
+                layerCtx.lineCap = 'round';
+            }
+
             symFrom.forEach((p1, i) => {
                 const p2 = symTo[i % symTo.length];
-                layerCtx.lineCap = currentTool === 'chisel' ? 'butt' : 'round';
                 layerCtx.lineJoin = 'round';
-
-                if (currentTool === 'pencil') {
-                    layerCtx.strokeStyle = '#555555';
-                    layerCtx.lineWidth = width * 0.6;
-                } else if (currentTool === 'pen') {
-                    layerCtx.strokeStyle = '#111111';
-                    layerCtx.lineWidth = width * 0.8;
-                } else if (currentTool === 'fine') {
-                    layerCtx.lineWidth = width * 0.5;
-                } else if (currentTool === 'broad') {
-                    layerCtx.lineWidth = width * 1.8;
-                } else if (currentTool === 'chisel') {
-                    layerCtx.lineWidth = width * 1.3;
-                } else {
-                    layerCtx.strokeStyle = settings.color;
-                    layerCtx.lineWidth = width;
-                }
+                layerCtx.shadowBlur = settings.glow;
+                layerCtx.globalAlpha = settings.alpha;
+                layerCtx.lineWidth = width;
 
                 if (settings.effect === 'neon') {
                     for (let l = 4; l >= 0; l--) {
@@ -331,9 +333,22 @@
                     layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
                     layerCtx.globalAlpha = settings.alpha * 0.95;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'starburst') {
+                    layerCtx.shadowBlur = 35;
+                    layerCtx.strokeStyle = '#ffffff';
+                    layerCtx.lineWidth = width * 0.6;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                } else if (settings.effect === 'smoke') {
+                    layerCtx.shadowBlur = 55;
+                    layerCtx.globalAlpha = 0.42;
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.lineWidth = width * 3.2;
+                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
+                    layerCtx.strokeStyle = settings.color;
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.globalAlpha = settings.alpha;
+                    layerCtx.lineWidth = width;
                     layerCtx.beginPath();
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
@@ -396,12 +411,6 @@
         function pointerUp() {
             drawing = false;
             lastPos = null;
-            if (selectionMode) {
-                selectionMode = false;
-                if (selectionRect && selectionRect.w > 20 && selectionRect.h > 20) {
-                    document.getElementById('selectionControls').style.display = 'block';
-                }
-            }
         }
 
         function loadImageAsLayer(file) {
@@ -436,8 +445,8 @@
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentTool = btn.dataset.tool;
-                    document.getElementById('selectionControls').style.display = (currentTool === 'select') ? 'block' : 'none';
+                    if (btn.dataset.tool) currentTool = btn.dataset.tool;
+                    if (btn.dataset.tip) currentTip = btn.dataset.tip;
                 });
             });
 
@@ -475,26 +484,6 @@
                 renderLayersList();
                 renderAllLayers();
                 saveState();
-            };
-
-            document.getElementById('copySelectionBtn').onclick = () => {
-                if (!selectionRect) return;
-                const temp = document.createElement('canvas');
-                temp.width = selectionRect.w;
-                temp.height = selectionRect.h;
-                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
-                pastedImage = temp;
-                pastedX = selectionRect.x + 50;
-                pastedY = selectionRect.y + 50;
-                document.getElementById('selectionControls').style.display = 'none';
-                renderAllLayers();
-            };
-
-            document.getElementById('retrySelectionBtn').onclick = () => {
-                selectionMode = true;
-                selectionRect = null;
-                document.getElementById('selectionControls').style.display = 'none';
-                renderAllLayers();
             };
 
             document.getElementById('newBtn').onclick = () => {
