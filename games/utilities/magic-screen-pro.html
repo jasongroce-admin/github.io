@@ -29,7 +29,6 @@
         .btn:hover { background:#112b44; border-color:var(--accent); }
         .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
-        /* Collapsible Sidebars - clean, no center line */
         .sidebar, .inspector {
             background:#0b1b30f2; border:1px solid #335; padding:12px;
             overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
@@ -79,7 +78,7 @@
         canvas { display:block; background:#080b18; touch-action: none; width: 100%; height: 100%; }
         .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
         .layer-item.active { border:2px solid var(--accent); }
-        .delete-layer { margin-left:auto; color:#ff6666; cursor:pointer; font-size:1.1rem; }
+        .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
         .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
     </style>
 </head>
@@ -138,7 +137,7 @@
             </div>
         </div>
 
-        <!-- CANVAS AREA - Full width when sidebars collapsed -->
+        <!-- CANVAS -->
         <div class="canvas-container" id="canvasContainer">
             <div class="canvasWrap" id="canvasWrap">
                 <canvas id="board"></canvas>
@@ -188,7 +187,7 @@
             <div id="selectionControls" class="panel" style="display:none;">
                 <h3>🔲 Selection</h3>
                 <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
-                <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
+                <button id="retrySelectionBtn" class="btn" style="width:100%;">🔄 Retry Selection</button>
             </div>
         </div>
     </div>
@@ -262,7 +261,7 @@
                 return c;
             });
             history.push(state);
-            if (history.length > 28) history.shift();
+            if (history.length > 30) history.shift();
             redoStack = [];
         }
 
@@ -273,7 +272,6 @@
 
             if (currentTool === 'eraser') {
                 layerCtx.globalCompositeOperation = 'destination-out';
-                layerCtx.shadowBlur = 0;
                 layerCtx.lineWidth = settings.size * 2.2;
                 layerCtx.beginPath();
                 layerCtx.moveTo(from.x, from.y);
@@ -284,7 +282,7 @@
                 return;
             }
 
-            if (currentTool === 'select') return;
+            if (currentTool === 'select' || currentTool === 'arrow') return;
 
             const symFrom = getSymmetryPoints(from.x, from.y);
             const symTo = getSymmetryPoints(to.x, to.y);
@@ -292,15 +290,31 @@
 
             symFrom.forEach((p1, i) => {
                 const p2 = symTo[i % symTo.length];
-                layerCtx.lineCap = 'round';
+                layerCtx.lineCap = currentTool === 'chisel' ? 'butt' : 'round';
                 layerCtx.lineJoin = 'round';
+
+                if (currentTool === 'pencil') {
+                    layerCtx.strokeStyle = '#555555';
+                    layerCtx.lineWidth = width * 0.6;
+                } else if (currentTool === 'pen') {
+                    layerCtx.strokeStyle = '#111111';
+                    layerCtx.lineWidth = width * 0.8;
+                } else if (currentTool === 'fine') {
+                    layerCtx.lineWidth = width * 0.5;
+                } else if (currentTool === 'broad') {
+                    layerCtx.lineWidth = width * 1.8;
+                } else if (currentTool === 'chisel') {
+                    layerCtx.lineWidth = width * 1.3;
+                } else {
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.lineWidth = width;
+                }
 
                 if (settings.effect === 'neon') {
                     for (let l = 4; l >= 0; l--) {
                         layerCtx.shadowBlur = settings.glow + l * 18;
                         layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
                         layerCtx.lineWidth = width + l * 3;
-                        layerCtx.strokeStyle = settings.color;
                         layerCtx.beginPath();
                         layerCtx.moveTo(p1[0], p1[1]);
                         layerCtx.lineTo(p2[0], p2[1]);
@@ -310,7 +324,6 @@
                     const hue = (Date.now() / 22 + settings.hueShift + i*35) % 360;
                     layerCtx.strokeStyle = `hsla(${hue}, 98%, 72%, ${settings.alpha})`;
                     layerCtx.shadowBlur = settings.glow + 18;
-                    layerCtx.lineWidth = width;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else if (settings.effect === 'fire') {
                     layerCtx.shadowBlur = settings.glow + 32;
@@ -318,22 +331,9 @@
                     layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
                     layerCtx.globalAlpha = settings.alpha * 0.95;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'starburst') {
-                    layerCtx.shadowBlur = 35;
-                    layerCtx.strokeStyle = '#ffffff';
-                    layerCtx.lineWidth = width * 0.6;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'smoke') {
-                    layerCtx.shadowBlur = 55;
-                    layerCtx.globalAlpha = 0.42;
-                    layerCtx.strokeStyle = settings.color;
-                    layerCtx.lineWidth = width * 3.2;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
-                    layerCtx.strokeStyle = settings.color;
                     layerCtx.globalAlpha = settings.alpha;
-                    layerCtx.lineWidth = width;
                     layerCtx.beginPath();
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
@@ -477,6 +477,26 @@
                 saveState();
             };
 
+            document.getElementById('copySelectionBtn').onclick = () => {
+                if (!selectionRect) return;
+                const temp = document.createElement('canvas');
+                temp.width = selectionRect.w;
+                temp.height = selectionRect.h;
+                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
+                pastedImage = temp;
+                pastedX = selectionRect.x + 50;
+                pastedY = selectionRect.y + 50;
+                document.getElementById('selectionControls').style.display = 'none';
+                renderAllLayers();
+            };
+
+            document.getElementById('retrySelectionBtn').onclick = () => {
+                selectionMode = true;
+                selectionRect = null;
+                document.getElementById('selectionControls').style.display = 'none';
+                renderAllLayers();
+            };
+
             document.getElementById('newBtn').onclick = () => {
                 if (confirm('Start new drawing?')) {
                     layers = [createNewLayer("Background")];
@@ -512,7 +532,8 @@
                 div.draggable = true;
                 div.innerHTML = `
                     <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
-                    <span style="flex:1">${layer.name}</span>
+                    <span style="flex:1" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">${layer.name}</span>
+                    <span class="rename-layer" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">✏️</span>
                     <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
                     <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
                 `;
@@ -533,6 +554,14 @@
                 });
                 container.appendChild(div);
             });
+        }
+
+        function renameLayer(i) {
+            const newName = prompt("Rename layer:", layers[i].name);
+            if (newName && newName.trim() !== "") {
+                layers[i].name = newName.trim();
+                renderLayersList();
+            }
         }
 
         function toggleLayerVisibility(i) {
