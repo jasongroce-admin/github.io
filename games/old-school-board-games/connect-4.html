@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <title>Connect 4</title>
+    <title>4 Circles</title>
     <link rel="stylesheet" href="../../assets/css/site.css">
     <style>
       :root {
@@ -18,12 +18,6 @@
         display: grid;
         gap: 1rem;
         align-items: start;
-      }
-
-      .board-column {
-        display: grid;
-        gap: 0.9rem;
-        justify-items: center;
       }
 
       .turn-strip {
@@ -82,6 +76,12 @@
         color: #fff;
         font-weight: 700;
         padding: 0.5rem 0;
+        transition: all 0.2s;
+      }
+
+      .drop-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
       }
 
       .drop-btn:disabled {
@@ -104,6 +104,7 @@
         border-radius: 50%;
         border: 0;
         background: radial-gradient(circle at 35% 30%, #fefefe, #d6d8e7 70%, #c0c7de);
+        transition: transform 0.15s;
       }
 
       .slot.red {
@@ -145,16 +146,6 @@
         align-items: center;
       }
 
-      .mini-rules {
-        margin: 0;
-        padding-left: 1rem;
-        color: var(--muted);
-      }
-
-      .mini-rules li + li {
-        margin-top: 0.35rem;
-      }
-
       @media (min-width: 980px) and (orientation: landscape) {
         .content {
           width: min(1160px, 96vw);
@@ -177,24 +168,24 @@
         <div class="game-shell">
           <div class="board-column">
             <div>
-              <h1>Connect 4</h1>
-              <p class="subtitle">The board stays centered while the controls slide to the side on wider landscape screens.</p>
+              <h1>4 Circles</h1>
+              <p class="subtitle">Classic connect-four gameplay with polished visuals and smarter AI.</p>
             </div>
 
             <div class="turn-strip" aria-label="Turn tracker">
               <div class="turn-tile player active" id="playerTile">
                 <span>You</span>
-                <strong>Red discs</strong>
+                <strong>Red circles</strong>
               </div>
               <div class="turn-tile cpu" id="cpuTile">
                 <span>Computer</span>
-                <strong>Gold discs</strong>
+                <strong>Gold circles</strong>
               </div>
             </div>
 
             <div class="board-wrap">
               <div class="drop-row" id="dropRow" aria-label="Drop controls"></div>
-              <div class="board" id="board" aria-label="Connect 4 board"></div>
+              <div class="board" id="board" aria-label="4 Circles board"></div>
             </div>
           </div>
 
@@ -210,15 +201,15 @@
                 </select>
                 <button class="btn" id="resetBtn" type="button">New Round</button>
               </div>
-              <div class="card status" id="status">Your move. Drop a red disc into any open column.</div>
+              <div class="card status" id="status">Your move. Drop a red circle into any open column.</div>
             </div>
 
             <div class="card hud-card">
               <h3>How It Plays</h3>
               <ul class="mini-rules">
-                <li>You always play first as red.</li>
-                <li>Medium blocks immediate wins and leans toward stronger columns.</li>
-                <li>Hard looks ahead with a deeper search before answering.</li>
+                <li>You play first as red.</li>
+                <li>Medium blocks immediate wins and prefers strong columns.</li>
+                <li>Hard uses deeper lookahead (minimax) for stronger play.</li>
               </ul>
             </div>
 
@@ -248,11 +239,12 @@
       }
 
       function cloneGrid(source) {
-        return source.map((row) => row.slice());
+        return source.map(row => row.slice());
       }
 
       function openColumns(state) {
-        return Array.from({ length: COLS }, (_, col) => col).filter((col) => !state[0][col]);
+        return Array.from({ length: COLS }, (_, col) => col)
+          .filter(col => !state[0][col]);
       }
 
       function setTurnTiles() {
@@ -261,7 +253,7 @@
       }
 
       function findLandingRow(state, col) {
-        for (let row = ROWS - 1; row >= 0; row -= 1) {
+        for (let row = ROWS - 1; row >= 0; row--) {
           if (!state[row][col]) return row;
         }
         return -1;
@@ -275,7 +267,7 @@
             let r = row + dr * sign;
             let c = col + dc * sign;
             while (state[r]?.[c] === piece) {
-              count += 1;
+              count++;
               r += dr * sign;
               c += dc * sign;
             }
@@ -293,55 +285,59 @@
       }
 
       function lineScore(windowValues) {
-        const cpuCount = windowValues.filter((value) => value === "Y").length;
-        const playerCount = windowValues.filter((value) => value === "R").length;
-        const emptyCount = windowValues.filter((value) => !value).length;
+        const cpuCount = windowValues.filter(v => v === "Y").length;
+        const playerCount = windowValues.filter(v => v === "R").length;
+        const emptyCount = windowValues.filter(v => !v).length;
 
         if (cpuCount === 4) return 1000;
-        if (cpuCount === 3 && emptyCount === 1) return 18;
-        if (cpuCount === 2 && emptyCount === 2) return 5;
-        if (playerCount === 3 && emptyCount === 1) return -24;
-        if (playerCount === 2 && emptyCount === 2) return -6;
+        if (cpuCount === 3 && emptyCount === 1) return 80;
+        if (cpuCount === 2 && emptyCount === 2) return 10;
+        if (playerCount === 3 && emptyCount === 1) return -90;
+        if (playerCount === 2 && emptyCount === 2) return -12;
         return 0;
       }
 
       function evaluate(state) {
         let score = 0;
-        const centerColumn = state.map((row) => row[3]);
-        score += centerColumn.filter((value) => value === "Y").length * 5;
-        score -= centerColumn.filter((value) => value === "R").length * 5;
+        // Center column bonus
+        const center = state.map(row => row[3]);
+        score += center.filter(v => v === "Y").length * 6;
+        score -= center.filter(v => v === "R").length * 6;
 
-        for (let row = 0; row < ROWS; row += 1) {
-          for (let col = 0; col < COLS - 3; col += 1) {
-            score += lineScore([state[row][col], state[row][col + 1], state[row][col + 2], state[row][col + 3]]);
+        // Horizontal
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS - 3; c++) {
+            score += lineScore([state[r][c], state[r][c+1], state[r][c+2], state[r][c+3]]);
           }
         }
-        for (let row = 0; row < ROWS - 3; row += 1) {
-          for (let col = 0; col < COLS; col += 1) {
-            score += lineScore([state[row][col], state[row + 1][col], state[row + 2][col], state[row + 3][col]]);
+        // Vertical
+        for (let r = 0; r < ROWS - 3; r++) {
+          for (let c = 0; c < COLS; c++) {
+            score += lineScore([state[r][c], state[r+1][c], state[r+2][c], state[r+3][c]]);
           }
         }
-        for (let row = 0; row < ROWS - 3; row += 1) {
-          for (let col = 0; col < COLS - 3; col += 1) {
-            score += lineScore([state[row][col], state[row + 1][col + 1], state[row + 2][col + 2], state[row + 3][col + 3]]);
+        // Diagonals
+        for (let r = 0; r < ROWS - 3; r++) {
+          for (let c = 0; c < COLS - 3; c++) {
+            score += lineScore([state[r][c], state[r+1][c+1], state[r+2][c+2], state[r+3][c+3]]);
           }
         }
-        for (let row = 3; row < ROWS; row += 1) {
-          for (let col = 0; col < COLS - 3; col += 1) {
-            score += lineScore([state[row][col], state[row - 1][col + 1], state[row - 2][col + 2], state[row - 3][col + 3]]);
+        for (let r = 3; r < ROWS; r++) {
+          for (let c = 0; c < COLS - 3; c++) {
+            score += lineScore([state[r][c], state[r-1][c+1], state[r-2][c+2], state[r-3][c+3]]);
           }
         }
         return score;
       }
 
       function checkTerminal(state) {
-        for (let row = 0; row < ROWS; row += 1) {
-          for (let col = 0; col < COLS; col += 1) {
-            const piece = state[row][col];
-            if (piece && winnerAt(state, row, col, piece)) return piece;
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const p = state[r][c];
+            if (p && winnerAt(state, r, c, p)) return p;
           }
         }
-        if (!openColumns(state).length) return "draw";
+        if (openColumns(state).length === 0) return "draw";
         return null;
       }
 
@@ -352,29 +348,30 @@
         if (outcome === "draw" || depth === 0) return { score: evaluate(state) };
 
         const moves = openColumns(state);
+
         if (maximizing) {
           let best = { score: -Infinity, column: moves[0] };
           for (const col of moves) {
             const next = cloneGrid(state);
             applyMove(next, col, "Y");
-            const result = minimax(next, depth - 1, false, alpha, beta);
-            if (result.score > best.score) best = { score: result.score, column: col };
-            alpha = Math.max(alpha, result.score);
+            const res = minimax(next, depth - 1, false, alpha, beta);
+            if (res.score > best.score) best = { score: res.score, column: col };
+            alpha = Math.max(alpha, res.score);
+            if (beta <= alpha) break;
+          }
+          return best;
+        } else {
+          let best = { score: Infinity, column: moves[0] };
+          for (const col of moves) {
+            const next = cloneGrid(state);
+            applyMove(next, col, "R");
+            const res = minimax(next, depth - 1, true, alpha, beta);
+            if (res.score < best.score) best = { score: res.score, column: col };
+            beta = Math.min(beta, res.score);
             if (beta <= alpha) break;
           }
           return best;
         }
-
-        let best = { score: Infinity, column: moves[0] };
-        for (const col of moves) {
-          const next = cloneGrid(state);
-          applyMove(next, col, "R");
-          const result = minimax(next, depth - 1, true, alpha, beta);
-          if (result.score < best.score) best = { score: result.score, column: col };
-          beta = Math.min(beta, result.score);
-          if (beta <= alpha) break;
-        }
-        return best;
       }
 
       function immediateMove(piece) {
@@ -389,21 +386,24 @@
       function cpuChoice() {
         const difficulty = difficultyEl.value;
         const options = openColumns(grid);
+
         if (difficulty === "easy") {
           return options[Math.floor(Math.random() * options.length)];
         }
 
-        const winning = immediateMove("Y");
-        if (winning !== null) return winning;
+        // Check for immediate win or block
+        let move = immediateMove("Y");
+        if (move !== null) return move;
 
-        const blocking = immediateMove("R");
-        if (blocking !== null) return blocking;
+        move = immediateMove("R");
+        if (move !== null) return move;
 
         if (difficulty === "medium") {
-          const priority = [3, 2, 4, 1, 5, 0, 6];
-          return priority.find((col) => options.includes(col));
+          const priority = [3, 2, 4, 1, 5, 0, 6]; // center first
+          return priority.find(col => options.includes(col)) ?? options[0];
         }
 
+        // Hard: minimax with depth 5
         return minimax(cloneGrid(grid), 5, true, -Infinity, Infinity).column;
       }
 
@@ -412,22 +412,21 @@
         boardEl.innerHTML = "";
         const available = openColumns(grid);
 
-        for (let col = 0; col < COLS; col += 1) {
-          const button = document.createElement("button");
-          button.className = "drop-btn";
-          button.type = "button";
-          button.textContent = "Drop";
-          button.disabled = roundOver || current !== "R" || !available.includes(col);
-          button.addEventListener("click", () => playerMove(col));
-          dropRowEl.appendChild(button);
+        // Drop buttons
+        for (let col = 0; col < COLS; col++) {
+          const btn = document.createElement("button");
+          btn.className = "drop-btn";
+          btn.textContent = "Drop";
+          btn.disabled = roundOver || current !== "R" || !available.includes(col);
+          btn.addEventListener("click", () => playerMove(col));
+          dropRowEl.appendChild(btn);
         }
 
-        for (let row = 0; row < ROWS; row += 1) {
-          for (let col = 0; col < COLS; col += 1) {
+        // Board slots
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
             const slot = document.createElement("div");
-            slot.className = "slot";
-            if (grid[row][col] === "R") slot.classList.add("red");
-            if (grid[row][col] === "Y") slot.classList.add("yellow");
+            slot.className = `slot ${grid[r][c] === "R" ? "red" : grid[r][c] === "Y" ? "yellow" : ""}`;
             boardEl.appendChild(slot);
           }
         }
@@ -436,11 +435,11 @@
       function endRound(result) {
         roundOver = true;
         if (result === "R") {
-          statusEl.textContent = "You connected four. Strong line.";
+          statusEl.textContent = "You connected four! Excellent play.";
         } else if (result === "Y") {
-          statusEl.textContent = "Computer connected four. Try challenging the center sooner.";
+          statusEl.textContent = "Computer connected four. Better luck next round.";
         } else {
-          statusEl.textContent = "Board is full. This round ends in a draw.";
+          statusEl.textContent = "The board is full — this round is a draw.";
         }
         setTurnTiles();
         renderBoard();
@@ -451,21 +450,26 @@
           endRound(piece);
           return;
         }
-        if (!openColumns(grid).length) {
+        if (openColumns(grid).length === 0) {
           endRound("draw");
           return;
         }
+
         current = current === "R" ? "Y" : "R";
-        statusEl.textContent = current === "R" ? "Your move. Choose a column." : "Computer evaluating the board...";
+        statusEl.textContent = current === "R" 
+          ? "Your move. Drop a red circle." 
+          : "Computer is thinking...";
+        
         setTurnTiles();
         renderBoard();
+
         if (current === "Y") {
-          window.setTimeout(() => {
+          setTimeout(() => {
             if (roundOver) return;
             const col = cpuChoice();
             const row = applyMove(grid, col, "Y");
             completeTurn(row, col, "Y");
-          }, 350);
+          }, 380);
         }
       }
 
@@ -480,7 +484,7 @@
         grid = createGrid();
         current = "R";
         roundOver = false;
-        statusEl.textContent = "Your move. Drop a red disc into any open column.";
+        statusEl.textContent = "Your move. Drop a red circle into any open column.";
         setTurnTiles();
         renderBoard();
       }
