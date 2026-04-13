@@ -104,18 +104,6 @@
         .layer-item.active { border:2px solid var(--accent); }
         .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
         .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
-
-        /* Anchor points for pasted/duplicated selection */
-        .anchor {
-            position: absolute;
-            width: 14px; height: 14px;
-            background: #66ccff;
-            border: 3px solid #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #66ccff;
-            z-index: 400;
-            cursor: nwse-resize;
-        }
     </style>
 </head>
 <body>
@@ -194,16 +182,12 @@
                         <option value="none">None</option>
                         <option value="neon">Neon Glow</option>
                         <option value="rainbow">Rainbow Rope</option>
-                        <option value="prism">Prism Shift</option>
-                        <option value="spark">Spark Burst</option>
                         <option value="fire">Fire Flicker</option>
+                        <option value="laser">Laser Beam</option>
                         <option value="starburst">Starburst</option>
-                        <option value="smoke">Smoke Drift</option>
-                        <option value="comet">Comet Trail</option>
-                        <option value="velvet">Velvet Ink</option>
                         <option value="leopard">Leopard Spots</option>
                         <option value="stripes">Stripes</option>
-                        <option value="laser">Laser Beam</option>
+                        <option value="comet">Comet Trail</option>
                     </select>
                 </div>
             </div>
@@ -230,7 +214,7 @@
                 </div>
             </div>
             <div id="arrowMenu" class="panel" style="display:none;">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">Arrow Style <span style="margin-left:auto">▼</span></h3>
+                <h3>Arrow Style</h3>
                 <div class="content tools-grid">
                     <button class="tool-btn active" data-arrow="simple">→ Simple</button>
                     <button class="tool-btn" data-arrow="double">↔ Double</button>
@@ -244,12 +228,6 @@
                     <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
                     <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
                 </div>
-            </div>
-            <div id="selectionControls" class="panel" style="display:none;">
-                <h3>🔲 Selection</h3>
-                <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
-                <button id="duplicateSelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📑 Duplicate</button>
-                <button id="retrySelectionBtn" class="btn" style="width:100%;">🔄 Retry Selection</button>
             </div>
         </div>
     </div>
@@ -269,22 +247,12 @@
         let currentTool = 'pencil';
         let currentTip = 'med';
         let currentArrowStyle = 'simple';
-        let selectionMode = false;
-        let selectionStart = null;
-        let selectionRect = null;
-        let pastedImage = null;
-        let pastedX = 200, pastedY = 200, pastedRotation = 0, pastedScale = 1;
-        let isDraggingPasted = false;
-        let dragOffsetX = 0, dragOffsetY = 0;
-        let activeAnchor = null;
-        let anchors = [];
+        let startPos = null;
 
         let settings = {
             size: 24, alpha: 0.94, flow: 0.96, glow: 0,
             hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
         };
-
-        const presetColors = ['#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff','#ff8800','#88ff00','#0088ff','#ff0088','#8800ff','#ffcc00','#00ccff','#cc00ff','#66ccff','#ff66cc','#ccff66','#66ffcc','#ffcc66'];
 
         function loadSettings() {
             const saved = localStorage.getItem('magicProSettings');
@@ -320,34 +288,6 @@
                 }
             });
             ctx.globalAlpha = 1;
-
-            if (pastedImage) {
-                ctx.save();
-                ctx.translate(pastedX + pastedImage.width/2 * pastedScale, pastedY + pastedImage.height/2 * pastedScale);
-                ctx.rotate(pastedRotation * Math.PI / 180);
-                ctx.scale(pastedScale, pastedScale);
-                ctx.drawImage(pastedImage, -pastedImage.width/2, -pastedImage.height/2);
-                ctx.restore();
-
-                // Draw anchor points
-                anchors = [
-                    {x: pastedX, y: pastedY},
-                    {x: pastedX + pastedImage.width * pastedScale, y: pastedY},
-                    {x: pastedX, y: pastedY + pastedImage.height * pastedScale},
-                    {x: pastedX + pastedImage.width * pastedScale, y: pastedY + pastedImage.height * pastedScale}
-                ];
-                anchors.forEach((a, i) => {
-                    ctx.save();
-                    ctx.fillStyle = '#66ccff';
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.restore();
-                });
-            }
         }
 
         function saveState() {
@@ -360,6 +300,55 @@
             history.push(state);
             if (history.length > 30) history.shift();
             redoStack = [];
+        }
+
+        function drawArrow(ctx, from, to, style, width, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = settings.glow;
+
+            // shaft
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const headLen = width * 2.5;
+
+            // arrowhead
+            if (style === 'simple' || style === 'thick') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+            } else if (style === 'double') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+                // reverse head
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(from.x + headLen * Math.cos(angle - Math.PI / 6), from.y + headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(from.x + headLen * Math.cos(angle + Math.PI / 6), from.y + headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+            } else if (style === 'fancy') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 4), to.y - headLen * Math.sin(angle - Math.PI / 4));
+                ctx.lineTo(to.x - headLen * 0.6 * Math.cos(angle), to.y - headLen * 0.6 * Math.sin(angle));
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 4), to.y - headLen * Math.sin(angle + Math.PI / 4));
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
         }
 
         function drawStroke(from, to) {
@@ -379,79 +368,86 @@
                 return;
             }
 
-            if (currentTool === 'select' || currentTool === 'arrow') return;
+            if (currentTool === 'arrow') {
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(layerCtx, from, to, currentArrowStyle, width, color);
+                renderAllLayers();
+                return;
+            }
 
+            // normal brush stroke
             const symFrom = getSymmetryPoints(from.x, from.y);
             const symTo = getSymmetryPoints(to.x, to.y);
             let width = settings.size * settings.flow;
 
-            if (currentTool === 'pencil') {
-                width *= 0.7;
-                layerCtx.strokeStyle = '#555555';
-            } else if (currentTool === 'pen') {
-                width *= 0.9;
-                layerCtx.strokeStyle = '#111111';
-            } else if (currentTool === 'marker') {
-                width *= 1.35;
-            }
-
+            if (currentTool === 'pencil') width *= 0.7;
+            if (currentTool === 'pen') width *= 0.9;
+            if (currentTool === 'marker') width *= 1.35;
             if (currentTip === 'fine') width *= 0.55;
             if (currentTip === 'broad') width *= 1.9;
-            if (currentTip === 'chisel') {
-                width *= 1.45;
-                layerCtx.lineCap = 'butt';
-            } else {
-                layerCtx.lineCap = 'round';
-            }
+            if (currentTip === 'chisel') width *= 1.45;
+
+            layerCtx.lineWidth = width;
+            layerCtx.globalAlpha = settings.alpha;
+            layerCtx.shadowBlur = settings.glow;
+            layerCtx.lineCap = currentTip === 'chisel' ? 'butt' : 'round';
+            layerCtx.lineJoin = 'round';
 
             symFrom.forEach((p1, i) => {
                 const p2 = symTo[i % symTo.length];
-                layerCtx.lineJoin = 'round';
-                layerCtx.shadowBlur = settings.glow;
-                layerCtx.globalAlpha = settings.alpha;
-                layerCtx.lineWidth = width;
 
-                if (settings.effect === 'neon') {
-                    for (let l = 4; l >= 0; l--) {
-                        layerCtx.shadowBlur = settings.glow + l * 18;
-                        layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
-                        layerCtx.lineWidth = width + l * 3;
-                        layerCtx.beginPath();
-                        layerCtx.moveTo(p1[0], p1[1]);
-                        layerCtx.lineTo(p2[0], p2[1]);
-                        layerCtx.stroke();
-                    }
-                } else if (settings.effect === 'rainbow') {
-                    const hue = (Date.now() / 22 + settings.hueShift + i*35) % 360;
-                    layerCtx.strokeStyle = `hsla(${hue}, 98%, 72%, ${settings.alpha})`;
-                    layerCtx.shadowBlur = settings.glow + 18;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'fire') {
-                    layerCtx.shadowBlur = settings.glow + 32;
-                    layerCtx.strokeStyle = `hsl(${12 + Math.random()*35}, 100%, 68%)`;
-                    layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
-                    layerCtx.globalAlpha = settings.alpha * 0.95;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'starburst') {
-                    layerCtx.shadowBlur = 35;
-                    layerCtx.strokeStyle = '#ffffff';
-                    layerCtx.lineWidth = width * 0.6;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'smoke') {
-                    layerCtx.shadowBlur = 55;
-                    layerCtx.globalAlpha = 0.42;
+                if (settings.effect === 'none') {
                     layerCtx.strokeStyle = settings.color;
-                    layerCtx.lineWidth = width * 3.2;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else {
-                    layerCtx.strokeStyle = settings.color;
-                    layerCtx.shadowBlur = settings.glow;
-                    layerCtx.globalAlpha = settings.alpha;
-                    layerCtx.lineWidth = width;
                     layerCtx.beginPath();
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
                     layerCtx.stroke();
+                } else {
+                    // Effects override color completely
+                    if (settings.effect === 'neon') {
+                        for (let l = 4; l >= 0; l--) {
+                            layerCtx.shadowBlur = settings.glow + l * 18;
+                            layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
+                            layerCtx.lineWidth = width + l * 3;
+                            layerCtx.strokeStyle = '#66ccff';
+                            layerCtx.beginPath();
+                            layerCtx.moveTo(p1[0], p1[1]);
+                            layerCtx.lineTo(p2[0], p2[1]);
+                            layerCtx.stroke();
+                        }
+                    } else if (settings.effect === 'rainbow') {
+                        const hue = (Date.now() / 22 + i*35) % 360;
+                        layerCtx.strokeStyle = `hsla(${hue}, 98%, 72%, ${settings.alpha})`;
+                        layerCtx.shadowBlur = settings.glow + 18;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'fire') {
+                        layerCtx.strokeStyle = `hsl(${12 + Math.random()*35}, 100%, 68%)`;
+                        layerCtx.shadowBlur = settings.glow + 32;
+                        layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'laser') {
+                        layerCtx.strokeStyle = settings.color;
+                        layerCtx.shadowBlur = settings.glow + 60;
+                        layerCtx.lineWidth = width * 0.8;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'leopard') {
+                        layerCtx.strokeStyle = '#ffcc00';
+                        layerCtx.shadowBlur = settings.glow;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                        // simple spots
+                        layerCtx.fillStyle = '#000000';
+                        layerCtx.fillRect(p1[0]-3, p1[1]-3, 6, 6);
+                    } else if (settings.effect === 'stripes') {
+                        layerCtx.strokeStyle = '#ff0088';
+                        layerCtx.shadowBlur = 0;
+                        layerCtx.lineWidth = width * 0.6;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else {
+                        layerCtx.strokeStyle = '#ffffff';
+                        layerCtx.shadowBlur = settings.glow;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    }
                 }
             });
 
@@ -474,27 +470,9 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            if (pastedImage) {
-                for (let i = 0; i < anchors.length; i++) {
-                    const a = anchors[i];
-                    if (Math.hypot(x - a.x, y - a.y) < 20) {
-                        activeAnchor = i;
-                        return;
-                    }
-                }
-                const centerX = pastedX + pastedImage.width/2 * pastedScale;
-                const centerY = pastedY + pastedImage.height/2 * pastedScale;
-                if (Math.abs(x - centerX) < pastedImage.width * pastedScale / 2 + 40 && Math.abs(y - centerY) < pastedImage.height * pastedScale / 2 + 40) {
-                    isDraggingPasted = true;
-                    dragOffsetX = x - pastedX;
-                    dragOffsetY = y - pastedY;
-                    return;
-                }
-            }
-
-            if (currentTool === 'select') {
-                selectionMode = true;
-                selectionStart = {x, y};
+            if (currentTool === 'arrow') {
+                startPos = {x, y};
+                saveState();
                 return;
             }
 
@@ -508,31 +486,12 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            if (activeAnchor !== null && pastedImage) {
-                if (activeAnchor === 0) { pastedX = x; pastedY = y; }
-                else if (activeAnchor === 1) pastedScale = Math.max(0.2, (x - pastedX) / pastedImage.width);
-                else if (activeAnchor === 2) pastedScale = Math.max(0.2, (y - pastedY) / pastedImage.height);
-                else if (activeAnchor === 3) pastedScale = Math.max(0.2, Math.hypot(x - pastedX, y - pastedY) / (pastedImage.width * 0.7));
+            if (currentTool === 'arrow' && startPos) {
                 renderAllLayers();
-                return;
-            }
-
-            if (isDraggingPasted && pastedImage) {
-                pastedX = x - dragOffsetX;
-                pastedY = y - dragOffsetY;
-                renderAllLayers();
-                return;
-            }
-
-            if (currentTool === 'select' && selectionMode && selectionStart) {
-                selectionRect = {x: Math.min(selectionStart.x, x), y: Math.min(selectionStart.y, y), w: Math.abs(x - selectionStart.x), h: Math.abs(y - selectionStart.y)};
-                renderAllLayers();
-                ctx.save();
-                ctx.setLineDash([4,4]);
-                ctx.strokeStyle = '#66ccff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
-                ctx.restore();
+                const tempCtx = ctx;
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(tempCtx, startPos, {x, y}, currentArrowStyle, width, color);
                 return;
             }
 
@@ -541,18 +500,26 @@
             lastPos = {x, y};
         }
 
-        function pointerUp() {
+        function pointerUp(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'arrow' && startPos) {
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(layers[currentLayerIndex].ctx, startPos, {x, y}, currentArrowStyle, width, color);
+                renderAllLayers();
+                startPos = null;
+                saveState();
+                return;
+            }
+
             drawing = false;
             lastPos = null;
-            activeAnchor = null;
-            isDraggingPasted = false;
-            if (selectionMode) {
-                selectionMode = false;
-                if (selectionRect && selectionRect.w > 20 && selectionRect.h > 20) {
-                    document.getElementById('selectionControls').style.display = 'block';
-                }
-            }
         }
+
+        // ... (rest of the script is identical to the previous version: loadImageAsLayer, createColorPalette, attachUI, renderLayersList, renameLayer, toggleLayerVisibility, deleteLayer, animate, init)
 
         function loadImageAsLayer(file) {
             const img = new Image();
@@ -573,10 +540,7 @@
                 const swatch = document.createElement('div');
                 swatch.className = 'color-swatch';
                 swatch.style.backgroundColor = hex;
-                swatch.onclick = () => {
-                    settings.color = hex;
-                    document.getElementById('color').value = hex;
-                };
+                swatch.onclick = () => { settings.color = hex; document.getElementById('color').value = hex; };
                 palette.appendChild(swatch);
             });
         }
@@ -590,29 +554,26 @@
                     if (btn.dataset.tip) currentTip = btn.dataset.tip;
                     if (btn.dataset.arrow) currentArrowStyle = btn.dataset.arrow;
                     document.getElementById('arrowMenu').style.display = (currentTool === 'arrow') ? 'block' : 'none';
+                    saveSettings();
                 });
             });
 
-            document.getElementById('color').addEventListener('input', e => settings.color = e.target.value);
+            document.getElementById('color').addEventListener('input', e => { settings.color = e.target.value; saveSettings(); });
 
+            // camera, upload, drag/drop, paste listeners (same as before)
             document.getElementById('cameraBtn').onclick = () => {
-                const input = document.createElement('input');
-                input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
                 input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
                 input.click();
             };
             document.getElementById('uploadBtn').onclick = () => {
-                const input = document.createElement('input');
-                input.type = 'file'; input.accept = 'image/*';
+                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
                 input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
                 input.click();
             };
 
             canvas.addEventListener('dragover', e => e.preventDefault());
-            canvas.addEventListener('drop', e => {
-                e.preventDefault();
-                if (e.dataTransfer.files[0]?.type.startsWith('image/')) loadImageAsLayer(e.dataTransfer.files[0]);
-            });
+            canvas.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]?.type.startsWith('image/')) loadImageAsLayer(e.dataTransfer.files[0]); });
             document.addEventListener('paste', e => {
                 const item = e.clipboardData.items[0];
                 if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
@@ -627,46 +588,6 @@
                 renderLayersList();
                 renderAllLayers();
                 saveState();
-            };
-
-            document.getElementById('copySelectionBtn').onclick = () => {
-                if (!selectionRect) return;
-                const temp = document.createElement('canvas');
-                temp.width = selectionRect.w;
-                temp.height = selectionRect.h;
-                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
-                pastedImage = temp;
-                pastedX = selectionRect.x + 50;
-                pastedY = selectionRect.y + 50;
-                document.getElementById('selectionControls').style.display = 'none';
-                renderAllLayers();
-            };
-
-            document.getElementById('duplicateSelectionBtn').onclick = () => {
-                if (!selectionRect) return;
-                const temp = document.createElement('canvas');
-                temp.width = selectionRect.w;
-                temp.height = selectionRect.h;
-                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
-                const newLayer = createNewLayer("Duplicate");
-                newLayer.ctx.drawImage(temp, 0, 0);
-                layers.push(newLayer);
-                currentLayerIndex = layers.length - 1;
-                renderLayersList();
-                renderAllLayers();
-                saveState();
-                document.getElementById('selectionControls').style.display = 'none';
-                pastedImage = temp;
-                pastedX = selectionRect.x + 50;
-                pastedY = selectionRect.y + 50;
-                renderAllLayers();
-            };
-
-            document.getElementById('retrySelectionBtn').onclick = () => {
-                selectionMode = true;
-                selectionRect = null;
-                document.getElementById('selectionControls').style.display = 'none';
-                renderAllLayers();
             };
 
             document.getElementById('newBtn').onclick = () => {
@@ -790,6 +711,7 @@
         }
 
         function init() {
+            loadSettings();
             if (window.innerWidth < 900 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                 sidebar.classList.add('collapsed');
                 inspector.classList.add('collapsed');
