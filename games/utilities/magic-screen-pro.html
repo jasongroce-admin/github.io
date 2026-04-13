@@ -29,14 +29,14 @@
         .btn:hover { background:#112b44; border-color:var(--accent); }
         .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
-        /* Collapsible Sidebars */
+        /* Collapsible Sidebars - No center line */
         .sidebar, .inspector {
             background:#0b1b30f2; border:1px solid #335; padding:12px;
             overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
             transition: width 0.3s ease, padding 0.3s ease;
         }
-        .sidebar { width: 280px; border-right:1px solid #335; }
-        .inspector { width: 270px; border-left:1px solid #335; }
+        .sidebar { width: 280px; border-right: none; }
+        .inspector { width: 270px; border-left: none; }
         .sidebar.collapsed, .inspector.collapsed { width: 52px; padding: 12px 6px; }
         .sidebar.collapsed .panel h3 span, .sidebar.collapsed .content, .inspector.collapsed .content { display: none; }
         .sidebar.collapsed .panel h3, .inspector.collapsed .panel h3 { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); height: 180px; }
@@ -173,7 +173,7 @@
             </div>
         </div>
 
-        <!-- CANVAS AREA -->
+        <!-- CANVAS AREA - Full width when sidebars collapsed -->
         <div class="canvas-container" id="canvasContainer">
             <div class="canvasWrap" id="canvasWrap">
                 <canvas id="board"></canvas>
@@ -238,11 +238,6 @@
             size: 24, alpha: 0.94, flow: 0.96, glow: 38,
             hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
         };
-
-        // GPU Particles
-        let particlesData = [];
-        const MAX_PARTICLES = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 6500 : 22000;
-        let lastEmit = 0;
 
         const presetColors = [
             '#ffffff','#ff0000','#00ff00','#0000ff','#ffff00',
@@ -497,7 +492,6 @@
         }
 
         function attachUI() {
-            // Tool buttons
             document.querySelectorAll('.tool-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -508,12 +502,10 @@
                 });
             });
 
-            // Color picker sync
             document.getElementById('color').addEventListener('input', e => {
                 settings.color = e.target.value;
             });
 
-            // Camera & Upload
             document.getElementById('cameraBtn').onclick = () => {
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
@@ -527,7 +519,6 @@
                 input.click();
             };
 
-            // Drag & Drop + Paste
             canvas.addEventListener('dragover', e => e.preventDefault());
             canvas.addEventListener('drop', e => {
                 e.preventDefault();
@@ -538,11 +529,9 @@
                 if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
             });
 
-            // Sidebar toggles
             sidebar.addEventListener('click', e => { if (e.target.closest('h3')) sidebar.classList.toggle('collapsed'); });
             inspector.addEventListener('click', e => { if (e.target.closest('h3')) inspector.classList.toggle('collapsed'); });
 
-            // Layer buttons
             document.getElementById('addLayerBtn').onclick = () => {
                 layers.push(createNewLayer(`Layer ${layers.length + 1}`));
                 currentLayerIndex = layers.length - 1;
@@ -551,7 +540,6 @@
                 saveState();
             };
 
-            // Other buttons
             document.getElementById('newBtn').onclick = () => {
                 if (confirm('Start new drawing?')) {
                     layers = [createNewLayer("Background")];
