@@ -29,7 +29,7 @@
         .btn:hover { background:#112b44; border-color:var(--accent); }
         .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
-        /* Collapsible Sidebars - No center line */
+        /* Collapsible Sidebars - clean layout, no center line */
         .sidebar, .inspector {
             background:#0b1b30f2; border:1px solid #335; padding:12px;
             overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
@@ -80,7 +80,7 @@
         .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
         .layer-item.active { border:2px solid var(--accent); }
         .delete-layer { margin-left:auto; color:#ff6666; cursor:pointer; font-size:1.1rem; }
-        .copyright { position:fixed; bottom:10px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
+        .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
     </style>
 </head>
 <body>
@@ -100,19 +100,17 @@
     </div>
 
     <div class="main">
-        <!-- LEFT SIDEBAR -->
+        <!-- LEFT SIDEBAR (Tools + Brush + Color Palette) -->
         <div class="sidebar" id="sidebar">
             <div class="panel">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools <span style="margin-left:auto">▼</span></h3>
                 <div class="content tools-grid">
-                    <button class="tool-btn active" data-tool="brush" data-tip="soft">🖌️ Soft</button>
-                    <button class="tool-btn" data-tool="brush" data-tip="hard">🖌️ Hard</button>
-                    <button class="tool-btn" data-tool="brush" data-tip="textured">🖌️ Texture</button>
-                    <button class="tool-btn" data-tool="brush" data-tip="watercolor">🎨 Water</button>
-                    <button class="tool-btn" data-tool="marker" data-tip="round">🖍️ Round</button>
-                    <button class="tool-btn" data-tool="marker" data-tip="chisel">🖍️ Chisel</button>
-                    <button class="tool-btn" data-tool="marker" data-tip="calligraphy">🖋️ Callig</button>
-                    <button class="tool-btn" data-tool="airbrush">🌫️ Air</button>
+                    <button class="tool-btn active" data-tool="pencil">✏️ Pencil</button>
+                    <button class="tool-btn" data-tool="pen">🖊️ Pen</button>
+                    <button class="tool-btn" data-tool="marker">🖍️ Marker</button>
+                    <button class="tool-btn" data-tool="fine">Fine Tip</button>
+                    <button class="tool-btn" data-tool="broad">Broad Tip</button>
+                    <button class="tool-btn" data-tool="chisel">Chisel Tip</button>
                     <button class="tool-btn" data-tool="eraser">🧼 Erase</button>
                     <button class="tool-btn" data-tool="select">🔲 Select</button>
                     <button class="tool-btn" data-tool="arrow">➜ Arrow</button>
@@ -127,6 +125,28 @@
                     <div class="control"><label>Glow</label><input id="glow" type="range" min="0" max="130" value="38"><input id="glowNum" type="number" value="38"></div>
                 </div>
             </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌟 Color <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
+                    <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
+                    <div style="margin-top:8px;">
+                        <small style="opacity:0.8;">Quick Palette</small>
+                        <div class="color-palette" id="colorPalette"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CANVAS -->
+        <div class="canvas-container" id="canvasContainer">
+            <div class="canvasWrap" id="canvasWrap">
+                <canvas id="board"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT INSPECTOR (Effects + Symmetry + Layers) -->
+        <div class="inspector" id="inspector">
             <div class="panel">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌈 Effect <span style="margin-left:auto">▼</span></h3>
                 <div class="content">
@@ -159,30 +179,6 @@
                 </div>
             </div>
             <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌟 Color <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
-                    <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
-                    
-                    <!-- Color Palette Picker -->
-                    <div style="margin-top:8px;">
-                        <small style="opacity:0.8;">Quick Palette</small>
-                        <div class="color-palette" id="colorPalette"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CANVAS AREA - Full width when sidebars collapsed -->
-        <div class="canvas-container" id="canvasContainer">
-            <div class="canvasWrap" id="canvasWrap">
-                <canvas id="board"></canvas>
-            </div>
-        </div>
-
-        <!-- RIGHT INSPECTOR -->
-        <div class="inspector" id="inspector">
-            <div class="panel">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">📑 Layers <span style="margin-left:auto">▼</span></h3>
                 <div class="content">
                     <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
@@ -193,23 +189,6 @@
                 <h3>🔲 Selection</h3>
                 <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
                 <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
-            </div>
-            <div id="transformControls" class="panel" style="display:none;">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">✏️ Transform <span style="margin-left:auto">▼</span></h3>
-                <div class="content" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-                    <button onclick="movePasted(-25,0)" class="btn">←</button>
-                    <button onclick="movePasted(25,0)" class="btn">→</button>
-                    <button onclick="movePasted(0,-25)" class="btn">↑</button>
-                    <button onclick="movePasted(0,25)" class="btn">↓</button>
-                    <button onclick="resizePasted(0.9)" class="btn">Shrink</button>
-                    <button onclick="resizePasted(1.1)" class="btn">Grow</button>
-                    <button onclick="rotatePasted(-15)" class="btn">↻ Left</button>
-                    <button onclick="rotatePasted(15)" class="btn">↻ Right</button>
-                    <button onclick="flipHorizontal()" class="btn">↔ H</button>
-                    <button onclick="flipVertical()" class="btn">↕ V</button>
-                    <button onclick="confirmPaste()" style="background:#22c55e;color:white;width:100%;">✅ Done</button>
-                    <button onclick="cancelPaste()" style="background:#ef4444;color:white;width:100%;">❌ Cancel</button>
-                </div>
             </div>
         </div>
     </div>
@@ -226,8 +205,8 @@
         let history = [], redoStack = [];
         let drawing = false;
         let lastPos = null;
-        let currentTool = 'brush';
-        let currentTip = 'soft';
+        let currentTool = 'pencil';
+        let currentTip = 'pencil';
         let selectionMode = false;
         let selectionStart = null;
         let selectionRect = null;
@@ -239,12 +218,7 @@
             hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
         };
 
-        const presetColors = [
-            '#ffffff','#ff0000','#00ff00','#0000ff','#ffff00',
-            '#ff00ff','#00ffff','#ff8800','#88ff00','#0088ff',
-            '#ff0088','#8800ff','#ffcc00','#00ccff','#cc00ff',
-            '#66ccff','#ff66cc','#ccff66','#66ffcc','#ffcc66'
-        ];
+        const presetColors = ['#ffffff','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff','#ff8800','#88ff00','#0088ff','#ff0088','#8800ff','#ffcc00','#00ccff','#cc00ff','#66ccff','#ff66cc','#ccff66','#66ffcc','#ffcc66'];
 
         function resize() {
             const rect = document.getElementById('canvasContainer').getBoundingClientRect();
@@ -293,46 +267,6 @@
             redoStack = [];
         }
 
-        function emitParticles(x, y, count = 8) {
-            if (Date.now() - lastEmit < 16) return;
-            lastEmit = Date.now();
-            const eff = settings.effect;
-            if (!['spark','fire','starburst','smoke'].includes(eff)) return;
-            for (let i = 0; i < count && particlesData.length < MAX_PARTICLES; i++) {
-                particlesData.push({
-                    x, y,
-                    vx: (Math.random()-0.5) * (eff==='smoke'?1.8:5.5),
-                    vy: (Math.random()-0.5) * (eff==='smoke'?-3.5:4.8),
-                    life: eff === 'starburst' ? 15 + Math.random()*20 : 25 + Math.random()*35,
-                    effect: eff
-                });
-            }
-        }
-
-        function updateParticles() {
-            const w = canvas.width / (window.devicePixelRatio || 1);
-            const h = canvas.height / (window.devicePixelRatio || 1);
-            for (let i = particlesData.length - 1; i >= 0; i--) {
-                const p = particlesData[i];
-                p.x += p.vx; p.y += p.vy; p.life--;
-                if (p.effect === 'smoke') p.vy -= 0.13;
-                if (p.effect === 'fire') { p.vy -= 0.22; p.vx *= 0.92; }
-                if (p.x < -80 || p.x > w+80 || p.y < -80 || p.y > h+80) p.life -= 5;
-                if (p.life <= 0) particlesData.splice(i, 1);
-            }
-        }
-
-        function getSymmetryPoints(x, y) {
-            const w = canvas.width / (window.devicePixelRatio || 1);
-            const h = canvas.height / (window.devicePixelRatio || 1);
-            let pts = [[x, y]];
-            const sym = settings.symmetry;
-            if (sym === 'mirror-x') pts.push([w - x, y]);
-            else if (sym === 'mirror-y') pts.push([x, h - y]);
-            else if (sym === 'quad') pts.push([w-x,y],[x,h-y],[w-x,h-y]);
-            return pts;
-        }
-
         function drawStroke(from, to, pressure = 1) {
             const activeLayer = layers[currentLayerIndex];
             if (!activeLayer) return;
@@ -341,7 +275,7 @@
             if (currentTool === 'eraser') {
                 layerCtx.globalCompositeOperation = 'destination-out';
                 layerCtx.shadowBlur = 0;
-                layerCtx.lineWidth = settings.size * 1.8;
+                layerCtx.lineWidth = settings.size * 2;
                 layerCtx.beginPath();
                 layerCtx.moveTo(from.x, from.y);
                 layerCtx.lineTo(to.x, to.y);
@@ -363,10 +297,10 @@
                 layerCtx.lineJoin = 'round';
 
                 if (settings.effect === 'neon') {
-                    for (let l = 5; l >= 0; l--) {
-                        layerCtx.shadowBlur = settings.glow + l * 22;
+                    for (let l = 4; l >= 0; l--) {
+                        layerCtx.shadowBlur = settings.glow + l * 18;
                         layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
-                        layerCtx.lineWidth = width + l * 4;
+                        layerCtx.lineWidth = width + l * 3;
                         layerCtx.strokeStyle = settings.color;
                         layerCtx.beginPath();
                         layerCtx.moveTo(p1[0], p1[1]);
@@ -408,10 +342,18 @@
                 }
             });
 
-            const dist = Math.hypot(to.x - from.x, to.y - from.y);
-            if (dist > 12) emitParticles((from.x + to.x)/2, (from.y + to.y)/2, 8);
-
             renderAllLayers();
+        }
+
+        function getSymmetryPoints(x, y) {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            let pts = [[x, y]];
+            const sym = settings.symmetry;
+            if (sym === 'mirror-x') pts.push([w - x, y]);
+            else if (sym === 'mirror-y') pts.push([x, h - y]);
+            else if (sym === 'quad') pts.push([w-x,y],[x,h-y],[w-x,h-y]);
+            return pts;
         }
 
         function pointerDown(e) {
@@ -428,7 +370,6 @@
             drawing = true;
             lastPos = {x, y};
             saveState();
-            emitParticles(x, y, 12);
         }
 
         function pointerMove(e) {
@@ -497,14 +438,12 @@
                     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentTool = btn.dataset.tool;
-                    currentTip = btn.dataset.tip || 'soft';
+                    currentTip = btn.dataset.tip || btn.dataset.tool;
                     document.getElementById('selectionControls').style.display = (currentTool === 'select') ? 'block' : 'none';
                 });
             });
 
-            document.getElementById('color').addEventListener('input', e => {
-                settings.color = e.target.value;
-            });
+            document.getElementById('color').addEventListener('input', e => settings.color = e.target.value);
 
             document.getElementById('cameraBtn').onclick = () => {
                 const input = document.createElement('input');
@@ -616,7 +555,6 @@
         }
 
         function animate() {
-            updateParticles();
             requestAnimationFrame(animate);
         }
 
@@ -629,19 +567,4 @@
             window.addEventListener('resize', resize);
             layers = [createNewLayer("Background")];
             currentLayerIndex = 0;
-            canvas.addEventListener('pointerdown', pointerDown, { passive: false });
-            canvas.addEventListener('pointermove', pointerMove, { passive: false });
-            canvas.addEventListener('pointerup', pointerUp);
-            canvas.addEventListener('pointerleave', pointerUp);
-            createColorPalette();
-            attachUI();
-            renderLayersList();
-            renderAllLayers();
-            saveState();
-            animate();
-        }
-
-        init();
-    </script>
-</body>
-</html>
+            canvas.addEventListener('pointerdown', pointerDown
