@@ -3,26 +3,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <title>Checkers Deluxe</title>
+    <title>Checkers Deluxe: Elite</title>
     <style>
         :root {
-            /* Board is now larger: 85px max per cell vs 70px */
             --cell-size: min(12vw, 85px);
             --light-cell: #f0d9b5;
             --dark-cell: #b58863;
+            --accent: #79d3ff;
         }
-
         body {
             background-color: #0d1117;
-            color: white;
+            color: #e6edf3;
             font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
             margin: 0;
+            transition: background 0.5s ease;
         }
-
         .controls {
             background: #161b22;
             border-radius: 15px;
@@ -33,29 +32,23 @@
             gap: 15px;
             justify-content: center;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid #30363d;
         }
-
         .board-container {
-            position: relative;
-            padding: 20px;
-            background: #2c2118; /* Wooden frame color */
-            border-radius: 8px;
-            box-shadow: 
-                0 20px 60px rgba(0,0,0,0.8),
-                inset 0 0 100px rgba(0,0,0,0.5);
+            padding: 15px;
+            background: #2c2118;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 80px rgba(0,0,0,0.4);
             border: 12px solid #3d2a1f;
         }
-
         .board {
             display: grid;
             grid-template-columns: repeat(8, var(--cell-size));
             grid-template-rows: repeat(8, var(--cell-size));
-            border: 2px solid #1a140f;
+            border: 2px solid rgba(0,0,0,0.3);
         }
-
         .cell {
             width: var(--cell-size);
             height: var(--cell-size);
@@ -65,138 +58,125 @@
             cursor: pointer;
             position: relative;
         }
-
         .cell.light { background-color: var(--light-cell); }
         .cell.dark { background-color: var(--dark-cell); }
-
-        /* Highlights */
-        .cell.selected { box-shadow: inset 0 0 0 5px #79d3ff; z-index: 5; }
+        .cell.selected { box-shadow: inset 0 0 0 4px var(--accent); z-index: 5; }
         .cell.hint::after {
             content: "";
-            width: 25%;
-            height: 25%;
-            background: rgba(125, 255, 177, 0.5);
+            width: 30%;
+            height: 30%;
+            background: rgba(125, 255, 177, 0.6);
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(125, 255, 177, 0.8);
+            box-shadow: 0 0 15px rgba(125, 255, 177, 0.8);
         }
-
-        /* Realistic Piece Container */
         .piece-wrap {
-            width: 88%;
-            height: 88%;
+            width: 86%;
+            height: 86%;
             position: relative;
-            transition: transform 0.1s ease;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
         }
-        
-        .piece-wrap:active { transform: scale(0.95); }
-
         .king-crown {
             position: absolute;
-            top: 15%;
+            top: 5%;
             width: 100%;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             z-index: 10;
-            pointer-events: none;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
         }
-
-        .status-area {
-            margin-top: 25px;
-            text-align: center;
-        }
-
         .status-pill {
-            padding: 10px 40px;
+            padding: 12px 40px;
             background: #1f2937;
             border-radius: 100px;
             font-size: 1.2rem;
-            font-weight: 600;
-            border: 1px solid #374151;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        #timer-display {
-            margin-top: 10px;
-            color: #f87171;
             font-weight: bold;
-            font-family: monospace;
+            border: 2px solid #374151;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
-
+        #timer { color: #f87171; font-family: monospace; margin-top: 10px; font-size: 1.1rem; }
         select, button {
             background: #21262d;
             color: #c9d1d9;
             border: 1px solid #30363d;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
         }
-
-        button:hover { background: #30363d; border-color: #8b949e; }
-        button#endTurnBtn { background: #238636; color: white; border: none; }
-        button#endTurnBtn:hover { background: #2ea043; }
+        #endTurnBtn { background: #238636; color: white; border: none; }
     </style>
 </head>
 <body>
-
     <div class="controls">
-        <div class="control-group">
+        <div>
             <label>Mode </label>
             <select id="mode">
                 <option value="classic">Classic</option>
+                <option value="giveaway">Giveaway Mode (Lose to Win)</option>
                 <option value="blitz">Blitz (15s)</option>
                 <option value="rapid">Rapid (25s)</option>
             </select>
         </div>
-        <div class="control-group">
+        <div>
+            <label>Difficulty </label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="champion">Checkers Champion</option>
+            </select>
+        </div>
+        <div>
             <label>Theme </label>
             <select id="theme">
                 <option value="0">Classic Wood</option>
+                <option value="8">Retro Cyber</option>
+                <option value="9">Volcanic</option>
+                <option value="10">Royal Velvet</option>
                 <option value="1">Marble</option>
                 <option value="2">Ocean</option>
-                <option value="3">Forest</option>
-                <option value="4">Neon</option>
-                <option value="5">Desert</option>
                 <option value="6">Galaxy</option>
-                <option value="7">Monochrome</option>
             </select>
         </div>
         <button id="resetBtn">New Game</button>
-        <button id="endTurnBtn" style="display:none;">End Turn Early</button>
+        <button id="endTurnBtn" style="display:none;">End Multi-Jump</button>
     </div>
-
-    <div class="board-container">
+    <div class="board-container" id="frame">
         <div class="board" id="board"></div>
     </div>
-
-    <div class="status-area">
+    <div style="margin-top:20px; text-align:center;">
         <div class="status-pill" id="status">Your Turn</div>
-        <div id="timer-display"></div>
+        <div id="timer"></div>
     </div>
 
     <script>
         const THEMES = [
-            {light:"#f0d9b5", dark:"#b58863"}, {light:"#e5e5e5", dark:"#4a4a4a"},
-            {light:"#a0d8ff", dark:"#0b4e7a"}, {light:"#c8e6b8", dark:"#2d5a27"},
-            {light:"#333", dark:"#000"}, {light:"#f5d9b0", dark:"#9c6640"},
-            {light:"#d0c0ff", dark:"#1e0f33"}, {light:"#ffffff", dark:"#222222"}
+            {light:"#f0d9b5", dark:"#b58863", frame:"#3d2a1f", bg:"#0d1117"},
+            {light:"#e5e5e5", dark:"#4a4a4a", frame:"#222", bg:"#111"},
+            {light:"#a0d8ff", dark:"#0b4e7a", frame:"#052c46", bg:"#001"},
+            {light:"#c8e6b8", dark:"#2d5a27", frame:"#1a3316", bg:"#010"},
+            {light:"#333", dark:"#000", frame:"#111", bg:"#000"},
+            {light:"#f5d9b0", dark:"#9c6640", frame:"#5c3c26", bg:"#1a0f0a"},
+            {light:"#d0c0ff", dark:"#1e0f33", frame:"#0f071a", bg:"#05020a"},
+            {light:"#ffffff", dark:"#222222", frame:"#000", bg:"#0a0a0a"},
+            {light:"#1a1a2e", dark:"#16213e", frame:"#0f3460", bg:"#1a1a2e", accent:"#e94560"},
+            {light:"#420d09", dark:"#000000", frame:"#2a0000", bg:"#0d0202", accent:"#ff4500"},
+            {light:"#581845", dark:"#2a0a20", frame:"#900c3f", bg:"#1a0514", accent:"#ffc300"}
         ];
 
-        let boardState = [];
-        let currentTurn = 'r';
-        let selectedCell = null;
-        let jumpingPiece = null;
-        let timer = null;
-        let secondsLeft = 0;
+        let board = [];
+        let turn = 'r';
+        let sel = null;
+        let isJumping = false;
+        let timerId = null;
 
         const boardEl = document.getElementById('board');
         const statusEl = document.getElementById('status');
         const endTurnBtn = document.getElementById('endTurnBtn');
-        const timerEl = document.getElementById('timer-display');
 
         function init() {
-            boardState = Array.from({length: 8}, (_, r) => 
+            board = Array.from({length: 8}, (_, r) =>
                 Array.from({length: 8}, (_, c) => {
                     if ((r + c) % 2 !== 0) {
                         if (r < 3) return 'b';
@@ -205,208 +185,203 @@
                     return null;
                 })
             );
-            currentTurn = 'r';
-            selectedCell = null;
-            jumpingPiece = null;
+            turn = 'r';
+            sel = null;
+            isJumping = false;
             endTurnBtn.style.display = 'none';
             resetTimer();
             render();
         }
 
-        // Realistic SVG with ridges and depth
         function getPieceSVG(type) {
             const isRed = type.toLowerCase() === 'r';
-            const isKing = type === 'R' || type === 'B';
-            const baseColor = isRed ? "#b91c1c" : "#111827";
-            const ringColor = isRed ? "#ef4444" : "#374151";
-            const text = isRed ? "WG" : "TG";
-
+            const base = isRed ? "#d32f2f" : "#1a237e";
+            const top = isRed ? "#ff5252" : "#3949ab";
             return `
                 <svg viewBox="0 0 100 100" class="piece-wrap">
-                    <defs>
-                        <radialGradient id="grad-${type}" cx="40%" cy="40%" r="60%">
-                            <stop offset="0%" stop-color="${ringColor}" />
-                            <stop offset="100%" stop-color="${baseColor}" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="50" cy="55" r="45" fill="rgba(0,0,0,0.5)" />
-                    
-                    <circle cx="50" cy="50" r="45" fill="url(#grad-${type})" stroke="rgba(0,0,0,0.4)" stroke-width="2"/>
-                    
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
-                    <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
-                    <circle cx="50" cy="50" r="26" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    
-                    <text x="50" y="58" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="18" font-family="Arial Black" font-weight="900">${text}</text>
-                    
-                    <ellipse cx="35" cy="30" rx="12" ry="8" fill="white" fill-opacity="0.15" />
+                    <circle cx="50" cy="54" r="45" fill="rgba(0,0,0,0.4)" />
+                    <circle cx="50" cy="50" r="45" fill="${base}" stroke="#000" stroke-width="2"/>
+                    <circle cx="50" cy="48" r="42" fill="${top}" />
+                    <circle cx="50" cy="48" r="34" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                    <circle cx="50" cy="48" r="24" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2" />
+                    <text x="50" y="56" text-anchor="middle" fill="white" font-size="20" font-family="Arial Black" font-weight="900" opacity="0.8">${isRed?'WG':'TG'}</text>
                 </svg>`;
         }
 
-        function getPossibleMoves(r, c, forceJump = false) {
-            const piece = boardState[r][c];
-            if (!piece) return [];
+        function getMoves(r, c, jumpOnly = false) {
+            const p = board[r][c];
+            if (!p) return [];
             const moves = [];
-            const isKing = piece === 'R' || piece === 'B';
-            const owner = piece.toLowerCase();
-            
-            let directions = isKing ? [[1,1],[1,-1],[-1,1],[-1,-1]] : (owner === 'r' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
+            const isKing = p === 'R' || p === 'B';
+            const owner = p.toLowerCase();
+            const dirs = isKing ? [[1,1],[1,-1],[-1,1],[-1,-1]] : (owner === 'r' ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
 
-            directions.forEach(([dr, dc]) => {
+            dirs.forEach(([dr, dc]) => {
                 const nr = r + dr, nc = c + dc;
-                const jr = r + dr * 2, jc = c + dc * 2;
+                const jr = r + dr*2, jc = c + dc*2;
 
-                // Jump check
-                if (boardState[nr]?.[nc] && boardState[nr][nc].toLowerCase() !== owner) {
-                    if (boardState[jr]?.[jc] === null) {
-                        moves.push({ from:[r,c], to:[jr,jc], isJump:true, victim:[nr,nc] });
-                    }
+                if (board[nr]?.[nc] && board[nr][nc].toLowerCase() !== owner && board[jr]?.[jc] === null) {
+                    moves.push({ from:[r,c], to:[jr,jc], isJump:true, victim:[nr,nc] });
                 }
-                // Slide check (only if not forcing jumps)
-                if (!forceJump && boardState[nr]?.[nc] === null) {
+                if (!jumpOnly && board[nr]?.[nc] === null) {
                     moves.push({ from:[r,c], to:[nr,nc], isJump:false });
                 }
             });
             return moves;
         }
 
-        function onCellClick(r, c) {
-            if (currentTurn !== 'r') return;
+        function handleClick(r, c) {
+            if (turn !== 'r') return;
 
-            // Deselect logic
-            if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) {
-                if (jumpingPiece) {
-                    finalizeTurn(); // Voluntary stop mid-multi-jump
-                } else {
-                    selectedCell = null;
-                    render();
-                }
+            if (sel && sel[0] === r && sel[1] === c) {
+                if (isJumping) finalizeTurn();
+                else { sel = null; render(); }
                 return;
             }
 
-            // Normal selection
-            if (!jumpingPiece && boardState[r][c]?.toLowerCase() === 'r') {
-                selectedCell = [r, c];
-                render();
-                return;
+            if (!isJumping && board[r][c]?.toLowerCase() === 'r') {
+                sel = [r, c]; render(); return;
             }
 
-            // Move execution
-            if (selectedCell) {
-                const moves = getPossibleMoves(selectedCell[0], selectedCell[1], jumpingPiece !== null);
-                const move = moves.find(m => m.to[0] === r && m.to[1] === c);
-                
-                if (move) applyMove(move);
+            if (sel) {
+                const moves = getMoves(sel[0], sel[1], isJumping);
+                const m = moves.find(m => m.to[0] === r && m.to[1] === c);
+                if (m) applyMove(m);
             }
         }
 
-        function applyMove(move) {
-            const [fr, fc] = move.from;
-            const [tr, tc] = move.to;
-            
-            boardState[tr][tc] = boardState[fr][fc];
-            boardState[fr][fc] = null;
-            if (move.isJump) boardState[move.victim[0]][move.victim[1]] = null;
+        function applyMove(m) {
+            const [fr, fc] = m.from, [tr, tc] = m.to;
+            board[tr][tc] = board[fr][fc];
+            board[fr][fc] = null;
+            if (m.isJump) board[m.victim[0]][m.victim[1]] = null;
 
-            // King promotion
-            if (boardState[tr][tc] === 'r' && tr === 0) boardState[tr][tc] = 'R';
-            if (boardState[tr][tc] === 'b' && tr === 7) boardState[tr][tc] = 'B';
+            if (board[tr][tc] === 'r' && tr === 0) board[tr][tc] = 'R';
+            if (board[tr][tc] === 'b' && tr === 7) board[tr][tc] = 'B';
 
-            // Check for multi-jump potential
-            if (move.isJump) {
-                const extra = getPossibleMoves(tr, tc, true);
-                if (extra.length > 0) {
-                    selectedCell = [tr, tc];
-                    jumpingPiece = [tr, tc];
-                    endTurnBtn.style.display = 'inline-block';
+            if (m.isJump) {
+                const nextJumps = getMoves(tr, tc, true);
+                if (nextJumps.length > 0) {
+                    sel = [tr, tc];
+                    isJumping = true;
+                    if (turn === 'r') endTurnBtn.style.display = 'inline-block';
                     render();
                     return;
                 }
             }
+
             finalizeTurn();
         }
 
         function finalizeTurn() {
-            selectedCell = null;
-            jumpingPiece = null;
+            sel = null;
+            isJumping = false;
             endTurnBtn.style.display = 'none';
-            currentTurn = currentTurn === 'r' ? 'b' : 'r';
+            turn = turn === 'r' ? 'b' : 'r';
             render();
             resetTimer();
-            if (currentTurn === 'b') setTimeout(cpuMove, 800);
+
+            if (turn === 'b') {
+                setTimeout(cpuLogic, 400);
+            } else {
+                let hasMoves = false;
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        if (board[r][c]?.toLowerCase() === 'r') {
+                            if (getMoves(r, c).length > 0) hasMoves = true;
+                        }
+                    }
+                }
+                if (!hasMoves) statusEl.textContent = "AI Wins!";
+            }
         }
 
-        function cpuMove() {
-            let all = [];
-            for (let r=0; r<8; r++) {
-                for (let c=0; c<8; c++) {
-                    if (boardState[r][c]?.toLowerCase() === 'b') all.push(...getPossibleMoves(r, c));
+        function cpuLogic() {
+            if (turn !== 'b') return;
+
+            let allMoves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c]?.toLowerCase() === 'b') {
+                        const jumps = getMoves(r, c, true);
+                        if (jumps.length > 0) {
+                            allMoves.push(...jumps);
+                        } else if (!isJumping) {
+                            allMoves.push(...getMoves(r, c, false));
+                        }
+                    }
                 }
             }
-            if (all.length === 0) { statusEl.textContent = "VICTORY!"; return; }
 
-            const jumps = all.filter(m => m.isJump);
-            const move = jumps.length > 0 ? jumps[0] : all[Math.floor(Math.random() * all.length)];
-            applyMove(move);
+            if (allMoves.length === 0) {
+                statusEl.textContent = "You Win!";
+                return;
+            }
+
+            const jumps = allMoves.filter(m => m.isJump);
+            const chosen = jumps.length > 0 ? jumps[Math.floor(Math.random() * jumps.length)] : allMoves[Math.floor(Math.random() * allMoves.length)];
+
+            applyMove(chosen);
         }
 
         function resetTimer() {
-            clearInterval(timer);
-            timerEl.textContent = "";
-            const mode = document.getElementById('mode').value;
-            if (mode === 'classic') return;
-
-            secondsLeft = mode === 'blitz' ? 15 : 25;
-            timerEl.textContent = `TIME: ${secondsLeft}s`;
-
-            timer = setInterval(() => {
-                secondsLeft--;
-                timerEl.textContent = `TIME: ${secondsLeft}s`;
-                if (secondsLeft <= 0) {
-                    clearInterval(timer);
-                    finalizeTurn();
-                }
+            clearInterval(timerId);
+            const m = document.getElementById('mode').value;
+            if (m === 'classic' || m === 'giveaway') {
+                document.getElementById('timer').textContent = "";
+                return;
+            }
+            let left = m === 'blitz' ? 15 : 25;
+            document.getElementById('timer').textContent = `TIME: ${left}s`;
+            timerId = setInterval(() => {
+                left--;
+                document.getElementById('timer').textContent = `TIME: ${left}s`;
+                if (left <= 0) finalizeTurn();
             }, 1000);
         }
 
         function render() {
             boardEl.innerHTML = '';
-            const hints = selectedCell ? getPossibleMoves(selectedCell[0], selectedCell[1], jumpingPiece !== null) : [];
+            const hints = sel ? getMoves(sel[0], sel[1], isJumping) : [];
 
             for (let r = 0; r < 8; r++) {
                 for (let c = 0; c < 8; c++) {
                     const cell = document.createElement('div');
-                    cell.className = `cell ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
-                    if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) cell.classList.add('selected');
-                    if (hints.some(m => m.to[0] === r && m.to[1] === c)) cell.classList.add('hint');
-                    
-                    cell.onclick = () => onCellClick(r, c);
+                    cell.className = `cell ${(r+c)%2===0 ? 'light' : 'dark'}`;
+                    if (sel && sel[0] === r && sel[1] === c) cell.classList.add('selected');
+                    if (hints.some(h => h.to[0] === r && h.to[1] === c)) cell.classList.add('hint');
+                    cell.onclick = () => handleClick(r, c);
 
-                    const p = boardState[r][c];
+                    const p = board[r][c];
                     if (p) {
                         cell.innerHTML = getPieceSVG(p);
                         if (p === 'R' || p === 'B') {
-                            const crown = document.createElement('div');
-                            crown.className = 'king-crown';
-                            crown.textContent = '👑';
-                            cell.appendChild(crown);
+                            const cr = document.createElement('div');
+                            cr.className = 'king-crown';
+                            cr.textContent = '👑';
+                            cell.appendChild(cr);
                         }
                     }
                     boardEl.appendChild(cell);
                 }
             }
-            statusEl.textContent = currentTurn === 'r' ? (jumpingPiece ? "Finish jump or End Turn" : "Your Turn") : "Computer Thinking...";
+
+            statusEl.textContent = turn === 'r' ? "Your Turn" : "AI Thinking...";
         }
 
         document.getElementById('theme').onchange = (e) => {
             const t = THEMES[e.target.value];
             document.documentElement.style.setProperty('--light-cell', t.light);
             document.documentElement.style.setProperty('--dark-cell', t.dark);
+            document.documentElement.style.setProperty('--accent', t.accent || '#79d3ff');
+            document.getElementById('frame').style.background = t.frame || '#2c2118';
+            document.getElementById('frame').style.borderColor = t.frame || '#3d2a1f';
+            document.body.style.background = t.bg || '#0d1117';
         };
 
         document.getElementById('resetBtn').onclick = init;
-        endTurnBtn.onclick = finalizeTurn;
         document.getElementById('mode').onchange = init;
+        endTurnBtn.onclick = finalizeTurn;
 
         init();
     </script>
