@@ -46,21 +46,21 @@
             content: '';
             position: absolute;
             top: 50%;
-            width: 22px;
-            height: 70px;
+            width: 24px;
+            height: 80px;
             background: #0b1b30f2;
             border: 1px solid #335;
             border-radius: 8px 0 0 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 22px;
             color: #66ccff;
             cursor: pointer;
             z-index: 10;
         }
-        .sidebar::before { right: -22px; border-radius: 0 8px 8px 0; content: '→'; }
-        .inspector::before { left: -22px; border-radius: 8px 0 0 8px; content: '←'; }
+        .sidebar::before { right: -24px; border-radius: 0 8px 8px 0; content: '→'; }
+        .inspector::before { left: -24px; border-radius: 8px 0 0 8px; content: '←'; }
         .sidebar.collapsed::before { content: '→'; }
         .inspector.collapsed::before { content: '←'; }
 
@@ -137,9 +137,11 @@
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">Tip <span style="margin-left:auto">▼</span></h3>
                 <div class="content tools-grid">
                     <button class="tool-btn" data-tip="fine">Fine</button>
-                    <button class="tool-btn active" data-tip="normal">Normal</button>
+                    <button class="tool-btn active" data-tip="med">Med</button>
                     <button class="tool-btn" data-tip="broad">Broad</button>
                     <button class="tool-btn" data-tip="chisel">Chisel</button>
+                    <button class="tool-btn" data-tip="soft">Soft</button>
+                    <button class="tool-btn" data-tip="hard">Hard</button>
                 </div>
             </div>
             <div class="panel">
@@ -179,7 +181,7 @@
                     <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
                         <option value="none">None</option>
                         <option value="neon">Neon Glow</option>
-                        <option value="rainbow">Rainbow Cycle</option>
+                        <option value="rainbow">Rainbow Rope</option>
                         <option value="prism">Prism Shift</option>
                         <option value="spark">Spark Burst</option>
                         <option value="fire">Fire Flicker</option>
@@ -205,11 +207,24 @@
                 </div>
             </div>
             <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🛠️ Utilities <span style="margin-left:auto">▼</span></h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn" data-tool="eraser">🧼 Erase</button>
+                    <button class="tool-btn" data-tool="select">🔲 Select</button>
+                </div>
+            </div>
+            <div class="panel">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">📑 Layers <span style="margin-left:auto">▼</span></h3>
                 <div class="content">
                     <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
                     <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
                 </div>
+            </div>
+            <div id="selectionControls" class="panel" style="display:none;">
+                <h3>🔲 Selection</h3>
+                <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
+                <button id="duplicateSelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📑 Duplicate</button>
+                <button id="retrySelectionBtn" class="btn" style="width:100%;">🔄 Retry Selection</button>
             </div>
         </div>
     </div>
@@ -227,7 +242,7 @@
         let drawing = false;
         let lastPos = null;
         let currentTool = 'pencil';
-        let currentTip = 'normal';
+        let currentTip = 'med';
         let selectionMode = false;
         let selectionStart = null;
         let selectionRect = null;
@@ -254,13 +269,17 @@
             const c = document.createElement('canvas');
             c.width = canvas.width || 1600;
             c.height = canvas.height || 1000;
-            return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1 };
+            return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1, bgColor: null };
         }
 
         function renderAllLayers() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             layers.forEach(layer => {
                 if (layer.visible) {
+                    if (layer.bgColor) {
+                        layer.ctx.fillStyle = layer.bgColor;
+                        layer.ctx.fillRect(0, 0, layer.canvas.width, layer.canvas.height);
+                    }
                     ctx.globalAlpha = layer.opacity;
                     ctx.drawImage(layer.canvas, 0, 0);
                 }
@@ -309,7 +328,7 @@
             const symTo = getSymmetryPoints(to.x, to.y);
             let width = settings.size * settings.flow;
 
-            // Tool + Tip adjustments
+            // Tool + Tip
             if (currentTool === 'pencil') {
                 width *= 0.7;
                 layerCtx.strokeStyle = '#555555';
@@ -325,6 +344,10 @@
             if (currentTip === 'chisel') {
                 width *= 1.45;
                 layerCtx.lineCap = 'butt';
+            } else if (currentTip === 'soft') {
+                width *= 1.1;
+            } else if (currentTip === 'hard') {
+                width *= 0.85;
             } else {
                 layerCtx.lineCap = 'round';
             }
@@ -435,6 +458,12 @@
         function pointerUp() {
             drawing = false;
             lastPos = null;
+            if (selectionMode) {
+                selectionMode = false;
+                if (selectionRect && selectionRect.w > 20 && selectionRect.h > 20) {
+                    document.getElementById('selectionControls').style.display = 'block';
+                }
+            }
         }
 
         function loadImageAsLayer(file) {
@@ -565,6 +594,42 @@
                     renderAllLayers();
                 }
             };
+
+            document.getElementById('copySelectionBtn').onclick = () => {
+                if (!selectionRect) return;
+                const temp = document.createElement('canvas');
+                temp.width = selectionRect.w;
+                temp.height = selectionRect.h;
+                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
+                pastedImage = temp;
+                pastedX = selectionRect.x + 50;
+                pastedY = selectionRect.y + 50;
+                document.getElementById('selectionControls').style.display = 'none';
+                renderAllLayers();
+            };
+
+            document.getElementById('duplicateSelectionBtn').onclick = () => {
+                if (!selectionRect) return;
+                const temp = document.createElement('canvas');
+                temp.width = selectionRect.w;
+                temp.height = selectionRect.h;
+                temp.getContext('2d').drawImage(canvas, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
+                const newLayer = createNewLayer("Duplicate");
+                newLayer.ctx.drawImage(temp, selectionRect.x, selectionRect.y);
+                layers.push(newLayer);
+                currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+                document.getElementById('selectionControls').style.display = 'none';
+            };
+
+            document.getElementById('retrySelectionBtn').onclick = () => {
+                selectionMode = true;
+                selectionRect = null;
+                document.getElementById('selectionControls').style.display = 'none';
+                renderAllLayers();
+            };
         }
 
         function renderLayersList() {
@@ -579,6 +644,7 @@
                     <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
                     <span style="flex:1" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">${layer.name}</span>
                     <span class="rename-layer" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">✏️</span>
+                    <input type="color" value="${layer.bgColor || '#00000000'}" style="width:32px;height:32px;border:none;cursor:pointer;" onchange="layers[${realIndex}].bgColor = this.value; renderAllLayers();">
                     <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
                     <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
                 `;
