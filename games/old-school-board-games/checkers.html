@@ -59,6 +59,7 @@
         background: #e6cfa8;
         display: grid;
         place-items: center;
+        position: relative;
       }
 
       .cell.dark { background: linear-gradient(180deg, #784c27, #4d2d15); }
@@ -67,19 +68,53 @@
       .cell.hint     { box-shadow: inset 0 0 0 4px #7dffb1; }
 
       .piece {
-        width: 74%;
-        height: 74%;
+        width: 76%;
+        height: 76%;
         border-radius: 50%;
-        box-shadow: inset 0 10px 18px rgba(255,255,255,0.25), 0 6px 12px rgba(0,0,0,0.35);
         display: grid;
         place-items: center;
-        font-size: 1.15rem;
+        font-size: 1.35rem;
         font-weight: 900;
         color: #fff;
+        box-shadow: 
+          inset 0 8px 12px rgba(255,255,255,0.45),
+          inset 0 -8px 12px rgba(0,0,0,0.55),
+          0 6px 12px rgba(0,0,0,0.4);
+        position: relative;
+        overflow: hidden;
       }
 
-      .piece.red   { background: radial-gradient(circle at 35% 30%, #ffc3bb, #ef5c51 62%, #8f1718); }
-      .piece.black { background: radial-gradient(circle at 35% 30%, #c4cfde, #4d5d74 55%, #121c28); }
+      .piece.red {
+        background: radial-gradient(circle at 38% 32%, #ff9f8a, #e04a3f 50%, #9c1a1c);
+      }
+
+      .piece.black {
+        background: radial-gradient(circle at 38% 32%, #b8c8e0, #3f4f6b 52%, #0f1a2e);
+      }
+
+      .piece .label {
+        position: absolute;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-shadow: 
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000,
+          1px 1px 0 #000;
+        z-index: 2;
+      }
+
+      .piece.red .label   { color: #ffe0d0; }
+      .piece.black .label { color: #e0f0ff; }
+
+      .piece.king::after {
+        content: "K";
+        position: absolute;
+        font-size: 1.6rem;
+        color: #fff;
+        text-shadow: 0 0 6px rgba(255,255,255,0.9);
+        z-index: 3;
+      }
 
       .info-column { display: grid; gap: 0.9rem; }
 
@@ -115,17 +150,17 @@
           <div class="board-column">
             <div>
               <h1>Checkers Deluxe</h1>
-              <p class="subtitle">Classic checkers with forced jumps and improved AI.</p>
+              <p class="subtitle">Free movement — choose any piece and any valid move (jumps optional).</p>
             </div>
 
             <div class="turn-strip">
               <div class="turn-tile player active" id="playerTile">
                 <span>You</span>
-                <strong>Red side</strong>
+                <strong>Red (WG)</strong>
               </div>
               <div class="turn-tile cpu" id="cpuTile">
                 <span>Computer</span>
-                <strong>Black side</strong>
+                <strong>Black (TG)</strong>
               </div>
             </div>
 
@@ -150,8 +185,8 @@
             <div class="card hud-card">
               <h3>How It Plays</h3>
               <ul class="mini-rules">
-                <li>Tap a red piece to see possible moves.</li>
-                <li>You must jump if a jump is available.</li>
+                <li>Tap any red piece, then tap any valid destination (normal move or jump).</li>
+                <li>Jumps are optional — you may move any piece freely.</li>
                 <li>Hard mode looks several moves ahead.</li>
               </ul>
             </div>
@@ -212,9 +247,12 @@
           const jumpR = row + dr * 2;
           const jumpC = col + dc * 2;
 
+          // Normal move
           if (state[stepR]?.[stepC] === "") {
             moves.push({ from: [row,col], to: [stepR,stepC], jump: false });
-          } else if (
+          }
+          // Jump
+          else if (
             state[jumpR]?.[jumpC] === "" &&
             owner(state[stepR]?.[stepC]) &&
             owner(state[stepR][stepC]) !== owner(piece)
@@ -239,8 +277,7 @@
             }
           }
         }
-        const jumps = moves.filter(m => m.jump);
-        return jumps.length ? jumps : moves;
+        return moves;
       }
 
       function applyMove(state, move) {
@@ -309,8 +346,7 @@
 
         const diff = difficultyEl.value;
         if (diff === "easy") {
-          const jumps = moves.filter(m => m.jump);
-          return (jumps.length ? jumps : moves)[Math.floor(Math.random() * (jumps.length || moves.length))];
+          return moves[Math.floor(Math.random() * moves.length)];
         }
         if (diff === "medium") {
           return moves.sort((a,b) => (b.jump ? 10 : 0) + (b.to[0]===7 ? 5 : 0) - (a.jump ? 10 : 0) - (a.to[0]===7 ? 5 : 0))[0];
@@ -325,7 +361,9 @@
 
       function renderBoard() {
         boardEl.innerHTML = "";
-        const hints = selected ? allMoves(boardState, "r").filter(m => m.from[0] === selected[0] && m.from[1] === selected[1]) : [];
+        const hints = selected 
+          ? allMoves(boardState, "r").filter(m => m.from[0] === selected[0] && m.from[1] === selected[1]) 
+          : [];
 
         for (let r = 0; r < 8; r++) {
           for (let c = 0; c < 8; c++) {
@@ -339,8 +377,13 @@
             const piece = boardState[r][c];
             if (piece) {
               const el = document.createElement("div");
-              el.className = `piece ${owner(piece) === "r" ? "red" : "black"}`;
-              el.textContent = isKing(piece) ? "K" : "";
+              el.className = `piece ${owner(piece) === "r" ? "red" : "black"} ${isKing(piece) ? "king" : ""}`;
+              
+              const label = document.createElement("div");
+              label.className = "label";
+              label.textContent = owner(piece) === "r" ? "WG" : "TG";
+              el.appendChild(label);
+
               cell.appendChild(el);
             }
             boardEl.appendChild(cell);
@@ -368,7 +411,7 @@
         setTurnTiles();
         renderBoard();
         statusEl.textContent = current === "r" 
-          ? "Your turn. Pick a red piece." 
+          ? "Your turn. Pick any red piece and move." 
           : "Computer is thinking...";
         if (current === "b") setTimeout(cpuTurn, 350);
       }
@@ -386,16 +429,17 @@
 
         const allLegal = allMoves(boardState, "r");
 
-        // Selecting a piece
+        // Try to select a piece
         if (allLegal.some(m => m.from[0] === row && m.from[1] === col)) {
           selected = [row, col];
-          statusEl.textContent = "Choose a highlighted square.";
+          statusEl.textContent = "Tap a highlighted square to move there.";
           renderBoard();
           return;
         }
 
         if (!selected) return;
 
+        // Execute move
         const move = allLegal.find(m => 
           m.from[0] === selected[0] && m.from[1] === selected[1] &&
           m.to[0] === row && m.to[1] === col
@@ -405,6 +449,10 @@
           boardState = applyMove(boardState, move);
           selected = null;
           finishMove();
+        } else {
+          // Allow re-selecting another piece
+          selected = allLegal.some(m => m.from[0] === row && m.from[1] === col) ? [row, col] : null;
+          renderBoard();
         }
       }
 
