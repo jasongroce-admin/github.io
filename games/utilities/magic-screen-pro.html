@@ -54,6 +54,21 @@
             font-size:0.9rem; color:#ffffff; font-weight:500; text-align:center; min-height:72px; transition:all .2s;
         }
         .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 15px rgba(102,204,255,0.6); }
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 2px solid #334;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .color-swatch:hover { border-color: #fff; transform: scale(1.1); }
         .canvas-container {
             flex:1; background:#070b14; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
         }
@@ -62,7 +77,6 @@
             position: relative;
         }
         canvas { display:block; background:#080b18; touch-action: none; }
-        .hint { font-size:0.82rem; opacity:0.8; text-align:center; margin-top:8px; }
         .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
         .layer-item.active { border:2px solid var(--accent); }
         .delete-layer { margin-left:auto; color:#ff6666; cursor:pointer; font-size:1.1rem; }
@@ -149,6 +163,12 @@
                 <div class="content">
                     <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
                     <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
+                    
+                    <!-- Color Palette Picker -->
+                    <div style="margin-top:8px;">
+                        <small style="opacity:0.8;">Quick Palette</small>
+                        <div class="color-palette" id="colorPalette"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,6 +188,11 @@
                     <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
                     <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
                 </div>
+            </div>
+            <div id="selectionControls" class="panel" style="display:none;">
+                <h3>🔲 Selection</h3>
+                <button id="copySelectionBtn" class="btn" style="width:100%;margin-bottom:8px;">📋 Copy Selection</button>
+                <button id="pasteBtn" class="btn" style="width:100%;">📌 Paste</button>
             </div>
             <div id="transformControls" class="panel" style="display:none;">
                 <h3 onclick="this.parentElement.classList.toggle('collapsed')">✏️ Transform <span style="margin-left:auto">▼</span></h3>
@@ -190,9 +215,7 @@
     </div>
 
     <div class="copyright">© 2026 Jason Groce • Magic Screen PRO</div>
-
         <script>
-        // ==================== CORE SETUP ====================
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
         const sidebar = document.getElementById('sidebar');
@@ -205,6 +228,9 @@
         let lastPos = null;
         let currentTool = 'brush';
         let currentTip = 'soft';
+        let selectionMode = false;
+        let selectionStart = null;
+        let selectionRect = null;
         let pastedImage = null;
         let pastedX = 200, pastedY = 200, pastedRotation = 0, pastedScale = 1;
 
@@ -213,10 +239,17 @@
             hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
         };
 
-        // GPU Particles with unique behavior per effect
+        // GPU Particles
         let particlesData = [];
         const MAX_PARTICLES = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 6500 : 22000;
         let lastEmit = 0;
+
+        const presetColors = [
+            '#ffffff','#ff0000','#00ff00','#0000ff','#ffff00',
+            '#ff00ff','#00ffff','#ff8800','#88ff00','#0088ff',
+            '#ff0088','#8800ff','#ffcc00','#00ccff','#cc00ff',
+            '#66ccff','#ff66cc','#ccff66','#66ffcc','#ffcc66'
+        ];
 
         function resize() {
             const rect = document.getElementById('canvasContainer').getBoundingClientRect();
@@ -276,7 +309,6 @@
                     vx: (Math.random()-0.5) * (eff==='smoke'?1.8:5.5),
                     vy: (Math.random()-0.5) * (eff==='smoke'?-3.5:4.8),
                     life: eff === 'starburst' ? 15 + Math.random()*20 : 25 + Math.random()*35,
-                    size: eff === 'starburst' ? 4.5 + Math.random()*4 : 2.8 + Math.random()*3.5,
                     effect: eff
                 });
             }
@@ -290,7 +322,6 @@
                 p.x += p.vx; p.y += p.vy; p.life--;
                 if (p.effect === 'smoke') p.vy -= 0.13;
                 if (p.effect === 'fire') { p.vy -= 0.22; p.vx *= 0.92; }
-                if (p.effect === 'starburst') p.size *= 0.93;
                 if (p.x < -80 || p.x > w+80 || p.y < -80 || p.y > h+80) p.life -= 5;
                 if (p.life <= 0) particlesData.splice(i, 1);
             }
@@ -311,6 +342,22 @@
             const activeLayer = layers[currentLayerIndex];
             if (!activeLayer) return;
             const layerCtx = activeLayer.ctx;
+
+            if (currentTool === 'eraser') {
+                layerCtx.globalCompositeOperation = 'destination-out';
+                layerCtx.shadowBlur = 0;
+                layerCtx.lineWidth = settings.size * 1.8;
+                layerCtx.beginPath();
+                layerCtx.moveTo(from.x, from.y);
+                layerCtx.lineTo(to.x, to.y);
+                layerCtx.stroke();
+                layerCtx.globalCompositeOperation = 'source-over';
+                renderAllLayers();
+                return;
+            }
+
+            if (currentTool === 'select' || currentTool === 'arrow') return;
+
             const symFrom = getSymmetryPoints(from.x, from.y);
             const symTo = getSymmetryPoints(to.x, to.y);
             let width = settings.size * settings.flow * pressure;
@@ -354,17 +401,6 @@
                     layerCtx.strokeStyle = settings.color;
                     layerCtx.lineWidth = width * 3.2;
                     layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'comet') {
-                    layerCtx.shadowBlur = 22;
-                    layerCtx.strokeStyle = '#a0f0ff';
-                    layerCtx.lineWidth = width * 0.75;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                } else if (settings.effect === 'velvet') {
-                    layerCtx.shadowBlur = 18;
-                    layerCtx.strokeStyle = settings.color;
-                    layerCtx.globalAlpha = settings.alpha * 0.75;
-                    layerCtx.lineWidth = width * 1.35;
-                    layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
                 } else {
                     layerCtx.shadowBlur = settings.glow;
                     layerCtx.strokeStyle = settings.color;
@@ -387,6 +423,13 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            if (currentTool === 'select') {
+                selectionMode = true;
+                selectionStart = {x, y};
+                return;
+            }
+
             drawing = true;
             lastPos = {x, y};
             saveState();
@@ -394,10 +437,23 @@
         }
 
         function pointerMove(e) {
-            if (!drawing || !lastPos) return;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            if (currentTool === 'select' && selectionMode && selectionStart) {
+                selectionRect = {x: Math.min(selectionStart.x, x), y: Math.min(selectionStart.y, y), w: Math.abs(x - selectionStart.x), h: Math.abs(y - selectionStart.y)};
+                renderAllLayers();
+                ctx.save();
+                ctx.setLineDash([4,4]);
+                ctx.strokeStyle = '#66ccff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+                ctx.restore();
+                return;
+            }
+
+            if (!drawing || !lastPos) return;
             drawStroke(lastPos, {x, y});
             lastPos = {x, y};
         }
@@ -405,6 +461,12 @@
         function pointerUp() {
             drawing = false;
             lastPos = null;
+            if (selectionMode) {
+                selectionMode = false;
+                if (selectionRect && selectionRect.w > 20 && selectionRect.h > 20) {
+                    document.getElementById('selectionControls').style.display = 'block';
+                }
+            }
         }
 
         function loadImageAsLayer(file) {
@@ -420,7 +482,37 @@
             img.src = URL.createObjectURL(file);
         }
 
+        function createColorPalette() {
+            const palette = document.getElementById('colorPalette');
+            presetColors.forEach(hex => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = hex;
+                swatch.onclick = () => {
+                    settings.color = hex;
+                    document.getElementById('color').value = hex;
+                };
+                palette.appendChild(swatch);
+            });
+        }
+
         function attachUI() {
+            // Tool buttons
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTool = btn.dataset.tool;
+                    currentTip = btn.dataset.tip || 'soft';
+                    document.getElementById('selectionControls').style.display = (currentTool === 'select') ? 'block' : 'none';
+                });
+            });
+
+            // Color picker sync
+            document.getElementById('color').addEventListener('input', e => {
+                settings.color = e.target.value;
+            });
+
             // Camera & Upload
             document.getElementById('cameraBtn').onclick = () => {
                 const input = document.createElement('input');
@@ -446,16 +538,18 @@
                 if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
             });
 
-            // Collapsible sidebars - improved tap handling
-            function toggleSidebar(el) {
-                el.classList.toggle('collapsed');
-            }
-            sidebar.addEventListener('click', (e) => {
-                if (e.target.closest('h3')) toggleSidebar(sidebar);
-            });
-            inspector.addEventListener('click', (e) => {
-                if (e.target.closest('h3')) toggleSidebar(inspector);
-            });
+            // Sidebar toggles
+            sidebar.addEventListener('click', e => { if (e.target.closest('h3')) sidebar.classList.toggle('collapsed'); });
+            inspector.addEventListener('click', e => { if (e.target.closest('h3')) inspector.classList.toggle('collapsed'); });
+
+            // Layer buttons
+            document.getElementById('addLayerBtn').onclick = () => {
+                layers.push(createNewLayer(`Layer ${layers.length + 1}`));
+                currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+            };
 
             // Other buttons
             document.getElementById('newBtn').onclick = () => {
@@ -463,6 +557,7 @@
                     layers = [createNewLayer("Background")];
                     currentLayerIndex = 0;
                     history = [];
+                    renderLayersList();
                     renderAllLayers();
                     saveState();
                 }
@@ -480,6 +575,56 @@
                 a.href = canvas.toDataURL('image/png');
                 a.click();
             };
+        }
+
+        function renderLayersList() {
+            const container = document.getElementById('layersList');
+            container.innerHTML = '';
+            [...layers].reverse().forEach((layer, idx) => {
+                const realIndex = layers.length - 1 - idx;
+                const div = document.createElement('div');
+                div.className = `layer-item ${realIndex === currentLayerIndex ? 'active' : ''}`;
+                div.draggable = true;
+                div.innerHTML = `
+                    <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
+                    <span style="flex:1">${layer.name}</span>
+                    <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
+                    <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
+                `;
+                div.onclick = () => { currentLayerIndex = realIndex; renderLayersList(); };
+                div.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', realIndex));
+                div.addEventListener('dragover', e => e.preventDefault());
+                div.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const from = parseInt(e.dataTransfer.getData('text/plain'));
+                    const to = realIndex;
+                    if (from === to) return;
+                    const moved = layers.splice(from, 1)[0];
+                    layers.splice(to, 0, moved);
+                    currentLayerIndex = to;
+                    renderLayersList();
+                    renderAllLayers();
+                    saveState();
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function toggleLayerVisibility(i) {
+            layers[i].visible = !layers[i].visible;
+            renderLayersList();
+            renderAllLayers();
+        }
+
+        function deleteLayer(i) {
+            if (layers.length <= 1) return;
+            if (confirm(`Delete "${layers[i].name}"?`)) {
+                layers.splice(i, 1);
+                if (currentLayerIndex >= layers.length) currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+            }
         }
 
         function animate() {
@@ -500,7 +645,9 @@
             canvas.addEventListener('pointermove', pointerMove, { passive: false });
             canvas.addEventListener('pointerup', pointerUp);
             canvas.addEventListener('pointerleave', pointerUp);
+            createColorPalette();
             attachUI();
+            renderLayersList();
             renderAllLayers();
             saveState();
             animate();
