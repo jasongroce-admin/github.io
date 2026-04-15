@@ -159,21 +159,158 @@ button:hover { filter: brightness(1.2); }
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// Sprite assets (SVG pixel art) live in games/firefighter-game/images/.
-// We draw these into the canvas so we can upgrade art without rewriting gameplay logic.
+// Sprite assets (SVG art) live in games/firefighter-game/images/.
+// We fit each asset into a tuned world-space box so relative object size feels believable.
 const SPRITES = {};
 const SPRITE_READY = {};
-function loadSprite(key, filename) {
+const SPRITE_CACHE = {};
+let ACTIVE_SPRITE_KEYS = new Set();
+const SPRITE_FILES = {
+  engine: 'fire_engine_kvfd1.svg',
+  sedanRed: 'redsportscar.svg',
+  sedanRed2: 'redcarsports2.svg',
+  sedanBlue: 'bluecoopcar.svg',
+  pickupCyber: 'cybertruck.svg',
+  semiTank: 'fire_tanker_kvfd.svg',
+  semiWrecked: 'wreckedsemi.svg',
+  hayA: 'hay_1.svg',
+  hayB: 'hay_2.svg',
+  houseSmall: 'house1flr.svg',
+  houseTall: 'house2flr.svg',
+  houseTallWhite: 'house2flwhite.svg',
+  houseTallOld: 'housetallold.svg',
+  school: 'schoolhouse.svg',
+  shedRed: 'redsmallshed.svg',
+  garage: 'garage1.svg',
+  garageSmall: 'garagesmall.svg',
+  barnLarge: 'RedBarnLarge.svg',
+  tractor: 'Tractor.svg',
+  mower: 'lawnmowerrider.svg'
+};
+
+function loadSprite(key) {
+  if (SPRITES[key]) return;
+  const filename = SPRITE_FILES[key];
+  if (!filename) return;
   const img = new Image();
   img.onload = () => { SPRITE_READY[key] = true; };
   img.onerror = () => { SPRITE_READY[key] = false; };
   img.src = `images/${filename}`;
   SPRITES[key] = img;
 }
-function drawSprite(key, x, y, w, h) {
+
+function ensureSpritesLoaded(keys) {
+  keys.forEach((key) => loadSprite(key));
+}
+
+function purgeSpriteCacheForKey(key) {
+  Object.keys(SPRITE_CACHE).forEach((cacheKey) => {
+    if (cacheKey.startsWith(`${key}:`)) delete SPRITE_CACHE[cacheKey];
+  });
+}
+
+function unloadSpritesExcept(keysToKeep) {
+  const keep = new Set(keysToKeep);
+  Object.keys(SPRITES).forEach((key) => {
+    if (keep.has(key)) return;
+    try {
+      SPRITES[key].src = '';
+    } catch (err) {}
+    delete SPRITES[key];
+    delete SPRITE_READY[key];
+    purgeSpriteCacheForKey(key);
+  });
+  ACTIVE_SPRITE_KEYS = keep;
+}
+
+function makeCanvas(width, height) {
+  const canvasEl = document.createElement('canvas');
+  canvasEl.width = Math.max(1, Math.round(width));
+  canvasEl.height = Math.max(1, Math.round(height));
+  return canvasEl;
+}
+
+function trimSpriteWhitespace(img) {
+  const source = makeCanvas(img.width, img.height);
+  const sourceCtx = source.getContext('2d');
+  if (!sourceCtx) return img;
+  sourceCtx.drawImage(img, 0, 0, img.width, img.height);
+  let imageData;
+  try {
+    imageData = sourceCtx.getImageData(0, 0, source.width, source.height);
+  } catch (err) {
+    return img;
+  }
+  const { data, width, height } = imageData;
+
+  function rowMostlyWhite(y) {
+    let solid = 0;
+    let white = 0;
+    const start = y * width * 4;
+    for (let x = 0; x < width; x++) {
+      const index = start + x * 4;
+      const alpha = data[index + 3];
+      if (alpha < 10) continue;
+      solid++;
+      if (data[index] > 248 && data[index + 1] > 248 && data[index + 2] > 248) white++;
+    }
+    return solid > 0 && white / solid > 0.985;
+  }
+
+  function colMostlyWhite(x) {
+    let solid = 0;
+    let white = 0;
+    for (let y = 0; y < height; y++) {
+      const index = (y * width + x) * 4;
+      const alpha = data[index + 3];
+      if (alpha < 10) continue;
+      solid++;
+      if (data[index] > 248 && data[index + 1] > 248 && data[index + 2] > 248) white++;
+    }
+    return solid > 0 && white / solid > 0.985;
+  }
+
+  let top = 0;
+  let bottom = height - 1;
+  let left = 0;
+  let right = width - 1;
+
+  while (top < bottom && rowMostlyWhite(top)) top++;
+  while (bottom > top && rowMostlyWhite(bottom)) bottom--;
+  while (left < right && colMostlyWhite(left)) left++;
+  while (right > left && colMostlyWhite(right)) right--;
+
+  const trimmedWidth = Math.max(1, right - left + 1);
+  const trimmedHeight = Math.max(1, bottom - top + 1);
+  if (trimmedWidth === width && trimmedHeight === height) return source;
+  const trimmed = makeCanvas(trimmedWidth, trimmedHeight);
+  const trimmedCtx = trimmed.getContext('2d');
+  if (!trimmedCtx) return source;
+  trimmedCtx.drawImage(source, left, top, trimmedWidth, trimmedHeight, 0, 0, trimmedWidth, trimmedHeight);
+  return trimmed;
+}
+
+function getCachedSprite(key, w, h) {
+  if (!SPRITE_READY[key]) return null;
+  const cacheKey = `${key}:${Math.round(w)}x${Math.round(h)}`;
+  if (SPRITE_CACHE[cacheKey]) return SPRITE_CACHE[cacheKey];
+
   const img = SPRITES[key];
-  if (img && SPRITE_READY[key]) {
-    ctx.drawImage(img, x, y, w, h);
+  if (!img || !img.width || !img.height) return null;
+  const trimmed = trimSpriteWhitespace(img);
+  const cache = makeCanvas(w, h);
+  const cacheCtx = cache.getContext('2d');
+  if (!cacheCtx) return null;
+  cacheCtx.imageSmoothingEnabled = true;
+  cacheCtx.drawImage(trimmed, 0, 0, cache.width, cache.height);
+  SPRITE_CACHE[cacheKey] = cache;
+  return cache;
+}
+
+function drawSprite(key, x, y, w, h) {
+  const cached = getCachedSprite(key, w, h);
+  if (cached) {
+    ctx.drawImage(cached, x, y, w, h);
     return true;
   }
   return false;
@@ -183,43 +320,76 @@ function drawSpriteGround(key, x, bottomY, w, h) {
   return drawSprite(key, x, bottomY - h, w, h);
 }
 
-// Deluxe sprite set (user-supplied). Some files are JPEGs with .png extensions; browsers still load them.
-loadSprite('engine', 'fire_engine_kvfd1.png');
-// Mutual Aid (BORO) will be wired later; keep this build KVFD-only.
+const ENTITY_LAYOUT = {
+  engine: { x: -18, w: 290, h: 170, ground: false },
+  shedRed: { x: 10, w: 240, h: 180, ground: true },
+  garage: { x: -10, w: 340, h: 190, ground: true },
+  garageSmall: { x: 0, w: 300, h: 175, ground: true },
+  barnMini: { x: -10, w: 310, h: 220, ground: true, key: 'barnLarge' },
+  barnLarge: { x: -20, w: 420, h: 270, ground: true },
+  houseSmall: { x: 8, w: 350, h: 205, ground: true },
+  houseTall: { x: -35, w: 350, h: 360, ground: true },
+  school: { x: -60, w: 470, h: 290, ground: true },
+  sedan: { x: 12, w: 215, h: 110, ground: false },
+  pickupCyber: { x: 5, w: 250, h: 145, ground: false },
+  semiTank: { x: -10, w: 520, h: 205, ground: false },
+  semiWrecked: { x: -10, w: 520, h: 205, ground: false },
+  mower: { x: 18, w: 120, h: 88, ground: true },
+  tractor: { x: 0, w: 170, h: 118, ground: true },
+  hayA: { x: -10, y: 392, w: 120, h: 100, ground: false },
+  hayB: { x: -10, y: 392, w: 120, h: 100, ground: false }
+};
 
-loadSprite('sedanRed', 'redsportscar.png');
-loadSprite('sedanRed2', 'redcarsports2.png');
-loadSprite('sedanBlue', 'bluecoopcar.png');
-loadSprite('pickupCyber', 'cybertruck.png');
+function getSpriteFitRect(key, x, y, w, h, alignBottom = false) {
+  const img = SPRITES[key];
+  if (!img || !SPRITE_READY[key] || !img.width || !img.height) return { x, y, w, h };
+  const scale = Math.min(w / img.width, h / img.height);
+  const drawW = img.width * scale;
+  const drawH = img.height * scale;
+  const drawX = x + (w - drawW) / 2;
+  const drawY = alignBottom ? (y + h - drawH) : (y + (h - drawH) / 2);
+  return { x: drawX, y: drawY, w: drawW, h: drawH };
+}
 
-loadSprite('semiTank', 'fire_tanker_kvfd.png');
-loadSprite('semiWrecked', 'wreckedsemi.png');
-loadSprite('tankerBoro', 'fire_takner_boro.png');
-loadSprite('tankerAlt', 'firetanker_1.png');
+function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
+  const rect = getSpriteFitRect(key, x, y, w, h, alignBottom);
+  return drawSprite(key, rect.x, rect.y, rect.w, rect.h);
+}
 
-loadSprite('hayA', 'hay_1.png');
-loadSprite('hayB', 'hay_2.png');
-
-loadSprite('houseSmall', 'house1flr.png');
-loadSprite('houseTall', 'house2flr.png');
-loadSprite('houseTallWhite', 'house2flwhite.png');
-loadSprite('houseTallOld', 'housetallold.png');
-loadSprite('school', 'schoolhouse.png');
-
-loadSprite('shedRed', 'redsmallshed.png');
-loadSprite('garage', 'garage1.png');
-loadSprite('garageSmall', 'garagesmall.png');
-loadSprite('barnLarge', 'RedBarnLarge.png');
-loadSprite('tractor', 'Tractor.png');
-loadSprite('mower', 'lawnmowerrider.png');
-loadSprite('ufo', 'ufo.png');
+function preloadLevelSprites(lvl) {
+  const needed = new Set(['engine']);
+  const entities = baseLevels[lvl - 1]?.entities || [];
+  entities.forEach((ent) => {
+    if (ent.type === 'shedWindow' || ent.type === 'smallShed') needed.add('shedRed');
+    if (ent.type === 'singleGarage') needed.add('garage');
+    if (ent.type === 'miniBarn' || ent.type === 'largeRedBarn') needed.add('barnLarge');
+    if (ent.type === 'smallHouse') needed.add('houseSmall');
+    if (ent.type === 'house') needed.add('houseTall');
+    if (ent.type === 'schoolhouse') needed.add('school');
+    if (ent.type === 'sedan') {
+      needed.add('sedanRed');
+      needed.add('sedanRed2');
+      needed.add('sedanBlue');
+    }
+    if (ent.type === 'pickup') needed.add('pickupCyber');
+    if (ent.type === 'semi') needed.add(lvl === 10 ? 'semiWrecked' : 'semiTank');
+    if (ent.type === 'ridingMower') needed.add('mower');
+    if (ent.type === 'tractor') needed.add('tractor');
+    if (ent.type === 'hayBale') {
+      needed.add('hayA');
+      needed.add('hayB');
+    }
+  });
+  unloadSpritesExcept(needed);
+  ensureSpritesLoaded([...needed]);
+}
 
 const GRASS_Y = 480;
 const GROUND_OFFSETS = {
-  // These art files have extra transparent padding at the bottom; nudge them down.
-  shedRed: 100,
-  garage: 100,
-  garageSmall: 100,
+  // Small grounding nudges for the SVG set.
+  shedRed: 4,
+  garage: 2,
+  garageSmall: 2,
   barnLarge: 0,
   houseSmall: 0,
   houseTall: 0,
@@ -236,21 +406,29 @@ function drawSpriteGrounded(key, x, bottomY, w, h) {
   return drawSprite(key, x, groundedY(key, bottomY, h), w, h);
 }
 
+function drawSpriteGroundedFitted(key, x, bottomY, w, h) {
+  return drawSpriteFitted(key, x, groundedY(key, bottomY, h), w, h, true);
+}
+
 function getEntityBounds(ent) {
-  // Return the same rectangle we draw, so fire hitboxes can be positioned off it.
-  // bottomY is the intended grass line (GRASS_Y).
-  const bottomY = GRASS_Y;
-  if (ent.type === 'shedWindow' || ent.type === 'smallShed') return { x: ent.x + 10, w: 260, h: 170, bottomY, key: 'shedRed' };
-  if (ent.type === 'singleGarage') return { x: ent.x - 10, w: 360, h: 190, bottomY, key: 'garage' };
-  if (ent.type === 'miniBarn' || ent.type === 'largeRedBarn') return { x: ent.x - 20, w: 420, h: 260, bottomY, key: 'barnLarge' };
-  if (ent.type === 'smallHouse') return { x: ent.x + 10, w: 360, h: 260, bottomY, key: 'houseSmall' };
-  if (ent.type === 'house') return { x: ent.x - 60, w: 430, h: 360, bottomY, key: 'houseTall' };
-  if (ent.type === 'schoolhouse') return { x: ent.x - 80, w: 520, h: 300, bottomY, key: 'school' };
-  if (ent.type === 'sedan') return { x: ent.x + 10, y: 480 + (ent.yOffset || 0) - 128, w: 260, h: 128, key: 'sedan' };
-  if (ent.type === 'pickup') return { x: ent.x + 10, y: 480 + (ent.yOffset || 0) - 136, w: 280, h: 136, key: 'pickupCyber' };
-  if (ent.type === 'semi') return { x: ent.x - 20, y: 480 - 170, w: 620, h: 190, key: (currentLevel === 10 ? 'semiWrecked' : 'semiTank') };
-  if (ent.type === 'ridingMower') return { x: ent.x - 10, w: 220, h: 140, bottomY, key: 'mower' };
-  if (ent.type === 'tractor') return { x: ent.x, w: 260, h: 150, bottomY, key: 'tractor' };
+  // Return the same rectangle we draw so fires stay attached to the art.
+  const gy = GRASS_Y + (ent.yOffset || 0);
+  if (ent.type === 'shedWindow' || ent.type === 'smallShed') return getSpriteFitRect('shedRed', ent.x + ENTITY_LAYOUT.shedRed.x, groundedY('shedRed', GRASS_Y, ENTITY_LAYOUT.shedRed.h), ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h, true);
+  if (ent.type === 'singleGarage') return getSpriteFitRect('garage', ent.x + ENTITY_LAYOUT.garage.x, groundedY('garage', GRASS_Y, ENTITY_LAYOUT.garage.h), ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h, true);
+  if (ent.type === 'miniBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnMini.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnMini.h), ENTITY_LAYOUT.barnMini.w, ENTITY_LAYOUT.barnMini.h, true);
+  if (ent.type === 'largeRedBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnLarge.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnLarge.h), ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h, true);
+  if (ent.type === 'smallHouse') return getSpriteFitRect('houseSmall', ent.x + ENTITY_LAYOUT.houseSmall.x, groundedY('houseSmall', GRASS_Y, ENTITY_LAYOUT.houseSmall.h), ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h, true);
+  if (ent.type === 'house') return getSpriteFitRect('houseTall', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTall', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
+  if (ent.type === 'schoolhouse') return getSpriteFitRect('school', ent.x + ENTITY_LAYOUT.school.x, groundedY('school', GRASS_Y, ENTITY_LAYOUT.school.h), ENTITY_LAYOUT.school.w, ENTITY_LAYOUT.school.h, true);
+  if (ent.type === 'sedan') return getSpriteFitRect('sedanRed', ent.x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true);
+  if (ent.type === 'pickup') return getSpriteFitRect('pickupCyber', ent.x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true);
+  if (ent.type === 'semi') {
+    const semiKey = currentLevel === 10 ? 'semiWrecked' : 'semiTank';
+    const layout = ENTITY_LAYOUT[semiKey];
+    return getSpriteFitRect(semiKey, ent.x + layout.x, 480 - layout.h, layout.w, layout.h, true);
+  }
+  if (ent.type === 'ridingMower') return getSpriteFitRect('mower', ent.x + ENTITY_LAYOUT.mower.x, groundedY('mower', GRASS_Y, ENTITY_LAYOUT.mower.h), ENTITY_LAYOUT.mower.w, ENTITY_LAYOUT.mower.h, true);
+  if (ent.type === 'tractor') return getSpriteFitRect('tractor', ent.x + ENTITY_LAYOUT.tractor.x, groundedY('tractor', GRASS_Y, ENTITY_LAYOUT.tractor.h), ENTITY_LAYOUT.tractor.w, ENTITY_LAYOUT.tractor.h, true);
   return null;
 }
 
@@ -264,10 +442,6 @@ function computeFireSpotsForLevel(lvl, entities) {
   function b(ent) {
     const bounds = getEntityBounds(ent);
     if (!bounds) return null;
-    if (bounds.bottomY != null) {
-      const y = groundedY(bounds.key, bounds.bottomY, bounds.h);
-      return { x: bounds.x, y, w: bounds.w, h: bounds.h };
-    }
     return { x: bounds.x, y: bounds.y, w: bounds.w, h: bounds.h };
   }
   function spot(box, rx, ry, rw, rh, extra = {}) {
@@ -475,6 +649,8 @@ function startGame(diff) {
 function loadLevel(lvl) {
   currentLevel = lvl;
   levelStartScore = score;
+  tornadoTravelX = -180;
+  preloadLevelSprites(lvl);
   const base = baseLevels[lvl-1];
   const template = computeFireSpotsForLevel(lvl, base.entities);
   fireSpots = template.map(s => {
@@ -708,7 +884,61 @@ function drawBackground() {
   grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
   ctx.fillStyle = sunColor; ctx.beginPath(); ctx.arc(sunX, sunY, 45, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = grassColor; ctx.fillRect(0, 480, 1200, 120);
+  const fieldGrad = ctx.createLinearGradient(0, 430, 0, 600);
+  fieldGrad.addColorStop(0, timeOfDay === 0 ? '#73b85f' : timeOfDay === 1 ? '#4d8f43' : '#264f2a');
+  fieldGrad.addColorStop(0.45, grassColor);
+  fieldGrad.addColorStop(1, timeOfDay === 0 ? '#244f22' : timeOfDay === 1 ? '#1f4520' : '#102916');
+  ctx.fillStyle = fieldGrad;
+  ctx.fillRect(0, 430, 1200, 170);
+
+  const berms = [
+    { x: -80, y: 468, w: 420, h: 42 },
+    { x: 220, y: 458, w: 390, h: 36 },
+    { x: 520, y: 470, w: 360, h: 34 },
+    { x: 790, y: 462, w: 360, h: 38 },
+    { x: 1030, y: 474, w: 250, h: 28 }
+  ];
+  ctx.fillStyle = timeOfDay === 0 ? 'rgba(90,145,74,0.9)' : timeOfDay === 1 ? 'rgba(59,107,51,0.88)' : 'rgba(39,78,41,0.88)';
+  berms.forEach(berm => {
+    ctx.beginPath();
+    ctx.ellipse(berm.x + berm.w / 2, berm.y, berm.w / 2, berm.h, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)';
+  for (let i = 0; i < 10; i++) {
+    const stripeX = i * 130 + ((i % 2) * 18);
+    ctx.beginPath();
+    ctx.moveTo(stripeX, 470);
+    ctx.quadraticCurveTo(stripeX + 38, 505, stripeX + 96, 600);
+    ctx.lineTo(stripeX + 132, 600);
+    ctx.quadraticCurveTo(stripeX + 65, 505, stripeX + 24, 470);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = timeOfDay === 0 ? '#2c6b2e' : timeOfDay === 1 ? '#295628' : '#173619';
+  ctx.lineWidth = 2;
+  for (let x = 20; x < 1200; x += 28) {
+    const baseY = 484 + ((x / 28) % 3);
+    ctx.beginPath();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x - 4, baseY - 13);
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x + 3, baseY - 11);
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x - 1, baseY - 16);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = timeOfDay === 0 ? 'rgba(36,74,31,0.5)' : 'rgba(18,41,20,0.45)';
+  ctx.lineWidth = 1.5;
+  for (let x = 0; x < 1200; x += 48) {
+    ctx.beginPath();
+    ctx.moveTo(x, 520);
+    ctx.lineTo(x + 18, 600);
+    ctx.stroke();
+  }
   if (timeOfDay === 2) {
     ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.8;
     ctx.fillRect(200,80,3,3); ctx.fillRect(450,50,2,2); ctx.fillRect(720,110,3,3); ctx.fillRect(950,70,2,2); ctx.fillRect(1100,40,3,3);
@@ -717,8 +947,7 @@ function drawBackground() {
 }
 
 function drawSideFireTruck() {
-  // Prefer the PNG sprite, fall back to the original vector-ish drawing while loading.
-  if (drawSprite('engine', truckX - 12, truckY - 126, 270, 165)) return;
+  if (drawSpriteFitted('engine', truckX + ENTITY_LAYOUT.engine.x, truckY - ENTITY_LAYOUT.engine.h, ENTITY_LAYOUT.engine.w, ENTITY_LAYOUT.engine.h, true)) return;
   ctx.fillStyle = '#E22'; ctx.fillRect(truckX + 8, truckY - 48, 195, 82);
   ctx.fillStyle = '#C11'; ctx.fillRect(truckX + 18, truckY - 78, 72, 38);
   ctx.fillStyle = '#AACCFF'; ctx.fillRect(truckX + 26, truckY - 72, 28, 24); ctx.fillRect(truckX + 58, truckY - 72, 26, 24);
@@ -751,7 +980,7 @@ function drawPixelSprite(x, y, rows, scale, palette) {
 function drawSedan(x,yOffset=0) {
   const gy = 480 + yOffset;
   const variant = (currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed';
-  if (drawSprite(variant, x + 10, gy - 128, 260, 128)) return;
+  if (drawSpriteFitted(variant, x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true)) return;
   const body = [
     "......bbbbb.............",
     "....bbbbbbbbbb..........",
@@ -783,7 +1012,7 @@ function drawSedan(x,yOffset=0) {
 
 function drawPickup(x,yOffset=0) {
   const gy = 480 + yOffset;
-  if (drawSprite('pickupCyber', x + 10, gy - 136, 280, 136)) return;
+  if (drawSpriteFitted('pickupCyber', x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true)) return;
   const body = [
     "...........bbb..........",
     ".........bbbbbbb........",
@@ -816,7 +1045,8 @@ function drawPickup(x,yOffset=0) {
 function drawSemi(x) {
   const gy = 480;
   const semiKey = (currentLevel === 10) ? 'semiWrecked' : 'semiTank';
-  if (drawSprite(semiKey, x - 20, gy - 170, 620, 190)) return;
+  const layout = ENTITY_LAYOUT[semiKey];
+  if (drawSpriteFitted(semiKey, x + layout.x, gy - layout.h, layout.w, layout.h, true)) return;
   ctx.fillStyle = '#C00'; ctx.fillRect(x, gy-95, 135, 135);
   ctx.fillStyle = '#DDD'; ctx.fillRect(x+125, gy-88, 390, 125);
   ctx.fillStyle = '#111';
@@ -831,8 +1061,7 @@ function drawSemi(x) {
 
 function drawRidingLawnMower(x) {
   const gy = 465;
-  // Deluxe mower sprite.
-  if (drawSpriteGrounded('mower', x - 10, GRASS_Y, 220, 140)) return;
+  if (drawSpriteGroundedFitted('mower', x + ENTITY_LAYOUT.mower.x, GRASS_Y, ENTITY_LAYOUT.mower.w, ENTITY_LAYOUT.mower.h)) return;
   ctx.fillStyle = '#228B22'; ctx.fillRect(x+25, gy-38, 115, 42);
   ctx.fillStyle = '#1E5A1E'; ctx.fillRect(x+12, gy-12, 138, 28);
   ctx.fillStyle = '#222'; ctx.fillRect(x+88, gy-58, 38, 24);
@@ -847,7 +1076,7 @@ function drawRidingLawnMower(x) {
 
 function drawShedWindow(x) {
   // In Deluxe, use the red shed art (with fallback to the original drawing).
-  if (drawSpriteGrounded('shedRed', x + 10, GRASS_Y, 260, 170)) return;
+  if (drawSpriteGroundedFitted('shedRed', x + ENTITY_LAYOUT.shedRed.x, GRASS_Y, ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h)) return;
   const wall = [
     ".........rrrrrrrrrrrr.........",
     "........rrrrrrrrrrrrrr........",
@@ -879,7 +1108,7 @@ function drawShedWindow(x) {
 }
 
 function drawSmallShed(x) {
-  if (drawSpriteGrounded('shedRed', x + 10, GRASS_Y, 260, 170)) return;
+  if (drawSpriteGroundedFitted('shedRed', x + ENTITY_LAYOUT.shedRed.x, GRASS_Y, ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h)) return;
   const shed = [
     ".......rrrrrrrrrrrrr........",
     "......rrrrrrrrrrrrrrrr.......",
@@ -905,8 +1134,8 @@ function drawSmallShed(x) {
 
 function drawSingleGarage(x) {
   // Use the larger garage; if it fails, try the smaller variant.
-  if (drawSpriteGrounded('garage', x - 10, GRASS_Y, 360, 190)) return;
-  if (drawSpriteGrounded('garageSmall', x, GRASS_Y, 320, 180)) return;
+  if (drawSpriteGroundedFitted('garage', x + ENTITY_LAYOUT.garage.x, GRASS_Y, ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h)) return;
+  if (drawSpriteGroundedFitted('garageSmall', x + ENTITY_LAYOUT.garageSmall.x, GRASS_Y, ENTITY_LAYOUT.garageSmall.w, ENTITY_LAYOUT.garageSmall.h)) return;
   const garage = [
     "..........rrrrrrrrrr..........",
     "........rrrrrrrrrrrrrr........",
@@ -932,19 +1161,17 @@ function drawSingleGarage(x) {
 }
 
 function drawSchoolhouse(x) {
-  if (drawSpriteGrounded('school', x - 80, GRASS_Y, 520, 300)) return;
+  if (drawSpriteGroundedFitted('school', x + ENTITY_LAYOUT.school.x, GRASS_Y, ENTITY_LAYOUT.school.w, ENTITY_LAYOUT.school.h)) return;
   // Fallback: draw a tall house if the sprite isn't ready yet.
   drawTallHouse(x - 40);
 }
 
 function drawTallHouse(x) {
-  // Prefer the 2-floor PNG; use the "tall old" variant as a backup if needed.
-  // All variants are grounded to the grass line (y=480).
-  if (drawSpriteGrounded('houseTall', x - 60, GRASS_Y, 430, 360)) return;
-  if (drawSpriteGrounded('houseTallWhite', x - 60, GRASS_Y, 430, 360)) return;
-  if (drawSpriteGrounded('houseTallOld', x - 60, GRASS_Y, 430, 360)) return;
+  if (drawSpriteGroundedFitted('houseTall', x + ENTITY_LAYOUT.houseTall.x, GRASS_Y, ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h)) return;
+  if (drawSpriteGroundedFitted('houseTallWhite', x + ENTITY_LAYOUT.houseTall.x, GRASS_Y, ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h)) return;
+  if (drawSpriteGroundedFitted('houseTallOld', x + ENTITY_LAYOUT.houseTall.x, GRASS_Y, ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h)) return;
   // Occasionally swap in the schoolhouse for variety (later levels).
-  if (currentLevel >= 7 && drawSpriteGrounded('school', x - 80, GRASS_Y, 520, 300)) return;
+  if (currentLevel >= 7 && drawSpriteGroundedFitted('school', x + ENTITY_LAYOUT.school.x, GRASS_Y, ENTITY_LAYOUT.school.w, ENTITY_LAYOUT.school.h)) return;
   const house = [
     "..............rrrrrrrr..............",
     "............rrrrrrrrrrrr............",
@@ -973,7 +1200,7 @@ function drawTallHouse(x) {
 }
 
 function drawSmallHouse(x,color='#FFCC99') {
-  if (drawSpriteGrounded('houseSmall', x + 10, GRASS_Y, 360, 260)) return;
+  if (drawSpriteGroundedFitted('houseSmall', x + ENTITY_LAYOUT.houseSmall.x, GRASS_Y, ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h)) return;
   const house = [
     ".........rrrrrrrrrrrr.........",
     ".......rrrrrrrrrrrrrrrr.......",
@@ -998,7 +1225,7 @@ function drawSmallHouse(x,color='#FFCC99') {
 }
 
 function drawMiniBarn(x) {
-  if (drawSpriteGrounded('barnLarge', x - 10, GRASS_Y, 360, 210)) return;
+  if (drawSpriteGroundedFitted('barnLarge', x + ENTITY_LAYOUT.barnMini.x, GRASS_Y, ENTITY_LAYOUT.barnMini.w, ENTITY_LAYOUT.barnMini.h)) return;
   ctx.fillStyle = '#C22'; ctx.fillRect(x+40,230,180,250);
   ctx.strokeStyle='#222'; ctx.lineWidth=4;
   for(let i=0;i<9;i++){ctx.beginPath();ctx.moveTo(x+48,245+i*24);ctx.lineTo(x+212,245+i*24);ctx.stroke();}
@@ -1007,7 +1234,7 @@ function drawMiniBarn(x) {
 }
 
 function drawLargeRedBarn(x) {
-  if (drawSpriteGrounded('barnLarge', x - 20, GRASS_Y, 420, 260)) return;
+  if (drawSpriteGroundedFitted('barnLarge', x + ENTITY_LAYOUT.barnLarge.x, GRASS_Y, ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h)) return;
   ctx.globalAlpha = 0.75;
   ctx.fillStyle = '#C22'; ctx.fillRect(x+20,180,260,300);
   ctx.strokeStyle='#222'; ctx.lineWidth=4;
@@ -1020,25 +1247,24 @@ function drawLargeRedBarn(x) {
 function drawHayBale(x) {
   // Alternate between two hay images for variety.
   const key = (Math.floor(x / 40) % 2 === 0) ? 'hayA' : 'hayB';
-  if (drawSprite(key, x - 10, 392, 120, 100)) return;
+  const layout = ENTITY_LAYOUT[key];
+  if (drawSpriteFitted(key, x + layout.x, layout.y, layout.w, layout.h, true)) return;
   ctx.fillStyle = '#E8B070'; ctx.fillRect(x,415,80,60);
   ctx.strokeStyle='#222'; ctx.lineWidth=4; ctx.strokeRect(x,415,80,60);
   ctx.fillStyle='#D9A060'; for(let i=0;i<5;i++) ctx.fillRect(x+10+i*12,420,8,50);
 }
 
 function drawTractor(x,facing) {
-  // Prefer the PNG tractor; flip it when needed. Fallback to the old vector tractor if it hasn't loaded.
+  // Prefer the SVG tractor; flip it when needed. Fallback to the old vector tractor if it hasn't loaded.
   if (SPRITE_READY.tractor) {
-    const w = 260, h = 150;
-    const bottomY = 480;
-    const y = bottomY - h;
+    const rect = getEntityBounds({ type:'tractor', x });
     ctx.save();
     if (facing === 'left') {
-      ctx.translate(x + w, 0);
+      ctx.translate(rect.x + rect.w, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(SPRITES.tractor, 0, y, w, h);
+      ctx.drawImage(SPRITES.tractor, 0, rect.y, rect.w, rect.h);
     } else {
-      ctx.drawImage(SPRITES.tractor, x, y, w, h);
+      ctx.drawImage(SPRITES.tractor, rect.x, rect.y, rect.w, rect.h);
     }
     ctx.restore();
     return;
@@ -1077,8 +1303,12 @@ function drawTreeWithSwing(x) {
   ctx.fillStyle='#555'; ctx.beginPath();ctx.arc(x+55,420,12,0,Math.PI*2);ctx.fill();
 }
 
-function drawTornado(x) {
+let tornadoTravelX = -180;
+function drawTornado() {
   tornadoAngle += 0.085;
+  tornadoTravelX += 2.2;
+  if (tornadoTravelX > canvas.width + 180) tornadoTravelX = -180;
+  const x = tornadoTravelX;
   const topTwist = Math.sin(tornadoAngle * 2.2) * 38;
   const midTwist = Math.sin(tornadoAngle * 1.8) * 28;
   const bottomTwist = Math.sin(tornadoAngle * 1.4) * 45;
@@ -1109,6 +1339,11 @@ function loop() {
   ctx.clearRect(0,0,1200,600);
   drawBackground();
 
+  const data = baseLevels[currentLevel-1];
+  data.entities.forEach(ent => {
+    if (ent.type === 'tornado') drawTornado();
+  });
+
   ctx.fillStyle = 'rgba(0,0,0,0.92)';
   ctx.fillRect(20,18,320,48);
   ctx.fillStyle = '#FFFFFF';
@@ -1129,7 +1364,6 @@ function loop() {
   ctx.fillText("Dusk",1079,43);
   ctx.fillText("Night",1147,43);
 
-  const data = baseLevels[currentLevel-1];
   data.entities.forEach(ent => {
     if (ent.type === 'shedWindow') drawShedWindow(ent.x);
     if (ent.type === 'smallShed') drawSmallShed(ent.x);
@@ -1146,7 +1380,7 @@ function loop() {
     if (ent.type === 'semi') drawSemi(ent.x);
     if (ent.type === 'tree') drawTree(ent.x);
     if (ent.type === 'treeWithSwing') drawTreeWithSwing(ent.x);
-    if (ent.type === 'tornado') drawTornado(ent.x);
+    if (ent.type === 'tornado') return;
     if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
   });
 
