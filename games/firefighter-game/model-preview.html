@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Firefighter Model Preview</title>
+<style>
+  :root{
+    --bg:#08111f;
+    --panel:#101a2c;
+    --ink:#ecf4ff;
+    --muted:#9eb3d6;
+    --line:#2d466f;
+    --accent:#ffb84d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Segoe UI, Arial, sans-serif;
+    background:radial-gradient(circle at top,#1c2a44 0%,#08111f 58%);
+    color:var(--ink);
+  }
+  .wrap{max-width:1400px;margin:0 auto;padding:20px}
+  h1{margin:0 0 8px;font-size:clamp(1.5rem,2vw,2.4rem)}
+  p{color:var(--muted);margin:0 0 18px}
+  .grid{display:grid;gap:16px}
+  .section{background:rgba(16,26,44,.95);border:1px solid var(--line);border-radius:18px;padding:16px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .card{
+    background:#0c1526;border:1px solid #29405f;border-radius:16px;padding:12px;
+  }
+  .label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:.95rem}
+  canvas{
+    width:100%;height:auto;border-radius:12px;border:1px solid #385682;background:linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%);
+    image-rendering:pixelated;
+  }
+  .tag{color:var(--accent);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em}
+  .note{margin-top:10px;font-size:.88rem;color:var(--muted)}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  a{color:#8bd3ff;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>Firefighter Model Preview</h1>
+      <p>Three style directions for vehicles and homes. Pick a family and I’ll wire it into the game.</p>
+    </div>
+    <a href="./mobile.html">Back to game</a>
+  </div>
+
+  <div class="grid">
+    <section class="section">
+      <div class="label"><strong>Cars</strong><span class="tag">Pixel options</span></div>
+      <div class="cards" id="cars"></div>
+    </section>
+    <section class="section">
+      <div class="label"><strong>Homes</strong><span class="tag">Pixel options</span></div>
+      <div class="cards" id="homes"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+function drawPixelSprite(ctx, x, y, rows, scale, palette) {
+  for (let row = 0; row < rows.length; row++) {
+    const line = rows[row];
+    for (let col = 0; col < line.length; col++) {
+      const key = line[col];
+      if (key === '.') continue;
+      ctx.fillStyle = palette[key];
+      ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+    }
+  }
+}
+
+function makeCard(title, subtitle, drawFn) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<div class="label"><strong>${title}</strong><span>${subtitle}</span></div>`;
+  const node = drawFn();
+  card.appendChild(node);
+  return card;
+}
+
+const carOptions = [
+  {
+    title: 'Rescue Sedan',
+    subtitle: 'clean city response',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/redsportscar.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  },
+  {
+    title: 'Crew Pickup',
+    subtitle: 'rugged utility truck',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/cybertruck.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  },
+  {
+    title: 'Heavy Engine',
+    subtitle: 'more detailed apparatus',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/fire_engine_kvfd1.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  }
+];
+
+const homeOptions = [
+  {
+    title: 'Classic House',
+    subtitle: 'suburban two-story',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/house2flr.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  },
+  {
+    title: 'Family House',
+    subtitle: 'warmer roof and windows',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/house1flr.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  },
+  {
+    title: 'Farmhouse',
+    subtitle: 'richer siding and porch',
+    draw() {
+      const img = document.createElement('img');
+      img.src = './images/housetallold.png';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.imageRendering = 'pixelated';
+      img.style.borderRadius = '12px';
+      img.style.border = '1px solid #385682';
+      img.style.background = 'linear-gradient(180deg,#9fd6ff,#d8efff 60%,#5b8d42 60%,#406432 100%)';
+      return img;
+    }
+  }
+];
+
+const cars = document.getElementById('cars');
+const homes = document.getElementById('homes');
+carOptions.forEach(opt => cars.appendChild(makeCard(opt.title, opt.subtitle, opt.draw)));
+homeOptions.forEach(opt => homes.appendChild(makeCard(opt.title, opt.subtitle, opt.draw)));
+</script>
+</body>
+</html>
