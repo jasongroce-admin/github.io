@@ -106,13 +106,27 @@
     </style>
   </head>
   <body>
-    <main class="content">
+    <main class="content site-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link active" href="index.html">Board Games</a>
+          <a class="menu-link" href="../work-in-progress/index.html">Lab</a>
+          <a class="menu-link" href="../archive/index.html">Archive</a>
+        </nav>
+      </header>
       <section class="panel">
         <div class="game-shell">
           <div class="board-column">
             <div>
               <h1>Chess Deluxe</h1>
-              <p class="subtitle">Play as White against a smarter computer opponent.</p>
+              <p class="subtitle">Play as White against an AI Bot opponent.</p>
             </div>
 
             <div class="turn-strip">
@@ -121,7 +135,7 @@
                 <strong>White pieces</strong>
               </div>
               <div class="turn-tile cpu" id="cpuTile">
-                <span>Computer</span>
+                <span>AI Bot</span>
                 <strong>Black pieces</strong>
               </div>
             </div>
@@ -153,7 +167,6 @@
               </ul>
             </div>
 
-            <a class="btn" href="index.html">Back to Board Games</a>
           </aside>
         </div>
       </section>
@@ -391,11 +404,11 @@
       function postMoveCheck(sideJustMoved) {
         const opponent = sideJustMoved === "W" ? "B" : "W";
         if (!hasKing(boardState, opponent)) {
-          endRound(sideJustMoved === "W" ? "You win! Black king captured." : "Computer wins. White king captured.");
+          endRound(sideJustMoved === "W" ? "You win! Black king captured." : "AI Bot wins. White king captured.");
           return true;
         }
         if (allMoves(boardState, opponent).length === 0) {
-          endRound(sideJustMoved === "W" ? "You win. Black has no moves." : "Computer wins. White has no moves.");
+          endRound(sideJustMoved === "W" ? "You win. Black has no moves." : "AI Bot wins. White has no moves.");
           return true;
         }
         return false;
@@ -410,7 +423,7 @@
 
         statusEl.textContent = current === "W" 
           ? "Your turn. Select a white piece." 
-          : "Computer is thinking...";
+          : "AI Bot is thinking...";
 
         if (current === "B") {
           setTimeout(cpuTurn, 380);

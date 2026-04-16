@@ -167,13 +167,27 @@
     </style>
   </head>
   <body>
-    <main class="content">
+    <main class="content site-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link active" href="index.html">Board Games</a>
+          <a class="menu-link" href="../work-in-progress/index.html">Lab</a>
+          <a class="menu-link" href="../archive/index.html">Archive</a>
+        </nav>
+      </header>
       <section class="panel">
         <div class="game-shell">
           <div class="board-column">
             <div>
               <h1>Tic Tac Toe</h1>
-              <p class="subtitle">Centered board, one-player mode, and a CPU that scales from casual to sharp.</p>
+              <p class="subtitle">Centered board, one-player mode, and an AI Bot that scales from casual to sharp.</p>
             </div>
 
             <div class="turn-strip" aria-label="Turn tracker">
@@ -182,7 +196,7 @@
                 <strong>Black X</strong>
               </div>
               <div class="turn-tile cpu" id="cpuTile">
-                <span>Computer</span>
+                <span>AI Bot</span>
                 <strong>Red O</strong>
               </div>
             </div>
@@ -211,12 +225,10 @@
               <h3>How It Plays</h3>
               <ul class="mini-rules">
                 <li>You always play as X and move first.</li>
-                <li>The CPU immediately answers on O after your turn.</li>
+                <li>The AI Bot answers on O after your turn.</li>
                 <li>Hard mode uses full minimax, so it will not miss a forced draw or win.</li>
               </ul>
             </div>
-
-            <a class="btn" href="index.html">Back to Board Games</a>
           </aside>
         </div>
       </section>
@@ -331,11 +343,11 @@
       function endRound(result) {
         roundOver = true;
         if (result === "draw") {
-          statusEl.textContent = "Draw game. Try a tougher CPU or start another round.";
+          statusEl.textContent = "Draw game. Try a tougher AI Bot or start another round.";
         } else if (result === "X") {
-          statusEl.textContent = "You win. X took the line before the computer could answer.";
+          statusEl.textContent = "You win. X took the line before the AI Bot could answer.";
         } else {
-          statusEl.textContent = "Computer wins this round. Try a different opening square.";
+          statusEl.textContent = "AI Bot wins this round. Try a different opening square.";
         }
         setTurnTiles();
         buildBoard();
@@ -350,7 +362,7 @@
         active = active === "X" ? "O" : "X";
         setTurnTiles();
         buildBoard();
-        statusEl.textContent = active === "X" ? "Your turn. Pick an open square." : "Computer thinking...";
+        statusEl.textContent = active === "X" ? "Your turn. Pick an open square." : "AI Bot thinking...";
         if (active === "O") {
           window.setTimeout(() => {
             if (roundOver) return;

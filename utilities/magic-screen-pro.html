@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>✨ Magic Screen PRO ✨</title>
+    <style>
+        :root { --accent: #66ccff; --panel: #0f1b32; }
+        body {
+            background: radial-gradient(circle at top, rgba(102,204,255,0.15), transparent 45%), #050814;
+            margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; color: #e3dcff;
+            touch-action: none; overflow: hidden;
+        }
+        .header {
+            background: rgba(11,27,48,0.98);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #335;
+            padding: 8px 12px;
+            display: flex;
+            align-items:center;
+            gap: 8px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 { margin:0; font-size:1.35rem; background:linear-gradient(90deg,#66ccff,#ff66cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .btn { padding:7px 14px; background:#0b1b30; border:1px solid #446; border-radius:8px; color:#e3dcff; cursor:pointer; font-size:0.93rem; transition:all .2s; }
+        .btn:hover { background:#112b44; border-color:var(--accent); }
+        .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
+
+        .sidebar, .inspector {
+            background:#0b1b30f2; border:1px solid #335; padding:12px;
+            overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
+            transition: width 0.3s ease, padding 0.3s ease;
+            position: relative;
+        }
+        .sidebar { width: 280px; border-right: none; }
+        .inspector { width: 270px; border-left: none; }
+        .sidebar.collapsed, .inspector.collapsed { width: 52px; padding: 12px 6px; }
+        .sidebar.collapsed .panel h3 span, .sidebar.collapsed .content, .inspector.collapsed .content { display: none; }
+        .sidebar.collapsed .panel h3, .inspector.collapsed .panel h3 { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); height: 180px; }
+
+        /* Large ear tabs */
+        .sidebar::before, .inspector::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 24px;
+            height: 80px;
+            background: #0b1b30f2;
+            border: 1px solid #335;
+            border-radius: 8px 0 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #66ccff;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .sidebar::before { right: -24px; border-radius: 0 8px 8px 0; content: '→'; }
+        .inspector::before { left: -24px; border-radius: 8px 0 0 8px; content: '←'; }
+        .sidebar.collapsed::before { content: '→'; }
+        .inspector.collapsed::before { content: '←'; }
+
+        .panel { background:var(--panel); border:1px solid #335; border-radius:12px; padding:12px; }
+        .panel h3 { margin:0 0 10px; font-size:1.05rem; cursor:pointer; display:flex; align-items:center; gap:8px; }
+        .panel.collapsed .content { display:none; }
+        .control { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .control label { flex:1; font-size:0.93rem; }
+        .control input[type="range"] { flex:2; }
+        .control input[type="number"] { width:64px; background:#112b44; border:1px solid #446; color:#e3dcff; padding:5px; border-radius:6px; }
+        .tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); gap:8px; }
+        .tool-btn {
+            padding:12px 6px; background:#112b44; border:2px solid transparent; border-radius:10px;
+            font-size:0.9rem; color:#ffffff; font-weight:500; text-align:center; min-height:72px; transition:all .2s;
+        }
+        .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 15px rgba(102,204,255,0.6); }
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 2px solid #334;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .color-swatch:hover { border-color: #fff; transform: scale(1.1); }
+        .canvas-container {
+            flex:1; background:#070b14; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
+        }
+        .canvasWrap {
+            background:#070b14; border:2px solid #335; border-radius:16px; box-shadow:0 0 40px rgba(102,204,255,0.2); overflow:hidden;
+            position: relative; width: 100%; height: 100%;
+        }
+        canvas { display:block; background:#080b18; touch-action: none; width: 100%; height: 100%; }
+        .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
+        .layer-item.active { border:2px solid var(--accent); }
+        .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
+        .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ Magic Screen PRO ✨</h1>
+        <div style="flex:1"></div>
+        <button class="btn" id="newBtn">🆕 New</button>
+        <button class="btn" id="clearBtn">🗑️ Clear</button>
+        <button class="btn" id="undoBtn">↩ Undo</button>
+        <button class="btn" id="redoBtn">↪ Redo</button>
+        <button class="btn" id="saveBtn">💾 Save</button>
+        <button class="btn" id="loadBtn">📂 Load</button>
+        <button class="btn" id="cameraBtn">📸 Camera</button>
+        <button class="btn" id="uploadBtn">📤 Upload</button>
+        <button class="btn" id="copyAllBtn">📋 Copy All</button>
+        <button class="btn" id="fullscreenBtn">⛶ Full</button>
+    </div>
+
+    <div class="main">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools <span style="margin-left:auto">▼</span></h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn active" data-tool="pencil">✏️ Pencil</button>
+                    <button class="tool-btn" data-tool="pen">🖊️ Pen</button>
+                    <button class="tool-btn" data-tool="marker">🖍️ Marker</button>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">Tip <span style="margin-left:auto">▼</span></h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn" data-tip="fine">Fine</button>
+                    <button class="tool-btn" data-tip="hard">Hard</button>
+                    <button class="tool-btn active" data-tip="med">Med</button>
+                    <button class="tool-btn" data-tip="soft">Soft</button>
+                    <button class="tool-btn" data-tip="broad">Broad</button>
+                    <button class="tool-btn" data-tip="chisel">Chisel</button>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🎨 Brush Settings <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <div class="control"><label>Size</label><input id="size" type="range" min="2" max="240" value="24"><input id="sizeNum" type="number" value="24"></div>
+                    <div class="control"><label>Opacity</label><input id="alpha" type="range" min="0.1" max="1" step="0.01" value="0.94"><input id="alphaNum" type="number" value="0.94" step="0.01"></div>
+                    <div class="control"><label>Flow</label><input id="flow" type="range" min="0.2" max="1" step="0.05" value="0.96"><input id="flowNum" type="number" value="0.96" step="0.05"></div>
+                    <div class="control"><label>Glow</label><input id="glow" type="range" min="0" max="130" value="0"><input id="glowNum" type="number" value="0"></div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌟 Color <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
+                    <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
+                    <div style="margin-top:8px;">
+                        <small style="opacity:0.8;">Quick Palette</small>
+                        <div class="color-palette" id="colorPalette"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CANVAS -->
+        <div class="canvas-container" id="canvasContainer">
+            <div class="canvasWrap" id="canvasWrap">
+                <canvas id="board"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT INSPECTOR -->
+        <div class="inspector" id="inspector">
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌈 Effect <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
+                        <option value="none">None</option>
+                        <option value="neon">Neon Glow</option>
+                        <option value="rainbow">Rainbow Rope</option>
+                        <option value="fire">Fire Flicker</option>
+                        <option value="laser">Laser Beam</option>
+                        <option value="starburst">Starburst</option>
+                        <option value="leopard">Leopard Spots</option>
+                        <option value="stripes">Stripes</option>
+                        <option value="comet">Comet Trail</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">✨ Symmetry <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <select id="symmetry" style="width:100%;padding:10px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
+                        <option value="none">None</option>
+                        <option value="mirror-x">Mirror X</option>
+                        <option value="mirror-y">Mirror Y</option>
+                        <option value="quad">Quad</option>
+                        <option value="radial-6">Radial 6</option>
+                        <option value="radial-8">Radial 8</option>
+                        <option value="kaleido-6">Kaleido 6</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🛠️ Utilities <span style="margin-left:auto">▼</span></h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn" data-tool="eraser">🧼 Erase</button>
+                    <button class="tool-btn" data-tool="select">🔲 Select</button>
+                    <button class="tool-btn" data-tool="arrow">➜ Arrow</button>
+                </div>
+            </div>
+            <div id="arrowMenu" class="panel" style="display:none;">
+                <h3>Arrow Style</h3>
+                <div class="content tools-grid">
+                    <button class="tool-btn active" data-arrow="simple">→ Simple</button>
+                    <button class="tool-btn" data-arrow="double">↔ Double</button>
+                    <button class="tool-btn" data-arrow="thick">➤ Thick</button>
+                    <button class="tool-btn" data-arrow="fancy">➵ Fancy</button>
+                </div>
+            </div>
+            <div class="panel">
+                <h3 onclick="this.parentElement.classList.toggle('collapsed')">📑 Layers <span style="margin-left:auto">▼</span></h3>
+                <div class="content">
+                    <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
+                    <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">© 2026 Jason Groce • Magic Screen PRO</div>
+        <script>
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+        const sidebar = document.getElementById('sidebar');
+        const inspector = document.getElementById('inspector');
+
+        let layers = [];
+        let currentLayerIndex = 0;
+        let history = [], redoStack = [];
+        let drawing = false;
+        let lastPos = null;
+        let currentTool = 'pencil';
+        let currentTip = 'med';
+        let currentArrowStyle = 'simple';
+        let startPos = null;
+
+        let settings = {
+            size: 24, alpha: 0.94, flow: 0.96, glow: 0,
+            hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
+        };
+
+        function loadSettings() {
+            const saved = localStorage.getItem('magicProSettings');
+            if (saved) Object.assign(settings, JSON.parse(saved));
+        }
+
+        function saveSettings() {
+            localStorage.setItem('magicProSettings', JSON.stringify(settings));
+        }
+
+        function resize() {
+            const rect = document.getElementById('canvasContainer').getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(rect.width * dpr);
+            canvas.height = Math.floor(rect.height * dpr);
+            ctx.scale(dpr, dpr);
+            renderAllLayers();
+        }
+
+        function createNewLayer(name = "Layer") {
+            const c = document.createElement('canvas');
+            c.width = canvas.width || 1600;
+            c.height = canvas.height || 1000;
+            return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1 };
+        }
+
+        function renderAllLayers() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            layers.forEach(layer => {
+                if (layer.visible) {
+                    ctx.globalAlpha = layer.opacity;
+                    ctx.drawImage(layer.canvas, 0, 0);
+                }
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function saveState() {
+            const state = layers.map(l => {
+                const c = document.createElement('canvas');
+                c.width = l.canvas.width; c.height = l.canvas.height;
+                c.getContext('2d').drawImage(l.canvas, 0, 0);
+                return c;
+            });
+            history.push(state);
+            if (history.length > 30) history.shift();
+            redoStack = [];
+        }
+
+        function drawArrow(ctx, from, to, style, width, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = settings.glow;
+
+            // shaft
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const headLen = width * 2.5;
+
+            // arrowhead
+            if (style === 'simple' || style === 'thick') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+            } else if (style === 'double') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+                // reverse head
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(from.x + headLen * Math.cos(angle - Math.PI / 6), from.y + headLen * Math.sin(angle - Math.PI / 6));
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(from.x + headLen * Math.cos(angle + Math.PI / 6), from.y + headLen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+            } else if (style === 'fancy') {
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 4), to.y - headLen * Math.sin(angle - Math.PI / 4));
+                ctx.lineTo(to.x - headLen * 0.6 * Math.cos(angle), to.y - headLen * 0.6 * Math.sin(angle));
+                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 4), to.y - headLen * Math.sin(angle + Math.PI / 4));
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+
+        function drawStroke(from, to) {
+            const activeLayer = layers[currentLayerIndex];
+            if (!activeLayer) return;
+            const layerCtx = activeLayer.ctx;
+
+            if (currentTool === 'eraser') {
+                layerCtx.globalCompositeOperation = 'destination-out';
+                layerCtx.lineWidth = settings.size * 2.2;
+                layerCtx.beginPath();
+                layerCtx.moveTo(from.x, from.y);
+                layerCtx.lineTo(to.x, to.y);
+                layerCtx.stroke();
+                layerCtx.globalCompositeOperation = 'source-over';
+                renderAllLayers();
+                return;
+            }
+
+            if (currentTool === 'arrow') {
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(layerCtx, from, to, currentArrowStyle, width, color);
+                renderAllLayers();
+                return;
+            }
+
+            // normal brush stroke
+            const symFrom = getSymmetryPoints(from.x, from.y);
+            const symTo = getSymmetryPoints(to.x, to.y);
+            let width = settings.size * settings.flow;
+
+            if (currentTool === 'pencil') width *= 0.7;
+            if (currentTool === 'pen') width *= 0.9;
+            if (currentTool === 'marker') width *= 1.35;
+            if (currentTip === 'fine') width *= 0.55;
+            if (currentTip === 'broad') width *= 1.9;
+            if (currentTip === 'chisel') width *= 1.45;
+
+            layerCtx.lineWidth = width;
+            layerCtx.globalAlpha = settings.alpha;
+            layerCtx.shadowBlur = settings.glow;
+            layerCtx.lineCap = currentTip === 'chisel' ? 'butt' : 'round';
+            layerCtx.lineJoin = 'round';
+
+            symFrom.forEach((p1, i) => {
+                const p2 = symTo[i % symTo.length];
+
+                if (settings.effect === 'none') {
+                    layerCtx.strokeStyle = settings.color;
+                    layerCtx.beginPath();
+                    layerCtx.moveTo(p1[0], p1[1]);
+                    layerCtx.lineTo(p2[0], p2[1]);
+                    layerCtx.stroke();
+                } else {
+                    // Effects override color completely
+                    if (settings.effect === 'neon') {
+                        for (let l = 4; l >= 0; l--) {
+                            layerCtx.shadowBlur = settings.glow + l * 18;
+                            layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
+                            layerCtx.lineWidth = width + l * 3;
+                            layerCtx.strokeStyle = '#66ccff';
+                            layerCtx.beginPath();
+                            layerCtx.moveTo(p1[0], p1[1]);
+                            layerCtx.lineTo(p2[0], p2[1]);
+                            layerCtx.stroke();
+                        }
+                    } else if (settings.effect === 'rainbow') {
+                        const hue = (Date.now() / 22 + i*35) % 360;
+                        layerCtx.strokeStyle = `hsla(${hue}, 98%, 72%, ${settings.alpha})`;
+                        layerCtx.shadowBlur = settings.glow + 18;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'fire') {
+                        layerCtx.strokeStyle = `hsl(${12 + Math.random()*35}, 100%, 68%)`;
+                        layerCtx.shadowBlur = settings.glow + 32;
+                        layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'laser') {
+                        layerCtx.strokeStyle = settings.color;
+                        layerCtx.shadowBlur = settings.glow + 60;
+                        layerCtx.lineWidth = width * 0.8;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else if (settings.effect === 'leopard') {
+                        layerCtx.strokeStyle = '#ffcc00';
+                        layerCtx.shadowBlur = settings.glow;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                        // simple spots
+                        layerCtx.fillStyle = '#000000';
+                        layerCtx.fillRect(p1[0]-3, p1[1]-3, 6, 6);
+                    } else if (settings.effect === 'stripes') {
+                        layerCtx.strokeStyle = '#ff0088';
+                        layerCtx.shadowBlur = 0;
+                        layerCtx.lineWidth = width * 0.6;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    } else {
+                        layerCtx.strokeStyle = '#ffffff';
+                        layerCtx.shadowBlur = settings.glow;
+                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
+                    }
+                }
+            });
+
+            renderAllLayers();
+        }
+
+        function getSymmetryPoints(x, y) {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            let pts = [[x, y]];
+            const sym = settings.symmetry;
+            if (sym === 'mirror-x') pts.push([w - x, y]);
+            else if (sym === 'mirror-y') pts.push([x, h - y]);
+            else if (sym === 'quad') pts.push([w-x,y],[x,h-y],[w-x,h-y]);
+            return pts;
+        }
+
+        function pointerDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'arrow') {
+                startPos = {x, y};
+                saveState();
+                return;
+            }
+
+            drawing = true;
+            lastPos = {x, y};
+            saveState();
+        }
+
+        function pointerMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'arrow' && startPos) {
+                renderAllLayers();
+                const tempCtx = ctx;
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(tempCtx, startPos, {x, y}, currentArrowStyle, width, color);
+                return;
+            }
+
+            if (!drawing || !lastPos) return;
+            drawStroke(lastPos, {x, y});
+            lastPos = {x, y};
+        }
+
+        function pointerUp(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'arrow' && startPos) {
+                const width = settings.size * settings.flow * 1.2;
+                const color = settings.effect === 'none' ? settings.color : '#ffffff';
+                drawArrow(layers[currentLayerIndex].ctx, startPos, {x, y}, currentArrowStyle, width, color);
+                renderAllLayers();
+                startPos = null;
+                saveState();
+                return;
+            }
+
+            drawing = false;
+            lastPos = null;
+        }
+
+        // ... (rest of the script is identical to the previous version: loadImageAsLayer, createColorPalette, attachUI, renderLayersList, renameLayer, toggleLayerVisibility, deleteLayer, animate, init)
+
+        function loadImageAsLayer(file) {
+            const img = new Image();
+            img.onload = () => {
+                const newLayer = createNewLayer("Photo");
+                newLayer.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                layers.unshift(newLayer);
+                currentLayerIndex = 0;
+                renderAllLayers();
+                saveState();
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        function createColorPalette() {
+            const palette = document.getElementById('colorPalette');
+            presetColors.forEach(hex => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = hex;
+                swatch.onclick = () => { settings.color = hex; document.getElementById('color').value = hex; };
+                palette.appendChild(swatch);
+            });
+        }
+
+        function attachUI() {
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    if (btn.dataset.tool) currentTool = btn.dataset.tool;
+                    if (btn.dataset.tip) currentTip = btn.dataset.tip;
+                    if (btn.dataset.arrow) currentArrowStyle = btn.dataset.arrow;
+                    document.getElementById('arrowMenu').style.display = (currentTool === 'arrow') ? 'block' : 'none';
+                    saveSettings();
+                });
+            });
+
+            document.getElementById('color').addEventListener('input', e => { settings.color = e.target.value; saveSettings(); });
+
+            // camera, upload, drag/drop, paste listeners (same as before)
+            document.getElementById('cameraBtn').onclick = () => {
+                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+                input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
+                input.click();
+            };
+            document.getElementById('uploadBtn').onclick = () => {
+                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
+                input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
+                input.click();
+            };
+
+            canvas.addEventListener('dragover', e => e.preventDefault());
+            canvas.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]?.type.startsWith('image/')) loadImageAsLayer(e.dataTransfer.files[0]); });
+            document.addEventListener('paste', e => {
+                const item = e.clipboardData.items[0];
+                if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
+            });
+
+            sidebar.addEventListener('click', e => { if (e.target.closest('h3')) sidebar.classList.toggle('collapsed'); });
+            inspector.addEventListener('click', e => { if (e.target.closest('h3')) inspector.classList.toggle('collapsed'); });
+
+            document.getElementById('addLayerBtn').onclick = () => {
+                layers.push(createNewLayer(`Layer ${layers.length + 1}`));
+                currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+            };
+
+            document.getElementById('newBtn').onclick = () => {
+                if (confirm('Start new drawing?')) {
+                    layers = [createNewLayer("Background")];
+                    currentLayerIndex = 0;
+                    history = [];
+                    renderLayersList();
+                    renderAllLayers();
+                    saveState();
+                }
+            };
+            document.getElementById('clearBtn').onclick = () => {
+                if (confirm('Clear current layer?')) {
+                    layers[currentLayerIndex].ctx.clearRect(0,0,canvas.width,canvas.height);
+                    saveState();
+                    renderAllLayers();
+                }
+            };
+            document.getElementById('saveBtn').onclick = () => {
+                const a = document.createElement('a');
+                a.download = 'magic-pro.png';
+                a.href = canvas.toDataURL('image/png');
+                a.click();
+            };
+            document.getElementById('undoBtn').onclick = () => {
+                if (history.length > 0) {
+                    redoStack.push(layers.map(l => {
+                        const c = document.createElement('canvas');
+                        c.width = l.canvas.width; c.height = l.canvas.height;
+                        c.getContext('2d').drawImage(l.canvas, 0, 0);
+                        return c;
+                    }));
+                    const prev = history.pop();
+                    layers.forEach((l, i) => {
+                        l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
+                        l.ctx.drawImage(prev[i], 0, 0);
+                    });
+                    renderAllLayers();
+                }
+            };
+            document.getElementById('redoBtn').onclick = () => {
+                if (redoStack.length > 0) {
+                    history.push(layers.map(l => {
+                        const c = document.createElement('canvas');
+                        c.width = l.canvas.width; c.height = l.canvas.height;
+                        c.getContext('2d').drawImage(l.canvas, 0, 0);
+                        return c;
+                    }));
+                    const next = redoStack.pop();
+                    layers.forEach((l, i) => {
+                        l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
+                        l.ctx.drawImage(next[i], 0, 0);
+                    });
+                    renderAllLayers();
+                }
+            };
+        }
+
+        function renderLayersList() {
+            const container = document.getElementById('layersList');
+            container.innerHTML = '';
+            [...layers].reverse().forEach((layer, idx) => {
+                const realIndex = layers.length - 1 - idx;
+                const div = document.createElement('div');
+                div.className = `layer-item ${realIndex === currentLayerIndex ? 'active' : ''}`;
+                div.draggable = true;
+                div.innerHTML = `
+                    <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
+                    <span style="flex:1" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">${layer.name}</span>
+                    <span class="rename-layer" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">✏️</span>
+                    <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
+                    <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
+                `;
+                div.onclick = () => { currentLayerIndex = realIndex; renderLayersList(); };
+                div.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', realIndex));
+                div.addEventListener('dragover', e => e.preventDefault());
+                div.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const from = parseInt(e.dataTransfer.getData('text/plain'));
+                    const to = realIndex;
+                    if (from === to) return;
+                    const moved = layers.splice(from, 1)[0];
+                    layers.splice(to, 0, moved);
+                    currentLayerIndex = to;
+                    renderLayersList();
+                    renderAllLayers();
+                    saveState();
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function renameLayer(i) {
+            const newName = prompt("Rename layer:", layers[i].name);
+            if (newName && newName.trim() !== "") {
+                layers[i].name = newName.trim();
+                renderLayersList();
+            }
+        }
+
+        function toggleLayerVisibility(i) {
+            layers[i].visible = !layers[i].visible;
+            renderLayersList();
+            renderAllLayers();
+        }
+
+        function deleteLayer(i) {
+            if (layers.length <= 1) return;
+            if (confirm(`Delete "${layers[i].name}"?`)) {
+                layers.splice(i, 1);
+                if (currentLayerIndex >= layers.length) currentLayerIndex = layers.length - 1;
+                renderLayersList();
+                renderAllLayers();
+                saveState();
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+        }
+
+        function init() {
+            loadSettings();
+            if (window.innerWidth < 900 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                sidebar.classList.add('collapsed');
+                inspector.classList.add('collapsed');
+            }
+            resize();
+            window.addEventListener('resize', resize);
+            layers = [createNewLayer("Background")];
+            currentLayerIndex = 0;
+            canvas.addEventListener('pointerdown', pointerDown, { passive: false });
+            canvas.addEventListener('pointermove', pointerMove, { passive: false });
+            canvas.addEventListener('pointerup', pointerUp);
+            canvas.addEventListener('pointerleave', pointerUp);
+            createColorPalette();
+            attachUI();
+            renderLayersList();
+            renderAllLayers();
+            saveState();
+            animate();
+        }
+
+        init();
+    </script>
+</body>
+</html>

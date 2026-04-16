@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <title>Checkers Deluxe: Elite</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
     <style>
         :root {
             --cell-size: min(12vw, 85px);
@@ -12,21 +13,30 @@
             --accent: #79d3ff;
         }
         body {
-            background-color: #0d1117;
             color: #e6edf3;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            padding: 0;
             margin: 0;
             transition: background 0.5s ease;
+        }
+
+        .checkers-shell {
+            width: min(1160px, calc(100vw - 2rem));
+            margin: 0 auto;
+            padding: max(1rem, env(safe-area-inset-top)) 0 max(1rem, env(safe-area-inset-bottom));
+            display: grid;
+            gap: 1rem;
+        }
+
+        .checkers-shell .site-header {
+            position: relative;
+            top: 0;
         }
         .controls {
             background: #161b22;
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 0;
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
@@ -42,6 +52,12 @@
             border-radius: 10px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 80px rgba(0,0,0,0.4);
             border: 12px solid #3d2a1f;
+        }
+
+        .board-stack {
+            display: grid;
+            justify-items: center;
+            gap: 1rem;
         }
         .board {
             display: grid;
@@ -108,6 +124,23 @@
     </style>
 </head>
 <body>
+    <main class="checkers-shell">
+        <header class="site-header">
+            <a class="brand-lockup" href="../../index.html">
+                <strong>Jason Groce</strong>
+                <span>Games, Tools & Projects</span>
+            </a>
+            <nav class="site-menu" aria-label="Primary">
+                <a class="menu-link" href="../../index.html">Home</a>
+                <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+                <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+                <a class="menu-link active" href="index.html">Board Games</a>
+                <a class="menu-link" href="../work-in-progress/index.html">Lab</a>
+                <a class="menu-link" href="../archive/index.html">Archive</a>
+            </nav>
+        </header>
+
+        <section class="panel board-stack">
     <div class="controls">
         <div>
             <label>Mode </label>
@@ -149,6 +182,7 @@
         <div class="status-pill" id="status">Your Turn</div>
         <div id="timer"></div>
     </div>
+        </section>
 
     <script>
         const THEMES = [
@@ -385,5 +419,6 @@
 
         init();
     </script>
+    </main>
 </body>
 </html>

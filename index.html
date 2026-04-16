@@ -3,38 +3,297 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jason Groce | Bio & Games</title>
+    <title>Jason Groce | Lab, Games, and Experiments</title>
     <link rel="stylesheet" href="assets/css/site.css" />
+    <style>
+      .home-shell {
+        display: grid;
+        gap: 1.2rem;
+      }
+
+      .hero {
+        min-height: 78vh;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        gap: 1.2rem;
+        align-items: stretch;
+      }
+
+      .hero-copy {
+        display: grid;
+        gap: 1rem;
+        align-content: start;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        width: fit-content;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(140, 240, 255, 0.24);
+        color: #ddf8ff;
+        background: rgba(255, 255, 255, 0.04);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.78rem;
+      }
+
+      .hero h1 span {
+        display: block;
+        color: var(--accent);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+      }
+
+      .hero-note {
+        max-width: 48rem;
+        font-size: 1.02rem;
+      }
+
+      .signal-map {
+        position: relative;
+        min-height: 100%;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 50% 48%, rgba(125, 185, 232, 0.12), transparent 0 10rem),
+          linear-gradient(160deg, rgba(12, 31, 41, 0.95), rgba(6, 18, 24, 0.96));
+        border: 1px solid rgba(125, 185, 232, 0.18);
+        overflow: hidden;
+      }
+
+      .signal-map::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: radial-gradient(circle at center, #000 35%, transparent 88%);
+      }
+
+      .core-node {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 11rem;
+        height: 11rem;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 1rem;
+        color: #061016;
+        font-weight: 700;
+        background:
+          radial-gradient(circle at 30% 30%, #f6fbff, #7db9e8 55%, #234b68 100%);
+        box-shadow: 0 0 0 14px rgba(125, 185, 232, 0.08), 0 0 80px rgba(125, 185, 232, 0.26);
+        z-index: 2;
+      }
+
+      .orbit {
+        position: absolute;
+        inset: 50% auto auto 50%;
+        width: 22rem;
+        height: 22rem;
+        transform: translate(-50%, -50%);
+        border: 1px dashed rgba(125, 185, 232, 0.14);
+        border-radius: 50%;
+        animation: spin 18s linear infinite;
+      }
+
+      .orbit.two {
+        width: 31rem;
+        height: 31rem;
+        animation-direction: reverse;
+        animation-duration: 24s;
+        border-color: rgba(153, 0, 0, 0.18);
+      }
+
+      .nav-pod {
+        position: absolute;
+        width: 11rem;
+        padding: 0.9rem;
+        border-radius: 22px;
+        text-decoration: none;
+        color: var(--text);
+        background: rgba(10, 25, 33, 0.9);
+        border: 1px solid rgba(125, 185, 232, 0.2);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        z-index: 3;
+        backdrop-filter: blur(6px);
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      }
+
+      .nav-pod:hover {
+        transform: scale(1.04);
+        border-color: rgba(125, 185, 232, 0.5);
+        background: rgba(17, 39, 50, 0.96);
+      }
+
+      .nav-pod strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+      }
+
+      .nav-pod span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .pod-1 { top: 8%; left: 9%; }
+      .pod-2 { top: 10%; right: 7%; }
+      .pod-3 { bottom: 11%; left: 8%; }
+      .pod-4 { bottom: 8%; right: 10%; }
+      .pod-5 { top: 37%; left: 2.5%; }
+      .pod-6 { top: 35%; right: 2.5%; }
+
+      .stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.9rem;
+      }
+
+      .stat-bar {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+      }
+
+      .stat {
+        padding: 1rem;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(125, 185, 232, 0.16);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.8rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .pulse {
+        animation: pulse 2.8s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+
+      @media (max-width: 920px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .signal-map {
+          min-height: 42rem;
+        }
+
+        .stat-bar {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .signal-map {
+          min-height: 48rem;
+        }
+
+        .nav-pod {
+          width: 9.2rem;
+          padding: 0.8rem;
+        }
+
+        .pod-1 { top: 6%; left: 4%; }
+        .pod-2 { top: 6%; right: 4%; }
+        .pod-3 { bottom: 18%; left: 4%; }
+        .pod-4 { bottom: 18%; right: 4%; }
+        .pod-5 { top: 68%; left: 9%; }
+        .pod-6 { top: 68%; right: 9%; }
+      }
+    </style>
   </head>
   <body>
-    <main class="content">
-      <section class="panel" aria-labelledby="bio-heading">
-        <a class="btn" href="private-arcade/index.html" style="float:left; margin:0 12px 8px 0;">Toolbox</a>
-        <h1>Jason Groce</h1>
-        <p class="subtitle">Support, builder, and systems improver/developer from Kennard, Indiana.</p>
-        <p>I create simple projects and use this site to test and improve ideas.</p>
-        <p>Public profile only. Private content is restricted.</p>
-
-        <h2 id="bio-heading">Latest Updates</h2>
-        <div class="projects-grid">
-          <a class="card" href="games/firefighter-game/mobile.html"><h3>Firefighter Game (Mobile)</h3><p>Play the firefighter mobile game.</p></a>
-          <a class="card" href="games/game-01/index.html"><h3>JR's #2 Rescue</h3><p>Pipe repair rescue game brought back to the homepage.</p></a>
-          <a class="card" href="Game2/index.html"><h3>KPD Driving Response</h3><p>Test your Driving Skills.</p></a>
-          <a class="card" href="games/utilities/magic-screen.html"><h3>Magic Screen</h3><p>Fast drawing canvas with effects and symmetry tools.</p></a>
-          <a class="card" href="games/utilities/magic-screen-pro.html"><h3>Magic Screen Pro</h3><p>Professional Fast drawing canvas with MORE effects and MORE symmetry tools.</p></a>
-          
-          <a class="card" href="games/snake/index.html"><h3>🐍 Neon String Snake</h3><p>Flashing neon snake with bomb chunk regrowth mechanics.</p></a>
-          <a class="card" href="games/old-school-board-games/index.html"><h3>♟️ Old School Board Games</h3><p>4 Circles, Chess, Checkers, and Tic Tac Toe with mobile controls.</p></a>
-          <a class="card" href="games/utilities/index.html"><h3>🧰 Utilities</h3><p>Utility hub for drawing and advisor tools.</p></a>
-
-          <a class="card" href="games/work-in-progress/index.html"><h3 style="font-family:'Comic Sans MS', 'Trebuchet MS', sans-serif;">Messing Around</h3><p>Projects currently being tuned.</p></a>
-          <a class="card" href="games/archive/index.html"><h3>📦 Archive</h3><p>Legacy links including Action Color Puzzle and older builds.</p></a>
+    <main class="content home-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link active" href="index.html">Home</a>
+          <a class="menu-link" href="utilities/index.html">Utilities</a>
+          <a class="menu-link" href="games/firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link" href="games/old-school-board-games/index.html">Board Games</a>
+          <a class="menu-link" href="games/work-in-progress/index.html">Lab</a>
+          <a class="menu-link" href="games/archive/index.html">Archive</a>
+        </nav>
+      </header>
+      <section class="panel hero">
+        <div class="hero-copy">
+          <div class="eyebrow pulse">Jason Groce</div>
+          <h1>Interactive projects, games, and tools <span>built to be explored.</span></h1>
+          <p class="subtitle">Browse games, tools, and current projects from one place.</p>
+          <p class="hero-note">Use the menu or jump into the projects below to explore the site.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#launch-grid">View Projects</a>
+            <a class="btn alt" href="utilities/index.html">Open Utilities</a>
+          </div>
+          <div class="stat-bar">
+            <div class="stat"><strong>6</strong><span>main sections</span></div>
+            <div class="stat"><strong>3</strong><span>featured game areas</span></div>
+            <div class="stat"><strong>1</strong><span>home page</span></div>
+          </div>
         </div>
-
-        <p class="copyright">Copyright © Jason Groce - Kennard IN</p>
+        <div class="signal-map" aria-label="Animated site navigation map">
+          <div class="orbit"></div>
+          <div class="orbit two"></div>
+          <div class="core-node">Explore</div>
+          <a class="nav-pod pod-1" href="games/firefighter-game/mobile.html"><strong>Firefighter</strong><span>Mobile rescue play</span></a>
+          <a class="nav-pod pod-2" href="games/game-01/index.html"><strong>JR's #2 Rescue</strong><span>Repair and response</span></a>
+          <a class="nav-pod pod-3" href="Game2/index.html"><strong>KPD Driving</strong><span>Driving challenge</span></a>
+          <a class="nav-pod pod-4" href="utilities/index.html"><strong>Utilities</strong><span>Creative tools</span></a>
+          <a class="nav-pod pod-5" href="games/old-school-board-games/index.html"><strong>Board Games</strong><span>Classic strategy set</span></a>
+          <a class="nav-pod pod-6" href="games/work-in-progress/index.html"><strong>Lab</strong><span>Current experiments</span></a>
+        </div>
       </section>
-    </main>
 
-    <footer class="copyright">Copyright © Jason Groce - Kennard IN</footer>
+      <section class="panel stack" id="launch-grid">
+        <h2>Projects</h2>
+        <p>Open a game, tool, or project area below.</p>
+        <div class="projects-grid">
+          <a class="card" href="games/firefighter-game/mobile.html"><h3>Firefighter Game</h3><p>Fast mobile play built around rescue scenes and responsive controls.</p></a>
+          <a class="card" href="games/game-01/index.html"><h3>JR's #2 Rescue</h3><p>Repair-route action with a tighter arcade feel.</p></a>
+          <a class="card" href="Game2/index.html"><h3>KPD Driving Response</h3><p>Test reflexes and route control behind the wheel.</p></a>
+          <a class="card" href="utilities/index.html"><h3>Creative Utilities</h3><p>Drawing tools, visual helpers, and quick experiments.</p></a>
+          <a class="card" href="games/work-in-progress/index.html"><h3>Messing Around</h3><p>Half-built ideas, tuning passes, and active experiments.</p></a>
+          <a class="card" href="games/archive/index.html"><h3>Archive</h3><p>Older builds and retired paths that are still worth revisiting.</p></a>
+        </div>
+      </section>
+
+      <footer class="copyright">Copyright &copy; Jason Groce - Kennard, Indiana</footer>
+    </main>
   </body>
 </html>
+
