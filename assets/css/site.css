@@ -181,7 +181,7 @@ p {
 .menu-link {
   position: relative;
   text-decoration: none;
-  color: var(--muted);
+  color: #d7ebfb;
   padding: 0.55rem 0.85rem;
   border-radius: 999px;
   border: 1px solid transparent;
@@ -205,6 +205,18 @@ p {
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent), var(--accent-3));
+}
+
+.menu-link:focus-visible,
+.brand-lockup:focus-visible,
+.btn:focus-visible,
+.card:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(200, 230, 255, 0.92);
+  outline-offset: 3px;
 }
 
 .card {
@@ -306,5 +318,16 @@ p {
 
   .site-menu {
     justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
