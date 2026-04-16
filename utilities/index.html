@@ -3,69 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Creative Utilities</title>
+    <title>Utilities | Jason Groce</title>
     <link rel="stylesheet" href="../assets/css/site.css?v=20260416">
     <style>
-      .utility-shell {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .utility-hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
-        gap: 1rem;
-        align-items: stretch;
-      }
-
-      .utility-head {
-        display: grid;
-        gap: 0.8rem;
-      }
-
-      .utility-metrics {
-        display: grid;
-        gap: 0.8rem;
-      }
-
-      .metric-card {
-        border-radius: 22px;
-        padding: 1rem;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(125, 185, 232, 0.16);
-      }
-
-      .metric-card strong {
-        display: block;
-        margin-bottom: 0.25rem;
-        font-size: 1.4rem;
-        color: var(--text);
-      }
-
-      .utility-band {
-        display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 1rem;
-      }
-
-      .utility-ticker {
-        display: grid;
-        gap: 0.7rem;
-      }
-
-      .ticker-card {
-        border-radius: 22px;
-        padding: 1rem;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(140, 240, 255, 0.18);
-      }
-
-      @media (max-width: 840px) {
-        .utility-hero,
-        .utility-band {
-          grid-template-columns: 1fr;
-        }
-      }
+      .utility-shell{display:grid;gap:1rem}
+      .utility-tools{display:grid;gap:1rem}
     </style>
   </head>
   <body>
@@ -78,31 +20,23 @@
         <nav class="site-menu" aria-label="Primary">
           <a class="menu-link" href="../index.html">Home</a>
           <a class="menu-link active" href="index.html">Utilities</a>
-          <a class="menu-link" href="../games/firefighter-game/mobile.html">Firefighter</a>
-          <a class="menu-link" href="../games/old-school-board-games/index.html">Board Games</a>
-          <a class="menu-link" href="../games/work-in-progress/index.html">Lab</a>
-          <a class="menu-link" href="../games/archive/index.html">Archive</a>
+          <div class="menu-group">
+            <a class="menu-link" href="../games/index.html">Games</a>
+            <div class="submenu" aria-label="Games submenu">
+              <a href="../games/old-school-board-games/index.html">Board</a>
+              <a href="../games/index.html">Web</a>
+              <a href="../games/work-in-progress/index.html">Work In Progress</a>
+            </div>
+          </div>
         </nav>
       </header>
 
-      <section class="utility-hero">
-        <section class="panel utility-head">
-          <h1>Creative Utilities</h1>
-          <p class="subtitle">Drawing tools, visual experiments, and other useful interactive projects.</p>
-          <p>Open a tool below and jump right in.</p>
-          <div>
-            <a class="btn" href="#open-tools">Open Tools</a>
-          </div>
-        </section>
-
-        <section class="panel utility-metrics">
-          <div class="metric-card"><strong>Draw</strong><span>Sketch, test ideas, and play with visual effects.</span></div>
-          <div class="metric-card"><strong>Create</strong><span>Use quick tools built for experimenting and making.</span></div>
-          <div class="metric-card"><strong>Explore</strong><span>Try different tools and see what fits your style.</span></div>
-        </section>
+      <section class="panel">
+        <h1>Utilities</h1>
+        <p class="subtitle">Simple tools for drawing, converting, and quick experiments.</p>
       </section>
 
-      <section class="utility-band" id="open-tools">
+      <section class="utility-tools" id="open-tools">
         <section class="panel">
           <h2>Open Tools</h2>
           <div class="projects-grid" style="margin-top: 1rem;">
@@ -111,16 +45,9 @@
             <a class="card" href="image-converter.html"><h3>Image Converter</h3><p>Batch convert image files and folders in-browser. Includes filtering and rename options.</p></a>
           </div>
         </section>
-
-        <section class="panel utility-ticker">
-          <h2>What You’ll Find</h2>
-          <div class="ticker-card"><h3>Drawing Tools</h3><p>Simple tools for sketching, symmetry, and visual play.</p></div>
-          <div class="ticker-card"><h3>Quick Experiments</h3><p>Small projects made to be tried, adjusted, and enjoyed.</p></div>
-          <div class="ticker-card"><h3>More on the Way</h3><p>New tools and experiments can be added here over time.</p></div>
-        </section>
       </section>
 
-      <footer class="copyright">Creative utilities and interactive tools.</footer>
+      <footer class="copyright">Utilities and interactive tools.</footer>
     </main>
   </body>
 </html>

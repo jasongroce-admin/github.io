@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Games | Jason Groce</title>
+    <link rel="stylesheet" href="../assets/css/site.css?v=20260416" />
+    <style>
+      .games-shell{display:grid;gap:1rem}
+      .games-intro{display:grid;gap:1.1rem}
+      .games-intro h1{margin-bottom:.35rem}
+      .games-intro p{margin-top:0}
+      .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+      .games-card{display:grid;gap:.35rem;padding:1rem;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);text-decoration:none}
+      .games-card strong{color:#fff}
+      .games-card span{color:var(--muted)}
+    </style>
+  </head>
+  <body>
+    <main class="content games-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../index.html"><strong>Jason Groce</strong><span>Games</span></a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../index.html">Home</a>
+          <a class="menu-link" href="../utilities/index.html">Utilities</a>
+          <a class="menu-link active" href="index.html">Games</a>
+        </nav>
+      </header>
+      <section class="panel stack games-intro">
+        <h1>Games</h1>
+        <p>Choose a category: Board, Web, or Work In Progress.</p>
+        <div class="games-grid">
+          <a class="games-card" href="old-school-board-games/index.html"><strong>Board</strong><span>Classic board-game style play.</span></a>
+          <a class="games-card" href="work-in-progress/index.html"><strong>Web</strong><span>Online games and current playable builds.</span></a>
+          <a class="games-card" href="work-in-progress/index.html"><strong>Work In Progress</strong><span>Current titles and active builds.</span></a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

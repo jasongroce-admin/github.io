@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jason Groce | Lab, Games, and Experiments</title>
+    <title>Jason Groce | Work In Progress, Games, and Experiments</title>
     <link rel="stylesheet" href="assets/css/site.css?v=20260416" />
     <style>
       .home-shell {
@@ -51,10 +51,89 @@
         gap: 0.8rem;
       }
 
-      .hero-note {
-        max-width: 48rem;
-        font-size: 1.02rem;
-      }
+        .hero-note {
+          max-width: 48rem;
+          font-size: 1.02rem;
+        }
+
+        .update-card {
+          display: grid;
+          gap: 0.45rem;
+          padding: 1rem 1.05rem;
+          border-radius: 18px;
+          border: 1px solid rgba(255, 204, 102, 0.45);
+          background: linear-gradient(180deg, rgba(84, 28, 0, 0.95), rgba(34, 16, 3, 0.98));
+          box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 14px 34px rgba(0,0,0,0.22);
+        }
+
+        .update-card strong {
+          font-size: 0.98rem;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #ffd66b;
+        }
+
+        .update-card span {
+          color: #fff7e7;
+          line-height: 1.5;
+          font-weight: 700;
+        }
+
+        .update-card a {
+          color: #ffd66b;
+          text-decoration: underline;
+        }
+
+        .menu-group {
+          position: relative;
+          padding-bottom: 0.5rem;
+          margin-bottom: -0.5rem;
+        }
+
+        .menu-group > a {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+
+        .submenu {
+          position: absolute;
+          top: calc(100% + 0.1rem);
+          left: 0;
+          min-width: 15rem;
+          display: grid;
+          gap: 0.35rem;
+          padding: 0.65rem;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(8, 16, 28, 0.98);
+          box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-4px);
+          transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+          z-index: 20;
+          pointer-events: auto;
+        }
+
+        .menu-group:hover .submenu,
+        .menu-group:focus-within .submenu {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .submenu a {
+          padding: 0.5rem 0.65rem;
+          border-radius: 10px;
+          color: var(--text);
+          text-decoration: none;
+          background: rgba(255,255,255,0.04);
+        }
+
+        .submenu a:hover {
+          background: rgba(134,213,255,0.12);
+        }
 
       .signal-map {
         position: relative;
@@ -241,28 +320,35 @@
           <strong>Jason Groce</strong>
           <span>Games, Tools & Projects</span>
         </a>
-        <nav class="site-menu" aria-label="Primary">
+          <nav class="site-menu" aria-label="Primary">
           <a class="menu-link active" href="index.html">Home</a>
           <a class="menu-link" href="utilities/index.html">Utilities</a>
-          <a class="menu-link" href="games/firefighter-game/mobile.html">Firefighter</a>
-          <a class="menu-link" href="games/old-school-board-games/index.html">Board Games</a>
-          <a class="menu-link" href="games/work-in-progress/index.html">Lab</a>
-          <a class="menu-link" href="games/archive/index.html">Archive</a>
-        </nav>
+          <div class="menu-group">
+            <a class="menu-link" href="games/index.html">Games</a>
+            <div class="submenu" aria-label="Games submenu">
+              <a href="games/old-school-board-games/index.html">Board</a>
+              <a href="games/work-in-progress/index.html">Web</a>
+            </div>
+          </div>
+          </nav>
       </header>
       <section class="panel hero">
         <div class="hero-copy">
-          <div class="eyebrow pulse">Jason Groce</div>
+          <a class="eyebrow pulse" href="mailto:jason@jasongroce.com">Jason Groce</a>
           <h1>Interactive projects, games, and tools <span>built to be explored.</span></h1>
           <p class="subtitle">Browse games, tools, and current projects from one place.</p>
           <p class="hero-note">Use the menu or jump into the projects below to explore the site.</p>
+          <div class="update-card" aria-label="Latest update">
+            <strong>Important Update</strong>
+            <span><a href="games/pd-witness-recall/index.html">PD: Witness Recall</a> is the current work-in-progress title — a police procedural memory game with replayable cases, stars, and a new age gate. The Games menu is organized into <strong>Board</strong>, <strong>Web</strong>, and <strong>Work In Progress</strong>.</span>
+          </div>
           <div class="hero-actions">
             <a class="btn" href="#launch-grid">View Projects</a>
             <a class="btn alt" href="utilities/index.html">Open Utilities</a>
           </div>
           <div class="stat-bar">
-            <div class="stat"><strong>6</strong><span>main sections</span></div>
-            <div class="stat"><strong>3</strong><span>featured game areas</span></div>
+            <div class="stat"><strong>3</strong><span>main sections</span></div>
+            <div class="stat"><strong>2</strong><span>game groups</span></div>
             <div class="stat"><strong>1</strong><span>home page</span></div>
           </div>
         </div>
@@ -274,8 +360,8 @@
           <a class="nav-pod pod-2" href="games/game-01/index.html"><strong>JR's #2 Rescue</strong><span>Repair and response</span></a>
           <a class="nav-pod pod-3" href="Game2/index.html"><strong>KPD Driving</strong><span>Driving challenge</span></a>
           <a class="nav-pod pod-4" href="utilities/index.html"><strong>Utilities</strong><span>Creative tools</span></a>
-          <a class="nav-pod pod-5" href="games/old-school-board-games/index.html"><strong>Board Games</strong><span>Classic strategy set</span></a>
-          <a class="nav-pod pod-6" href="games/work-in-progress/index.html"><strong>Lab</strong><span>Current experiments</span></a>
+          <a class="nav-pod pod-5" href="games/old-school-board-games/index.html"><strong>Board</strong><span>Classic strategy set</span></a>
+          <a class="nav-pod pod-6" href="games/work-in-progress/index.html"><strong>Web</strong><span>Current experiments</span></a>
         </div>
       </section>
 
@@ -285,10 +371,10 @@
         <div class="projects-grid">
           <a class="card" href="games/firefighter-game/mobile.html"><h3>Firefighter Game</h3><p>Fast mobile play built around rescue scenes and responsive controls.</p></a>
           <a class="card" href="games/game-01/index.html"><h3>JR's #2 Rescue</h3><p>Repair-route action with a tighter arcade feel.</p></a>
+          <a class="card" href="games/pd-witness-recall/index.html"><h3>PD: Witness Recall</h3><p>Timed crime-scene memory cases with witness questioning and comparisons.</p></a>
           <a class="card" href="Game2/index.html"><h3>KPD Driving Response</h3><p>Test reflexes and route control behind the wheel.</p></a>
           <a class="card" href="utilities/index.html"><h3>Creative Utilities</h3><p>Drawing tools, visual helpers, and quick experiments.</p></a>
-          <a class="card" href="games/work-in-progress/index.html"><h3>Messing Around</h3><p>Half-built ideas, tuning passes, and active experiments.</p></a>
-          <a class="card" href="games/archive/index.html"><h3>Archive</h3><p>Older builds and retired paths that are still worth revisiting.</p></a>
+          <a class="card" href="games/work-in-progress/index.html"><h3>Work In Progress</h3><p>Half-built ideas, tuning passes, and active experiments.</p></a>
         </div>
       </section>
 

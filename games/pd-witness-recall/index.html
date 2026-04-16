@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>PD: Witness Recall</title>
+  <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+  <style>
+    :root{--bg:#07121d;--panel:#0b1826;--panel2:#0f2234;--line:#24445e;--accent:#86d5ff;--police-blue:#1e64d6;--police-red:#c62828;--text:#eff8ff;--muted:#a9bfd1;--warn:#ffcc66;--good:#7ef0a8;--bad:#ff7d8a}
+    body{background:radial-gradient(circle at top, rgba(134,213,255,.14), transparent 32%), linear-gradient(180deg,#07121d,#04080d);color:var(--text)}
+    .recall-shell{display:grid;gap:1rem}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.78fr);gap:.8rem;align-items:stretch}
+    .hero-grid,.panel-stack{display:grid;gap:.7rem}
+    .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
+      .status-card,.tip-card,.case-card,.compare-card{border:1px solid rgba(134,213,255,.16);background:rgba(255,255,255,.04);border-radius:18px;padding:.85rem}
+    .status-card{background:linear-gradient(180deg,rgba(30,100,214,.12),rgba(255,255,255,.03))}
+    .tip-card{background:linear-gradient(180deg,rgba(198,40,40,.08),rgba(255,255,255,.03))}
+    .status-card strong,.case-card strong,.tip-card strong{display:block;margin-bottom:.2rem}
+    .viewer{display:grid;gap:.8rem;justify-items:center;text-align:center}
+    .scene-wrap{display:grid;gap:.5rem;justify-items:center;width:100%}
+    .scene-note{padding:.65rem .9rem;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,rgba(30,100,214,.14),rgba(198,40,40,.12));font-size:.9rem;color:#ffffff;text-align:center;font-weight:700;letter-spacing:.01em;box-shadow:0 0 0 1px rgba(134,213,255,.1) inset}
+      .scene-frame{position:relative;overflow:hidden;border-radius:24px;border:1px solid rgba(134,213,255,.2);background:#02060a;aspect-ratio:4 / 3;max-height:min(78vh,860px);width:min(100%,1180px)}
+    .scene-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#02060a}
+    .scene-frame .countdown{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(4rem,14vw,9rem);font-weight:900;letter-spacing:.1em;z-index:6;text-shadow:0 0 28px rgba(134,213,255,.35)}
+    .scene-cover{position:absolute;inset:0;display:grid;place-items:center;padding:1rem;background:linear-gradient(180deg, rgba(1,3,6,.995), rgba(1,3,6,.985));backdrop-filter:blur(14px);z-index:2}
+    .scene-cover::before{content:"";position:absolute;inset:0;background:
+      linear-gradient(90deg, rgba(255,40,40,.08), transparent 35%, rgba(40,120,255,.08) 70%, transparent),
+      radial-gradient(circle at top, rgba(134,213,255,.12), transparent 55%);
+      animation: coverPulse 4s ease-in-out infinite;opacity:.9}
+      .scene-cover .cover-card{position:relative;z-index:1;max-width:23rem;width:100%;display:grid;gap:.7rem;justify-items:center;text-align:center;padding:1.1rem;border-radius:22px;border:1px solid rgba(134,213,255,.28);background:rgba(4,10,16,.9);box-shadow:0 0 0 1px rgba(255,255,255,.04) inset,0 18px 40px rgba(0,0,0,.35)}
+      .age-gate{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.82);backdrop-filter:blur(12px)}
+      .age-gate.hidden{display:none !important}
+      .age-gate-card{width:min(100%,30rem);display:grid;gap:.9rem;padding:1.25rem;border-radius:24px;border:1px solid rgba(134,213,255,.26);background:linear-gradient(180deg, rgba(8,18,28,.98), rgba(4,10,16,.98));box-shadow:0 24px 60px rgba(0,0,0,.55);text-align:center}
+      .age-gate-card h2{margin:0;font-size:clamp(1.5rem,4vw,2rem)}
+      .age-gate-card p{margin:0;color:var(--muted);line-height:1.5}
+      .age-gate-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+      .btn.underage-btn{background:linear-gradient(135deg,#6b7480,#2d3741);color:#fff;border-color:rgba(255,255,255,.12)}
+    .scene-overlay{position:absolute;inset:auto 0 0 0;padding:.8rem;background:linear-gradient(180deg, transparent, rgba(2,6,10,.92) 55%);z-index:4;pointer-events:none}
+    .scene-thumb{position:absolute;right:1rem;bottom:1rem;width:132px;height:84px;border-radius:16px;border:1px solid rgba(134,213,255,.24);object-fit:cover;box-shadow:0 12px 32px rgba(0,0,0,.35)}
+    .flashlight{position:absolute;inset:0;display:none;z-index:3;pointer-events:none;background:radial-gradient(circle 140px at 50% 50%, rgba(255,255,255,.22) 0%, rgba(255,255,255,.14) 26%, rgba(255,255,255,.06) 42%, rgba(255,255,255,0) 72%)}
+    .flashlight.on{display:block}
+    .countdown{font-size:clamp(2rem,6vw,4.5rem);font-weight:800;letter-spacing:.08em}
+    .hidden{display:none !important}
+      .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;align-items:stretch}
+      .questions-panel{width:100%;max-width:56rem;transform:translateY(0);transition:transform .42s ease, opacity .42s ease, max-height .42s ease;display:grid;gap:.8rem}
+      .questions-panel.lowered{transform:translateY(-10rem)}
+      .questions-panel.overlay{position:relative;z-index:5;margin-top:clamp(-22rem,-28vw,-14rem);background:rgba(7,18,29,.98);backdrop-filter:blur(10px);box-shadow:0 -20px 50px rgba(0,0,0,.45)}
+      .questions-panel .case-card{margin:0}
+      .questions-panel .case-card:first-child{padding-bottom:1.25rem}
+      .questions-panel .case-card:last-child{border-top:1px solid rgba(134,213,255,.16);padding-top:1rem}
+      #questionText{font-size:clamp(1.25rem,2.8vw,2rem);line-height:1.35;letter-spacing:.01em;margin:.75rem 0 1.1rem;transition:opacity .22s ease, transform .22s ease}
+      #reportText{font-size:clamp(.95rem,2vw,1.12rem);line-height:1.45;margin:.5rem 0 0}
+      .choice{display:flex;align-items:center;justify-content:center;gap:.55rem;width:100%;min-height:5rem;text-align:center;padding:1.15rem 1rem;border-radius:20px;border:1px solid rgba(134,213,255,.16);color:#fff;font-size:1.15rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;touch-action:manipulation;transition:transform .15s ease, box-shadow .15s ease, filter .15s ease}
+      .choice[data-a="Yes"]{background:linear-gradient(135deg,#1f6ff2 0%,#1347b8 100%);border-color:rgba(178,214,255,.75);box-shadow:0 12px 28px rgba(31,111,242,.34)}
+      .choice[data-a="No"]{background:linear-gradient(135deg,#d63a3a 0%,#8e1616 100%);border-color:rgba(255,166,166,.72);box-shadow:0 12px 28px rgba(214,58,58,.3)}
+      .questions-panel .case-card:first-child{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.015)),
+          repeating-linear-gradient(
+            to bottom,
+            rgba(152,188,218,.22) 0,
+            rgba(152,188,218,.22) 1px,
+            transparent 1px,
+            transparent 28px
+          ),
+          linear-gradient(180deg, rgba(249,248,240,.96), rgba(239,236,225,.95));
+        color:#13202e;
+        border-color:rgba(170,190,210,.62);
+        box-shadow:0 10px 28px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.45);
+      }
+      .questions-panel .case-card:last-child{
+        background:linear-gradient(180deg, rgba(8,20,30,.97), rgba(5,12,20,.98));
+        border-color:rgba(134,213,255,.14);
+        box-shadow:0 -8px 24px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.03);
+      }
+      .questions-panel .case-card:first-child strong,
+      .questions-panel .case-card:first-child p{
+        color:#13202e;
+      }
+      .questions-panel .case-card:first-child strong{
+        letter-spacing:.08em;
+        text-transform:uppercase;
+      }
+      .questions-panel .case-card:first-child p{
+        margin:.65rem 0 1rem;
+        line-height:1.45;
+        font-weight:700;
+      }
+      .questions-panel .case-card:first-child .choices{
+        margin-top:1rem;
+        padding-top:.4rem;
+      }
+      .questions-panel .case-card:first-child .choice{
+        box-shadow:none;
+      }
+      .question-flash{opacity:.12;transform:translateY(.2rem) scale(.995)}
+      .choice:hover{transform:translateY(-1px) scale(1.01);filter:saturate(1.06)}
+    .choice.good{outline:3px solid rgba(126,240,168,.9)}
+    .choice.bad{outline:3px solid rgba(255,125,138,.9)}
+      .pill-row{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+      .report-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;align-items:stretch}
+      .report-actions .btn{width:100%}
+    .pill{padding:.35rem .7rem;border-radius:999px;background:rgba(134,213,255,.1);border:1px solid rgba(134,213,255,.18);font-size:.84rem}
+    .btn.begin-btn{background:linear-gradient(135deg,#1e64d6 0%,#c62828 100%);border-color:rgba(255,255,255,.18);color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 12px 28px rgba(13,35,80,.35);animation: beginGlow 1.8s ease-in-out infinite}
+    .btn.begin-btn:hover{transform:translateY(-1px) scale(1.02)}
+    .btn.cheat-btn{background:linear-gradient(135deg,#1e64d6,#09162f);color:#fff;border-color:rgba(134,213,255,.3)}
+    .bars{display:grid;gap:.55rem}
+    .bar{height:12px;border-radius:999px;background:#112030;overflow:hidden}
+    .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#64f5c8)}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .compare-img{width:100%;border-radius:18px;border:1px solid rgba(134,213,255,.18)}
+    .map{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
+    .map button{border-radius:18px;padding:.9rem;border:1px solid rgba(134,213,255,.14);background:rgba(255,255,255,.03);color:var(--text);text-align:left}
+    .map button.active{border-color:rgba(134,213,255,.7);box-shadow:0 0 0 1px rgba(134,213,255,.2) inset}
+    .menu-link.active{color:#fff}
+    @keyframes beginGlow{0%,100%{filter:saturate(1.05) brightness(1)}50%{filter:saturate(1.35) brightness(1.12)}}
+    @keyframes coverPulse{0%,100%{transform:scale(1);opacity:.82}50%{transform:scale(1.015);opacity:1}}
+      @media (max-width: 920px){.hero,.compare-grid,.status-grid{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1fr}.compare-grid,.status-grid{grid-template-columns:1fr}}
+      @media (max-width: 640px){.scene-thumb{width:96px;height:62px;right:.75rem;bottom:.75rem}.scene-overlay{padding:.7rem}.scene-note{font-size:.82rem}.viewer{justify-items:stretch}.scene-frame{width:100%;max-height:min(58vh,520px)}.choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.choice{min-height:4.5rem;font-size:1rem;padding:1rem .75rem}.questions-panel .case-card:first-child{background:linear-gradient(180deg, rgba(249,248,240,.98), rgba(239,236,225,.97))} #questionText{font-size:clamp(1.15rem,4.7vw,1.6rem)}.report-actions{grid-template-columns:1fr;gap:.5rem}}
+  </style>
+</head>
+  <body>
+    <div class="age-gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
+      <div class="age-gate-card">
+        <h2 id="ageGateTitle">Age Check</h2>
+        <p>This game is intended for players 12 years of age and older. It includes police-procedural themes and crime-scene style imagery for game use only.</p>
+        <p>If you are 12 or older, you may continue. If you are under 12, please leave this page.</p>
+        <div class="age-gate-actions">
+          <button class="btn begin-btn" id="ageContinueBtn" type="button">I’m 12+ / Continue</button>
+          <button class="btn underage-btn" id="ageExitBtn" type="button">I’m Under 12</button>
+        </div>
+      </div>
+    </div>
+    <main class="content recall-shell">
+    <header class="site-header">
+      <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools & Projects</span></a>
+      <nav class="site-menu" aria-label="Primary">
+        <a class="menu-link" href="../../index.html">Home</a>
+        <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+        <div class="menu-group">
+          <a class="menu-link active" href="../index.html">Games</a>
+          <div class="submenu" aria-label="Games submenu">
+            <a href="../old-school-board-games/index.html">Board</a>
+            <a href="../work-in-progress/index.html">Web</a>
+            <a href="../work-in-progress/index.html">Work In Progress</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <section class="panel hero-grid">
+        <div>
+          <div class="eyebrow pulse">PD: Witness Recall</div>
+          <h1>Observe fast. Recall clearly. Help close the case.</h1>
+          <p class="subtitle">A mobile-friendly police procedural memory game with 15 crime-scene levels, timed observation, witness questioning, comparisons, and safety tips between cases.</p>
+        </div>
+        <div class="pill-row">
+          <span class="pill">15 cases</span><span class="pill">iOS + Android friendly</span><span class="pill">Save / Share</span><span class="pill">Comparison screen</span>
+        </div>
+        <div class="status-grid">
+          <div class="status-card"><strong id="casesSolved">0</strong><span>Cases solved</span></div>
+          <div class="status-card"><strong id="accuracyStat">0%</strong><span>Accuracy</span></div>
+          <div class="status-card"><strong id="streakStat">0</strong><span>Perfect streak</span></div>
+          <div class="status-card"><strong id="badgeStat">None</strong><span>Badge</span></div>
+        </div>
+      </section>
+      <section class="panel panel-stack">
+        <div class="tip-card"><strong>Safety tip</strong><span id="safetyTip">Stay calm, keep your eyes moving, and remember even small details can matter.</span></div>
+        <div class="bars">
+          <div>Overall progress</div><div class="bar"><span id="progressBar" style="width:0%"></span></div>
+          <div>Case score</div><div class="bar"><span id="caseBar" style="width:0%"></span></div>
+        </div>
+      </section>
+    </section>
+
+      <section class="panel viewer">
+        <div class="pill-row">
+          <button class="btn begin-btn" id="startBtn" type="button">Begin</button>
+          <button class="btn" id="retryBtn" type="button">Try Again</button>
+          <button class="btn" id="nextBtn" type="button">Next Case</button>
+          <button class="btn cheat-btn hidden" id="cheatBtn" type="button">Flashlight Cheat</button>
+            <button class="btn" id="shareBtn" type="button">Share Report</button>
+            <button class="btn" id="retireBtn" type="button">Retire</button>
+          <select id="difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
+        </div>
+        <h2 id="caseTitle"></h2>
+        <p id="caseBrief"></p>
+        <div class="scene-wrap">
+          <div class="scene-note">In-game visual only. These are not true crime scene photos.</div>
+      <div class="scene-frame" id="sceneFrame">
+            <img id="sceneImg" alt="crime scene" />
+            <img id="sceneThumb" class="scene-thumb hidden" alt="scene thumbnail" />
+            <div id="flashlightLayer" class="flashlight hidden"></div>
+            <div class="scene-cover" id="sceneCover">
+              <div class="cover-card">
+                <strong>Ready to begin?</strong>
+                <p>You will see the image only for a few seconds. Tap Begin when you are ready.</p>
+                <p>The screen will go black first, then count down before the image appears.</p>
+                <button class="btn begin-btn" id="coverBeginBtn" type="button">Begin</button>
+              </div>
+            </div>
+            <div class="scene-overlay">
+              <div id="briefingView">
+                <div class="countdown hidden" id="countdown">3</div>
+              </div>
+              <div id="resultView" class="hidden"></div>
+            </div>
+        </div>
+      </div>
+
+      <section class="panel-stack questions-panel" id="questionsPanel">
+        <div class="case-card">
+          <strong>Interrogation</strong>
+          <p id="questionText">Tap Begin. The screen will go black, count down, and then show the image.</p>
+          <div class="choices" id="choices"></div>
+        </div>
+        <div class="case-card">
+          <strong>Witness report</strong>
+          <p id="reportText">After the image fades, the officers will introduce themselves and start the interview.</p>
+            <div class="report-actions" style="margin-top:.75rem">
+              <button class="btn hidden" id="submitReportBtn" type="button">Thank the officers / Submit Report</button>
+              <button class="btn hidden" id="keepGoingBtn" type="button">Just a few more questions</button>
+              <button class="btn hidden" id="lastChanceBtn" type="button">That’s all I know</button>
+            </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel compare-grid hidden" id="compareSection">
+      <div class="compare-card"><strong>Actual scene</strong><img id="actualCompare" class="compare-img" alt="actual scene comparison" /></div>
+      <div class="compare-card"><strong>Your witness recall</strong><img id="memCompare" class="compare-img" alt="remembered scene comparison" /><p id="compareText"></p></div>
+    </section>
+
+    <section class="panel">
+      <h2>Case Map</h2>
+      <p>Pick any of the 15 cases. The current level stays highlighted, and completed cases stay open.</p>
+      <div class="map" id="map"></div>
+    </section>
+  </main>
+
+  <script>
+    const tipBank = [
+      'Keep your voice calm and your answers clear.',
+      'Check the edges of the scene first for hidden clues.',
+      'Small objects often matter more than big ones.',
+      'Look for what was moved, knocked over, or left open.',
+      'Doorways and windows often tell the best story.',
+      'Ground marks can reveal where someone went.',
+      'A witness report works best when it stays specific.',
+      'If a detail feels obvious, verify it anyway.',
+      'Clutter can hide the most important clue.',
+      'Count how many people were actually in the scene.',
+      'A vehicle, a fence, or a light can anchor the story.',
+      'Look for mismatched colors or objects out of place.',
+      'The first clue you notice is not always the strongest.',
+      'Think like a careful witness, not a guesser.',
+      'Don’t rush your memory when the scene is busy.',
+      'Observe the left side, right side, and center separately.',
+      'A broken line or broken path can be a strong clue.',
+      'Watch for tools, gloves, and items in someone’s hands.',
+      'A note, sign, or mailbox can help set the location.',
+      'Bags, boxes, and bins often move during a theft.',
+      'Look for motion first, then details.',
+      'A shadow or reflection may reveal more than expected.',
+      'Animals in the scene often react to the suspect.',
+      'Weather clues can help explain what happened.',
+      'A parked vehicle may show who was nearby.',
+      'If something is tipped over, ask why.',
+      'Think about what a neighbor would notice first.',
+      'A porch, driveway, or yard can hold key evidence.',
+      'The strongest clue is often the one in plain sight.',
+      'Remember the order: scene, question, answer, review.',
+      'A flashlight clue can indicate where attention was aimed.',
+      'A door left open is often more important than the door itself.',
+      'Broken glass should always make you look twice.',
+      'A child’s toy can be a helpful location marker.',
+      'The background can matter as much as the foreground.',
+      'If the scene feels chaotic, start with structure.',
+      'Look for who is moving away from the scene.',
+      'A witness should report what was seen, not guessed.',
+      'Repeated colors or shapes can identify the suspect.',
+      'The yard, curb, and street each tell part of the story.',
+      'A tipped bin can show the route of movement.',
+      'Keep track of what is missing from the scene.',
+      'A good report includes one clear detail at a time.',
+      'Listen for the difference between “maybe” and “I saw.”',
+      'The best clue may be the one that looks ordinary.',
+      'Pause before answering to let the image settle in.'
+    ];
+    const levels = [
+      {img:'./scenes/scene_01.webp', title:'Case 01 — Backyard Break-In', brief:'You were walking nearby when you noticed suspicious activity behind a quiet house.', answers:['masked thief in black hoodie','crowbar in the thief’s hand','sliding glass door being pried open','red tricycle tipped over','muddy footprints leading to the door','black flashlight on the ground','neighbor’s brown labrador barking','broken glass shards near the door']},
+      {img:'./scenes/scene_02.webp', title:'Case 02 — Driveway Vehicle Tamper', brief:'A neighbor called out after seeing someone messing with a parked truck.', answers:['screwdriver in the burglar’s hand','tampering with the truck ignition','open garage door','silver bicycle with a flat tire','tipped-over recycling bin','work gloves on the hood','broken side mirror on the ground','dog bowl with spilled water']},
+      {img:'./scenes/scene_03.webp', title:'Case 03 — Garage Theft', brief:'A garage door was open and tools were scattered everywhere when you looked over.', answers:['thief in hoodie and gloves','stealing the lawnmower','power tools being taken','open garage door','blue cooler with the lid open','open toolbox with tools spilled','calendar showing October','scattered nails on the floor']},
+      {img:'./scenes/scene_04.webp', title:'Case 04 — Side Yard Window Break-In', brief:'Someone was climbing through a broken window while the yard was left in disarray.', answers:['masked intruder in a dark jacket','climbing through a broken first-floor window','wooden ladder leaning against the house','yellow dump truck toy','tipped-over wheelbarrow with spilled dirt','flashlight on the windowsill','neighbor’s dog watching from the fence','broken glass shards on the sill']},
+      {img:'./scenes/scene_05.webp', title:'Case 05 — Front Porch Package Theft', brief:'A porch dispute turned into a quick grab for packages and a forced door.', answers:['thief stealing a package','second person forcing the front door','stacked packages on the porch','welcome mat with mud','tipped rocking chair','broken flower pot with soil spilled','basketball on the steps','bugs around the porch light']},
+      {img:'./scenes/scene_06.webp', title:'Case 06 — Backyard TV Theft', brief:'Two suspects moved fast while a neighbor tried to get a look from the porch.', answers:['thief carrying a flat-screen TV','lookout person near the fence','neighbor woman in a bathrobe','children’s swing set','tipped-over kiddie pool','open shed with tools visible','dog watching from the fence','neighbor porch light on']},
+      {img:'./scenes/scene_07.webp', title:'Case 07 — Street Bike Theft', brief:'A bike was taken in front of a home while the family reacted from the porch.', answers:['thief stealing a bicycle','mother calling out from the porch','boy playing basketball','girl playing basketball','tipped-over trash bin','muddy tire tracks on the grass','dog on a leash in the yard','tire tracks leading to the street']},
+      {img:'./scenes/scene_08.webp', title:'Case 08 — Trailer Robbery', brief:'A trailer door was open and the yard was crowded with signs of a hurried escape.', answers:['masked thief carrying a flat-screen TV','adult fleeing toward the street','teenager running toward the neighboring trailer','aggressive German Shepherd barking','open trailer door','tipped-over trash cans','red tricycle on the grass','plastic slide tipped over']},
+      {img:'./scenes/scene_09.webp', title:'Case 09 — Lawn Bicycle Theft', brief:'The front lawn had several clues around a missing bike and a quick getaway.', answers:['stolen bicycle being taken','children’s bicycles on the lawn','open garage door with tools visible','basketball hoop in the driveway','scattered toys on the grass','neighbor walking a dog across the street','fallen autumn leaves','scattered mail near the mailbox']},
+      {img:'./scenes/scene_10.webp', title:'Case 10 — Living Room Safe Theft', brief:'The front of the home looked calm, but inside the room told a different story.', answers:['open safe in the living room','messy floor around the safe','television mounted on the wall','picture frame knocked askew','lamp still on','window curtains drawn back','shoe print near the rug','drawer pulled open']},
+      {img:'./scenes/scene_11.webp', title:'Case 11 — Backyard Lawnmower Theft', brief:'A mower was dragged out while the backyard showed signs of a rushed exit.', answers:['thief pushing the lawnmower','open shed door','garden hose uncoiled on the grass','fallen apples under the tree','dog watching from the fence','tools near the shed','mower being pulled toward the yard gate','muddy footprints in the grass']},
+      {img:'./scenes/scene_12.webp', title:'Case 12 — Driveway Bicycle Theft', brief:'The driveway had enough evidence to show the thief moved quickly and confidently.', answers:['thief taking a bicycle','silver bicycle on the driveway','work gloves dropped nearby','broken side mirror','tipped recycling bin','porch light on','garden gnome knocked over','mail in the mailbox']},
+      {img:'./scenes/scene_13.webp', title:'Case 13 — Side Yard Shed Theft', brief:'The side yard and shed were left open after a hurried theft.', answers:['open shed door','tools scattered outside the shed','wheelbarrow tipped over','extension cord coiled on the ground','neighbor dog near the fence','shovel on the grass','broken glass by the shed','flashlight on the ground']},
+      {img:'./scenes/scene_14.webp', title:'Case 14 — Backyard Lawnmower Theft', brief:'The mower theft left the yard with tracks and a few important witnesses nearby.', answers:['thief in a hoodie','lawnmower being stolen','muddy footprints leading away','trash can with the lid off','neighbor’s house lit in the background','red pickup truck parked on the street','open upstairs window','bird feeder hanging from the tree']},
+      {img:'./scenes/scene_15.webp', title:'Case 15 — Driveway Bicycle Theft', brief:'The final scene keeps focus on the driveway, the bike, and the escape path.', answers:['stolen bicycle being taken','driveway with scattered toys','open garage door','basketball hoop in the driveway','muddy boot prints','mailbox with mail sticking out','small american flag on the porch','neighbor walking a dog across the street']}
+    ];
+    const el = id => document.getElementById(id);
+    const state = { level:0, score:0, answers:0, correct:0, streak:0, perfectCaseStreak:0, round:'briefing', locked:false, completed:new Set(JSON.parse(localStorage.getItem('witnessRecallDone')||'[]')), levelStars: JSON.parse(localStorage.getItem('witnessRecallStars')||'[]'), levelBestScore: JSON.parse(localStorage.getItem('witnessRecallBestScore')||'[]'), cheatReady:0, cheatUsed:false, cheatCarry:0, deck:[], deckIndex:0, checkpointReady:false, checkpointOffered:false, checkpointPending:false, submitting:false };
+    const cfg = { easy:{view:8, answer:18, q:5}, medium:{view:5, answer:14, q:7}, hard:{view:2, answer:10, q:8} };
+    const sharedPool = ['mask','gloves','flashlight','trash can','bicycle','dog','window','door','ladder','fence','toolbox','truck','porch light','mailbox','mower','swing set','garage','shed','basketball'];
+      function save(){ localStorage.setItem('witnessRecallDone', JSON.stringify([...state.completed])); localStorage.setItem('witnessRecallStars', JSON.stringify(state.levelStars)); localStorage.setItem('witnessRecallBestScore', JSON.stringify(state.levelBestScore)); localStorage.setItem('witnessRecallStats', JSON.stringify({score:state.score,correct:state.correct,answers:state.answers,streak:state.streak,perfectCaseStreak:state.perfectCaseStreak,cheatReady:state.cheatReady,cheatUsed:state.cheatUsed,cheatCarry:state.cheatCarry})); }
+    function pct(){ return state.answers ? Math.round((state.correct/state.answers)*100) : 0; }
+    function tip(){ el('safetyTip').textContent = tipBank[Math.floor(Math.random() * tipBank.length)]; }
+    function starString(value){ return '★★★★★'.slice(0, value).padEnd(5, '☆'); }
+      function maxUnlockedLevel(){ return Math.min(levels.length - 1, state.completed.size); }
+    function renderMap(){ const unlocked = maxUnlockedLevel(); el('map').innerHTML = levels.map((l,i)=>`<button class="${i===state.level?'active':''}" data-i="${i}" ${i > unlocked ? 'disabled aria-disabled="true"' : ''}><strong>${String(i+1).padStart(2,'0')}. ${l.title}</strong><div>${i <= unlocked ? (state.completed.has(i)?'Completed':'Unlocked') : 'Locked'}</div><div class="pill" style="margin-top:.35rem">${starString(state.levelStars[i]||0)}</div></button>`).join(''); }
+    function renderHeader(){ el('casesSolved').textContent = state.completed.size; el('accuracyStat').textContent = `${pct()}%`; el('streakStat').textContent = state.perfectCaseStreak; el('badgeStat').textContent = state.perfectCaseStreak >= 3 ? 'Perfect Streak' : pct()>=90 ? 'Eagle Eye' : pct()>=75 ? 'Solid Recall' : 'None'; el('progressBar').style.width = `${(state.completed.size/levels.length)*100}%`; el('caseBar').style.width = `${Math.min(100, pct())}%`; el('cheatBtn').classList.toggle('hidden', state.cheatReady < 2 || state.cheatUsed); el('cheatBtn').textContent = state.cheatUsed ? `Flashlight Ready in ${2 - state.cheatCarry} Cases` : 'Flashlight Cheat'; }
+    function buildDeck(lvl){
+      const count = cfg[el('difficulty').value].q;
+      const shuffled = [...lvl.answers].sort(()=>Math.random()-0.5).slice(0,count);
+      return shuffled.map((phrase, index) => {
+        const statement = makeStatementFromAnswer(phrase, index);
+        const isTrue = Math.random() < 0.5;
+        return { q: isTrue ? statement : invertStatement(statement), a: isTrue ? 'Yes' : 'No', choices: ['Yes','No'].sort(()=>Math.random()-0.5) };
+      });
+    }
+      function makeStatementFromAnswer(phrase, index){
+        const clean = phrase.trim().replace(/\s+/g, ' ');
+        const lower = clean.toLowerCase();
+        const hasAction = /(barking|running|facing|carrying|fleeing|stealing|pushing|climbing|opening|open|tipped|leaning|watching|calling|being taken|being pried open|being dragged|being forced|being moved|being spilled)/i.test(clean);
+        const startsWithDet = /^(the|a|an|my|his|her|their|our|your)\b/i.test(clean);
+        if (hasAction) {
+          if (startsWithDet) return `Was ${clean[0].toLowerCase()}${clean.slice(1)}?`;
+          return `Was ${clean[0].toLowerCase()}${clean.slice(1)}?`;
+        }
+        if (/^[a-z]/i.test(clean) && !startsWithDet) {
+          const article = /^[aeiou]/i.test(clean) ? 'an' : 'a';
+          return index % 2 === 0 ? `Was there ${clean}?` : `Was it ${article} ${clean}?`;
+        }
+        if (/^(the|a|an)\b/i.test(clean)) return `Was ${clean[0].toLowerCase()}${clean.slice(1)}?`;
+        return `Was there ${clean}?`;
+      }
+      function invertStatement(statement){
+        if (statement.startsWith('Was there ')) return statement.replace('Was there ', 'Was there no ');
+        if (statement.startsWith('Was it ')) return statement.replace('Was it ', 'Was it not ');
+        if (statement.startsWith('Was the ')) return statement.replace('Was the ', 'Was the not ');
+        if (statement.startsWith('Was a ')) return statement.replace('Was a ', 'Was not a ');
+        if (statement.startsWith('Was an ')) return statement.replace('Was an ', 'Was not an ');
+        if (statement.startsWith('Was ')) return statement.replace('Was ', 'Was not ');
+        return `Wasn't it true that ${statement.replace(/^Was\s+/,'').replace(/\?$/,'')}?`;
+      }
+    function setScene(){ const lvl = levels[state.level]; el('caseTitle').textContent = lvl.title; el('caseBrief').textContent = lvl.brief; el('sceneImg').src = lvl.img; el('actualCompare').src = lvl.img; el('memCompare').src = lvl.img; el('compareText').textContent = 'The comparison screen shows the original image and your recall record.'; tip(); renderMap(); renderHeader(); el('sceneCover').classList.remove('hidden'); el('sceneFrame').style.filter='none'; el('countdown').classList.add('hidden'); el('flashlightLayer').classList.add('hidden'); el('flashlightLayer').classList.remove('on'); state.deck = buildDeck(lvl); state.deckIndex = 0; state.checkpointReady=false; state.checkpointOffered=false; state.checkpointPending=false; state.submitting=false; el('submitReportBtn').classList.add('hidden'); el('keepGoingBtn').classList.add('hidden'); el('lastChanceBtn').classList.add('hidden'); el('questionText').textContent = 'Tap Begin. The screen will go black, count down, and then show the image.'; el('reportText').textContent = 'After the image fades, the officers will introduce themselves and start the interview.'; el('questionsPanel').classList.remove('lowered','overlay'); }
+    function renderQuestion(){ const q = state.deck[state.deckIndex]; if(!q){ finishCase(); return; } const questionEl = el('questionText'); const choicesEl = el('choices'); questionEl.classList.add('question-flash'); choicesEl.innerHTML = ''; choicesEl.setAttribute('aria-busy','true'); setTimeout(()=>{ questionEl.textContent = q.q; questionEl.classList.remove('question-flash'); choicesEl.innerHTML = q.choices.map(choice=>`<button class="choice" data-a="${choice}" type="button">${choice === 'Yes' ? 'YES' : 'NO'}</button>`).join(''); choicesEl.querySelectorAll('button').forEach(btn=>btn.disabled=false); choicesEl.removeAttribute('aria-busy'); el('questionsPanel').classList.add('lowered','overlay'); el('reportText').textContent = 'Officer intro: "Thank you for coming in. Officer Davis and Officer Morales would like to ask you a few questions about what you saw."'; if(state.answers >= 5 && !state.checkpointOffered && !state.submitting){ state.checkpointReady = true; el('submitReportBtn').classList.remove('hidden'); el('keepGoingBtn').classList.remove('hidden'); el('lastChanceBtn').classList.remove('hidden'); el('submitReportBtn').textContent = 'Submit Report'; el('keepGoingBtn').textContent = 'Just a few more questions'; el('lastChanceBtn').textContent = 'That’s all I know'; state.checkpointOffered = true; } }, 180); }
+    function beginCountdown(done){ const steps = ['3','2','1','READY','SET','GO']; let i = 0; el('countdown').classList.remove('hidden'); el('countdown').textContent = steps[i]; const t = setInterval(()=>{ i++; if(i < steps.length){ el('countdown').textContent = steps[i]; } else { clearInterval(t); el('countdown').classList.add('hidden'); done(); } }, 520); }
+    function endView(){ el('sceneCover').classList.remove('hidden'); el('sceneImg').style.opacity='0'; el('sceneThumb').classList.add('hidden'); el('flashlightLayer').classList.remove('on'); el('flashlightLayer').classList.add('hidden'); }
+    function startCase(){
+        state.locked = true;
+        const d = cfg[el('difficulty').value];
+        el('sceneCover').classList.remove('hidden');
+      el('sceneImg').style.opacity = '0';
+      el('sceneThumb').classList.add('hidden');
+      el('questionsPanel').classList.remove('lowered','overlay');
+        el('questionText').textContent = 'The screen stays black while the timer counts down.';
+        el('reportText').textContent = 'Officer Davis and Officer Morales will step in after the image clears.';
+        beginCountdown(()=>{
+          el('sceneCover').classList.add('hidden');
+          el('sceneImg').style.opacity = '1';
+        setTimeout(()=>{
+          el('sceneImg').style.opacity = '0';
+          el('sceneFrame').style.filter = 'none';
+          el('questionsPanel').classList.add('overlay');
+          renderQuestion();
+          state.locked = false;
+        }, d.view*1000);
+      });
+    }
+    function answer(choice){ if(state.locked) return; state.locked=true; const correct = state.deck[state.deckIndex]?.a; state.answers++; el('choices').querySelectorAll('button').forEach(btn=>btn.disabled=true); if(choice===correct){ state.correct++; state.score+=10; state.streak++; } else { state.score = Math.max(0, state.score-2); state.streak=0; }
+      [...el('choices').children].forEach(btn=>{ if(btn.dataset.a===correct) btn.classList.add('good'); if(btn.dataset.a===choice && choice!==correct) btn.classList.add('bad'); });
+      if(state.answers >= 5){ el('submitReportBtn').classList.remove('hidden'); el('keepGoingBtn').classList.remove('hidden'); el('lastChanceBtn').classList.remove('hidden'); }
+      setTimeout(()=>{ state.deckIndex++; if(state.deckIndex >= state.deck.length){ finishCase(); return; } state.locked=false; renderQuestion(); }, cfg[el('difficulty').value].answer*100 + 180);
+        }
+    function finishCase(){ const accuracy = pct(); state.completed.add(state.level); const stars = accuracy >= 95 ? 5 : accuracy >= 90 ? 4 : accuracy >= 80 ? 3 : accuracy >= 65 ? 2 : accuracy >= 50 ? 1 : 0; state.levelStars[state.level] = Math.max(state.levelStars[state.level]||0, stars); state.levelBestScore[state.level] = Math.max(state.levelBestScore[state.level]||0, state.score); state.perfectCaseStreak = stars === 5 ? state.perfectCaseStreak + 1 : 0; if(accuracy>=80){ state.cheatReady++; if(state.cheatReady>=2 && !state.cheatUsed) el('cheatBtn').classList.remove('hidden'); } if(state.cheatUsed){ state.cheatCarry++; } save(); renderHeader(); renderMap(); tip(); el('compareSection').classList.remove('hidden'); el('compareText').textContent = accuracy>=80 ? 'Great recall. The scene is closed.' : accuracy>=50 ? 'This case remains under review. Keep going.' : 'Thank you for your time. Take a donut break and try again later.'; const bonus = state.cheatUsed ? 0 : state.cheatCarry * 25; el('reportText').textContent = `Total: ${accuracy}% • ${stars} star${stars===1?'':'s'}`; el('resultView').innerHTML = `<strong>${accuracy>=80?'Case Closed':'Witness Report Filed'}</strong><p>${el('compareText').textContent}</p><p>${bonus ? `Unused flashlight bonus: +${bonus} points.` : 'Flashlight cheat used this cycle.'}</p><div class="pill-row" style="margin-top:.75rem;justify-content:center">${accuracy>=80 ? '<span class="pill">Advance to next case</span>' : '<span class="pill">Try again or lower difficulty</span>'}</div>`; el('resultView').classList.remove('hidden'); el('sceneFrame').style.filter='none'; state.locked=true; }
+    function nextCase(){ state.level = Math.min(state.level + 1, levels.length - 1); state.answers = 0; state.correct = 0; state.streak = 0; state.locked = false; el('compareSection').classList.add('hidden'); el('resultView').classList.add('hidden'); setScene(); }
+    function hideAgeGate(){ el('ageGate').classList.add('hidden'); }
+    function underageExit(){ if(window.history.length > 1){ window.history.back(); return; } window.location.href = 'about:blank'; }
+    el('ageContinueBtn').onclick = hideAgeGate;
+    el('ageExitBtn').onclick = underageExit;
+    window.addEventListener('keydown', e => { if(e.key === 'Escape' && !el('ageGate').classList.contains('hidden')) underageExit(); });
+    setTimeout(()=>{ if(!el('ageGate').classList.contains('hidden')) el('ageContinueBtn').focus(); }, 50);
+    el('startBtn').onclick = startCase; el('coverBeginBtn').onclick = startCase; el('retryBtn').onclick = ()=>{ state.answers=0; state.correct=0; state.streak=0; state.locked=false; el('compareSection').classList.add('hidden'); el('resultView').classList.add('hidden'); setScene(); };
+      el('submitReportBtn').onclick = ()=>{ if(state.answers < 5) return; state.submitting = true; state.checkpointReady = false; el('submitReportBtn').classList.add('hidden'); el('keepGoingBtn').classList.add('hidden'); el('lastChanceBtn').classList.add('hidden'); const passThreshold = 3; if(state.correct >= passThreshold){ finishCase(); return; } el('reportText').textContent = 'Officer: "That helps. We need just a few more questions."'; state.locked = false; state.checkpointOffered = true; state.answers = 0; state.correct = 0; };
+      el('keepGoingBtn').onclick = ()=>{ if(state.answers < 5) return; state.checkpointReady = false; el('submitReportBtn').classList.add('hidden'); el('keepGoingBtn').classList.add('hidden'); el('lastChanceBtn').classList.add('hidden'); state.submitting = false; state.locked = false; el('reportText').textContent = 'Officer: "Thank you. Let’s keep going with a few more questions."'; };
+    el('lastChanceBtn').onclick = ()=>{ if(state.answers < 5) return; state.checkpointReady = false; el('submitReportBtn').classList.add('hidden'); el('keepGoingBtn').classList.add('hidden'); el('lastChanceBtn').classList.add('hidden'); state.submitting = true; finishCase(); };
+      el('nextBtn').onclick = nextCase; el('shareBtn').onclick = async ()=>{ const text = `PD: Witness Recall\nCase: ${levels[state.level].title}\nScore: ${state.score}\nCorrect: ${state.correct}/${state.answers}\nStars: ${state.levelStars[state.level]||0}/5\nBest score: ${state.levelBestScore[state.level]||0}\nCases solved: ${state.completed.size}\nPerfect streak: ${state.perfectCaseStreak}`; try{ if(navigator.share){ await navigator.share({title:'PD: Witness Recall Report', text}); } else if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(text); alert('Report copied to clipboard.'); } else { throw new Error('share unavailable'); } } catch(e){ const blob = new Blob([text], {type:'text/plain'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `pd-witness-recall-report-level-${state.level+1}.txt`; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 1000); } };
+      el('retireBtn').onclick = ()=>{ if(!confirm('Retire and reset all progress, settings, rank, stars, best scores, and unlocked cases back to a new user?')) return; localStorage.removeItem('witnessRecallDone'); localStorage.removeItem('witnessRecallStars'); localStorage.removeItem('witnessRecallBestScore'); localStorage.removeItem('witnessRecallStats'); state.level = 0; state.score = 0; state.answers = 0; state.correct = 0; state.streak = 0; state.perfectCaseStreak = 0; state.completed = new Set(); state.levelStars = []; state.levelBestScore = []; state.cheatReady = 0; state.cheatUsed = false; state.cheatCarry = 0; el('difficulty').value = 'medium'; el('compareSection').classList.add('hidden'); el('resultView').classList.add('hidden'); setScene(); renderHeader(); renderMap(); alert('Retired. All case progress, rank, best scores, and unlocks have been reset for a fresh profile.'); };
+    el('cheatBtn').onclick = ()=>{ if(state.cheatReady < 2 || state.cheatUsed) return; state.cheatUsed = true; state.cheatCarry = 0; el('sceneCover').classList.add('hidden'); el('flashlightLayer').classList.remove('hidden'); el('flashlightLayer').classList.add('on'); el('sceneImg').style.opacity = '1'; el('sceneImg').style.filter = 'brightness(.62) contrast(.95)'; state.locked = false; setTimeout(()=>{ el('flashlightLayer').classList.remove('on'); el('flashlightLayer').classList.add('hidden'); el('sceneImg').style.opacity = '0'; }, 6000); renderHeader(); save(); };
+    el('map').onclick = e => { const b = e.target.closest('button[data-i]'); if(!b || b.disabled) return; const target = Number(b.dataset.i); if(target > maxUnlockedLevel()) return; state.level = target; state.answers=0; state.correct=0; state.streak=0; state.locked=false; el('compareSection').classList.add('hidden'); el('resultView').classList.add('hidden'); setScene(); };
+    el('choices').onclick = e => { const b = e.target.closest('.choice'); if(b) answer(b.dataset.a); };
+    const saved = JSON.parse(localStorage.getItem('witnessRecallStats')||'{}'); if(saved){ state.score=saved.score||0; state.correct=saved.correct||0; state.answers=saved.answers||0; state.streak=saved.streak||0; state.cheatReady=saved.cheatReady||0; state.cheatUsed=saved.cheatUsed||false; state.cheatCarry=saved.cheatCarry||0; }
+    setScene();
+    el('ageGate').classList.remove('hidden');
+  </script>
+</body>
+</html>
+
+
+
