@@ -6,6 +6,40 @@
     <title>Old School Board Games</title>
     <link rel="stylesheet" href="../../assets/css/site.css">
     <style>
+      .board-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .board-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+        gap: 1rem;
+      }
+
+      .board-intro {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .board-highlights {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .highlight-card {
+        border-radius: 22px;
+        padding: 1rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(125, 185, 232, 0.16);
+      }
+
+      .highlight-card strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: var(--text);
+      }
+
       .old-school-panel {
         text-align: center;
       }
@@ -54,36 +88,71 @@
         color: #231252;
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 1px 4px rgba(0, 0, 0, 0.35);
       }
+
+      @media (max-width: 840px) {
+        .board-hero {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
-    <main class="content">
+    <main class="content board-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link active" href="index.html">Board Games</a>
+          <a class="menu-link" href="../work-in-progress/index.html">Lab</a>
+          <a class="menu-link" href="../archive/index.html">Archive</a>
+        </nav>
+      </header>
+
+      <section class="board-hero">
+        <section class="panel board-intro">
+          <h1>Old School Board Games</h1>
+          <p class="subtitle">Classic board games with solo play, difficulty settings, and mobile-friendly controls.</p>
+          <p>Pick a game and start playing.</p>
+        </section>
+
+        <section class="panel board-highlights">
+          <div class="highlight-card"><strong>Classic Games</strong><span>Tic Tac Toe, Four Circles, Chess, and Checkers.</span></div>
+          <div class="highlight-card"><strong>Solo Play</strong><span>Play against an AI Bot with adjustable difficulty.</span></div>
+          <div class="highlight-card"><strong>Easy to Jump Into</strong><span>Simple controls and quick starts on mobile or desktop.</span></div>
+        </section>
+      </section>
+
       <section class="panel old-school-panel">
-        <h1>Old School Board Games</h1>
-        <p>Each game now supports a one-player side with clearer HUD cues and selectable difficulty.</p>
+        <h2>Game Library</h2>
+        <p>Each game includes one-player play and difficulty options.</p>
 
         <div class="projects-grid old-school-grid">
           <a class="card" href="tic-tac-toe.html">
             <h3>Tic Tac Toe</h3>
-            <p>Fast rounds with a responsive CPU and clear turn tiles.</p>
+            <p>Fast rounds with a responsive AI Bot and clear turn tiles.</p>
             <div class="quality-row">
               <span class="quality"><span class="sprite">X</span>Solo Play</span>
               <span class="quality"><span class="sprite">3</span>3 Levels</span>
             </div>
           </a>
 
-          <a class="card" href="connect-4.html">
+          <a class="card" href="four-circles.html">
             <h3>4 Circles</h3>
             <p>Centered board layout, guided drop controls, and smarter defense on higher levels.</p>
             <div class="quality-row">
-              <span class="quality"><span class="sprite">4</span>CPU Match</span>
+              <span class="quality"><span class="sprite">4</span>AI Bot</span>
               <span class="quality"><span class="sprite">!</span>Turn HUD</span>
             </div>
           </a>
 
           <a class="card" href="chess.html">
             <h3>Chess</h3>
-            <p>White-side play with move highlights, difficulty control, and stronger CPU choices.</p>
+            <p>White-side play with move highlights, difficulty control, and stronger AI Bot choices.</p>
             <div class="quality-row">
               <span class="quality"><span class="sprite">K</span>Solo Side</span>
               <span class="quality"><span class="sprite">+</span>Hints</span>
@@ -92,21 +161,13 @@
 
           <a class="card" href="checkers.html">
             <h3>Checkers</h3>
-            <p>Forced jumps, kings, and CPU pressure that grows with the selected level.</p>
+            <p>Forced jumps, kings, and AI Bot pressure that grows with the selected level.</p>
             <div class="quality-row">
               <span class="quality"><span class="sprite">D</span>Capture Logic</span>
               <span class="quality"><span class="sprite">AI</span>Difficulty</span>
             </div>
           </a>
 
-          <a class="card" href="../../index.html">
-            <h3>Back Home</h3>
-            <p>Return to the homepage and explore the rest of the collection.</p>
-            <div class="quality-row">
-              <span class="quality"><span class="sprite">H</span>Main Lobby</span>
-              <span class="quality"><span class="sprite">*</span>More Games</span>
-            </div>
-          </a>
         </div>
       </section>
     </main>

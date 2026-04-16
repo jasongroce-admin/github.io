@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Image Converter</title>
+    <link rel="stylesheet" href="../assets/css/site.css">
+    <style>
+      body { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
+      .tool { width: min(1180px, 100%); margin: 0 auto; display: grid; gap: 1.25rem; }
+      .grid { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); }
+      .row { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
+      .stack { display: grid; gap: 1rem; }
+      .field { display: grid; gap: 0.45rem; }
+      label { color: var(--muted); font-size: 0.88rem; }
+      input[type="text"], input[type="number"], select {
+        border-radius: 16px; border: 1px solid rgba(125,185,232,0.18);
+        background: rgba(10,16,24,0.65); color: var(--text); padding: 0.7rem 0.85rem; outline: none;
+      }
+      input[type="number"] { max-width: 12rem; }
+      .pill { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.7rem; border-radius: 999px;
+        border: 1px solid rgba(125,185,232,0.18); background: rgba(255,255,255,0.035); color: var(--muted); font-size: 0.9rem; }
+      .pill strong { color: var(--text); }
+      .check-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+      .check { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.65rem; border-radius: 999px;
+        border: 1px solid rgba(125,185,232,0.16); background: rgba(255,255,255,0.03); user-select: none; }
+      .check input { accent-color: var(--accent); }
+      .btn { cursor: pointer; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; filter: none !important; }
+      .btn.ghost { color: var(--text); background: rgba(255,255,255,0.06); box-shadow: none; }
+      .log { border-radius: 20px; border: 1px solid rgba(125,185,232,0.14); background: rgba(0,0,0,0.28);
+        padding: 0.85rem; max-height: 260px; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.85rem; color: rgba(223,241,255,0.86); }
+      .bar { height: 12px; border-radius: 999px; border: 1px solid rgba(125,185,232,0.18); background: rgba(255,255,255,0.03); overflow: hidden; }
+      .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-3)); transition: width 120ms ease; }
+      .steps { padding-left: 1.1rem; margin: 0; color: var(--muted); display: grid; gap: 0.35rem; }
+      .steps li { line-height: 1.35; }
+      .capabilities { display: grid; gap: 0.55rem; color: var(--muted); }
+      .capabilities strong { color: var(--text); }
+      @media (min-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr) 420px; align-items: start; } }
+    </style>
+  </head>
+  <body>
+    <main class="tool site-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../index.html">Home</a>
+          <a class="menu-link active" href="index.html">Utilities</a>
+          <a class="menu-link" href="../games/firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link" href="../games/old-school-board-games/index.html">Board Games</a>
+          <a class="menu-link" href="../games/work-in-progress/index.html">Lab</a>
+          <a class="menu-link" href="../games/archive/index.html">Archive</a>
+        </nav>
+      </header>
+
+      <section class="panel">
+        <h1>Image Converter</h1>
+        <p class="subtitle">Batch convert images in your browser. No uploads.</p>
+      </section>
+
+      <section class="panel">
+        <div class="grid">
+          <section class="stack">
+            <div class="card">
+              <h3>Quick Start</h3>
+              <ol class="steps">
+                <li><strong>Select input</strong>: choose files, or choose a folder for batch conversion.</li>
+                <li><strong>(Optional)</strong> filter by type if you only want certain formats.</li>
+                <li><strong>Pick output</strong>: choose the format, quality, and resize options.</li>
+                <li><strong>Convert</strong>: download results, or write to a folder (Chrome/Edge).</li>
+              </ol>
+              <p class="small">If a format won’t convert in your browser (common with HEIC on Windows), the log will show which files failed.</p>
+            </div>
+
+            <div class="card">
+              <h3>Input</h3>
+              <div class="field">
+                <label for="fileInput">Choose files</label>
+                <input id="fileInput" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff">
+              </div>
+              <div class="field">
+                <label for="folderInput">Choose a folder (Chrome/Edge)</label>
+                <input id="folderInput" type="file" multiple webkitdirectory>
+              </div>
+              <div class="row">
+                <button class="btn ghost" id="pickDirBtn" type="button">Pick folder (advanced)</button>
+                <span class="pill" id="inCount"><strong>0</strong> selected</span>
+                <span class="pill" id="inTypes"><strong>&ndash;</strong> types</span>
+              </div>
+              <p class="small" id="inNote"></p>
+            </div>
+
+            <div class="card">
+              <h3>Filter</h3>
+              <p class="small">Optional: only include certain input types.</p>
+              <div class="check-row" id="typeFilters"></div>
+            </div>
+
+            <div class="card">
+              <h3>Log</h3>
+              <div class="log" id="log"></div>
+            </div>
+          </section>
+
+          <aside class="stack">
+            <div class="card">
+              <h3>What This Tool Does</h3>
+              <div class="capabilities">
+                <div><strong>Batch convert</strong> many images at once (files or folders).</div>
+                <div><strong>Format filtering</strong> so you can target only specific input types.</div>
+                <div><strong>Batch rename</strong> with prefix/suffix/find+replace/numbering.</div>
+                <div><strong>Website-only</strong>: everything stays on your device.</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Output</h3>
+              <div class="field">
+                <label for="outFormat">Convert to</label>
+                <select id="outFormat"></select>
+              </div>
+              <div class="field">
+                <label for="quality">Quality (JPEG/WebP)</label>
+                <input id="quality" type="number" min="1" max="100" step="1" value="92">
+              </div>
+              <div class="field">
+                <label for="maxSide">Resize (max side px, optional)</label>
+                <input id="maxSide" type="number" min="0" step="1" value="0">
+              </div>
+              <div class="field">
+                <label for="jpegBg">JPEG background (for transparency)</label>
+                <select id="jpegBg">
+                  <option value="#000000">Black</option>
+                  <option value="#ffffff">White</option>
+                  <option value="#0b1821">Dark blue</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="saveMode">Save mode</label>
+                <select id="saveMode">
+                  <option value="download">Download files</option>
+                  <option value="folder">Write to folder (Chrome/Edge)</option>
+                </select>
+              </div>
+              <p class="small" id="outNote"></p>
+            </div>
+
+            <div class="card">
+              <h3>Batch rename</h3>
+              <div class="field"><label for="prefix">Prefix</label><input id="prefix" type="text" placeholder="optional"></div>
+              <div class="field"><label for="suffix">Suffix</label><input id="suffix" type="text" placeholder="optional"></div>
+              <div class="field">
+                <label for="find">Find / replace (name only)</label>
+                <div class="row">
+                  <input id="find" type="text" placeholder="find" style="flex:1; min-width: 140px;">
+                  <input id="replace" type="text" placeholder="replace" style="flex:1; min-width: 140px;">
+                </div>
+              </div>
+              <div class="field">
+                <label for="numbering">Numbering</label>
+                <select id="numbering">
+                  <option value="none">None</option>
+                  <option value="suffix">Add suffix (001, 002...)</option>
+                  <option value="prefix">Add prefix (001_...)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Run</h3>
+              <div class="row">
+                <button class="btn" id="convertBtn" type="button">Convert</button>
+                <button class="btn ghost" id="clearBtn" type="button">Clear</button>
+              </div>
+              <div class="stack" style="margin-top: 0.85rem;">
+                <div class="bar"><div id="barFill"></div></div>
+                <p class="small" id="progressText">Idle.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const fileInput = $("fileInput");
+      const folderInput = $("folderInput");
+      const pickDirBtn = $("pickDirBtn");
+      const inCount = $("inCount");
+      const inTypes = $("inTypes");
+      const inNote = $("inNote");
+      const typeFilters = $("typeFilters");
+      const outFormat = $("outFormat");
+      const qualityEl = $("quality");
+      const maxSideEl = $("maxSide");
+      const jpegBgEl = $("jpegBg");
+      const saveModeEl = $("saveMode");
+      const outNote = $("outNote");
+      const prefixEl = $("prefix");
+      const suffixEl = $("suffix");
+      const findEl = $("find");
+      const replaceEl = $("replace");
+      const numberingEl = $("numbering");
+      const convertBtn = $("convertBtn");
+      const clearBtn = $("clearBtn");
+      const barFill = $("barFill");
+      const progressText = $("progressText");
+      const logEl = $("log");
+
+      const DIRECTORIES_SUPPORTED = !!window.showDirectoryPicker;
+      const TYPE_ALIASES = { "image/jpg": "image/jpeg", "image/x-png": "image/png" };
+      const EXT_BY_MIME = {
+        "image/png":"png",
+        "image/jpeg":"jpg",
+        "image/webp":"webp",
+        "image/bmp":"bmp",
+        "image/gif":"gif",
+        "image/svg+xml":"svg",
+        "image/avif":"avif",
+        "image/tiff":"tiff",
+        "image/heic":"heic",
+        "image/heif":"heif"
+      };
+      const OUTPUTS = [
+        { id: "png", label: "PNG (.png)" },
+        { id: "jpg", label: "JPEG (.jpg)" },
+        { id: "webp", label: "WebP (.webp)" },
+        { id: "bmp", label: "BMP (.bmp)" },
+        { id: "tiff", label: "TIFF (.tiff)" },
+        { id: "svgwrap", label: "SVG wrapper (.svg)" }
+      ];
+
+      let pickedFiles = [];
+      let outputDirHandle = null;
+
+      function log(line) {
+        const ts = new Date().toLocaleTimeString();
+        logEl.textContent += `[${ts}] ${line}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function canonicalMime(mime) { return (mime && TYPE_ALIASES[mime]) ? TYPE_ALIASES[mime] : (mime || ""); }
+      function extFromName(name) { const dot = name.lastIndexOf("."); return dot === -1 ? "" : name.slice(dot+1).toLowerCase(); }
+      function safeBaseName(name) {
+        const dot = name.lastIndexOf(".");
+        const base = dot === -1 ? name : name.slice(0, dot);
+        return base.replace(/[\\/:*?"<>|]/g, "_").trim() || "image";
+      }
+      function clampInt(value, min, max, fallback) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        return Math.max(min, Math.min(max, Math.round(n)));
+      }
+      function normalizeSelected(files) {
+        return Array.from(files || []).filter(f =>
+          (f.type || "").startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp|svg|avif|tif|tiff|heic|heif)$/i.test(f.name)
+        );
+      }
+      function selectedTypes(files) {
+        const types = new Map();
+        for (const f of files) {
+          const mime = canonicalMime(f.type);
+          const ext = extFromName(f.name);
+          const key = mime || (ext ? `.${ext}` : "unknown");
+          types.set(key, (types.get(key) || 0) + 1);
+        }
+        return types;
+      }
+      function formatTypeLabel(typeKey) {
+        if (typeKey.startsWith(".")) return typeKey.toUpperCase();
+        if (typeKey === "unknown") return "Unknown";
+        const ext = EXT_BY_MIME[typeKey];
+        return ext ? `${ext.toUpperCase()} (${typeKey})` : typeKey;
+      }
+
+      async function canvasSupports(type) {
+        return new Promise(resolve => {
+          const c = document.createElement("canvas");
+          c.width = 1; c.height = 1;
+          c.toBlob(b => resolve(!!b), type, 0.92);
+        });
+      }
+
+      async function detectOutputSupport() {
+        const supportsWebp = await canvasSupports("image/webp");
+        return { supportsWebp };
+      }
+
+      function buildTypeFilters(types) {
+        typeFilters.innerHTML = "";
+        const keys = Array.from(types.keys()).sort((a,b) => a.localeCompare(b));
+        if (!keys.length) {
+          const span = document.createElement("span");
+          span.className = "small";
+          span.textContent = "Select files to enable filters.";
+          typeFilters.appendChild(span);
+          return;
+        }
+        for (const key of keys) {
+          const id = `type_${key.replace(/[^a-z0-9]/gi, "_")}`;
+          const wrap = document.createElement("label");
+          wrap.className = "check";
+          wrap.setAttribute("for", id);
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.id = id;
+          input.dataset.typeKey = key;
+          input.checked = true;
+          input.addEventListener("change", refreshUI);
+          const text = document.createElement("span");
+          text.textContent = `${formatTypeLabel(key)} (${types.get(key)})`;
+          wrap.appendChild(input);
+          wrap.appendChild(text);
+          typeFilters.appendChild(wrap);
+        }
+      }
+
+      function activeFilterKeys() {
+        const checks = typeFilters.querySelectorAll("input[type=checkbox]");
+        const keys = [];
+        checks.forEach(c => { if (c.checked) keys.push(c.dataset.typeKey); });
+        return keys;
+      }
+
+      function filteredFiles() {
+        const keys = new Set(activeFilterKeys());
+        if (!keys.size) return [];
+        return pickedFiles.filter(f => {
+          const mime = canonicalMime(f.type);
+          const ext = extFromName(f.name);
+          const key = mime || (ext ? `.${ext}` : "unknown");
+          return keys.has(key);
+        });
+      }
+
+      function computeAvailableOutputs(files, support) {
+        const inputKeys = selectedTypes(files);
+        const keys = new Set(inputKeys.keys());
+        const canDecode = (typeKey) => typeKey !== "unknown";
+        const allDecodable = Array.from(keys).every(canDecode);
+        if (!files.length || !allDecodable) return [];
+        return OUTPUTS.filter(o => (o.id !== "webp") || support.supportsWebp);
+      }
+
+      function fillOutputSelect(outputs) {
+        outFormat.innerHTML = "";
+        if (!outputs.length) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "Select input files first";
+          outFormat.appendChild(opt);
+          outFormat.disabled = true;
+          return;
+        }
+        outFormat.disabled = false;
+        for (const o of outputs) {
+          const opt = document.createElement("option");
+          opt.value = o.id;
+          opt.textContent = o.label;
+          outFormat.appendChild(opt);
+        }
+        if (outputs.some(o => o.id === "png")) outFormat.value = "png";
+      }
+
+      function updateNotes() {
+        const types = selectedTypes(pickedFiles);
+        inCount.innerHTML = `<strong>${pickedFiles.length}</strong> selected`;
+        inTypes.innerHTML = `<strong>${types.size ? types.size : "&ndash;"}</strong> types`;
+        if (!pickedFiles.length) {
+          inNote.textContent = "";
+          outNote.textContent = "";
+          return;
+        }
+        const sizeMb = pickedFiles.reduce((sum, f) => sum + (f.size || 0), 0) / (1024*1024);
+        inNote.textContent = `Total size: ${sizeMb.toFixed(2)} MB. Conversions run one-by-one.`;
+        if (saveModeEl.value === "folder" && !DIRECTORIES_SUPPORTED) {
+          outNote.textContent = "Folder writing not supported here. Use “Download files”.";
+        } else {
+          outNote.textContent = "Outputs shown here are what this page can write in-browser. HEIC input depends on your browser/OS.";
+        }
+      }
+
+      function setProgress(done, total, currentName) {
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        barFill.style.width = `${pct}%`;
+        progressText.textContent = total ? `Converting ${done}/${total}${currentName ? ` — ${currentName}` : ""}` : "Idle.";
+      }
+
+      async function refreshUI() {
+        const support = await detectOutputSupport();
+        const files = filteredFiles();
+        const outputs = computeAvailableOutputs(files, support);
+        fillOutputSelect(outputs);
+        updateNotes();
+        convertBtn.disabled = !(files.length && outputs.length);
+        pickDirBtn.disabled = !DIRECTORIES_SUPPORTED;
+      }
+
+      function buildOutputName(originalName, outExt, index, total) {
+        const base = safeBaseName(originalName);
+        const find = (findEl.value || "").trim();
+        const replace = replaceEl.value ?? "";
+        let nextBase = base;
+        if (find) nextBase = nextBase.split(find).join(replace);
+        const prefix = (prefixEl.value || "").trim();
+        const suffix = (suffixEl.value || "").trim();
+        nextBase = `${prefix}${nextBase}${suffix}`;
+        const numbering = numberingEl.value;
+        if (numbering !== "none") {
+          const width = Math.max(3, String(total).length);
+          const seq = String(index + 1).padStart(width, "0");
+          nextBase = numbering === "prefix" ? `${seq}_${nextBase}` : `${nextBase}_${seq}`;
+        }
+        return `${nextBase}.${outExt}`;
+      }
+
+      function scaleToMaxSide(width, height, maxSide) {
+        if (!maxSide || maxSide <= 0) return { width, height };
+        const maxCurrent = Math.max(width, height);
+        if (maxCurrent <= maxSide) return { width, height };
+        const ratio = maxSide / maxCurrent;
+        return { width: Math.max(1, Math.round(width * ratio)), height: Math.max(1, Math.round(height * ratio)) };
+      }
+
+      function loadImage(url) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.decoding = "async";
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Image decode failed"));
+          img.src = url;
+        });
+      }
+
+      async function decodeToBitmap(file) {
+        const mime = canonicalMime(file.type);
+        const isSvg = mime === "image/svg+xml" || extFromName(file.name) === "svg";
+        if (isSvg) {
+          const text = await file.text();
+          const blob = new Blob([text], { type: "image/svg+xml" });
+          const url = URL.createObjectURL(blob);
+          try {
+            const img = await loadImage(url);
+            const w = Math.max(1, Math.round(img.naturalWidth || 1200));
+            const h = Math.max(1, Math.round(img.naturalHeight || 600));
+            return { kind: "img", img, width: w, height: h };
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+        }
+        try {
+          const bitmap = await createImageBitmap(file);
+          return { kind: "bitmap", bitmap, width: bitmap.width, height: bitmap.height };
+        } catch {
+          const url = URL.createObjectURL(file);
+          try {
+            const img = await loadImage(url);
+            return { kind: "img", img, width: Math.max(1, img.naturalWidth), height: Math.max(1, img.naturalHeight) };
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+        }
+      }
+
+      function drawToCanvas(decoded, targetW, targetH, fillForJpeg) {
+        const canvas = document.createElement("canvas");
+        canvas.width = targetW; canvas.height = targetH;
+        const ctx = canvas.getContext("2d", { alpha: true });
+        if (fillForJpeg) { ctx.fillStyle = fillForJpeg; ctx.fillRect(0,0,targetW,targetH); }
+        else ctx.clearRect(0,0,targetW,targetH);
+        if (decoded.kind === "bitmap") ctx.drawImage(decoded.bitmap, 0, 0, targetW, targetH);
+        else ctx.drawImage(decoded.img, 0, 0, targetW, targetH);
+        return canvas;
+      }
+
+      function toBlob(canvas, type, quality) {
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error(`Failed to encode ${type}`)), type, quality);
+        });
+      }
+
+      function encodeBmpFromCanvas(canvas) {
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const { width, height } = canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const pixels = imageData.data;
+        const rowBytes = width * 4;
+        const pixelDataSize = rowBytes * height;
+        const headerSize = 54;
+        const fileSize = headerSize + pixelDataSize;
+        const buf = new ArrayBuffer(fileSize);
+        const dv = new DataView(buf);
+        let p = 0;
+        dv.setUint8(p++, 0x42); dv.setUint8(p++, 0x4d);
+        dv.setUint32(p, fileSize, true); p += 4;
+        dv.setUint16(p, 0, true); p += 2; dv.setUint16(p, 0, true); p += 2;
+        dv.setUint32(p, headerSize, true); p += 4;
+        dv.setUint32(p, 40, true); p += 4;
+        dv.setInt32(p, width, true); p += 4;
+        dv.setInt32(p, -height, true); p += 4;
+        dv.setUint16(p, 1, true); p += 2;
+        dv.setUint16(p, 32, true); p += 2;
+        dv.setUint32(p, 0, true); p += 4;
+        dv.setUint32(p, pixelDataSize, true); p += 4;
+        dv.setInt32(p, 2835, true); p += 4; dv.setInt32(p, 2835, true); p += 4;
+        dv.setUint32(p, 0, true); p += 4; dv.setUint32(p, 0, true); p += 4;
+        const out = new Uint8Array(buf, headerSize);
+        for (let i = 0; i < pixels.length; i += 4) {
+          out[i] = pixels[i + 2];
+          out[i + 1] = pixels[i + 1];
+          out[i + 2] = pixels[i];
+          out[i + 3] = pixels[i + 3];
+        }
+        return new Blob([buf], { type: "image/bmp" });
+      }
+
+      function encodeSvgWrapFromCanvas(canvas) {
+        const pngDataUrl = canvas.toDataURL("image/png");
+        const svg =
+          `<?xml version="1.0" encoding="UTF-8"?>` +
+          `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">` +
+          `<image href="${pngDataUrl}" width="${canvas.width}" height="${canvas.height}" />` +
+          `</svg>`;
+        return new Blob([svg], { type: "image/svg+xml" });
+      }
+
+      function encodeTiffFromCanvas(canvas) {
+        // Minimal baseline TIFF: uncompressed 32-bit RGBA, little-endian, single strip.
+        // Many readers support it, but TIFF is broad; this keeps it simple and reliable.
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const width = canvas.width;
+        const height = canvas.height;
+        const rgba = ctx.getImageData(0, 0, width, height).data;
+
+        const bytesPerPixel = 4;
+        const imageBytes = width * height * bytesPerPixel;
+
+        // Header (8) + IFD entries (~11*12) + nextIFD(4) + extra arrays (bitsPerSample[4]*2, xres/yres rationals) + image data
+        const ifdCount = 11;
+        const ifdSize = 2 + ifdCount * 12 + 4;
+        const bitsOffset = 8 + ifdSize;
+        const bitsSize = 8; // 4 * SHORT
+        const xResOffset = bitsOffset + bitsSize;
+        const yResOffset = xResOffset + 8;
+        const stripOffset = yResOffset + 8;
+        const totalSize = stripOffset + imageBytes;
+
+        const buf = new ArrayBuffer(totalSize);
+        const dv = new DataView(buf);
+        let p = 0;
+
+        // TIFF header: II 42 offsetToIFD
+        dv.setUint8(p++, 0x49); // I
+        dv.setUint8(p++, 0x49); // I
+        dv.setUint16(p, 42, true); p += 2;
+        dv.setUint32(p, 8, true); p += 4; // IFD starts at 8
+
+        // IFD
+        p = 8;
+        dv.setUint16(p, ifdCount, true); p += 2;
+
+        const writeEntry = (tag, type, count, valueOrOffset) => {
+          dv.setUint16(p, tag, true); p += 2;
+          dv.setUint16(p, type, true); p += 2;
+          dv.setUint32(p, count, true); p += 4;
+          dv.setUint32(p, valueOrOffset, true); p += 4;
+        };
+
+        // Tags
+        // 256 ImageWidth (LONG=4)
+        writeEntry(256, 4, 1, width);
+        // 257 ImageLength
+        writeEntry(257, 4, 1, height);
+        // 258 BitsPerSample (SHORT=3, count=4 -> offset)
+        writeEntry(258, 3, 4, bitsOffset);
+        // 259 Compression (SHORT) = 1 (none)
+        writeEntry(259, 3, 1, 1);
+        // 262 PhotometricInterpretation (SHORT) = 2 (RGB)
+        writeEntry(262, 3, 1, 2);
+        // 273 StripOffsets (LONG) = stripOffset
+        writeEntry(273, 4, 1, stripOffset);
+        // 277 SamplesPerPixel (SHORT) = 4
+        writeEntry(277, 3, 1, 4);
+        // 278 RowsPerStrip (LONG) = height
+        writeEntry(278, 4, 1, height);
+        // 279 StripByteCounts (LONG) = imageBytes
+        writeEntry(279, 4, 1, imageBytes);
+        // 282 XResolution (RATIONAL=5) -> offset
+        writeEntry(282, 5, 1, xResOffset);
+        // 283 YResolution (RATIONAL=5) -> offset
+        writeEntry(283, 5, 1, yResOffset);
+
+        // next IFD offset = 0
+        dv.setUint32(p, 0, true);
+
+        // BitsPerSample values
+        dv.setUint16(bitsOffset + 0, 8, true);
+        dv.setUint16(bitsOffset + 2, 8, true);
+        dv.setUint16(bitsOffset + 4, 8, true);
+        dv.setUint16(bitsOffset + 6, 8, true);
+
+        // X/Y resolution rationals: 72/1
+        dv.setUint32(xResOffset + 0, 72, true);
+        dv.setUint32(xResOffset + 4, 1, true);
+        dv.setUint32(yResOffset + 0, 72, true);
+        dv.setUint32(yResOffset + 4, 1, true);
+
+        // Image data: write RGBA as-is (uncompressed, interleaved)
+        new Uint8Array(buf, stripOffset, imageBytes).set(rgba);
+
+        return new Blob([buf], { type: "image/tiff" });
+      }
+
+      async function ensureOutputDir() {
+        if (saveModeEl.value !== "folder") return null;
+        if (!DIRECTORIES_SUPPORTED) return null;
+        if (outputDirHandle) return outputDirHandle;
+        outputDirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        return outputDirHandle;
+      }
+
+      async function getOrCreateSubdir(root, relativePath) {
+        const parts = relativePath.split("/").filter(Boolean);
+        let dir = root;
+        for (const part of parts) dir = await dir.getDirectoryHandle(part, { create: true });
+        return dir;
+      }
+
+      async function saveBlob(name, blob, relativePath) {
+        if (saveModeEl.value === "folder") {
+          const root = await ensureOutputDir();
+          const relDir = relativePath ? relativePath.split("/").slice(0, -1).join("/") : "";
+          const dir = relDir ? await getOrCreateSubdir(root, relDir) : root;
+          const handle = await dir.getFileHandle(name, { create: true });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      async function runConvert() {
+        const files = filteredFiles();
+        if (!files.length) return;
+        const outId = outFormat.value;
+        if (!outId) return;
+        const q = clampInt(qualityEl.value, 1, 100, 92);
+        const maxSide = clampInt(maxSideEl.value, 0, 20000, 0);
+        const jpegBg = jpegBgEl.value;
+        const outExt = outId === "svgwrap" ? "svg" : (outId === "tiff" ? "tiff" : outId);
+
+        convertBtn.disabled = true;
+        clearBtn.disabled = true;
+        pickDirBtn.disabled = true;
+
+        if (saveModeEl.value === "folder") {
+          if (!DIRECTORIES_SUPPORTED) {
+            log("Write-to-folder not supported here. Switch to “Download files”.");
+            convertBtn.disabled = false; clearBtn.disabled = false; pickDirBtn.disabled = !DIRECTORIES_SUPPORTED;
+            return;
+          }
+          try { await ensureOutputDir(); log(`Output folder: ${outputDirHandle.name}`); }
+          catch { log("Cancelled output folder selection."); convertBtn.disabled = false; clearBtn.disabled = false; pickDirBtn.disabled = !DIRECTORIES_SUPPORTED; return; }
+        }
+
+        log(`Starting: ${files.length} file(s) → ${outExt.toUpperCase()}`);
+        setProgress(0, files.length);
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          setProgress(i + 1, files.length, f.name);
+          const relPath = f.webkitRelativePath || f._relativePath || "";
+          try {
+            const decoded = await decodeToBitmap(f);
+            const target = scaleToMaxSide(decoded.width, decoded.height, maxSide);
+            const fillForJpeg = (outId === "jpg") ? jpegBg : null;
+            const canvas = drawToCanvas(decoded, target.width, target.height, fillForJpeg);
+            let blob;
+            if (outId === "png") blob = await toBlob(canvas, "image/png");
+            else if (outId === "jpg") blob = await toBlob(canvas, "image/jpeg", q / 100);
+            else if (outId === "webp") blob = await toBlob(canvas, "image/webp", q / 100);
+            else if (outId === "bmp") blob = encodeBmpFromCanvas(canvas);
+            else if (outId === "tiff") blob = encodeTiffFromCanvas(canvas);
+            else if (outId === "svgwrap") blob = encodeSvgWrapFromCanvas(canvas);
+            else throw new Error("Unsupported output");
+            const outName = buildOutputName(f.name, outExt, i, files.length);
+            await saveBlob(outName, blob, relPath);
+            log(`OK: ${f.name} → ${outName}`);
+            if (decoded.kind === "bitmap") decoded.bitmap.close();
+          } catch (err) {
+            log(`FAIL: ${f.name} (${err?.message || err})`);
+          }
+        }
+        log("Done.");
+        setProgress(files.length, files.length);
+        convertBtn.disabled = false; clearBtn.disabled = false; pickDirBtn.disabled = !DIRECTORIES_SUPPORTED;
+      }
+
+      async function walkDir(dirHandle, prefix, outFiles) {
+        for await (const entry of dirHandle.values()) {
+          if (entry.kind === "file") {
+            const f = await entry.getFile();
+            f._relativePath = `${prefix}${f.name}`;
+            outFiles.push(f);
+          } else if (entry.kind === "directory") {
+            await walkDir(entry, `${prefix}${entry.name}/`, outFiles);
+          }
+        }
+      }
+
+      async function pickFolderAdvanced() {
+        if (!DIRECTORIES_SUPPORTED) return;
+        const dir = await window.showDirectoryPicker();
+        const files = [];
+        await walkDir(dir, "", files);
+        pickedFiles = normalizeSelected(files);
+        buildTypeFilters(selectedTypes(pickedFiles));
+        log(`Picked folder: ${dir.name} (${pickedFiles.length} image(s))`);
+        refreshUI();
+      }
+
+      function clearAll() {
+        pickedFiles = [];
+        outputDirHandle = null;
+        fileInput.value = "";
+        folderInput.value = "";
+        typeFilters.innerHTML = "";
+        logEl.textContent = "";
+        setProgress(0, 0);
+        buildTypeFilters(new Map());
+        refreshUI();
+      }
+
+      fileInput.addEventListener("change", () => {
+        pickedFiles = normalizeSelected(fileInput.files);
+        buildTypeFilters(selectedTypes(pickedFiles));
+        log(`Selected files: ${pickedFiles.length}`);
+        refreshUI();
+      });
+      folderInput.addEventListener("change", () => {
+        pickedFiles = normalizeSelected(folderInput.files);
+        buildTypeFilters(selectedTypes(pickedFiles));
+        log(`Selected folder files: ${pickedFiles.length}`);
+        refreshUI();
+      });
+      pickDirBtn.addEventListener("click", async () => { try { await pickFolderAdvanced(); } catch (e) { log(`Folder pick cancelled.`); } });
+      saveModeEl.addEventListener("change", () => { outputDirHandle = null; refreshUI(); });
+      convertBtn.addEventListener("click", () => runConvert());
+      clearBtn.addEventListener("click", () => clearAll());
+
+      pickDirBtn.disabled = !DIRECTORIES_SUPPORTED;
+      buildTypeFilters(new Map());
+      refreshUI();
+    </script>
+  </body>
+</html>

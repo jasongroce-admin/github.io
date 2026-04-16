@@ -1,1 +1,86 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Game Archive</title><link rel='stylesheet' href='../../assets/css/site.css'></head><body><main class='content'><section class='panel'><h1>Archive / Legacy Links</h1><p>Older or relocated game builds.</p><div class='projects-grid'><a class='card' href='../color-puzzle/index.html'><h3>Action Color Puzzle</h3><p>Puzzle build now kept in archive/WIP.</p></a><a class='card' href='../work-in-progress/index.html'><h3>Work in Progress</h3><p>Current tuning area.</p></a><a class='card' href='../../index.html'><h3>Back Home</h3><p>Return to homepage.</p></a></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Game Archive</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
+    <style>
+      .archive-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .archive-band {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+        gap: 1rem;
+      }
+
+      .archive-summary {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .archive-summary-card {
+        border-radius: 22px;
+        padding: 1rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(125, 185, 232, 0.16);
+      }
+
+      .archive-summary-card strong {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: var(--text);
+      }
+
+      @media (max-width: 840px) {
+        .archive-band {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content archive-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link" href="../old-school-board-games/index.html">Board Games</a>
+          <a class="menu-link" href="../work-in-progress/index.html">Lab</a>
+          <a class="menu-link active" href="index.html">Archive</a>
+        </nav>
+      </header>
+
+      <section class="archive-band">
+        <section class="panel">
+          <h1>Archive</h1>
+          <p class="subtitle">Older builds, moved projects, and pages kept around for reference.</p>
+          <p>If you want to look through earlier work, you’ll find it here.</p>
+        </section>
+
+        <section class="panel archive-summary">
+          <div class="archive-summary-card"><strong>Older Builds</strong><span>Past versions and moved projects stay available here.</span></div>
+          <div class="archive-summary-card"><strong>Reference</strong><span>A good place to revisit older ideas and experiments.</span></div>
+          <div class="archive-summary-card"><strong>Still Available</strong><span>Archived pages are easy to reach when needed.</span></div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <h2>Archive / Legacy Links</h2>
+        <p>Older or relocated game builds.</p>
+        <div class="projects-grid" style="margin-top: 1rem;">
+          <a class="card" href="../color-puzzle/index.html"><h3>Action Color Puzzle</h3><p>An older puzzle build that is still available to explore.</p></a>
+          <a class="card" href="../work-in-progress/index.html"><h3>Work in Progress</h3><p>Open the area for projects that are still being updated.</p></a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

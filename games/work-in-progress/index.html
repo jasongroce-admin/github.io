@@ -1,1 +1,85 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Work in Progress</title><link rel='stylesheet' href='../../assets/css/site.css'></head><body><main class='content'><section class='panel'><h1>Work in Progress</h1><p>Games and tools still being tuned.</p><div class='projects-grid'><a class='card' href='../color-puzzle/index.html'><h3>Action Color Puzzle</h3><p>Moved here while we tune puzzle behavior.</p></a><a class='card' href='../../index.html'><h3>Back Home</h3><p>Return to homepage.</p></a></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Work in Progress</title>
+    <link rel="stylesheet" href="../../assets/css/site.css">
+    <style>
+      .lab-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .lab-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+        gap: 1rem;
+      }
+
+      .lab-meta {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .lab-chip {
+        border-radius: 20px;
+        padding: 0.95rem 1rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(125, 185, 232, 0.16);
+      }
+
+      .lab-chip strong {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: var(--text);
+      }
+
+      @media (max-width: 840px) {
+        .lab-hero {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content lab-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link" href="../firefighter-game/mobile.html">Firefighter</a>
+          <a class="menu-link" href="../old-school-board-games/index.html">Board Games</a>
+          <a class="menu-link active" href="index.html">Lab</a>
+          <a class="menu-link" href="../archive/index.html">Archive</a>
+        </nav>
+      </header>
+
+      <section class="lab-hero">
+        <section class="panel">
+          <h1>Work in Progress</h1>
+          <p class="subtitle">Projects that are still being tested, tuned, or worked on.</p>
+          <p>This is where unfinished ideas and in-progress builds live.</p>
+        </section>
+
+        <section class="panel lab-meta">
+          <div class="lab-chip"><strong>In Progress</strong><span>These projects are still changing.</span></div>
+          <div class="lab-chip"><strong>Testing</strong><span>Gameplay, controls, and pacing may still be adjusted.</span></div>
+          <div class="lab-chip"><strong>Early Builds</strong><span>Some ideas here may grow into full sections later.</span></div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <h2>Current Experiments</h2>
+        <p>Games and tools still being tuned.</p>
+        <div class="projects-grid" style="margin-top: 1rem;">
+          <a class="card" href="../color-puzzle/index.html"><h3>Action Color Puzzle</h3><p>A puzzle project that is still being updated and refined.</p></a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

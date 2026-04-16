@@ -1,0 +1,442 @@
+kennard_crimescene_01_backyard_breakIn.webp
+28 Specific Details in this image 
+1. Masked thief in black hoodie
+2. Gloves on the thief’s hands
+3. Crowbar in thief’s hand
+4. Sliding glass door being pried open
+5. Red tricycle tipped over
+6. Scattered colorful Lego blocks on grass
+7. Soccer ball on the lawn
+8. Deflated basketball
+9. Uncoiled green garden hose
+10. Potted plants knocked over with dirt spilled
+11. Hanging bird feeder on tree
+12. Laundry (blue shirt, white towel, socks) on clothesline
+13. Metal rake and shovel leaning on fence
+14. Trash can with lid off and garbage spilling
+15. Muddy footprints leading to door
+16. Black flashlight lying on ground (beam on)
+17. Broken terracotta flower pot
+18. Flickering outdoor security light on house
+19. Open upstairs window with white curtain blowing out
+20. Child’s bicycle leaning against house
+21. Small American flag on porch
+22. Mailbox with mail sticking out
+23. Fallen autumn leaves everywhere
+24. Neighbor’s brown labrador barking through fence
+25. Neighboring house with lights on in background
+26. Red pickup truck parked on street
+27. Silver sedan parked on street
+28. Broken glass shards on ground near door
+
+Kennard_CrimeScene_02_Driveway_Vehicle_Tamper.webp
+25+ Specific Details for Questions:
+1. Masked burglar in dark clothing
+2. Screwdriver in burglar’s hand
+3. Tampering with ignition of red pickup truck
+4. Open garage door
+5. Tools scattered on garage floor
+6. Silver bicycle with flat tire
+7. Dollhouse on driveway
+8. Toy truck on driveway
+9. Jump rope on ground
+10. Spilled sports drinks and empty cans
+11. Lawnmower with grass clippings
+12. Tipped-over recycling bin
+13. Plastic bottles spilling out
+14. Muddy boot prints on concrete
+15. Black backpack dropped on ground
+16. Work gloves on hood of truck
+17. Broken side mirror on ground
+18. Garden gnome knocked over
+19. Halloween plastic pumpkin
+20. Fake spiderweb decoration
+21. Porch light with moths flying around
+22. Neighbor’s cat on fence
+23. Basketball hoop with torn net
+24. Small American flag on mailbox
+25. Two newspapers in driveway
+26. Dog bowl with water spilled
+27. Rake and broom leaning against house
+
+Image 3: Kennard_CrimeScene_03_Garage_Theft.webp
+26 Specific Details for Questions:
+1. Thief in hoodie and gloves
+2. Stealing lawnmower
+3. Stealing power tools
+4. Open garage door
+5. Shelves full of paint cans
+6. Scattered wrenches and screwdrivers on workbench
+7. Blue cooler with lid open
+8. Child’s wagon with sports equipment
+9. Bicycles hanging on wall
+10. Red gas can on floor
+11. Open toolbox with tools spilled
+12. Muddy footprints on concrete
+13. Fishing net and tackle box
+14. Dartboard with missing darts
+15. Christmas lights in storage bin
+16. Folded American flag in box
+17. Gardening gloves and boots scattered
+18. Tipped-over bucket of nails
+19. Calendar showing October
+20. Small radio on shelf
+21. Spiderweb in corner
+22. Neighbor peeking through fence
+23. Lawn mower being pulled out
+24. Paint cans on shelves
+25. Fishing rods on wall
+26. Scattered nails on floor
+
+Image 4: Kennard_CrimeScene_04_SideYard_Window_BreakIn.webp
+26 Specific Details:
+1. Masked intruder in dark jacket and beanie
+2. Climbing through broken first-floor window
+3. Wooden ladder leaning against house
+4. Yellow dump truck toy
+5. Pink doll on grass
+6. Soccer goal with torn net
+7. Shovel, hoe, and pruning shears on grass
+8. Tipped-over wheelbarrow with spilled dirt
+9. Bird bath with water and leaves
+10. Coiled yellow extension cord
+11. Muddy footprints leading to window
+12. Broken glass shards on ground and sill
+13. Flashlight left on windowsill
+14. Open shed door
+15. Clothesline with red hoodie, jeans, white socks
+16. Trampled tomato plants
+17. Trampled cucumber plants
+18. Rusty barbecue grill with lid open
+19. Fallen apples under tree
+20. Neighbor’s dog watching from fence
+21. Porch swing with cushions
+22. Scattered Halloween candy wrappers
+23. Smashed pumpkin on ground
+24. Streetlights glowing in background
+25. Brick house with two stories
+26. Broken window glass on sill
+
+Image 5: Kennard_CrimeScene_05_FrontPorch_Package_Theft.webp
+27 Specific Details:
+1. Thief in hoodie and gloves stealing package
+2. Second person forcing front door with crowbar
+3. Stacked Amazon and USPS packages
+4. Welcome mat with mud
+5. Potted chrysanthemums knocked over
+6. Tipped rocking chair
+7. Children’s bicycles on porch
+8. Half-eaten pizza box on table
+9. Scattered soda cans
+10. Mail and newspapers on floor
+11. Porch light with bugs flying around
+12. Muddy boot prints on wooden floor
+13. Broken flower pot with soil spilled
+14. Dog leash hanging on railing
+15. Halloween skeleton decoration
+16. American flag hanging vertically
+17. Fallen leaves and acorns
+18. Basketball on the steps
+19. Pair of muddy shoes kicked off
+20. Neighbor’s house with lights on across street
+21. Wooden front porch
+22. Front door being forced open
+23. Package being stolen
+24. Chrysanthemum flowers spilled
+25. Pizza box open
+26. Scattered mail envelopes
+27. Bugs around porch light
+
+Image 6: Kennard_CrimeScene_06_Backyard_TV_Theft
+28 Specific Details:
+1. Thief in black hoodie carrying TV
+2. Thief in gray jacket carrying TV
+3. Lookout person near fence
+4. Innocent neighbor woman in bathrobe on porch
+5. Neighbor woman holding phone
+6. Children’s swing set
+7. Scattered toys (doll, toy cars, frisbee)
+8. Tipped-over kiddie pool with water spilled
+9. Uncoiled garden hose
+10. Barbecue grill with food still on it
+11. Laundry on clothesline (red shirt, white sheets)
+12. Muddy footprints across yard
+13. Broken glass near back door
+14. Flashlight lying on ground
+15. Fallen apples under tree
+16. Dog watching from fence
+17. Neighbor’s cat on roof
+18. Open shed with tools visible
+19. Ladder leaning against house
+20. Halloween decorations on porch
+21. Trash cans knocked over
+22. Scattered sports balls
+23. Small American flag on porch
+24. Flat-screen TV being stolen
+25. Back door wide open
+26. Flashlight beam visible
+27. Water from kiddie pool on grass
+28. Neighbor porch light on
+
+Image 7: Kennard_CrimeScene_07_Street_Bike_Theft.webp
+27 Specific Details:
+1. Thief in dark hoodie stealing bicycle
+2. Boy (age 8-10) playing basketball
+3. Girl (age 8-10) playing basketball
+4. Mother calling out from porch
+5. Children’s bicycles on lawn
+6. Basketball hoop in driveway
+7. Scattered toys on grass
+8. Open garage door with tools visible
+9. Tipped-over trash bin
+10. Garden gnomes on lawn
+11. Fallen autumn leaves everywhere
+12. Muddy tire tracks on grass
+13. Dog on leash in yard
+14. Mailbox with mail sticking out
+15. American flag on porch
+16. Porch furniture (chairs and table)
+17. Potted plants on steps
+18. Halloween decorations on porch
+19. Sports equipment scattered
+20. Neighbor walking dog across street
+21. Basketball on ground
+22. Stolen bicycle being taken
+23. Mother on porch with phone
+24. Open garage showing shelves
+25. Tire tracks leading to street
+26. Dog looking at thief
+27. Scattered mail near mailbox
+Image 8: Kennard_CrimeScene_08_Trailer_Robbery.webp
+25+ Specific Details for Questions:
+1. Masked thief carrying flat-screen TV
+2. Adult fleeing toward the street
+3. Teenager running toward neighboring trailer
+4. Aggressive German Shepherd dog barking and lunging on chain
+5. Open trailer door
+6. Red tricycle on grass
+7. Plastic slide tipped over
+8. Scattered balls and toys
+9. Tipped-over trash cans with garbage spilling
+10. Uncoiled garden hose
+11. Barbecue grill with lid open
+12. Laundry on clothesline (jeans, t-shirts, towels)
+13. Muddy footprints leading from door
+14. Broken glass near trailer steps
+15. Flashlight lying on ground
+16. Fallen autumn leaves everywhere
+17. Small American flag on trailer
+18. Mailbox with mail sticking out
+19. Open storage shed with tools visible
+20. Scattered sports equipment
+21. Halloween decorations on trailer
+22. Neighbor’s porch light on
+23. Flat-screen TV being stolen
+24. Dog chain taut from lunging
+25. Garbage spilling from trash can
+Image 9: Kennard_CrimeScene_09_Lawn_Bicycle_Theft
+26 Specific Details:
+1. Two masked thieves loading items
+2. Stolen bicycles being loaded
+3. Stolen lawnmower in van
+4. White van with back doors open
+5. Elderly man yelling from porch
+6. Teenage girl riding bike on sidewalk
+7. Scattered children’s toys on lawn
+8. Tipped-over trash can
+9. Garden tools on grass
+10. Fallen autumn leaves
+11. Basketball and soccer ball
+12. American flag on porch
+13. Mailbox with mail sticking out
+14. Muddy tire tracks on lawn
+15. Open garage door
+16. Dog barking from next yard
+17. Halloween decorations on porch
+18. Porch swing
+19. Potted flowers knocked over
+20. Streetlight turning on
+21. White van parked on grass
+22. Bicycles being stolen
+23. Elderly man in bathrobe
+24. Teenage girl on pink bicycle
+25. Garden hose on ground
+26. Scattered mail near mailbox
+Image 10: Kennard_CrimeScene_10_LivingRoom_Safe_Theft.webp
+28 Specific Details 
+1. Masked thief in black hoodie kneeling at safe
+2. Thief wearing black gloves
+3. Floor safe with door open
+4. Cash being taken from safe
+5. Jewelry scattered near safe
+6. Mother, father, and teenage daughter standing safely outside on the lawn watching through window
+7. Aggressive brown dog barking behind baby gate
+8. Family photos on living room wall
+9. Knocked-over lamp on floor
+10. Spilled popcorn bowl on coffee table
+11. Remote controls scattered on carpet
+12. Open drawers with papers spilling out
+13. TV still turned on
+14. Blanket dropped on floor
+15. Muddy footprints on carpet
+16. Flashlight on coffee table (beam on)
+17. Open jewelry box
+18. Cash on the floor
+19. Christmas lights still up on wall
+20. Bookshelf with books falling out
+21. Broken vase with flowers spilled
+22. Curtains partially drawn
+23. Small pumpkin decoration on windowsill
+24. Dog toy on the rug
+25. Baby gate keeping dog back
+26. Family standing together outside
+27. Popcorn spilled across table
+28. Muddy shoe prints leading to safe
+
+Image 11: Kennard_CrimeScene_11_Backyard_Lawnmower_Theft.webp
+27 Specific Details:
+
+Masked thief loading lawnmower into pickup truck
+Thief also loading power tools
+Older man and woman standing safely on neighboring porch watching
+Woman pointing at the thief
+Aggressive German Shepherd dog barking and lunging on chain
+Children’s swing set
+Tipped-over kiddie pool with water spilled
+Red tricycle on grass
+Plastic slide tipped over
+Scattered balls and toys
+Uncoiled green garden hose
+Barbecue grill with lid open
+Laundry on clothesline
+Muddy tire tracks on grass
+Fallen autumn leaves everywhere
+Open storage shed with tools visible
+Small American flag on porch
+Mailbox with mail sticking out
+Halloween decorations on porch
+Scattered sports equipment
+Broken flower pots with soil spilled
+Neighbor’s porch light on
+Pickup truck with tailgate down
+Power tools being stolen
+Dog chain pulled tight
+Water from kiddie pool on grass
+Muddy footprints near truck
+Image 12: Kennard_CrimeScene_12_Driveway_Bicycle_Theft.webp
+26 Specific Details:
+1. Masked thief stealing bicycle from garage
+2. Mother, father, and young boy standing safely across the street watching
+3. Aggressive brown dog barking behind fence
+4. Open garage door
+5. Tools and boxes visible in garage
+6. Children’s bicycles on driveway
+7. Basketball hoop
+8. Tipped-over recycling bin
+9. Plastic bottles spilling out
+10. Garden gnomes on lawn
+11. Fallen autumn leaves
+12. Muddy footprints on concrete
+13. Scattered toys on grass
+14. Sports balls on driveway
+15. Small American flag on porch
+16. Mailbox with mail
+17. Porch furniture (chairs)
+18. Potted plants on steps
+19. Halloween decorations
+20. Streetlight turning on
+21. Bicycle being stolen
+22. Family watching from across street
+23. Dog behind wooden fence
+24. Recycling bin on its side
+25. Muddy tire tracks
+26. Open garage showing shelves
+Image 13: Kennard_CrimeScene_13_SideYard_Shed_Theft.webp
+27 Specific Details:
+1. Masked thief prying open shed door
+2. Thief stealing gardening equipment
+3. Man and teenage girl standing safely on neighboring porch watching
+4. Both holding flashlights
+5. Aggressive black dog barking and pulling on leash
+6. Wooden ladder leaning against house
+7. Scattered garden tools (shovel, rake, hoe)
+8. Tipped-over wheelbarrow with dirt spilled
+9. Bird bath with water
+10. Coiled yellow extension cord
+11. Muddy footprints leading to shed
+12. Broken glass near shed door
+13. Open trash cans with garbage spilling
+14. Fallen apples under tree
+15. Children’s toys on grass
+16. Sports equipment scattered
+17. Small American flag on porch
+18. Halloween decorations
+19. Neighbor’s porch light on
+20. Shed door being pried open
+21. Gardening equipment inside shed
+22. Flashlights shining toward shed
+23. Dog leash pulled tight
+24. Dirt from wheelbarrow on grass
+25. Broken glass shards
+26. Trash spilling from cans
+27. Apples on ground
+Image 14: Kennard_CrimeScene_14_Backyard_Lawnmower_Theft.webp
+28 Specific Details:
+1. Very fat thief in oversized black hoodie struggling with lawnmower
+2. Heavyset second thief holding flashlights awkwardly
+3. Older couple standing safely on porch watching and pointing
+4. Aggressive German Shepherd dog barking on chain
+5. Pickup truck with tailgate down
+6. Children’s swing set
+7. Tipped-over kiddie pool
+8. Red tricycle on grass
+9. Plastic slide tipped over
+10. Scattered balls and toys
+11. Uncoiled garden hose
+12. Barbecue grill with lid open
+13. Laundry hanging on clothesline
+14. Muddy tire tracks on grass
+15. Fallen autumn leaves everywhere
+16. Open storage shed
+17. Small American flag on porch
+18. Halloween decorations
+19. Scattered sports equipment
+20. Broken flower pots with soil spilled
+21. Neighbor’s porch light on
+22. Fat thief looking out of breath
+23. Baggy pants on thief
+24. Flashlights held clumsily
+25. Dog chain pulled tight
+26. Water spilled from kiddie pool
+27. Muddy footprints near truck
+28. Lawn mower being stolen
+Image 15: Kennard_CrimeScene_15_Driveway_Bicycle_Theft.webp
+27 Specific Details:
+1. Very fat thief wearing black COVID-style face mask
+2. Thief in baggy clothes clumsily loading bicycle
+3. Heavyset second thief looking confused
+4. Mother, father, and young boy standing safely across the street watching
+5. Aggressive brown dog barking behind fence
+6. White van with side door open
+7. Open garage door
+8. Tools visible in garage
+9. Children’s bicycles on driveway
+10. Basketball hoop
+11. Tipped-over recycling bin
+12. Plastic bottles spilling out
+13. Garden gnomes on lawn
+14. Fallen autumn leaves
+15. Muddy footprints on concrete
+16. Scattered toys on grass
+17. Sports balls on driveway
+18. Small American flag on porch
+19. Mailbox with mail
+20. Porch furniture
+21. Potted plants on steps
+22. Halloween decorations
+23. Streetlight on
+24. Bicycle being stolen
+25. Fat thief dropping tools
+26. Family watching from across street
+27. Dog behind wooden fence
+

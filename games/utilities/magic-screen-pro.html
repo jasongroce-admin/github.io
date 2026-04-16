@@ -1,738 +1,87 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>✨ Magic Screen PRO ✨</title>
-    <style>
-        :root { --accent: #66ccff; --panel: #0f1b32; }
-        body {
-            background: radial-gradient(circle at top, rgba(102,204,255,0.15), transparent 45%), #050814;
-            margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; color: #e3dcff;
-            touch-action: none; overflow: hidden;
-        }
-        .header {
-            background: rgba(11,27,48,0.98);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #335;
-            padding: 8px 12px;
-            display: flex;
-            align-items:center;
-            gap: 8px;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header h1 { margin:0; font-size:1.35rem; background:linear-gradient(90deg,#66ccff,#ff66cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .btn { padding:7px 14px; background:#0b1b30; border:1px solid #446; border-radius:8px; color:#e3dcff; cursor:pointer; font-size:0.93rem; transition:all .2s; }
-        .btn:hover { background:#112b44; border-color:var(--accent); }
-        .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
+﻿<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Magic Screen PRO</title><style>
+:root{--bg:#050814;--panel:#0b1b30ee;--card:#10203add;--line:#365070;--text:#eef4ff;--muted:#9fb2d9;--accent:#66ccff;--pink:#ff66cc;--ok:#6bf0b5;--bad:#ff728b}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,rgba(102,204,255,.18),transparent 40%),radial-gradient(circle at right,rgba(255,102,204,.1),transparent 30%),var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none;overflow:hidden}button,input,select{font:inherit}header,footer{padding:10px 14px;background:#091425ee;border-color:var(--line);border-style:solid}header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-width:0 0 1px;position:sticky;top:0;z-index:2}footer{display:flex;justify-content:space-between;gap:10px;border-width:1px 0 0;color:var(--muted)}h1{margin:0;font-size:1.2rem;background:linear-gradient(90deg,var(--accent),var(--pink));-webkit-background-clip:text;color:transparent}.sub{color:var(--muted)}.toolbar,.row,.chips{display:flex;gap:8px;flex-wrap:wrap}.toolbar{margin-left:auto}.btn,.chip{border:1px solid #547099;background:#10263f;border-radius:10px;color:var(--text);padding:8px 10px;cursor:pointer}.chip{min-width:72px;text-align:center}.chip.active{border-color:var(--accent);box-shadow:0 0 0 1px #66ccff44 inset,0 0 16px #66ccff33}.app{display:grid;grid-template-columns:300px 1fr 320px;gap:12px;padding:12px;height:calc(100vh - 96px)}.rail,.stage{min-height:0}.rail{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.stage{display:grid;grid-template-rows:auto 1fr auto;background:#07101dcc;border:1px solid var(--line);border-radius:18px;overflow:hidden}.stagebar{padding:10px 12px;background:#091425dd;border-bottom:1px solid #27405f;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted)}.canvaswrap{position:relative;min-height:0;background:linear-gradient(45deg,#ffffff08 25%,transparent 25%,transparent 75%,#ffffff08 75%),linear-gradient(45deg,#ffffff08 25%,transparent 25%,transparent 75%,#ffffff08 75%),#070b14;background-size:24px 24px;background-position:0 0,12px 12px}canvas{display:block;width:100%;height:100%;touch-action:none}details{background:var(--card);border:1px solid #243a57;border-radius:14px;margin-bottom:10px;padding:0 10px 10px}summary{cursor:pointer;padding:10px 0;font-weight:700;color:var(--text)}.grid{display:grid;gap:10px}.controls .item{display:grid;grid-template-columns:72px 1fr 66px;gap:8px;align-items:center}.controls input[type=number],select,.field input{width:100%;background:#0c1b31;border:1px solid #3b5578;border-radius:8px;color:var(--text);padding:7px}.field{display:grid;gap:6px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}.palette{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.sw{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid #ffffff22;cursor:pointer}.sw.active,.sw:hover{border-color:#fff}.layers{display:grid;gap:8px;max-height:260px;overflow:auto}.layer{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;background:#10263f;border:1px solid #28425f;border-radius:10px;cursor:pointer}.layer.active{border-color:var(--accent)}.mini{background:none;border:none;color:inherit;cursor:pointer}.note,.hint{color:var(--muted)}.inspect{background:#0a1526;border:1px solid #243a57;border-radius:10px;padding:10px}.hidden{display:none!important}.toast{position:fixed;right:16px;bottom:16px;background:#0a1526;border:1px solid #3b89aa;padding:10px 12px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.on{opacity:1;transform:none}.mobile{display:none}@media(max-width:1080px){.app{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr)}.rail{max-height:34vh}}@media(max-width:720px){body{overflow:auto}.app{height:auto;min-height:calc(100vh - 96px);padding:10px}.mobile{display:inline-flex}.toolbar{margin-left:0}.controls .item,.twocol{grid-template-columns:1fr}}</style></head><body>
+<header><div><h1>Magic Screen PRO</h1><div class="sub">Tool -> tip -> brush -> color -> effect, with special animated lines and object utilities.</div></div><div class="toolbar"><button class="btn" id="newBtn">New</button><button class="btn" id="clearBtn">Clear</button><button class="btn" id="undoBtn">Undo</button><button class="btn" id="redoBtn">Redo</button><button class="btn" id="pngBtn">Save PNG</button><button class="btn" id="saveBtn">Save Project</button><button class="btn" id="loadBtn">Load</button><button class="btn" id="cameraBtn">Camera</button><button class="btn" id="imageBtn">Add Image</button><button class="btn mobile hidden" id="shareBtn">Share</button></div></header>
+<div class="app">
+<aside class="rail">
+<details open><summary>Workflow</summary><div class="inspect" id="flowSummary"></div><div class="chips" id="modeChips"><button class="chip active" data-mode="standard">Standard</button><button class="chip" data-mode="special">Special</button></div><div class="hint">Special lines use preset colors/textures, honor brush + symmetry, and ignore regular effects.</div></details>
+<details open><summary>Tools</summary><div class="chips" id="toolChips"><button class="chip active" data-tool="pencil">Pencil</button><button class="chip" data-tool="pen">Pen</button><button class="chip" data-tool="marker">Marker</button><button class="chip" data-tool="eraser">Erase</button><button class="chip" data-tool="select">Select</button><button class="chip" data-tool="arrow">Arrow</button></div></details>
+<details open><summary>Tips</summary><div class="chips" id="tipChips"><button class="chip" data-tip="fine">Fine</button><button class="chip" data-tip="hard">Hard</button><button class="chip active" data-tip="med">Med</button><button class="chip" data-tip="soft">Soft</button><button class="chip" data-tip="broad">Broad</button><button class="chip" data-tip="chisel">Chisel</button></div></details>
+<details open><summary>Brush</summary><div class="controls grid"><div class="item"><label>Size</label><input id="size" type="range" min="1" max="220" value="24"><input id="sizeN" type="number" min="1" max="220" value="24"></div><div class="item"><label>Opacity</label><input id="alpha" type="range" min="0.05" max="1" step="0.01" value="0.94"><input id="alphaN" type="number" min="0.05" max="1" step="0.01" value="0.94"></div><div class="item"><label>Flow</label><input id="flow" type="range" min="0.1" max="1" step="0.01" value="0.9"><input id="flowN" type="number" min="0.1" max="1" step="0.01" value="0.9"></div><div class="item"><label>Glow</label><input id="glow" type="range" min="0" max="120" value="8"><input id="glowN" type="number" min="0" max="120" value="8"></div><div class="item"><label>Texture</label><input id="tex" type="range" min="0" max="1" step="0.01" value="0.35"><input id="texN" type="number" min="0" max="1" step="0.01" value="0.35"></div></div></details>
+<details open><summary>Color</summary><div class="twocol"><label class="field">Base Color<input id="color" type="color" value="#66ccff"></label><label class="field">Hue Shift<input id="hue" type="number" min="-180" max="180" value="0"></label></div><div class="palette" id="palette"></div></details>
+</aside>
+<section class="stage"><div class="stagebar"><span id="layerLabel">Layer: Background</span><span id="selLabel">Selection: none</span><span id="sizeLabel">Canvas: 1600 × 1000</span></div><div class="canvaswrap" id="wrap"><canvas id="board"></canvas></div><div class="stagebar"><span id="canvasHint">Draw with mouse, touch, or stylus. Selection moves and resizes arrows, images, and marks.</span><span id="health">Checks ready.</span></div></section>
+<aside class="rail">
+<details open><summary>Special Lines</summary><div class="chips" id="specialChips"><button class="chip active" data-special="sparkle">Sparkle</button><button class="chip" data-special="comet">Comet</button><button class="chip" data-special="electric">Electric</button><button class="chip" data-special="bubble">Bubble</button><button class="chip" data-special="vine">Vine</button><button class="chip" data-special="confetti">Confetti</button></div></details>
+<details open><summary>Effects</summary><label class="field">Effect<select id="effect"><option value="none">None</option><option value="neon">Neon</option><option value="rainbow">Rainbow</option><option value="fire">Fire</option><option value="laser">Laser</option><option value="starburst">Starburst</option><option value="stripes">Stripes</option><option value="comet">Comet Trail</option></select></label><div class="hint" id="effectHint">Regular lines only.</div></details>
+<details open><summary>Symmetry</summary><label class="field">Mode<select id="sym"><option value="none">None</option><option value="mirror-x">Mirror X</option><option value="mirror-y">Mirror Y</option><option value="quad">Quad</option><option value="radial-6">Radial 6</option><option value="radial-8">Radial 8</option><option value="kaleido-6">Kaleido 6</option></select></label></details>
+<details open id="arrowBox" class="hidden"><summary>Arrow Style</summary><div class="chips" id="arrowChips"><button class="chip active" data-arrow="simple">Simple</button><button class="chip" data-arrow="double">Double</button><button class="chip" data-arrow="thick">Thick</button><button class="chip" data-arrow="fancy">Fancy</button></div></details>
+<details open><summary>Selection & Resize</summary><div class="twocol"><label class="field">Width<input id="cw" type="number" min="320" max="4096" value="1600"></label><label class="field">Height<input id="ch" type="number" min="320" max="4096" value="1000"></label></div><div class="row"><button class="btn" id="resizeBtn">Resize Canvas</button><button class="btn" id="fitBtn">Fit Selection</button></div><label><input id="scaleToggle" type="checkbox" checked> Scale artwork with canvas resize</label></details>
+<details open><summary>Layers</summary><div class="row"><button class="btn" id="addLayerBtn">Add Layer</button><button class="btn" id="dupLayerBtn">Duplicate</button></div><div class="layers" id="layers"></div></details>
+<details open><summary>Inspector</summary><div class="inspect" id="inspect">Nothing selected.</div></details>
+</aside></div>
+<footer><span>Magic Screen PRO · mobile-friendly stacked controls · special lines bypass regular effects</span><span id="status">Ready.</span></footer>
+<input id="loader" class="hidden" type="file" accept="application/json"><div id="toast" class="toast"></div>
+<script>
+const canvas=document.getElementById('board'),ctx=canvas.getContext('2d'),wrap=document.getElementById('wrap'),toast=document.getElementById('toast');
+const preset=['#66ccff','#ff66cc','#ffd166','#7cf29a','#ffffff','#ff8f66','#8f9dff','#f472b6','#00d4ff','#8cff66'],tips={fine:{w:.42,a:.96,cap:'round',t:.1},hard:{w:.82,a:1,cap:'square',t:.08},med:{w:1,a:.96,cap:'round',t:.16},soft:{w:1.15,a:.78,cap:'round',t:.34},broad:{w:1.65,a:.86,cap:'round',t:.24},chisel:{w:1.34,a:.92,cap:'butt',t:.2,c:1}},tools={pencil:{w:.78,a:.92},pen:{w:.94,a:1},marker:{w:1.32,a:.78},eraser:{w:1.38,a:1},arrow:{w:1,a:1},select:{w:1,a:1}},specials={sparkle:{p:['#fff7a8','#fff','#8be8ff'],u:0,j:.9},comet:{p:['#fff','#9de7ff','#66ccff'],u:1,j:.35},electric:{p:['#b8f7ff','#7fdbff','#66b3ff'],u:1,j:1.2},bubble:{p:['#d1f8ff','#8be7ff','#fff'],u:0,j:.4},vine:{p:['#66ff9a','#38d877','#a6ffce'],u:0,j:.6},confetti:{p:['#ff7bac','#ffe066','#66ccff','#7cf29a'],u:0,j:1.1}};
+const S={w:1600,h:1000,tool:'pencil',tip:'med',mode:'standard',special:'sparkle',arrow:'simple',set:{size:24,alpha:.94,flow:.9,glow:8,tex:.35,color:'#66ccff',hue:0,effect:'none',sym:'none'},layers:[],li:0,hist:[],redo:[],sel:{ids:[],b:null},ptr:{on:0,id:null,mode:null,start:null,preview:null,marquee:null,snap:null,b0:null,handle:null},tick:0,cache:new Map()};let iid=0,lid=0,tt=0;const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),clone=v=>JSON.parse(JSON.stringify(v));
+const layer=n=>({id:`layer-${++lid}`,name:n||'Layer',visible:true,opacity:1,items:[]}),active=()=>S.layers[clamp(S.li,0,S.layers.length-1)]||(S.layers=[layer('Background')],S.li=0,S.layers[0]);
+const note=m=>{$('status').textContent=m},toastMsg=(m,e)=>{toast.textContent=m;toast.style.borderColor=e?'#ff728b88':'#3b89aa';toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),2200)},saveSettings=()=>localStorage.setItem('magicScreenProSettingsV3',JSON.stringify({tool:S.tool,tip:S.tip,mode:S.mode,special:S.special,arrow:S.arrow,set:S.set,w:S.w,h:S.h}));
+function loadSettings(){try{const v=JSON.parse(localStorage.getItem('magicScreenProSettingsV3')||'null');if(!v)return;Object.assign(S.set,v.set||{});['tool','tip','mode','special','arrow'].forEach(k=>v[k]&&(S[k]=v[k]));S.w=clamp(+v.w||S.w,320,4096);S.h=clamp(+v.h||S.h,320,4096)}catch{}}
+function snap(){return{w:S.w,h:S.h,li:S.li,layers:clone(S.layers)}}function pushHist(){S.hist.push(snap());if(S.hist.length>60)S.hist.shift();S.redo=[]}
+function restore(v){S.w=v.w;S.h=v.h;S.li=clamp(v.li,0,v.layers.length-1);S.layers=clone(v.layers);clearSel(0);sync();renderLayers();render()}
+function undo(){if(!S.hist.length)return toastMsg('Nothing to undo.',1);S.redo.push(snap());restore(S.hist.pop())}function redo(){if(!S.redo.length)return toastMsg('Nothing to redo.',1);S.hist.push(snap());restore(S.redo.pop())}
+function setCanvas(){const r=wrap.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=Math.max(1,Math.floor(r.width*d));canvas.height=Math.max(1,Math.floor(r.height*d));ctx.setTransform(d,0,0,d,0,0);render()}
+function viewport(){const w=canvas.clientWidth||wrap.clientWidth||1,h=canvas.clientHeight||wrap.clientHeight||1,s=Math.min(w/S.w,h/S.h);return{w,h,s,ox:(w-S.w*s)/2,oy:(h-S.h*s)/2}}
+function pt(cx,cy){const r=canvas.getBoundingClientRect(),v=viewport();return{x:clamp((cx-r.left-v.ox)/v.s,0,S.w),y:clamp((cy-r.top-v.oy)/v.s,0,S.h)}}
+function rgb(hex,shift){let x=parseInt(hex.slice(1),16),r=(x>>16)&255,g=(x>>8)&255,b=x&255;let [h,s,l]=toHsl(r,g,b);[r,g,b]=toRgb((h+shift+360)%360,s,l);return`rgb(${r}, ${g}, ${b})`}
+function toHsl(r,g,b){r/=255;g/=255;b/=255;let mx=Math.max(r,g,b),mn=Math.min(r,g,b),h=0,s=0,l=(mx+mn)/2;if(mx!==mn){let d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);switch(mx){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4}h*=60}return[h,s,l]}
+function toRgb(h,s,l){let c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;if(h<60)[r,g,b]=[c,x,0];else if(h<120)[r,g,b]=[x,c,0];else if(h<180)[r,g,b]=[0,c,x];else if(h<240)[r,g,b]=[0,x,c];else if(h<300)[r,g,b]=[x,0,c];else[r,g,b]=[c,0,x];return[Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]}
+function brush(it){const tp=tips[it.tip]||tips.med,tl=tools[it.tool]||tools.pencil;return{w:it.size*it.flow*tp.w*tl.w,a:clamp(it.alpha*tp.a*tl.a,.03,1),t:clamp(it.tex+tp.t,0,1.3),cap:tp.cap,chisel:!!tp.c,color:rgb(it.color,it.hue)}}
+function symMap(sym){const cx=S.w/2,cy=S.h/2,rot=(p,a)=>{const dx=p.x-cx,dy=p.y-cy;return{x:cx+dx*Math.cos(a)-dy*Math.sin(a),y:cy+dx*Math.sin(a)+dy*Math.cos(a)}};if(sym==='mirror-x')return[p=>p,p=>({x:S.w-p.x,y:p.y})];if(sym==='mirror-y')return[p=>p,p=>({x:p.x,y:S.h-p.y})];if(sym==='quad')return[p=>p,p=>({x:S.w-p.x,y:p.y}),p=>({x:p.x,y:S.h-p.y}),p=>({x:S.w-p.x,y:S.h-p.y})];if(sym==='radial-6'||sym==='radial-8'||sym==='kaleido-6'){const n=sym==='radial-8'?8:6,a=[];for(let i=0;i<n;i++){let ang=Math.PI*2*i/n;a.push(p=>rot(p,ang));if(sym==='kaleido-6')a.push(p=>{let q=rot(p,ang);return{x:S.w-q.x,y:q.y}})}return a}return[p=>p]}
+function along(pts,space,fn){let total=0,d=[];for(let i=1;i<pts.length;i++){total+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);d.push(total)}if(!total)return;let steps=Math.max(1,Math.floor(total/Math.max(1,space)));for(let i=0;i<=steps;i++){let t=i/steps,target=total*t,p=pts[0];for(let j=0;j<d.length;j++)if(target<=d[j]){let pd=j?d[j-1]:0,s=(target-pd)/Math.max(.0001,d[j]-pd);p={x:pts[j].x+(pts[j+1].x-pts[j].x)*s,y:pts[j].y+(pts[j+1].y-pts[j].y)*s};break}let a=0;if(i<steps){let ni=Math.min(pts.length-1,Math.max(1,Math.floor((pts.length-1)*Math.min(1,t+.01))));a=Math.atan2(pts[ni].y-p.y,pts[ni].x-p.x)}fn(p,a,t,total)}}
+function path(pts,b,tex,target){if(pts.length<2)return;target.beginPath();target.lineWidth=b.w;target.lineCap=b.cap;target.lineJoin='round';target.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)target.lineTo(pts[i].x,pts[i].y);target.stroke();if(!tex||b.t<.01)return;along(pts,Math.max(8,b.w*(1.1-clamp(b.t,0,.9))),(p,a,t)=>{target.save();target.translate(p.x,p.y);target.rotate(a);target.globalAlpha=Math.min(1,b.a*(.08+b.t*.15));target.fillStyle='#fff';let g=Math.max(.8,b.w*.08+(t%0.2)*b.w*.05);b.chisel?target.fillRect(-g*.25,-b.w*.18,g*.5,b.w*.36):target.fillRect(-g/2,-g/2,g,g);target.restore()})}
+function star(r,t){t.beginPath();for(let i=0;i<8;i++){let a=Math.PI/4*i,l=i%2===0?r*1.7:r*.7,x=Math.cos(a)*l,y=Math.sin(a)*l;i?t.lineTo(x,y):t.moveTo(x,y)}t.closePath();t.fill()}
+function specialShape(kind,r,t){if(kind==='sparkle')star(r,t);else if(kind==='comet'){t.beginPath();t.ellipse(0,0,r*1.4,r*.9,0,0,Math.PI*2);t.fill();t.globalAlpha*=.35;t.beginPath();t.moveTo(-r*3.4,0);t.lineTo(-r*.6,-r*.55);t.lineTo(-r*.6,r*.55);t.closePath();t.fill()}else if(kind==='electric'){t.lineWidth=Math.max(1,r*.38);t.beginPath();t.moveTo(-r*1.4,-r*.2);t.lineTo(-r*.25,-r*.9);t.lineTo(r*.1,r*.2);t.lineTo(r*1.3,r*.8);t.stroke()}else if(kind==='bubble'){t.beginPath();t.arc(0,0,r*1.15,0,Math.PI*2);t.fill();t.globalAlpha*=.35;t.beginPath();t.arc(r*.35,-r*.35,r*.32,0,Math.PI*2);t.fillStyle='#fff';t.fill()}else if(kind==='vine'){t.beginPath();t.moveTo(0,-r);t.quadraticCurveTo(r*1.2,-r*.2,0,r);t.quadraticCurveTo(-r*1.2,-r*.2,0,-r);t.fill();t.globalAlpha*=.28;t.beginPath();t.moveTo(0,-r);t.lineTo(0,r);t.stroke()}else t.fillRect(-r,-r*.45,r*2,r*.9)}
+function drawStroke(it,target=ctx){let tr=symMap(it.sym);for(let si=0;si<tr.length;si++){let pts=it.points.map(p=>tr[si](p)),b=brush(it);if(it.tool==='eraser'){target.save();target.globalCompositeOperation='destination-out';target.strokeStyle='rgba(0,0,0,1)';target.globalAlpha=1;path(pts,{...b,w:b.w*1.18,cap:'round'},0,target);target.restore();continue}if(it.mode==='special'){let sp=specials[it.special]||specials.sparkle,base=sp.u?rgb(it.color,it.hue):sp.p[0];target.save();target.strokeStyle=base;target.shadowColor=base;target.shadowBlur=it.glow+10;target.globalAlpha=Math.min(1,b.a+.05);path(pts,{...b,t:b.t*.8},1,target);along(pts,clamp(10+it.size*.38,10,52),(p,a,t0)=>{let c=sp.p[Math.floor((t0*sp.p.length+S.tick/18)%sp.p.length)],pulse=.7+Math.sin(S.tick/8+t0*Math.PI*8+si)*.3;target.save();target.translate(p.x,p.y);target.rotate(a+pulse*sp.j*.22);target.fillStyle=sp.u?base:c;target.strokeStyle='#fff';target.globalAlpha=clamp(b.a*(.45+pulse*.35),.08,1);specialShape(it.special,Math.max(2.5,b.w*.28+pulse*it.size*.08),target);target.restore()});target.restore();continue}target.save();target.strokeStyle=b.color;target.shadowColor=b.color;target.shadowBlur=it.glow;target.globalAlpha=b.a;if(it.effect==='none')path(pts,b,1,target);else if(it.effect==='neon'){for(let l=4;l>=0;l--){target.shadowBlur=it.glow+10+l*12;target.globalAlpha=b.a*(.24+l*.12);path(pts,{...b,w:b.w+l*2.1},1,target)}}else if(it.effect==='rainbow'){target.strokeStyle=`hsla(${(S.tick*2+si*36+it.hue+360)%360},95%,68%,${b.a})`;target.shadowBlur=it.glow+22;path(pts,b,1,target)}else if(it.effect==='fire'){target.strokeStyle=`hsla(${18+(S.tick%12)*2},100%,64%,${b.a})`;target.shadowBlur=it.glow+26;path(pts,{...b,w:b.w*(.92+Math.sin(S.tick/10)*.06)},1,target)}else if(it.effect==='laser'){target.shadowBlur=it.glow+42;path(pts,{...b,w:b.w*.8,t:b.t*.25},0,target);target.globalAlpha=Math.min(1,b.a+.15);target.strokeStyle='#fff';path(pts,{...b,w:Math.max(1,b.w*.25),t:0},0,target)}else if(it.effect==='starburst'){path(pts,b,1,target);along(pts,Math.max(16,b.w*2.4),(p,a,t0)=>{target.save();target.translate(p.x,p.y);target.rotate(a+t0*Math.PI*2);target.fillStyle='#fff';target.globalAlpha=.45;star(b.w*.55+(t0%.18)*b.w,target);target.restore()})}else if(it.effect==='stripes'){target.globalAlpha=b.a*.72;path(pts,{...b,w:b.w*1.12,t:.16},0,target);target.strokeStyle='#fff';target.globalAlpha=b.a*.32;along(pts,Math.max(10,b.w*.8),(p,a)=>{target.save();target.translate(p.x,p.y);target.rotate(a+Math.PI/2);target.beginPath();target.moveTo(-b.w*.55,0);target.lineTo(b.w*.55,0);target.lineWidth=Math.max(1,b.w*.12);target.stroke();target.restore()})}else if(it.effect==='comet'){path(pts,b,1,target);let p=pts[pts.length-1];target.beginPath();target.fillStyle='#fff';target.shadowBlur=it.glow+24;target.arc(p.x,p.y,Math.max(2,b.w*.46),0,Math.PI*2);target.fill()}target.restore()}}
+function drawArrow(it,target=ctx){let color=rgb(it.color,it.hue),width=it.size*it.flow*.9,head=Math.max(14,width*2.3);for(const map of symMap(it.sym)){let a=map(it.from),b=map(it.to),ang=Math.atan2(b.y-a.y,b.x-a.x);target.save();target.strokeStyle=color;target.fillStyle=color;target.globalAlpha=it.alpha;target.lineWidth=width;target.lineJoin='round';target.lineCap='round';target.shadowBlur=it.glow;target.shadowColor=color;target.beginPath();target.moveTo(a.x,a.y);target.lineTo(b.x,b.y);target.stroke();arrowHead(b,ang,head,it.arrow==='fancy',target);if(it.arrow==='double')arrowHead(a,ang+Math.PI,head,0,target);if(it.arrow==='thick')target.lineWidth=width*1.2;target.restore()}}
+function arrowHead(p,a,h,fill,t){let l={x:p.x-h*Math.cos(a-Math.PI/6),y:p.y-h*Math.sin(a-Math.PI/6)},r={x:p.x-h*Math.cos(a+Math.PI/6),y:p.y-h*Math.sin(a+Math.PI/6)};t.beginPath();t.moveTo(p.x,p.y);t.lineTo(l.x,l.y);if(fill){let m={x:p.x-h*.55*Math.cos(a),y:p.y-h*.55*Math.sin(a)};t.lineTo(m.x,m.y);t.lineTo(r.x,r.y);t.closePath();t.fill()}else{t.moveTo(p.x,p.y);t.lineTo(r.x,r.y);t.stroke()}}
+function img(src){if(S.cache.has(src))return S.cache.get(src);let i=new Image();i.onload=()=>render();i.src=src;S.cache.set(src,i);return i}
+function drawItem(it,target=ctx){if(it.kind==='stroke')drawStroke(it,target);else if(it.kind==='arrow')drawArrow(it,target);else if(it.kind==='image'){let im=img(it.src);if(im.complete){target.save();target.globalAlpha=it.alpha??1;target.drawImage(im,it.x,it.y,it.w,it.h);target.restore()}}}
+function bounds(it){if(it.kind==='image')return{x:it.x,y:it.y,w:it.w,h:it.h};let pad=it.kind==='arrow'?it.size*it.flow*1.8+it.glow+14:brush(it).w*.85+it.glow+10,b=null,pts=[];if(it.kind==='stroke')for(const map of symMap(it.sym))pts.push(...it.points.map(p=>map(p)));else for(const map of symMap(it.sym))pts.push(map(it.from),map(it.to));pts.forEach(p=>{b=b?{x:Math.min(b.x,p.x-pad),y:Math.min(b.y,p.y-pad),w:Math.max(b.x+b.w,p.x+pad)-Math.min(b.x,p.x-pad),h:Math.max(b.y+b.h,p.y+pad)-Math.min(b.y,p.y-pad)}:{x:p.x-pad,y:p.y-pad,w:pad*2,h:pad*2}});return b}
+function union(arr){return arr.filter(Boolean).reduce((a,b)=>a?{x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.max(a.x+a.w,b.x+b.w)-Math.min(a.x,b.x),h:Math.max(a.y+a.h,b.y+b.h)-Math.min(a.y,b.y)}:b,null)}
+function clearSel(r=1){S.sel={ids:[],b:null};updateSelUI();if(r)render()}function selected(){return S.sel.ids.map(id=>findItem(id)).filter(Boolean)}function findItem(id){for(const l of S.layers){let it=l.items.find(x=>x.id===id);if(it)return it}return null}
+function setSel(ids){S.sel.ids=[...new Set(ids)];S.sel.b=union(selected().map(bounds));updateSelUI();render()}
+function updateSelUI(){let c=S.sel.ids.length;$('selLabel').textContent=c?`Selection: ${c} item${c===1?'':'s'}`:'Selection: none';$('layerLabel').textContent=`Layer: ${active().name}`;$('inspect').innerHTML=!c||!S.sel.b?'Nothing selected.':`<b>${c} selected</b><br>X ${S.sel.b.x.toFixed(0)} · Y ${S.sel.b.y.toFixed(0)}<br>W ${S.sel.b.w.toFixed(0)} · H ${S.sel.b.h.toFixed(0)}`}
+function handles(b){return!b?[]:[{k:'nw',x:b.x,y:b.y},{k:'ne',x:b.x+b.w,y:b.y},{k:'sw',x:b.x,y:b.y+b.h},{k:'se',x:b.x+b.w,y:b.y+b.h}]}
+function hitHandle(p){return handles(S.sel.b).find(h=>p.x>=h.x-16&&p.x<=h.x+16&&p.y>=h.y-16&&p.y<=h.y+16)}
+function hitItem(p){let items=active().items;for(let i=items.length-1;i>=0;i--){let b=bounds(items[i]);if(b&&p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h)return items[i]}return null}
+function xformItem(it,fn){if(it.kind==='stroke')it.points=it.points.map(fn);else if(it.kind==='arrow'){it.from=fn(it.from);it.to=fn(it.to)}else{let a=fn({x:it.x,y:it.y}),b=fn({x:it.x+it.w,y:it.y+it.h});it.x=a.x;it.y=a.y;it.w=Math.max(24,b.x-a.x);it.h=Math.max(24,b.y-a.y)}}
+function selSnap(){return selected().map(it=>({id:it.id,data:clone(it)}))}
+function applyMove(dx,dy){S.ptr.snap.forEach(s=>{let it=findItem(s.id);if(it){Object.assign(it,clone(s.data));xformItem(it,p=>({x:p.x+dx,y:p.y+dy}))}});S.sel.b=union(selected().map(bounds));updateSelUI();render()}
+function applyScale(p){let b=S.ptr.b0,h=S.ptr.handle;if(!b)return;let a={x:h.includes('w')?b.x+b.w:b.x,y:h.includes('n')?b.y+b.h:b.y},c={x:h.includes('w')?b.x:b.x+b.w,y:h.includes('n')?b.y:b.y+b.h},sx=Math.max(.08,Math.abs(p.x-a.x)/Math.max(1,Math.abs(c.x-a.x))),sy=Math.max(.08,Math.abs(p.y-a.y)/Math.max(1,Math.abs(c.y-a.y)));S.ptr.snap.forEach(s=>{let it=findItem(s.id);if(it){Object.assign(it,clone(s.data));xformItem(it,q=>({x:a.x+(q.x-a.x)*sx,y:a.y+(q.y-a.y)*sy}))}});S.sel.b=union(selected().map(bounds));updateSelUI();render()}
+function norm(a,b){return{x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)}}
+function makeStroke(p){return{id:`item-${++iid}`,kind:'stroke',mode:S.mode,special:S.special,tool:S.tool,tip:S.tip,points:[{...p},{...p}],size:S.set.size,alpha:S.set.alpha,flow:S.set.flow,glow:S.set.glow,tex:S.set.tex,color:S.set.color,hue:S.set.hue,effect:S.mode==='special'?'none':S.set.effect,sym:S.set.sym}}
+function makeArrow(p){return{id:`item-${++iid}`,kind:'arrow',arrow:S.arrow,from:{...p},to:{...p},size:S.set.size,alpha:S.set.alpha,flow:S.set.flow,glow:S.set.glow,color:S.set.color,hue:S.set.hue,sym:S.set.sym}}
+function down(e){e.preventDefault();canvas.setPointerCapture(e.pointerId);let p=pt(e.clientX,e.clientY);S.ptr={on:1,id:e.pointerId,mode:null,start:p,preview:null,marquee:null,snap:null,b0:null,handle:null};if(S.tool==='select'){let h=hitHandle(p);if(h){pushHist();S.ptr.mode='scale';S.ptr.handle=h.k;S.ptr.snap=selSnap();S.ptr.b0={...S.sel.b};return}let it=hitItem(p);if(it){if(!S.sel.ids.includes(it.id))setSel([it.id]);pushHist();S.ptr.mode='move';S.ptr.snap=selSnap();return}clearSel(0);S.ptr.mode='marquee';S.ptr.marquee={a:p,b:p};render();return}pushHist();if(S.tool==='arrow'){S.ptr.mode='arrow';S.ptr.preview=makeArrow(p)}else{S.ptr.mode='draw';S.ptr.preview=makeStroke(p)}note(`${S.tool} engaged.`)}
+function move(e){if(!S.ptr.on||S.ptr.id!==e.pointerId)return;let p=pt(e.clientX,e.clientY);if(S.ptr.mode==='draw'){let pts=S.ptr.preview.points,last=pts[pts.length-1];if(!last||Math.hypot(p.x-last.x,p.y-last.y)>=Math.max(1.5,S.set.size*.06))pts.push({...p})}else if(S.ptr.mode==='arrow')S.ptr.preview.to={...p};else if(S.ptr.mode==='marquee')S.ptr.marquee.b=p;else if(S.ptr.mode==='move')applyMove(p.x-S.ptr.start.x,p.y-S.ptr.start.y);else if(S.ptr.mode==='scale')applyScale(p);render()}
+function up(e){if(!S.ptr.on||S.ptr.id!==e.pointerId)return;let p=pt(e.clientX,e.clientY),L=active();if(S.ptr.mode==='draw'){let pts=S.ptr.preview.points,last=pts[pts.length-1];if(!last||last.x!==p.x||last.y!==p.y)pts.push({...p});if(S.ptr.preview.points.length>1)L.items.push(S.ptr.preview)}else if(S.ptr.mode==='arrow'){S.ptr.preview.to={...p};L.items.push(S.ptr.preview);setSel([S.ptr.preview.id])}else if(S.ptr.mode==='marquee'){let r=norm(S.ptr.marquee.a,S.ptr.marquee.b),ids=L.items.filter(it=>{let b=bounds(it);return b&&!(r.x+r.w<b.x||r.x>b.x+b.w||r.y+r.h<b.y||r.y>b.y+b.h)}).map(it=>it.id);if(ids.length)setSel(ids)}else if(S.ptr.mode==='move'||S.ptr.mode==='scale'){S.sel.b=union(selected().map(bounds));updateSelUI()}S.ptr={on:0,id:null,mode:null,start:null,preview:null,marquee:null,snap:null,b0:null,handle:null};renderLayers();render();note('Ready.')}
+function render(){let v=viewport();ctx.clearRect(0,0,v.w,v.h);ctx.save();ctx.fillStyle='#070b14';ctx.fillRect(0,0,v.w,v.h);ctx.translate(v.ox,v.oy);ctx.scale(v.s,v.s);ctx.fillStyle='#080b18';ctx.fillRect(0,0,S.w,S.h);for(const l of S.layers)if(l.visible){ctx.save();ctx.globalAlpha=l.opacity;l.items.forEach(it=>drawItem(it));ctx.restore()}if(S.ptr.preview)drawItem(S.ptr.preview);ctx.restore();overlay(v);$('sizeLabel').textContent=`Canvas: ${S.w} × ${S.h}`}
+function overlay(v){ctx.save();ctx.translate(v.ox,v.oy);ctx.scale(v.s,v.s);if(S.ptr.marquee){let r=norm(S.ptr.marquee.a,S.ptr.marquee.b);ctx.strokeStyle='rgba(102,204,255,.95)';ctx.setLineDash([10/v.s,6/v.s]);ctx.lineWidth=1/v.s;ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([])}if(S.sel.b){let b=S.sel.b;ctx.strokeStyle='rgba(102,204,255,.98)';ctx.fillStyle='rgba(102,204,255,.16)';ctx.lineWidth=1.2/v.s;ctx.strokeRect(b.x,b.y,b.w,b.h);ctx.fillRect(b.x,b.y,b.w,b.h);for(const h of handles(b)){let s=16/v.s;ctx.fillStyle='#fff';ctx.strokeStyle='#66ccff';ctx.beginPath();ctx.rect(h.x-s/2,h.y-s/2,s,s);ctx.fill();ctx.stroke()}}ctx.restore()}
+function renderLayers(){let box=$('layers');box.innerHTML='';[...S.layers].reverse().forEach((l,ri)=>{let i=S.layers.length-1-ri,d=document.createElement('div');d.className=`layer ${i===S.li?'active':''}`;d.innerHTML=`<button class="mini" data-a="vis">${l.visible?'Show':'Hide'}</button><div><div>${l.name}</div><small class="note">${l.items.length} item${l.items.length===1?'':'s'}</small></div><div class="row"><input type="range" min="0.1" max="1" step="0.05" value="${l.opacity}"><button class="mini" data-a="ren">Rename</button><button class="mini" data-a="del">Delete</button></div>`;d.onclick=e=>{if(e.target.closest('[data-a]')||e.target.tagName==='INPUT')return;S.li=i;clearSel();renderLayers();render()};d.querySelector('[data-a="vis"]').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render()};d.querySelector('[data-a="ren"]').onclick=e=>{e.stopPropagation();let n=prompt('Rename layer:',l.name);if(n&&n.trim()){l.name=n.trim();renderLayers();updateSelUI()}};d.querySelector('[data-a="del"]').onclick=e=>{e.stopPropagation();if(S.layers.length===1)return toastMsg('The last layer cannot be removed.',1);if(confirm(`Delete "${l.name}"?`)){pushHist();S.layers.splice(i,1);S.li=clamp(S.li,0,S.layers.length-1);clearSel(0);renderLayers();render()}};d.querySelector('input').oninput=e=>{l.opacity=+e.target.value;render()};box.appendChild(d)});updateSelUI()}
+function sync(){[['size','sizeN','size'],['alpha','alphaN','alpha'],['flow','flowN','flow'],['glow','glowN','glow'],['tex','texN','tex']].forEach(([a,b,k])=>{$(a).value=S.set[k];$(b).value=S.set[k]});$('color').value=S.set.color;$('hue').value=S.set.hue;$('effect').value=S.set.effect;$('sym').value=S.set.sym;$('cw').value=S.w;$('ch').value=S.h;setActive('#toolChips [data-tool]','tool',S.tool);setActive('#tipChips [data-tip]','tip',S.tip);setActive('#modeChips [data-mode]','mode',S.mode);setActive('#specialChips [data-special]','special',S.special);setActive('#arrowChips [data-arrow]','arrow',S.arrow);$('arrowBox').classList.toggle('hidden',S.tool!=='arrow');$('effect').disabled=S.mode==='special';$('effectHint').textContent=S.mode==='special'?'Special lines ignore regular effects.':'Regular lines only.';$('canvasHint').textContent=S.tool==='select'?'Drag to select. Move the box or drag corner handles to resize.':S.tool==='arrow'?'Drag to place an arrow, then Select can move/resize it.':'Draw with mouse, touch, or stylus. Selection moves and resizes arrows, images, and marks.';$('flowSummary').innerHTML=`<b>${cap(S.tool)}</b> -> <b>${cap(S.tip)}</b> -> <b>${Math.round(S.set.size)}px / flow ${(+S.set.flow).toFixed(2)}</b> -> <b>${S.set.color.toUpperCase()}</b> -> <b>${S.mode==='special'?'Special preset':cap(S.set.effect)}</b> -> <b>${cap(S.set.sym)}</b>`;palette();updateSelUI();$('health').textContent='Checks ready.';$('health').style.color='var(--ok)'}
+function cap(v){return String(v).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}function setActive(sel,key,val){document.querySelectorAll(sel).forEach(b=>b.classList.toggle('active',b.dataset[key]===val))}
+function palette(){let p=$('palette');p.innerHTML='';preset.forEach(c=>{let b=document.createElement('button');b.className=`sw ${c.toLowerCase()===S.set.color.toLowerCase()?'active':''}`;b.style.background=c;b.onclick=()=>{S.set.color=c;$('color').value=c;palette();saveSettings();sync();render()};p.appendChild(b)})}
+function addImg(file){let fr=new FileReader();fr.onload=()=>{let im=new Image();im.onload=()=>{pushHist();let sc=Math.min(S.w/im.width,S.h/im.height,1),it={id:`item-${++iid}`,kind:'image',src:fr.result,x:(S.w-im.width*sc)/2,y:(S.h-im.height*sc)/2,w:im.width*sc,h:im.height*sc,alpha:1};active().items.push(it);img(it.src);setSel([it.id]);renderLayers();render();toastMsg('Image added to active layer.')};im.src=fr.result};fr.readAsDataURL(file)}
+function exportProject(){let blob=new Blob([JSON.stringify({version:3,w:S.w,h:S.h,li:S.li,layers:S.layers},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='magic-screen-pro-project.json';a.click();URL.revokeObjectURL(u)}
+function importProject(file){let fr=new FileReader();fr.onload=()=>{try{let v=JSON.parse(fr.result);if(!Array.isArray(v.layers))throw Error('Invalid project file.');pushHist();S.w=clamp(+v.w||1600,320,4096);S.h=clamp(+v.h||1000,320,4096);S.layers=v.layers;S.li=clamp(+v.li||0,0,S.layers.length-1);clearSel(0);sync();renderLayers();render();toastMsg('Project loaded.')}catch(e){toastMsg(e.message||'Load failed.',1)}};fr.readAsText(file)}
+function drawTo(target){target.fillStyle='#080b18';target.fillRect(0,0,S.w,S.h);for(const l of S.layers)if(l.visible){target.save();target.globalAlpha=l.opacity;l.items.forEach(it=>drawItem(it,target));target.restore()}}
+function savePng(){let c=document.createElement('canvas');c.width=S.w;c.height=S.h;drawTo(c.getContext('2d'));let a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='magic-screen-pro.png';a.click()}
+async function share(){if(!navigator.share)return;let c=document.createElement('canvas');c.width=S.w;c.height=S.h;drawTo(c.getContext('2d'));let blob=await new Promise(r=>c.toBlob(r,'image/png'));let file=new File([blob],'magic-screen-pro.png',{type:'image/png'});try{if(navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({title:'Magic Screen PRO',files:[file],text:'Shared from Magic Screen PRO.'});else await navigator.share({title:'Magic Screen PRO',text:'Shared from Magic Screen PRO.'})}catch(e){if(e.name!=='AbortError')toastMsg('Share was not completed.',1)}}
+function bind(){document.querySelectorAll('#toolChips [data-tool]').forEach(b=>b.onclick=()=>{S.tool=b.dataset.tool;saveSettings();sync();render()});document.querySelectorAll('#tipChips [data-tip]').forEach(b=>b.onclick=()=>{S.tip=b.dataset.tip;saveSettings();sync();render()});document.querySelectorAll('#modeChips [data-mode]').forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;saveSettings();sync();render()});document.querySelectorAll('#specialChips [data-special]').forEach(b=>b.onclick=()=>{S.special=b.dataset.special;saveSettings();sync();render()});document.querySelectorAll('#arrowChips [data-arrow]').forEach(b=>b.onclick=()=>{S.arrow=b.dataset.arrow;saveSettings();sync();render()});[['size','sizeN','size'],['alpha','alphaN','alpha'],['flow','flowN','flow'],['glow','glowN','glow'],['tex','texN','tex']].forEach(([a,b,k])=>{const f=s=>{S.set[k]=clamp(+s.value,+($(b).min||$(a).min||0),+($(b).max||$(a).max||1e6));$(a).value=S.set[k];$(b).value=S.set[k];saveSettings();sync();render()};$(a).oninput=()=>f($(a));$(b).oninput=()=>f($(b))});$('color').oninput=e=>{S.set.color=e.target.value;saveSettings();sync();render()};$('hue').oninput=e=>{S.set.hue=clamp(+e.target.value,-180,180);saveSettings();sync();render()};$('effect').onchange=e=>{S.set.effect=e.target.value;saveSettings();sync();render()};$('sym').onchange=e=>{S.set.sym=e.target.value;saveSettings();sync();render()};$('newBtn').onclick=()=>{if(confirm('Start a new project?')){pushHist();S.layers=[layer('Background')];S.li=0;clearSel(0);renderLayers();render();note('New project started.')}};$('clearBtn').onclick=()=>{let l=active();if(!l.items.length)return toastMsg('Active layer is already empty.',1);if(confirm(`Clear "${l.name}"?`)){pushHist();l.items=[];clearSel(0);renderLayers();render()}};$('undoBtn').onclick=undo;$('redoBtn').onclick=redo;$('pngBtn').onclick=savePng;$('saveBtn').onclick=exportProject;$('loadBtn').onclick=()=>$('loader').click();$('loader').onchange=e=>{let f=e.target.files[0];if(f)importProject(f);e.target.value=''};$('cameraBtn').onclick=()=>{let i=document.createElement('input');i.type='file';i.accept='image/*';i.capture='environment';i.onchange=e=>e.target.files[0]&&addImg(e.target.files[0]);i.click()};$('imageBtn').onclick=()=>{let i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=e=>e.target.files[0]&&addImg(e.target.files[0]);i.click()};$('shareBtn').onclick=share;$('resizeBtn').onclick=()=>{let nw=clamp(+$('cw').value||S.w,320,4096),nh=clamp(+$('ch').value||S.h,320,4096),sc=$('scaleToggle').checked;if(nw===S.w&&nh===S.h)return toastMsg('Canvas already matches that size.',1);pushHist();let sx=nw/S.w,sy=nh/S.h;if(sc)S.layers.forEach(l=>l.items.forEach(it=>{xformItem(it,p=>({x:p.x*sx,y:p.y*sy}));if(it.kind!=='image')it.size*=(sx+sy)/2}));S.w=nw;S.h=nh;clearSel(0);sync();render();toastMsg('Canvas resized.')};$('fitBtn').onclick=()=>{if(!S.sel.b)return toastMsg('Select something first.',1);pushHist();S.ptr.snap=selSnap();S.ptr.b0={...S.sel.b};S.ptr.handle='se';applyScale({x:S.w-24,y:S.h-24});S.ptr.snap=S.ptr.b0=S.ptr.handle=null;render();toastMsg('Selection fit applied.')};$('addLayerBtn').onclick=()=>{pushHist();S.layers.push(layer(`Layer ${S.layers.length+1}`));S.li=S.layers.length-1;renderLayers();render()};$('dupLayerBtn').onclick=()=>{pushHist();let l=active();S.layers.splice(S.li+1,0,{id:`layer-${++lid}`,name:`${l.name} Copy`,visible:l.visible,opacity:l.opacity,items:clone(l.items)});S.li++;renderLayers();render()};canvas.addEventListener('pointerdown',down,{passive:false});canvas.addEventListener('pointermove',move,{passive:false});canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',()=>{S.ptr.on=0;S.ptr.preview=null;render()});canvas.addEventListener('dragover',e=>e.preventDefault());canvas.addEventListener('drop',e=>{e.preventDefault();let f=[...e.dataTransfer.files].find(x=>x.type.startsWith('image/'));if(f)addImg(f)});document.addEventListener('paste',e=>{let it=[...e.clipboardData.items].find(x=>x.type.startsWith('image/'));if(it)addImg(it.getAsFile())});window.addEventListener('resize',()=>{mobile();setCanvas()})}
+function mobile(){let on=matchMedia('(max-width:720px)').matches||/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);document.querySelectorAll('details').forEach((d,i)=>{if(on&&i>1)d.open=false;if(!on)d.open=true});$('shareBtn').classList.toggle('hidden',!(on&&navigator.share))}
+function loop(){S.tick++;render();requestAnimationFrame(loop)}
+function init(){loadSettings();S.layers=[layer('Background')];S.li=0;bind();mobile();sync();renderLayers();setCanvas();pushHist();loop()}init();
+</script></body></html>
 
-        .sidebar, .inspector {
-            background:#0b1b30f2; border:1px solid #335; padding:12px;
-            overflow-y:auto; display:flex; flex-direction:column; gap:12px; flex-shrink:0;
-            transition: width 0.3s ease, padding 0.3s ease;
-            position: relative;
-        }
-        .sidebar { width: 280px; border-right: none; }
-        .inspector { width: 270px; border-left: none; }
-        .sidebar.collapsed, .inspector.collapsed { width: 52px; padding: 12px 6px; }
-        .sidebar.collapsed .panel h3 span, .sidebar.collapsed .content, .inspector.collapsed .content { display: none; }
-        .sidebar.collapsed .panel h3, .inspector.collapsed .panel h3 { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); height: 180px; }
-
-        /* Large ear tabs */
-        .sidebar::before, .inspector::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 24px;
-            height: 80px;
-            background: #0b1b30f2;
-            border: 1px solid #335;
-            border-radius: 8px 0 0 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: #66ccff;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .sidebar::before { right: -24px; border-radius: 0 8px 8px 0; content: '→'; }
-        .inspector::before { left: -24px; border-radius: 8px 0 0 8px; content: '←'; }
-        .sidebar.collapsed::before { content: '→'; }
-        .inspector.collapsed::before { content: '←'; }
-
-        .panel { background:var(--panel); border:1px solid #335; border-radius:12px; padding:12px; }
-        .panel h3 { margin:0 0 10px; font-size:1.05rem; cursor:pointer; display:flex; align-items:center; gap:8px; }
-        .panel.collapsed .content { display:none; }
-        .control { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-        .control label { flex:1; font-size:0.93rem; }
-        .control input[type="range"] { flex:2; }
-        .control input[type="number"] { width:64px; background:#112b44; border:1px solid #446; color:#e3dcff; padding:5px; border-radius:6px; }
-        .tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); gap:8px; }
-        .tool-btn {
-            padding:12px 6px; background:#112b44; border:2px solid transparent; border-radius:10px;
-            font-size:0.9rem; color:#ffffff; font-weight:500; text-align:center; min-height:72px; transition:all .2s;
-        }
-        .tool-btn.active { border-color:#66ccff; background:#1e3a55; box-shadow:0 0 15px rgba(102,204,255,0.6); }
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .color-swatch {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: 2px solid #334;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .color-swatch:hover { border-color: #fff; transform: scale(1.1); }
-        .canvas-container {
-            flex:1; background:#070b14; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
-        }
-        .canvasWrap {
-            background:#070b14; border:2px solid #335; border-radius:16px; box-shadow:0 0 40px rgba(102,204,255,0.2); overflow:hidden;
-            position: relative; width: 100%; height: 100%;
-        }
-        canvas { display:block; background:#080b18; touch-action: none; width: 100%; height: 100%; }
-        .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
-        .layer-item.active { border:2px solid var(--accent); }
-        .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
-        .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>✨ Magic Screen PRO ✨</h1>
-        <div style="flex:1"></div>
-        <button class="btn" id="newBtn">🆕 New</button>
-        <button class="btn" id="clearBtn">🗑️ Clear</button>
-        <button class="btn" id="undoBtn">↩ Undo</button>
-        <button class="btn" id="redoBtn">↪ Redo</button>
-        <button class="btn" id="saveBtn">💾 Save</button>
-        <button class="btn" id="loadBtn">📂 Load</button>
-        <button class="btn" id="cameraBtn">📸 Camera</button>
-        <button class="btn" id="uploadBtn">📤 Upload</button>
-        <button class="btn" id="copyAllBtn">📋 Copy All</button>
-        <button class="btn" id="fullscreenBtn">⛶ Full</button>
-    </div>
-
-    <div class="main">
-        <!-- LEFT SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🖌️ Tools <span style="margin-left:auto">▼</span></h3>
-                <div class="content tools-grid">
-                    <button class="tool-btn active" data-tool="pencil">✏️ Pencil</button>
-                    <button class="tool-btn" data-tool="pen">🖊️ Pen</button>
-                    <button class="tool-btn" data-tool="marker">🖍️ Marker</button>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">Tip <span style="margin-left:auto">▼</span></h3>
-                <div class="content tools-grid">
-                    <button class="tool-btn" data-tip="fine">Fine</button>
-                    <button class="tool-btn" data-tip="hard">Hard</button>
-                    <button class="tool-btn active" data-tip="med">Med</button>
-                    <button class="tool-btn" data-tip="soft">Soft</button>
-                    <button class="tool-btn" data-tip="broad">Broad</button>
-                    <button class="tool-btn" data-tip="chisel">Chisel</button>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🎨 Brush Settings <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <div class="control"><label>Size</label><input id="size" type="range" min="2" max="240" value="24"><input id="sizeNum" type="number" value="24"></div>
-                    <div class="control"><label>Opacity</label><input id="alpha" type="range" min="0.1" max="1" step="0.01" value="0.94"><input id="alphaNum" type="number" value="0.94" step="0.01"></div>
-                    <div class="control"><label>Flow</label><input id="flow" type="range" min="0.2" max="1" step="0.05" value="0.96"><input id="flowNum" type="number" value="0.96" step="0.05"></div>
-                    <div class="control"><label>Glow</label><input id="glow" type="range" min="0" max="130" value="0"><input id="glowNum" type="number" value="0"></div>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌟 Color <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <div class="control"><label>Base Color</label><input id="color" type="color" value="#66ccff" style="width:62px;height:34px;border:none;cursor:pointer;"></div>
-                    <div class="control"><label>Hue Shift</label><input id="hueShift" type="range" min="0" max="360" value="0"><input id="hueShiftNum" type="number" value="0"></div>
-                    <div style="margin-top:8px;">
-                        <small style="opacity:0.8;">Quick Palette</small>
-                        <div class="color-palette" id="colorPalette"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CANVAS -->
-        <div class="canvas-container" id="canvasContainer">
-            <div class="canvasWrap" id="canvasWrap">
-                <canvas id="board"></canvas>
-            </div>
-        </div>
-
-        <!-- RIGHT INSPECTOR -->
-        <div class="inspector" id="inspector">
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🌈 Effect <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <select id="effect" style="width:100%;padding:11px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
-                        <option value="none">None</option>
-                        <option value="neon">Neon Glow</option>
-                        <option value="rainbow">Rainbow Rope</option>
-                        <option value="fire">Fire Flicker</option>
-                        <option value="laser">Laser Beam</option>
-                        <option value="starburst">Starburst</option>
-                        <option value="leopard">Leopard Spots</option>
-                        <option value="stripes">Stripes</option>
-                        <option value="comet">Comet Trail</option>
-                    </select>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">✨ Symmetry <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <select id="symmetry" style="width:100%;padding:10px;border-radius:8px;background:#112b44;border:1px solid #446;color:#e3dcff;">
-                        <option value="none">None</option>
-                        <option value="mirror-x">Mirror X</option>
-                        <option value="mirror-y">Mirror Y</option>
-                        <option value="quad">Quad</option>
-                        <option value="radial-6">Radial 6</option>
-                        <option value="radial-8">Radial 8</option>
-                        <option value="kaleido-6">Kaleido 6</option>
-                    </select>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">🛠️ Utilities <span style="margin-left:auto">▼</span></h3>
-                <div class="content tools-grid">
-                    <button class="tool-btn" data-tool="eraser">🧼 Erase</button>
-                    <button class="tool-btn" data-tool="select">🔲 Select</button>
-                    <button class="tool-btn" data-tool="arrow">➜ Arrow</button>
-                </div>
-            </div>
-            <div id="arrowMenu" class="panel" style="display:none;">
-                <h3>Arrow Style</h3>
-                <div class="content tools-grid">
-                    <button class="tool-btn active" data-arrow="simple">→ Simple</button>
-                    <button class="tool-btn" data-arrow="double">↔ Double</button>
-                    <button class="tool-btn" data-arrow="thick">➤ Thick</button>
-                    <button class="tool-btn" data-arrow="fancy">➵ Fancy</button>
-                </div>
-            </div>
-            <div class="panel">
-                <h3 onclick="this.parentElement.classList.toggle('collapsed')">📑 Layers <span style="margin-left:auto">▼</span></h3>
-                <div class="content">
-                    <button id="addLayerBtn" class="btn" style="width:100%;margin-bottom:8px;">+ Add Layer</button>
-                    <div id="layersList" style="max-height:340px;overflow-y:auto;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="copyright">© 2026 Jason Groce • Magic Screen PRO</div>
-        <script>
-        const canvas = document.getElementById('board');
-        const ctx = canvas.getContext('2d');
-        const sidebar = document.getElementById('sidebar');
-        const inspector = document.getElementById('inspector');
-
-        let layers = [];
-        let currentLayerIndex = 0;
-        let history = [], redoStack = [];
-        let drawing = false;
-        let lastPos = null;
-        let currentTool = 'pencil';
-        let currentTip = 'med';
-        let currentArrowStyle = 'simple';
-        let startPos = null;
-
-        let settings = {
-            size: 24, alpha: 0.94, flow: 0.96, glow: 0,
-            hueShift: 0, color: '#66ccff', effect: 'none', symmetry: 'none'
-        };
-
-        function loadSettings() {
-            const saved = localStorage.getItem('magicProSettings');
-            if (saved) Object.assign(settings, JSON.parse(saved));
-        }
-
-        function saveSettings() {
-            localStorage.setItem('magicProSettings', JSON.stringify(settings));
-        }
-
-        function resize() {
-            const rect = document.getElementById('canvasContainer').getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = Math.floor(rect.width * dpr);
-            canvas.height = Math.floor(rect.height * dpr);
-            ctx.scale(dpr, dpr);
-            renderAllLayers();
-        }
-
-        function createNewLayer(name = "Layer") {
-            const c = document.createElement('canvas');
-            c.width = canvas.width || 1600;
-            c.height = canvas.height || 1000;
-            return { canvas: c, ctx: c.getContext('2d'), name, visible: true, opacity: 1 };
-        }
-
-        function renderAllLayers() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            layers.forEach(layer => {
-                if (layer.visible) {
-                    ctx.globalAlpha = layer.opacity;
-                    ctx.drawImage(layer.canvas, 0, 0);
-                }
-            });
-            ctx.globalAlpha = 1;
-        }
-
-        function saveState() {
-            const state = layers.map(l => {
-                const c = document.createElement('canvas');
-                c.width = l.canvas.width; c.height = l.canvas.height;
-                c.getContext('2d').drawImage(l.canvas, 0, 0);
-                return c;
-            });
-            history.push(state);
-            if (history.length > 30) history.shift();
-            redoStack = [];
-        }
-
-        function drawArrow(ctx, from, to, style, width, color) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = width;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.shadowBlur = settings.glow;
-
-            // shaft
-            ctx.beginPath();
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            ctx.stroke();
-
-            const angle = Math.atan2(to.y - from.y, to.x - from.x);
-            const headLen = width * 2.5;
-
-            // arrowhead
-            if (style === 'simple' || style === 'thick') {
-                ctx.beginPath();
-                ctx.moveTo(to.x, to.y);
-                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
-                ctx.moveTo(to.x, to.y);
-                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
-                ctx.stroke();
-            } else if (style === 'double') {
-                ctx.beginPath();
-                ctx.moveTo(to.x, to.y);
-                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 6), to.y - headLen * Math.sin(angle - Math.PI / 6));
-                ctx.moveTo(to.x, to.y);
-                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 6), to.y - headLen * Math.sin(angle + Math.PI / 6));
-                ctx.stroke();
-                // reverse head
-                ctx.beginPath();
-                ctx.moveTo(from.x, from.y);
-                ctx.lineTo(from.x + headLen * Math.cos(angle - Math.PI / 6), from.y + headLen * Math.sin(angle - Math.PI / 6));
-                ctx.moveTo(from.x, from.y);
-                ctx.lineTo(from.x + headLen * Math.cos(angle + Math.PI / 6), from.y + headLen * Math.sin(angle + Math.PI / 6));
-                ctx.stroke();
-            } else if (style === 'fancy') {
-                ctx.beginPath();
-                ctx.moveTo(to.x, to.y);
-                ctx.lineTo(to.x - headLen * Math.cos(angle - Math.PI / 4), to.y - headLen * Math.sin(angle - Math.PI / 4));
-                ctx.lineTo(to.x - headLen * 0.6 * Math.cos(angle), to.y - headLen * 0.6 * Math.sin(angle));
-                ctx.lineTo(to.x - headLen * Math.cos(angle + Math.PI / 4), to.y - headLen * Math.sin(angle + Math.PI / 4));
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
-        }
-
-        function drawStroke(from, to) {
-            const activeLayer = layers[currentLayerIndex];
-            if (!activeLayer) return;
-            const layerCtx = activeLayer.ctx;
-
-            if (currentTool === 'eraser') {
-                layerCtx.globalCompositeOperation = 'destination-out';
-                layerCtx.lineWidth = settings.size * 2.2;
-                layerCtx.beginPath();
-                layerCtx.moveTo(from.x, from.y);
-                layerCtx.lineTo(to.x, to.y);
-                layerCtx.stroke();
-                layerCtx.globalCompositeOperation = 'source-over';
-                renderAllLayers();
-                return;
-            }
-
-            if (currentTool === 'arrow') {
-                const width = settings.size * settings.flow * 1.2;
-                const color = settings.effect === 'none' ? settings.color : '#ffffff';
-                drawArrow(layerCtx, from, to, currentArrowStyle, width, color);
-                renderAllLayers();
-                return;
-            }
-
-            // normal brush stroke
-            const symFrom = getSymmetryPoints(from.x, from.y);
-            const symTo = getSymmetryPoints(to.x, to.y);
-            let width = settings.size * settings.flow;
-
-            if (currentTool === 'pencil') width *= 0.7;
-            if (currentTool === 'pen') width *= 0.9;
-            if (currentTool === 'marker') width *= 1.35;
-            if (currentTip === 'fine') width *= 0.55;
-            if (currentTip === 'broad') width *= 1.9;
-            if (currentTip === 'chisel') width *= 1.45;
-
-            layerCtx.lineWidth = width;
-            layerCtx.globalAlpha = settings.alpha;
-            layerCtx.shadowBlur = settings.glow;
-            layerCtx.lineCap = currentTip === 'chisel' ? 'butt' : 'round';
-            layerCtx.lineJoin = 'round';
-
-            symFrom.forEach((p1, i) => {
-                const p2 = symTo[i % symTo.length];
-
-                if (settings.effect === 'none') {
-                    layerCtx.strokeStyle = settings.color;
-                    layerCtx.beginPath();
-                    layerCtx.moveTo(p1[0], p1[1]);
-                    layerCtx.lineTo(p2[0], p2[1]);
-                    layerCtx.stroke();
-                } else {
-                    // Effects override color completely
-                    if (settings.effect === 'neon') {
-                        for (let l = 4; l >= 0; l--) {
-                            layerCtx.shadowBlur = settings.glow + l * 18;
-                            layerCtx.globalAlpha = settings.alpha * (1 - l * 0.2);
-                            layerCtx.lineWidth = width + l * 3;
-                            layerCtx.strokeStyle = '#66ccff';
-                            layerCtx.beginPath();
-                            layerCtx.moveTo(p1[0], p1[1]);
-                            layerCtx.lineTo(p2[0], p2[1]);
-                            layerCtx.stroke();
-                        }
-                    } else if (settings.effect === 'rainbow') {
-                        const hue = (Date.now() / 22 + i*35) % 360;
-                        layerCtx.strokeStyle = `hsla(${hue}, 98%, 72%, ${settings.alpha})`;
-                        layerCtx.shadowBlur = settings.glow + 18;
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    } else if (settings.effect === 'fire') {
-                        layerCtx.strokeStyle = `hsl(${12 + Math.random()*35}, 100%, 68%)`;
-                        layerCtx.shadowBlur = settings.glow + 32;
-                        layerCtx.lineWidth = width * (0.85 + Math.random()*0.3);
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    } else if (settings.effect === 'laser') {
-                        layerCtx.strokeStyle = settings.color;
-                        layerCtx.shadowBlur = settings.glow + 60;
-                        layerCtx.lineWidth = width * 0.8;
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    } else if (settings.effect === 'leopard') {
-                        layerCtx.strokeStyle = '#ffcc00';
-                        layerCtx.shadowBlur = settings.glow;
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                        // simple spots
-                        layerCtx.fillStyle = '#000000';
-                        layerCtx.fillRect(p1[0]-3, p1[1]-3, 6, 6);
-                    } else if (settings.effect === 'stripes') {
-                        layerCtx.strokeStyle = '#ff0088';
-                        layerCtx.shadowBlur = 0;
-                        layerCtx.lineWidth = width * 0.6;
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    } else {
-                        layerCtx.strokeStyle = '#ffffff';
-                        layerCtx.shadowBlur = settings.glow;
-                        layerCtx.beginPath(); layerCtx.moveTo(p1[0],p1[1]); layerCtx.lineTo(p2[0],p2[1]); layerCtx.stroke();
-                    }
-                }
-            });
-
-            renderAllLayers();
-        }
-
-        function getSymmetryPoints(x, y) {
-            const w = canvas.width / (window.devicePixelRatio || 1);
-            const h = canvas.height / (window.devicePixelRatio || 1);
-            let pts = [[x, y]];
-            const sym = settings.symmetry;
-            if (sym === 'mirror-x') pts.push([w - x, y]);
-            else if (sym === 'mirror-y') pts.push([x, h - y]);
-            else if (sym === 'quad') pts.push([w-x,y],[x,h-y],[w-x,h-y]);
-            return pts;
-        }
-
-        function pointerDown(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            if (currentTool === 'arrow') {
-                startPos = {x, y};
-                saveState();
-                return;
-            }
-
-            drawing = true;
-            lastPos = {x, y};
-            saveState();
-        }
-
-        function pointerMove(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            if (currentTool === 'arrow' && startPos) {
-                renderAllLayers();
-                const tempCtx = ctx;
-                const width = settings.size * settings.flow * 1.2;
-                const color = settings.effect === 'none' ? settings.color : '#ffffff';
-                drawArrow(tempCtx, startPos, {x, y}, currentArrowStyle, width, color);
-                return;
-            }
-
-            if (!drawing || !lastPos) return;
-            drawStroke(lastPos, {x, y});
-            lastPos = {x, y};
-        }
-
-        function pointerUp(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            if (currentTool === 'arrow' && startPos) {
-                const width = settings.size * settings.flow * 1.2;
-                const color = settings.effect === 'none' ? settings.color : '#ffffff';
-                drawArrow(layers[currentLayerIndex].ctx, startPos, {x, y}, currentArrowStyle, width, color);
-                renderAllLayers();
-                startPos = null;
-                saveState();
-                return;
-            }
-
-            drawing = false;
-            lastPos = null;
-        }
-
-        // ... (rest of the script is identical to the previous version: loadImageAsLayer, createColorPalette, attachUI, renderLayersList, renameLayer, toggleLayerVisibility, deleteLayer, animate, init)
-
-        function loadImageAsLayer(file) {
-            const img = new Image();
-            img.onload = () => {
-                const newLayer = createNewLayer("Photo");
-                newLayer.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                layers.unshift(newLayer);
-                currentLayerIndex = 0;
-                renderAllLayers();
-                saveState();
-            };
-            img.src = URL.createObjectURL(file);
-        }
-
-        function createColorPalette() {
-            const palette = document.getElementById('colorPalette');
-            presetColors.forEach(hex => {
-                const swatch = document.createElement('div');
-                swatch.className = 'color-swatch';
-                swatch.style.backgroundColor = hex;
-                swatch.onclick = () => { settings.color = hex; document.getElementById('color').value = hex; };
-                palette.appendChild(swatch);
-            });
-        }
-
-        function attachUI() {
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    if (btn.dataset.tool) currentTool = btn.dataset.tool;
-                    if (btn.dataset.tip) currentTip = btn.dataset.tip;
-                    if (btn.dataset.arrow) currentArrowStyle = btn.dataset.arrow;
-                    document.getElementById('arrowMenu').style.display = (currentTool === 'arrow') ? 'block' : 'none';
-                    saveSettings();
-                });
-            });
-
-            document.getElementById('color').addEventListener('input', e => { settings.color = e.target.value; saveSettings(); });
-
-            // camera, upload, drag/drop, paste listeners (same as before)
-            document.getElementById('cameraBtn').onclick = () => {
-                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
-                input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
-                input.click();
-            };
-            document.getElementById('uploadBtn').onclick = () => {
-                const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-                input.onchange = e => e.target.files[0] && loadImageAsLayer(e.target.files[0]);
-                input.click();
-            };
-
-            canvas.addEventListener('dragover', e => e.preventDefault());
-            canvas.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]?.type.startsWith('image/')) loadImageAsLayer(e.dataTransfer.files[0]); });
-            document.addEventListener('paste', e => {
-                const item = e.clipboardData.items[0];
-                if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
-            });
-
-            sidebar.addEventListener('click', e => { if (e.target.closest('h3')) sidebar.classList.toggle('collapsed'); });
-            inspector.addEventListener('click', e => { if (e.target.closest('h3')) inspector.classList.toggle('collapsed'); });
-
-            document.getElementById('addLayerBtn').onclick = () => {
-                layers.push(createNewLayer(`Layer ${layers.length + 1}`));
-                currentLayerIndex = layers.length - 1;
-                renderLayersList();
-                renderAllLayers();
-                saveState();
-            };
-
-            document.getElementById('newBtn').onclick = () => {
-                if (confirm('Start new drawing?')) {
-                    layers = [createNewLayer("Background")];
-                    currentLayerIndex = 0;
-                    history = [];
-                    renderLayersList();
-                    renderAllLayers();
-                    saveState();
-                }
-            };
-            document.getElementById('clearBtn').onclick = () => {
-                if (confirm('Clear current layer?')) {
-                    layers[currentLayerIndex].ctx.clearRect(0,0,canvas.width,canvas.height);
-                    saveState();
-                    renderAllLayers();
-                }
-            };
-            document.getElementById('saveBtn').onclick = () => {
-                const a = document.createElement('a');
-                a.download = 'magic-pro.png';
-                a.href = canvas.toDataURL('image/png');
-                a.click();
-            };
-            document.getElementById('undoBtn').onclick = () => {
-                if (history.length > 0) {
-                    redoStack.push(layers.map(l => {
-                        const c = document.createElement('canvas');
-                        c.width = l.canvas.width; c.height = l.canvas.height;
-                        c.getContext('2d').drawImage(l.canvas, 0, 0);
-                        return c;
-                    }));
-                    const prev = history.pop();
-                    layers.forEach((l, i) => {
-                        l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
-                        l.ctx.drawImage(prev[i], 0, 0);
-                    });
-                    renderAllLayers();
-                }
-            };
-            document.getElementById('redoBtn').onclick = () => {
-                if (redoStack.length > 0) {
-                    history.push(layers.map(l => {
-                        const c = document.createElement('canvas');
-                        c.width = l.canvas.width; c.height = l.canvas.height;
-                        c.getContext('2d').drawImage(l.canvas, 0, 0);
-                        return c;
-                    }));
-                    const next = redoStack.pop();
-                    layers.forEach((l, i) => {
-                        l.ctx.clearRect(0, 0, l.canvas.width, l.canvas.height);
-                        l.ctx.drawImage(next[i], 0, 0);
-                    });
-                    renderAllLayers();
-                }
-            };
-        }
-
-        function renderLayersList() {
-            const container = document.getElementById('layersList');
-            container.innerHTML = '';
-            [...layers].reverse().forEach((layer, idx) => {
-                const realIndex = layers.length - 1 - idx;
-                const div = document.createElement('div');
-                div.className = `layer-item ${realIndex === currentLayerIndex ? 'active' : ''}`;
-                div.draggable = true;
-                div.innerHTML = `
-                    <span onclick="toggleLayerVisibility(${realIndex}); event.stopImmediatePropagation();" style="color:${layer.visible?'#66ccff':'#666'}">👁</span>
-                    <span style="flex:1" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">${layer.name}</span>
-                    <span class="rename-layer" onclick="renameLayer(${realIndex}); event.stopImmediatePropagation();">✏️</span>
-                    <input type="range" min="0.1" max="1" step="0.05" value="${layer.opacity}" style="width:70px;" onchange="layers[${realIndex}].opacity = parseFloat(this.value); renderAllLayers();">
-                    <span class="delete-layer" onclick="deleteLayer(${realIndex}); event.stopImmediatePropagation();">🗑️</span>
-                `;
-                div.onclick = () => { currentLayerIndex = realIndex; renderLayersList(); };
-                div.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', realIndex));
-                div.addEventListener('dragover', e => e.preventDefault());
-                div.addEventListener('drop', e => {
-                    e.preventDefault();
-                    const from = parseInt(e.dataTransfer.getData('text/plain'));
-                    const to = realIndex;
-                    if (from === to) return;
-                    const moved = layers.splice(from, 1)[0];
-                    layers.splice(to, 0, moved);
-                    currentLayerIndex = to;
-                    renderLayersList();
-                    renderAllLayers();
-                    saveState();
-                });
-                container.appendChild(div);
-            });
-        }
-
-        function renameLayer(i) {
-            const newName = prompt("Rename layer:", layers[i].name);
-            if (newName && newName.trim() !== "") {
-                layers[i].name = newName.trim();
-                renderLayersList();
-            }
-        }
-
-        function toggleLayerVisibility(i) {
-            layers[i].visible = !layers[i].visible;
-            renderLayersList();
-            renderAllLayers();
-        }
-
-        function deleteLayer(i) {
-            if (layers.length <= 1) return;
-            if (confirm(`Delete "${layers[i].name}"?`)) {
-                layers.splice(i, 1);
-                if (currentLayerIndex >= layers.length) currentLayerIndex = layers.length - 1;
-                renderLayersList();
-                renderAllLayers();
-                saveState();
-            }
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-        }
-
-        function init() {
-            loadSettings();
-            if (window.innerWidth < 900 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                sidebar.classList.add('collapsed');
-                inspector.classList.add('collapsed');
-            }
-            resize();
-            window.addEventListener('resize', resize);
-            layers = [createNewLayer("Background")];
-            currentLayerIndex = 0;
-            canvas.addEventListener('pointerdown', pointerDown, { passive: false });
-            canvas.addEventListener('pointermove', pointerMove, { passive: false });
-            canvas.addEventListener('pointerup', pointerUp);
-            canvas.addEventListener('pointerleave', pointerUp);
-            createColorPalette();
-            attachUI();
-            renderLayersList();
-            renderAllLayers();
-            saveState();
-            animate();
-        }
-
-        init();
-    </script>
-</body>
-</html>

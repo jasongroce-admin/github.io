@@ -1,9 +1,0 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 420'>
-<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0b5fd3'/><stop offset='1' stop-color='#05245f'/></linearGradient></defs>
-<rect width='900' height='420' fill='url(#g)'/>
-<path d='M70,360 C170,170 730,170 830,360' fill='none' stroke='#9fd0ff' stroke-width='4'/>
-<rect x='330' y='280' width='240' height='44' rx='8' fill='#122f6f' stroke='#9fd0ff'/>
-<text x='450' y='309' fill='#ffd166' font-size='28' text-anchor='middle'>MAKE YOUR PLAY</text>
-<text x='450' y='66' fill='#dff2ff' font-size='34' text-anchor='middle'>TWO ONE</text>
-<circle cx='310' cy='220' r='45' fill='none' stroke='#9fd0ff'/><circle cx='590' cy='220' r='45' fill='none' stroke='#9fd0ff'/>
-</svg>

@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Magic Screen</title>
+    <link rel="stylesheet" href="../assets/css/site.css" />
+    <style>
+      body { background: radial-gradient(circle at top, rgba(102, 204, 255, 0.15), transparent 45%), #050814; }
+      .draw-shell { display: grid; gap: 10px; }
+      .toolPanel {
+        position: sticky;
+        top: 8px;
+        z-index: 20;
+        margin-top: 8px;
+        background: #0b1b30f2;
+        border: 1px solid #335;
+        border-radius: 10px;
+        padding: 8px;
+        backdrop-filter: blur(2px);
+      }
+      .toolPanel h3 { margin: 0 0 8px; font-size: 1rem; }
+      .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+      .tools label { display: grid; gap: 4px; font-size: 0.82rem; color: #e3dcff; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .canvasWrap {
+        background: #070b14;
+        border: 1px solid #345;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      canvas {
+        width: 100%;
+        height: min(66vh, 820px);
+        display: block;
+        background: #080b18;
+        touch-action: none;
+      }
+      .hint { font-size: .8rem; opacity: .9; color: #e3dcff; }
+      .toggleBtn {
+        margin-left: auto;
+        background: linear-gradient(180deg,#db4c4c,#7f1717);
+        border-color:#f38f8f;
+        color:#fff2f2;
+        box-shadow:0 10px 18px rgba(127,23,23,.28);
+      }
+      .toolPanel.collapsed .tools,
+      .toolPanel.collapsed .advanced,
+      .toolPanel.collapsed .hint { display: none; }
+      .panel { background: linear-gradient(180deg, #101b36, #0a1023); }
+      .btn { display: inline-flex; align-items: center; gap: 6px; }
+    </style>
+  </head>
+  <body>
+    <main class="content">
+      <section class="panel">
+        <div class="top">
+          <a class="btn" href="index.html">← Utilities</a>
+          <a class="btn" href="../index.html">Home</a>
+        </div>
+
+        <div class="draw-shell">
+          <h1>Magic Screen</h1>
+          <p class="subtitle">Fast drawing canvas with persistent tools and optional symmetry.</p>
+
+          <div class="toolPanel" id="toolPanel">
+            <div class="row" style="margin-bottom:8px">
+              <h3>Toolbox</h3>
+              <button class="btn toggleBtn" id="toggleTools" type="button">Collapse Toolbox</button>
+            </div>
+
+            <div class="tools">
+              <label>Brush Size <input id="size" type="range" min="1" max="60" value="8" /></label>
+              <label>Opacity <input id="alpha" type="range" min="0.05" max="1" step="0.05" value="1" /></label>
+              <label>Glow <input id="glow" type="range" min="0" max="50" value="14" /></label>
+              <label>Fade Seconds (0 = stay) <input id="fade" type="range" min="0" max="30" value="0" /></label>
+              <label>Hue Shift <input id="hueShift" type="range" min="0" max="360" value="0" /></label>
+              <label>Stroke Color <input id="color" type="color" value="#66ccff" /></label>
+              <label>Effect
+                <select id="effect">
+                  <option value="neon">Neon</option>
+                  <option value="rainbow">Rainbow</option>
+                  <option value="spark">Spark</option>
+                  <option value="smoke">Smoke</option>
+                  <option value="pixel">Pixel</option>
+                  <option value="prism">Prism</option>
+                  <option value="velvet">Velvet</option>
+                  <option value="comet">Comet</option>
+                </select>
+              </label>
+              <label>Symmetry
+                <select id="symmetry">
+                  <option value="none">None</option>
+                  <option value="mirror-x">Mirror X</option>
+                  <option value="mirror-y">Mirror Y</option>
+                  <option value="quad">Quad</option>
+                  <option value="radial-6">Radial 6</option>
+                  <option value="radial-8">Radial 8</option>
+                  <option value="kaleido-6">Kaleido 6</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="row advanced" style="margin-top:8px">
+              <button class="btn" id="undo" type="button">Undo</button>
+              <button class="btn" id="redo" type="button">Redo</button>
+              <button class="btn" id="clear" type="button">Clear</button>
+              <button class="btn" id="save" type="button">Save PNG</button>
+              <button class="btn" id="resetSettings" type="button">Reset Tools</button>
+            </div>
+            <div class="hint">Draw with mouse, stylus, or touch. Settings are saved locally so they stay after refresh.</div>
+          </div>
+
+          <div class="canvasWrap">
+            <canvas id="board"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.getElementById('board');
+      const ctx = canvas.getContext('2d');
+      const sizeInput = document.getElementById('size');
+      const alphaInput = document.getElementById('alpha');
+      const glowInput = document.getElementById('glow');
+      const fadeInput = document.getElementById('fade');
+      const hueInput = document.getElementById('hueShift');
+      const colorInput = document.getElementById('color');
+      const effectInput = document.getElementById('effect');
+      const symmetryInput = document.getElementById('symmetry');
+      const toggleTools = document.getElementById('toggleTools');
+      const toolPanel = document.getElementById('toolPanel');
+
+      const history = [];
+      let redoStack = [];
+      let drawing = false;
+      let last = null;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const scale = window.devicePixelRatio || 1;
+        canvas.width = rect.width * scale;
+        canvas.height = rect.height * scale;
+        ctx.scale(scale, scale);
+      }
+      resize();
+      window.addEventListener('resize', () => {
+        const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        resize();
+        ctx.putImageData(snapshot, 0, 0);
+      });
+
+      function saveState() {
+        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        if (history.length > 20) history.shift();
+        redoStack = [];
+      }
+      saveState();
+
+      function brushColor() {
+        const base = colorInput.value;
+        if (effectInput.value === 'rainbow') {
+          const hue = (Date.now() / 30 + +hueInput.value) % 360;
+          return `hsla(${hue}, 90%, 60%, ${alphaInput.value})`;
+        }
+        if (effectInput.value === 'prism') {
+          const hue = (Date.now() / 20 + +hueInput.value) % 360;
+          return `hsla(${hue}, 80%, 65%, ${alphaInput.value})`;
+        }
+        return hexToRgba(base, alphaInput.value);
+      }
+
+      function hexToRgba(hex, alpha) {
+        const c = hex.replace('#', '');
+        const bigint = parseInt(c, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return `rgba(${r},${g},${b},${alpha})`;
+      }
+
+      function applyGlow() {
+        ctx.shadowBlur = +glowInput.value;
+        ctx.shadowColor = brushColor();
+      }
+
+      function getPoints(x, y) {
+        const w = canvas.getBoundingClientRect().width;
+        const h = canvas.getBoundingClientRect().height;
+        const mx = w - x;
+        const my = h - y;
+        const sym = symmetryInput.value;
+        if (sym === 'mirror-x') return [[x, y], [mx, y]];
+        if (sym === 'mirror-y') return [[x, y], [x, my]];
+        if (sym === 'quad') return [[x, y], [mx, y], [x, my], [mx, my]];
+        if (sym.startsWith('radial') || sym.startsWith('kaleido')) {
+          const count = sym.includes('8') ? 8 : 6;
+          const cx = w / 2;
+          const cy = h / 2;
+          const points = [];
+          for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const dx = x - cx;
+            const dy = y - cy;
+            const rx = dx * Math.cos(angle) - dy * Math.sin(angle);
+            const ry = dx * Math.sin(angle) + dy * Math.cos(angle);
+            points.push([cx + rx, cy + ry]);
+            if (sym.startsWith('kaleido')) points.push([cx - rx, cy + ry]);
+          }
+          return points;
+        }
+        return [[x, y]];
+      }
+
+      function drawLine(from, to) {
+        const pointsA = getPoints(from.x, from.y);
+        const pointsB = getPoints(to.x, to.y);
+        pointsA.forEach((p, idx) => {
+          const [sx, sy] = p;
+          const [ex, ey] = pointsB[idx % pointsB.length];
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+        });
+      }
+
+      function tickFade() {
+        const fade = +fadeInput.value;
+        if (fade <= 0) return;
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = `rgba(8, 11, 24, ${1 / (fade * 60)})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      function pointerDown(e) {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        last = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        saveState();
+      }
+
+      function pointerMove(e) {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        ctx.lineWidth = +sizeInput.value;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = brushColor();
+        applyGlow();
+        drawLine(last, pos);
+        last = pos;
+      }
+
+      function pointerUp() {
+        drawing = false;
+        last = null;
+      }
+
+      canvas.addEventListener('pointerdown', pointerDown);
+      canvas.addEventListener('pointermove', pointerMove);
+      canvas.addEventListener('pointerup', pointerUp);
+      canvas.addEventListener('pointerleave', pointerUp);
+
+      document.getElementById('undo').onclick = () => {
+        if (history.length <= 1) return;
+        redoStack.push(history.pop());
+        const prev = history[history.length - 1];
+        ctx.putImageData(prev, 0, 0);
+      };
+      document.getElementById('redo').onclick = () => {
+        const next = redoStack.pop();
+        if (!next) return;
+        history.push(next);
+        ctx.putImageData(next, 0, 0);
+      };
+      document.getElementById('clear').onclick = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        saveState();
+      };
+      document.getElementById('save').onclick = () => {
+        const link = document.createElement('a');
+        link.download = 'magic-screen.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+      document.getElementById('resetSettings').onclick = () => {
+        sizeInput.value = 8;
+        alphaInput.value = 1;
+        glowInput.value = 14;
+        fadeInput.value = 0;
+        hueInput.value = 0;
+        colorInput.value = '#66ccff';
+        effectInput.value = 'neon';
+        symmetryInput.value = 'none';
+      };
+      toggleTools.onclick = () => {
+        toolPanel.classList.toggle('collapsed');
+        toggleTools.textContent = toolPanel.classList.contains('collapsed') ? 'Expand Toolbox' : 'Collapse Toolbox';
+      };
+
+      function animate() {
+        tickFade();
+        requestAnimationFrame(animate);
+      }
+      animate();
+    </script>
+  </body>
+</html>
