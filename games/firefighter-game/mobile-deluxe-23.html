@@ -225,9 +225,10 @@ button:hover { filter: brightness(1.2); }
 
 #truckControls {
   position: absolute;
-  left: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 12px;
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 8px;
   z-index: 56;
@@ -249,8 +250,7 @@ button:hover { filter: brightness(1.2); }
   box-shadow: 0 4px 14px rgba(0,0,0,0.35);
 }
 #truckControls .wide {
-  width: 120px;
-  font-size: 14px;
+  display: none;
 }
 </style>
 </head>
@@ -351,7 +351,6 @@ button:hover { filter: brightness(1.2); }
 </div>
 
 <div id="truckControls" aria-label="Truck controls">
-  <div class="row"><button id="truckUpBtn" class="wide" type="button">A / D</button></div>
   <div class="row">
     <button id="truckLeftBtn" type="button">◀</button>
     <button id="truckRightBtn" type="button">▶</button>
@@ -418,7 +417,16 @@ const SPRITE_FILES = {
   mapleMedium: 'maplemed.webp',
   mapleLarge: 'maplelarge.webp',
   pineSmall: 'Pinesmall.webp',
-  pineMedium: 'pinemedium.webp'
+  pineMedium: 'pinemedium.webp',
+  normalHouseGray: 'Normal_House_09_LightGray.webp',
+  normalHouseBeigeBay: 'Normal_House_10_Beige_BayWindow.webp',
+  normalHouseBrick: 'Normal_House_11_BrownBrick.webp',
+  normalHouseWhiteCottage: 'Normal_House_12_White_Cottage.webp',
+  fenceWhiteRow: 'Residential_Fence_White_Row.webp',
+  benchWood: 'Park_Bench_Wooden.webp',
+  shrubCluster: 'Shrub_Bunch_4.webp',
+  treeOakRealistic: 'Tree_Realistic_Oak_Single.webp',
+  treePineRealistic: 'Tree_Realistic_Pine_Single.webp'
 };
 
 const SPRITE_BASE_PATH = 'images/webp_converted/';
@@ -542,6 +550,62 @@ function getCachedSprite(key, w, h) {
   return cache;
 }
 
+function getSpriteAlphaBounds(key, w, h) {
+  const cached = getCachedSprite(key, w, h);
+  if (!cached) return null;
+  const cacheKey = `ab:${key}:${Math.round(w)}x${Math.round(h)}`;
+  if (SPRITE_CACHE[cacheKey]) return SPRITE_CACHE[cacheKey];
+  const cctx = cached.getContext('2d');
+  if (!cctx) return null;
+  let imageData;
+  try {
+    imageData = cctx.getImageData(0, 0, cached.width, cached.height);
+  } catch (err) {
+    return null;
+  }
+  const { data, width, height } = imageData;
+  const threshold = 18;
+  let minX = width, minY = height, maxX = -1, maxY = -1;
+  for (let y = 0; y < height; y++) {
+    const row = y * width * 4;
+    for (let x = 0; x < width; x++) {
+      const a = data[row + x * 4 + 3];
+      if (a <= threshold) continue;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX < 0) {
+    const empty = { left: 0, top: 0, right: width, bottom: height };
+    SPRITE_CACHE[cacheKey] = empty;
+    return empty;
+  }
+  // Expand 1px to avoid tight clipping from anti-aliasing.
+  const bounds = {
+    left: Math.max(0, minX - 1),
+    top: Math.max(0, minY - 1),
+    right: Math.min(width, maxX + 2),
+    bottom: Math.min(height, maxY + 2)
+  };
+  SPRITE_CACHE[cacheKey] = bounds;
+  return bounds;
+}
+
+function getSpriteContentFitRect(key, x, y, w, h, alignBottom = false) {
+  const rect = getSpriteFitRect(key, x, y, w, h, alignBottom);
+  const bounds = getSpriteAlphaBounds(key, rect.w, rect.h);
+  if (!bounds) return { rect, content: rect };
+  const content = {
+    x: rect.x + bounds.left,
+    y: rect.y + bounds.top,
+    w: Math.max(1, bounds.right - bounds.left),
+    h: Math.max(1, bounds.bottom - bounds.top)
+  };
+  return { rect, content };
+}
+
 function drawSprite(key, x, y, w, h) {
   const cached = getCachedSprite(key, w, h);
   if (cached) {
@@ -597,7 +661,20 @@ const ENTITY_LAYOUT = {
   , fence: { x: -10, w: 320, h: 90, ground: true },
   blackBoxTruck: { x: 0, w: 170, h: 80, ground: false },
   ufo: { x: -10, w: 140, h: 70, ground: false },
-  ufoBeam: { x: -10, w: 140, h: 130, ground: false }
+  ufoBeam: { x: -10, w: 140, h: 130, ground: false },
+  houseNeighborhoodGray: { x: -18, w: 300, h: 220, ground: true },
+  houseNeighborhoodBeige: { x: -20, w: 320, h: 228, ground: true },
+  houseNeighborhoodBrick: { x: -18, w: 310, h: 224, ground: true },
+  houseNeighborhoodCottage: { x: -10, w: 270, h: 198, ground: true },
+  bgHouseNeighborhoodGray: { x: -10, w: 170, h: 124, ground: true },
+  bgHouseNeighborhoodBrick: { x: -10, w: 164, h: 118, ground: true },
+  bgHouseNeighborhoodCottage: { x: -10, w: 150, h: 112, ground: true },
+  treeOakRealistic: { x: -22, w: 205, h: 285, ground: true },
+  treePineRealistic: { x: -16, w: 154, h: 240, ground: true },
+  bgTreeOakRealistic: { x: -12, w: 118, h: 165, ground: true },
+  shrubCluster: { x: -6, w: 138, h: 74, ground: true },
+  benchWood: { x: -4, w: 114, h: 68, ground: true },
+  fenceWhiteRow: { x: -8, w: 280, h: 74, ground: true }
 };
 
 function getSpriteFitRect(key, x, y, w, h, alignBottom = false) {
@@ -620,6 +697,8 @@ function preloadLevelSprites(lvl) {
   const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight']);
   const entities = baseLevels[lvl - 1]?.entities || [];
   entities.forEach((ent) => {
+    const catalogSpec = getCatalogSpec(ent.type);
+    if (catalogSpec) needed.add(catalogSpec.sprite);
   if (ent.type === 'shedWindow' || ent.type === 'smallShed') needed.add('shedRed');
   if (ent.type === 'singleGarage') needed.add('garage');
   if (ent.type === 'miniBarn' || ent.type === 'largeRedBarn') needed.add('barnLarge');
@@ -690,6 +769,59 @@ function drawSpriteGroundedFitted(key, x, bottomY, w, h) {
   return drawSpriteFitted(key, x, groundedY(key, bottomY, h), w, h, true);
 }
 
+function drawSilhouetteSpriteFitted(key, x, y, w, h, alignBottom = false, alpha = 0.18) {
+  const rect = getSpriteFitRect(key, x, y, w, h, alignBottom);
+  const cached = getCachedSprite(key, rect.w, rect.h);
+  if (!cached) return false;
+  const cacheKey = `sil:${key}:${Math.round(rect.w)}:${Math.round(rect.h)}`;
+  let sil = SPRITE_CACHE[cacheKey];
+  if (!sil) {
+    sil = makeCanvas(rect.w, rect.h);
+    const sctx = sil.getContext('2d');
+    if (!sctx) return false;
+    // Create a true black silhouette using the sprite's alpha.
+    sctx.clearRect(0, 0, sil.width, sil.height);
+    sctx.drawImage(cached, 0, 0, sil.width, sil.height);
+    sctx.globalCompositeOperation = 'source-in';
+    sctx.fillStyle = '#000000';
+    sctx.fillRect(0, 0, sil.width, sil.height);
+    sctx.globalCompositeOperation = 'source-over';
+    SPRITE_CACHE[cacheKey] = sil;
+  }
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(sil, rect.x, rect.y, rect.w, rect.h);
+  ctx.restore();
+  return true;
+}
+
+function drawCatalogEntity(ent) {
+  const spec = getCatalogSpec(ent.type);
+  if (!spec) return false;
+  const layout = ENTITY_LAYOUT[ent.type];
+  if (!layout) return false;
+  ent = resolveCatalogEntityPlacement(ent);
+  const scale = ent.scale || 1;
+  const drawW = layout.w * scale;
+  const drawH = layout.h * scale;
+  const baseY = ent.baseY ?? GRASS_Y;
+  const drawX = ent.x + layout.x * scale;
+  const drawY = layout.ground
+    ? groundedY(ent.type, baseY, drawH)
+    : ((ent.y ?? baseY) - drawH + (ent.yOffset || 0));
+  ctx.save();
+  const filter = ent.filter ?? spec.filter;
+  if (filter) ctx.filter = filter;
+  let ok = false;
+  if (ent.silhouette || spec.silhouette) {
+    ok = drawSilhouetteSpriteFitted(spec.sprite, drawX, drawY, drawW, drawH, true, ent.alpha ?? spec.alpha ?? 0.18);
+  } else {
+    ok = drawSpriteFitted(spec.sprite, drawX, drawY, drawW, drawH, true);
+  }
+  ctx.restore();
+  return ok;
+}
+
 const TREE_KIND_BY_TYPE = {
   oakSmall: 'oakSmall',
   oakMedium: 'oakMedium',
@@ -743,10 +875,130 @@ const TREE_SPOT_LAYOUTS = {
   ]
 };
 
+const CATALOG_ENTITY_SPECS = {
+  houseNeighborhoodGray: {
+    sprite: 'normalHouseGray',
+    burnable: true,
+    burnZones: [
+      [0.14, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 1 }],
+      [0.34, 0.10, 0.22, 0.11, { roof: true, difficultyTier: 2 }],
+      [0.54, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 3 }],
+      [0.18, 0.34, 0.19, 0.20, { difficultyTier: 1 }],
+      [0.40, 0.39, 0.13, 0.15, { difficultyTier: 2 }],
+      [0.58, 0.34, 0.19, 0.20, { difficultyTier: 2 }]
+    ]
+  },
+  houseNeighborhoodBeige: {
+    sprite: 'normalHouseBeigeBay',
+    burnable: true,
+    burnZones: [
+      [0.14, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 1 }],
+      [0.35, 0.10, 0.20, 0.11, { roof: true, difficultyTier: 2 }],
+      [0.53, 0.10, 0.26, 0.11, { roof: true, difficultyTier: 3 }],
+      [0.18, 0.34, 0.18, 0.19, { difficultyTier: 1 }],
+      [0.40, 0.33, 0.20, 0.24, { difficultyTier: 2 }],
+      [0.61, 0.36, 0.18, 0.19, { difficultyTier: 3 }]
+    ]
+  },
+  houseNeighborhoodBrick: {
+    sprite: 'normalHouseBrick',
+    burnable: true,
+    burnZones: [
+      [0.16, 0.09, 0.22, 0.10, { roof: true, difficultyTier: 1 }],
+      [0.36, 0.09, 0.20, 0.10, { roof: true, difficultyTier: 2 }],
+      [0.54, 0.09, 0.22, 0.10, { roof: true, difficultyTier: 3 }],
+      [0.20, 0.34, 0.18, 0.19, { difficultyTier: 1 }],
+      [0.41, 0.36, 0.14, 0.18, { difficultyTier: 2 }],
+      [0.58, 0.34, 0.18, 0.19, { difficultyTier: 2 }]
+    ]
+  },
+  houseNeighborhoodCottage: {
+    sprite: 'normalHouseWhiteCottage',
+    burnable: true,
+    burnZones: [
+      [0.18, 0.10, 0.18, 0.10, { roof: true, difficultyTier: 1 }],
+      [0.34, 0.10, 0.18, 0.10, { roof: true, difficultyTier: 2 }],
+      [0.50, 0.10, 0.18, 0.10, { roof: true, difficultyTier: 3 }],
+      [0.22, 0.38, 0.16, 0.17, { difficultyTier: 1 }],
+      [0.42, 0.39, 0.12, 0.16, { difficultyTier: 2 }],
+      [0.58, 0.38, 0.16, 0.17, { difficultyTier: 2 }]
+    ]
+  },
+  // Background neighborhood helpers: opaque, dimmed (colored), not transparent overlays.
+  bgHouseNeighborhoodGray: { sprite: 'normalHouseGray', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
+  bgHouseNeighborhoodBrick: { sprite: 'normalHouseBrick', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
+  bgHouseNeighborhoodCottage: { sprite: 'normalHouseWhiteCottage', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
+  treeOakRealistic: {
+    sprite: 'treeOakRealistic',
+    burnable: true,
+    burnZones: [
+      [0.22, 0.10, 0.24, 0.16, {}],
+      [0.46, 0.18, 0.26, 0.18, {}],
+      [0.28, 0.34, 0.24, 0.18, {}],
+      [0.52, 0.42, 0.18, 0.16, {}]
+    ]
+  },
+  treePineRealistic: {
+    sprite: 'treePineRealistic',
+    burnable: true,
+    burnZones: [
+      [0.30, 0.10, 0.18, 0.16, {}],
+      [0.32, 0.28, 0.20, 0.16, {}],
+      [0.34, 0.46, 0.18, 0.16, {}]
+    ]
+  },
+  bgTreeOakRealistic: { sprite: 'treeOakRealistic', burnable: false, filter: 'brightness(0.18) saturate(0.25) contrast(1.08)' },
+  shrubCluster: { sprite: 'shrubCluster', burnable: false },
+  benchWood: { sprite: 'benchWood', burnable: false },
+  fenceWhiteRow: { sprite: 'fenceWhiteRow', burnable: false }
+};
+
 function addSpotsFromRatios(spots, box, ratios, extra = {}) {
   ratios.forEach(([rx, ry, rw, rh]) => {
     spots.push({ x: box.x + box.w * rx, y: box.y + box.h * ry, w: box.w * rw, h: box.h * rh, ...extra });
   });
+}
+
+function getCatalogSpec(type) {
+  return CATALOG_ENTITY_SPECS[type] || null;
+}
+
+function gridColIndex(col) {
+  if (typeof col === 'number') return col;
+  if (!col) return 0;
+  const letter = String(col).trim().toUpperCase().charCodeAt(0);
+  if (Number.isNaN(letter)) return 0;
+  return Math.max(0, Math.min(25, letter - 65));
+}
+
+function gridColCenterX(col, offset = 0) {
+  return (gridColIndex(col) + 0.5 + (offset || 0)) * GRID_CELL_W;
+}
+
+function gridLineY(line) {
+  const n = Number(line);
+  if (!Number.isFinite(n)) return GRASS_Y;
+  return Math.max(0, Math.min(600, n * GRID_CELL_H));
+}
+
+function resolveCatalogEntityPlacement(ent) {
+  const layout = ENTITY_LAYOUT[ent.type];
+  if (!layout) return ent;
+  const scale = ent.scale || 1;
+  let x = ent.x;
+  let baseY = ent.baseY;
+  if (ent.grid) {
+    const colCenter = gridColCenterX(ent.grid.col, ent.grid.colOffset || 0);
+    const lineY = ent.grid.line != null ? gridLineY(ent.grid.line) : undefined;
+    if (lineY != null) baseY = lineY;
+    if (ent.grid.align === 'left') {
+      const boundaryX = (gridColIndex(ent.grid.col) + (ent.grid.colOffset || 0)) * GRID_CELL_W;
+      x = boundaryX - layout.x * scale;
+    } else {
+      x = colCenter - (layout.x * scale + (layout.w * scale) / 2);
+    }
+  }
+  return { ...ent, x, baseY };
 }
 
 function addTreeSpots(spots, box, type) {
@@ -762,6 +1014,8 @@ function addVehicleSpots(spots, box, extra = {}) {
 
 function isBurnableType(type) {
   if (!type) return false;
+  const catalogSpec = getCatalogSpec(type);
+  if (catalogSpec) return !!catalogSpec.burnable;
   if (TREE_KIND_BY_TYPE[type]) return true;
   if (type === 'tree' || type === 'treeWithSwing') return true;
   if (type === 'hayBale' || type === 'catTails' || type === 'tent') return true;
@@ -772,73 +1026,110 @@ function isBurnableType(type) {
   return false;
 }
 
-function addGenericLevelSpots(spots, ent, lvl) {
+function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
   const box = getEntityBounds(ent);
   if (!box) return;
   const type = ent.type;
+  const entityKey = `${type}:${entityIndex}`;
+  const catalogSpec = getCatalogSpec(type);
+  if (catalogSpec?.burnZones?.length) {
+    catalogSpec.burnZones.forEach(([rx, ry, rw, rh, extra = {}]) => {
+      const isRoof = !!extra.roof;
+      const difficultyTier = extra.difficultyTier ?? (isRoof ? 2 : 1);
+      spots.push({
+        x: box.x + box.w * rx,
+        y: box.y + box.h * ry,
+        w: box.w * rw,
+        h: box.h * rh,
+        entityKey,
+        difficultyTier,
+        flameScale: extra.flameScale ?? (isRoof ? 1.28 : 0.82),
+        smokeScale: extra.smokeScale ?? (isRoof ? 1.25 : 0.72),
+        ...extra
+      });
+    });
+    return;
+  }
   if (!isBurnableType(type)) return;
   if (TREE_KIND_BY_TYPE[type]) {
+    const before = spots.length;
     addTreeSpots(spots, box, type);
+    for (let i = before; i < spots.length; i++) spots[i] = { ...spots[i], entityKey, isTree: true };
     return;
   }
   if (type === 'busUpsideDown') {
-    addVehicleSpots(spots, box, { isVehicle: true });
-    spots.push({ x: box.x + box.w * 0.22, y: box.y + box.h * 0.04, w: box.w * 0.56, h: box.h * 0.16, roof: true, isVehicle: true });
+    addVehicleSpots(spots, box, { isVehicle: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.22, y: box.y + box.h * 0.04, w: box.w * 0.56, h: box.h * 0.16, roof: true, isVehicle: true, entityKey });
     return;
   }
   if (type === 'tent') {
-    spots.push({ x: box.x + box.w * 0.26, y: box.y + box.h * 0.26, w: box.w * 0.44, h: box.h * 0.36 });
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.08, w: box.w * 0.60, h: box.h * 0.16, roof: true });
+    spots.push({ x: box.x + box.w * 0.26, y: box.y + box.h * 0.26, w: box.w * 0.44, h: box.h * 0.36, entityKey });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.08, w: box.w * 0.60, h: box.h * 0.16, roof: true, entityKey });
     return;
   }
   if (type === 'catTails') {
-    spots.push({ x: box.x + box.w * 0.10, y: box.y + box.h * 0.12, w: box.w * 0.16, h: box.h * 0.46, isHay: true });
-    spots.push({ x: box.x + box.w * 0.34, y: box.y + box.h * 0.08, w: box.w * 0.16, h: box.h * 0.50, isHay: true });
-    spots.push({ x: box.x + box.w * 0.58, y: box.y + box.h * 0.10, w: box.w * 0.16, h: box.h * 0.48, isHay: true });
+    spots.push({ x: box.x + box.w * 0.10, y: box.y + box.h * 0.12, w: box.w * 0.16, h: box.h * 0.46, isHay: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.34, y: box.y + box.h * 0.08, w: box.w * 0.16, h: box.h * 0.50, isHay: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.58, y: box.y + box.h * 0.10, w: box.w * 0.16, h: box.h * 0.48, isHay: true, entityKey });
     return;
   }
   if (type === 'tree' || type === 'treeWithSwing') {
+    const before = spots.length;
     addTreeSpots(spots, box, getLegacyTreeVariant(ent.x));
+    for (let i = before; i < spots.length; i++) spots[i] = { ...spots[i], entityKey, isTree: true };
     return;
   }
   if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'house' || type === 'smallHouse') {
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28 });
-    spots.push({ x: box.x + box.w * 0.60, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28 });
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.18, roof: true });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28, entityKey });
+    spots.push({ x: box.x + box.w * 0.60, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28, entityKey });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.18, roof: true, entityKey });
     return;
   }
   if (type === 'garage' || type === 'garageSmall' || type === 'singleGarage' || type === 'shedRed' || type === 'smallShed' || type === 'shedWindow') {
-    spots.push({ x: box.x + box.w * 0.16, y: box.y + box.h * 0.08, w: box.w * 0.64, h: box.h * 0.18, roof: true });
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50 });
-    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50 });
+    spots.push({ x: box.x + box.w * 0.16, y: box.y + box.h * 0.08, w: box.w * 0.64, h: box.h * 0.18, roof: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50, entityKey });
+    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50, entityKey });
     return;
   }
   if (type === 'barnLarge' || type === 'miniBarn' || type === 'largeRedBarn') {
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.10, w: box.w * 0.64, h: box.h * 0.18, roof: true });
-    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48 });
-    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48 });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.10, w: box.w * 0.64, h: box.h * 0.18, roof: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48, entityKey });
+    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48, entityKey });
     return;
   }
   if (type === 'sedan' || type === 'pickup' || type === 'semi') {
-    addVehicleSpots(spots, box, { isVehicle: true, isSemi: type === 'semi' });
+    addVehicleSpots(spots, box, { isVehicle: true, isSemi: type === 'semi', entityKey });
     if (type === 'semi') {
-      spots.push({ x: box.x + box.w * 0.08, y: box.y + box.h * 0.08, w: box.w * 0.72, h: box.h * 0.18, roof: true, isVehicle: true, isSemi: true });
+      spots.push({ x: box.x + box.w * 0.08, y: box.y + box.h * 0.08, w: box.w * 0.72, h: box.h * 0.18, roof: true, isVehicle: true, isSemi: true, entityKey });
     }
     return;
   }
   if (type === 'ridingMower' || type === 'tractor') {
-    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.42, w: box.w * 0.24, h: box.h * 0.24, isVehicle: true });
-    spots.push({ x: box.x + box.w * 0.46, y: box.y + box.h * 0.28, w: box.w * 0.22, h: box.h * 0.18, isVehicle: true });
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.42, w: box.w * 0.24, h: box.h * 0.24, isVehicle: true, entityKey });
+    spots.push({ x: box.x + box.w * 0.46, y: box.y + box.h * 0.28, w: box.w * 0.22, h: box.h * 0.18, isVehicle: true, entityKey });
     return;
   }
   if (type === 'hayBale') {
-    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.18, w: box.w * 0.36, h: box.h * 0.26, isHay: true });
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.18, w: box.w * 0.36, h: box.h * 0.26, isHay: true, entityKey });
     return;
   }
 }
 
 function getEntityBounds(ent) {
   // Return the same rectangle we draw so fires stay attached to the art.
+  const catalogSpec = getCatalogSpec(ent.type);
+  if (catalogSpec) {
+    ent = resolveCatalogEntityPlacement(ent);
+    const layout = ENTITY_LAYOUT[ent.type];
+    if (!layout) return null;
+    const scale = ent.scale || 1;
+    const drawW = layout.w * scale;
+    const drawH = layout.h * scale;
+    const baseY = ent.baseY ?? GRASS_Y;
+    const boxY = layout.ground ? groundedY(ent.type, baseY, drawH) : ((ent.y ?? baseY) - drawH + (ent.yOffset || 0));
+    const fitted = getSpriteContentFitRect(catalogSpec.sprite, ent.x + layout.x * scale, boxY, drawW, drawH, true);
+    return fitted.content;
+  }
   const gy = GRASS_Y + (ent.yOffset || 0);
   if (ent.type === 'shedWindow' || ent.type === 'smallShed') return getSpriteFitRect('shedRed', ent.x + ENTITY_LAYOUT.shedRed.x, groundedY('shedRed', GRASS_Y, ENTITY_LAYOUT.shedRed.h), ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h, true);
   if (ent.type === 'singleGarage') return getSpriteFitRect('garage', ent.x + ENTITY_LAYOUT.garage.x, groundedY('garage', GRASS_Y, ENTITY_LAYOUT.garage.h), ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h, true);
@@ -880,6 +1171,7 @@ function getEntityBounds(ent) {
 function getTruckDrawRect() {
   const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
   const layout = ENTITY_LAYOUT.engine;
+  const truckY = getTruckY();
   return getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
 }
 
@@ -906,27 +1198,56 @@ function computeFireSpotsForLevel(lvl, entities) {
   const spots = [];
   if (!entities || !entities.length) return spots;
 
-  entities.forEach((ent) => addGenericLevelSpots(spots, ent, lvl));
-
-  // Boss: slightly denser, but still attached to entities (no floating fire).
-  if (lvl === FINAL_LEVEL) {
-    const anchor = entities.find((e) => e && (e.type === 'houseTallWhite' || e.type === 'kennardSchool' || e.type === 'garage' || e.type === 'garageSmall' || e.type === 'barnLarge' || e.type === 'miniBarn' || e.type === 'largeRedBarn'));
-    const box = anchor ? getEntityBounds(anchor) : null;
-    if (box) spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.16, roof: true });
-  } else if (lvl > 10 && lvl % 5 === 0) {
-    const anchor = entities.find((e) => e && (e.type === 'semi' || e.type === 'busUpsideDown' || e.type === 'kennardSchool' || e.type === 'house' || e.type === 'houseTallWhite'));
-    const box = anchor ? getEntityBounds(anchor) : null;
-    if (box) spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.14, roof: true });
-  }
+  entities.forEach((ent, idx) => addGenericLevelSpots(spots, ent, lvl, idx));
 
   // Default health tuning (base numbers); difficulty multiplier is applied later.
   spots.forEach((s) => {
     const area = Math.max(1, (s.w || 0) * (s.h || 0));
-    const sizeBoost = Math.max(0.8, Math.min(2.2, Math.sqrt(area) / 55));
-    if (s.maxHealth == null) s.maxHealth = Math.round(420 * sizeBoost + (s.roof ? 80 : 0) + (s.isSemi ? 160 : 0));
-    if (s.health == null) s.health = Math.round(s.maxHealth * 0.78);
+    const sizeBoost = Math.max(0.75, Math.min(2.0, Math.sqrt(area) / 68));
+    if (s.maxHealth == null) s.maxHealth = Math.round(340 * sizeBoost + (s.roof ? 120 : 0) + (s.isSemi ? 200 : 0) + (s.isHay ? 120 : 0));
+    if (s.health == null) s.health = Math.round(s.maxHealth * 0.76);
+    if (s.growthRate == null) s.growthRate = s.roof ? 2.0 : (s.isSemi ? 2.2 : (s.isHay ? 2.6 : 2.3));
   });
   return spots;
+}
+
+function selectSpotsForDifficulty(spots, diff) {
+  if (!spots.length) return spots;
+  if (diff >= 3) return spots.filter((s) => (s.difficultyTier ?? 1) <= 3);
+  const byKey = new Map();
+  spots.forEach((s) => {
+    const key = s.entityKey || `__${s.isSemi ? 'semi' : s.isHay ? 'hay' : s.isVehicle ? 'veh' : 'x'}`;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(s);
+  });
+  const chosen = [];
+  byKey.forEach((group) => {
+    const allowedTier = diff === 1 ? 1 : 2;
+    const tierFiltered = group.filter((s) => (s.difficultyTier ?? 1) <= allowedTier);
+    const source = tierFiltered.length ? tierFiltered : group;
+    const sorted = [...source].sort((a, b) => {
+      const ar = (a.roof ? 1 : 0);
+      const br = (b.roof ? 1 : 0);
+      if (ar !== br) return br - ar;
+      const aa = (a.w || 0) * (a.h || 0);
+      const ba = (b.w || 0) * (b.h || 0);
+      return ba - aa;
+    });
+    const isTree = sorted.every((s) => s.isTree);
+    const isAlways = sorted.some((s) => s.isSemi || s.isHay);
+    if (isAlways) {
+      chosen.push(...sorted);
+      return;
+    }
+    if (diff === 1) {
+      const take = isTree ? 1 : Math.min(2, sorted.length);
+      chosen.push(...sorted.slice(0, Math.min(take, sorted.length)));
+      return;
+    }
+    const take = isTree ? 2 : Math.min(4, sorted.length);
+    chosen.push(...sorted.slice(0, Math.min(take, sorted.length)));
+  });
+  return chosen;
 }
 
 let score = 0;
@@ -951,9 +1272,10 @@ let tankerSupport = null;
 let nextTankerSupportAt = 15000;
 let blackBoxTruckLevels = new Set();
 let blackBoxTruckState = null;
+let blackBoxTruckPlan = null;
 let ufoRaid = null;
 let ufoPreview = null;
-let requestedStartLevel = 1;
+let requestedStartLevel = 11;
 
 function getMaxLevel() {
   return baseLevels.length || FINAL_LEVEL;
@@ -984,13 +1306,44 @@ function jumpToLevel(lvl) {
   }
   loadLevel(target);
 }
+
+///////// Placement grid sizing. /////////
+const GRID_CELL_W = 60;
+const GRID_CELL_H = 50;
+
+///////// Firetruck.webp vertical position. /////////
+// Raise/lower the main engine for ALL levels by changing this line number.
+// Examples: 10 = line 10, 10.5 = half a block lower, 11 = line 11.
+const FIRETRUCK_LANE_LINE = 10.5;
+const FIRETRUCK_LANE_Y = FIRETRUCK_LANE_LINE * GRID_CELL_H;
+
+///////// Fire tanker.webp vertical position. /////////
+// Keep the tanker one full block lower than the firetruck unless you want to tune it separately.
+const TANKER_LANE_LINE = FIRETRUCK_LANE_LINE + 1.0;
+const TANKER_LANE_Y = TANKER_LANE_LINE * GRID_CELL_H;
+
+///////// Firetruck.webp horizontal position and movement limits. /////////
+// `spawnX` = where the engine starts.
+// `minX` / `maxX` = the full left/right movement range for the engine.
 const TRUCK_LANES = {
   left: { spawnX: 110, minX: 80, maxX: 440 },
   right: { spawnX: 760, minX: 650, maxX: 900 }
 };
-const truck = { x: 110, y: 480, speed: 3.8, minX: 80, maxX: 440 };
 
-const truckY = 480;
+///////// Fire tanker.webp horizontal position and movement limits. /////////
+// `TANKER_ENTRY_X` = where the tanker begins off-screen.
+// `TANKER_EXIT_BUFFER_X` = how far off-screen it must travel before despawning.
+// `TANKER_FOLLOW_OFFSET_X` = how far to the right of the engine the tanker parks/refills.
+const TANKER_ENTRY_X = 180;
+const TANKER_EXIT_BUFFER_X = 180;
+const TANKER_FOLLOW_OFFSET_X = 250;
+
+///////// Firetruck.webp live state. /////////
+const truck = { x: 110, y: FIRETRUCK_LANE_Y, speed: 3.8, minX: 80, maxX: 440 };
+
+function getTruckY() {
+  return FIRETRUCK_LANE_Y;
+}
 const nozzleAttachX = 112;
 const nozzleAttachY = -45;
 const maxHoseLength = 300;
@@ -1093,7 +1446,6 @@ function buildBonusLevels() {
       safetyTip: tips[i],
       timeOfDay: i % 3,
       truckSide: i % 4 === 2 ? 'right' : 'left',
-      fireSpots: scene.fireSpots ? scene.fireSpots.map((s) => ({ ...s, x: s.x + shift })) : undefined,
       entities: scene.entities.map((ent) => ({
         ...ent,
         x: ent.x + shift
@@ -1117,6 +1469,118 @@ if (bossLevel) {
   baseLevels.splice(FINAL_LEVEL - 1);
   baseLevels.push(bossLevel);
 }
+
+// Remove any level-authored fire spot definitions; all fires are derived from model fire zones.
+baseLevels.forEach((lvl) => {
+  if (lvl && lvl.fireSpots) delete lvl.fireSpots;
+});
+
+baseLevels[0] = {
+  name: 'Cottage Front Fire 1',
+  safetyTip: 'Stay back from the porch and fence line so crews can reach the front of the house fast.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a front-yard cottage fire with extension into the big oak by the porch.',
+  dispatchClearBody: 'Dispatch confirms the cottage front, porch line, and oak are fully under control.',
+  timeOfDay: 0,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgTreeOakRealistic', grid: { col: 'D', line: 8.8 }, scale: 0.50, filter: 'brightness(0.22) saturate(0.25) contrast(1.02)' },
+    { type: 'bgHouseNeighborhoodCottage', grid: { col: 'G', line: 8.9 }, scale: 0.62, filter: 'brightness(0.24) saturate(0.30) contrast(1.02)' },
+    { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.46, filter: 'brightness(0.20) saturate(0.22) contrast(1.04)' },
+
+    { type: 'fenceWhiteRow', grid: { col: 'C', colOffset: 0.7, line: 10, align: 'left' }, scale: 0.78 },
+    { type: 'fenceWhiteRow', grid: { col: 'G', colOffset: -0.15, line: 10 }, scale: 0.78 },
+    { type: 'benchWood', grid: { col: 'D', colOffset: 0.15, line: 10.05 }, scale: 0.74 },
+
+    { type: 'houseNeighborhoodCottage', grid: { col: 'F', colOffset: -0.2, line: 10 }, scale: 1.58 },
+    { type: 'treeOakRealistic', grid: { col: 'I', colOffset: -0.2, line: 10.4 }, scale: 1.10 },
+    { type: 'shrubCluster', grid: { col: 'G', colOffset: 0.35, line: 10.55 }, scale: 0.82 }
+  ]
+};
+
+baseLevels[1] = {
+  name: 'Sedan and Oak Crash 2',
+  safetyTip: 'Stay clear of the shoulder after a crash so firefighters can reach the car and tree quickly.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a sedan fire after a yard crash with extension into the oak near the fence line.',
+  dispatchClearBody: 'Dispatch confirms the sedan, oak, and fence-side yard are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'E', line: 8.9 }, scale: 0.56, filter: 'brightness(0.24) saturate(0.30) contrast(1.02)' },
+    { type: 'bgTreeOakRealistic', grid: { col: 'I', line: 8.85 }, scale: 0.44, filter: 'brightness(0.20) saturate(0.24) contrast(1.04)' },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'N', line: 8.9 }, scale: 0.60, filter: 'brightness(0.22) saturate(0.28) contrast(1.04)' },
+
+    { type: 'fenceWhiteRow', grid: { col: 'K', colOffset: -0.2, line: 10 }, scale: 0.78 },
+    { type: 'benchWood', grid: { col: 'M', colOffset: -0.15, line: 10.04 }, scale: 0.72 },
+
+    { type: 'sedan', x: 610, yOffset: 10 },
+    { type: 'treeOakRealistic', grid: { col: 'Q', colOffset: -0.15, line: 10.35 }, scale: 1.04 },
+    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.15, line: 10.5 }, scale: 0.72 },
+    { type: 'treePineRealistic', grid: { col: 'U', colOffset: 0.15, line: 10.35 }, scale: 0.94 }
+  ]
+};
+
+baseLevels[2] = {
+  name: 'Garage Line Fire 3',
+  safetyTip: 'Keep driveway entrances open so crews can reach the garage before the fire spreads.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a detached garage fire with heat showing on the nearby home and yard tree.',
+  dispatchClearBody: 'Dispatch confirms the garage line, nearby house, and front yard are secure.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodCottage', grid: { col: 'D', line: 8.9 }, scale: 0.58, filter: 'brightness(0.24) saturate(0.28) contrast(1.02)' },
+    { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.46, filter: 'brightness(0.20) saturate(0.22) contrast(1.04)' },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'Q', line: 8.9 }, scale: 0.64, filter: 'brightness(0.22) saturate(0.30) contrast(1.03)' },
+
+    { type: 'houseNeighborhoodGray', grid: { col: 'L', colOffset: -0.2, line: 10 }, scale: 1.30 },
+    { type: 'fenceWhiteRow', grid: { col: 'J', colOffset: -0.3, line: 10 }, scale: 0.76 },
+    { type: 'singleGarage', x: 855 },
+    { type: 'treeOakRealistic', grid: { col: 'R', colOffset: 0.1, line: 10.35 }, scale: 0.96 },
+    { type: 'benchWood', grid: { col: 'H', colOffset: -0.05, line: 10.06 }, scale: 0.70 },
+    { type: 'shrubCluster', grid: { col: 'M', colOffset: 0.35, line: 10.55 }, scale: 0.70 }
+  ]
+};
+
+baseLevels[10] = {
+  name: 'Parkside House Line 11',
+  safetyTip: 'Keep bikes, benches, and fence lines clear so crews can reach the tree and house fire fast.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a park-side house fire with extension into the fence line and front trees.',
+  dispatchClearBody: 'Dispatch confirms the park-side house line, fence run, and surrounding trees are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    // Distant silhouettes sit on the 8.5–9 line and are always black.
+    { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.8 }, scale: 0.62, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'Q', line: 8.9 }, scale: 0.54, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'O', line: 8.9 }, scale: 0.70, alpha: 0.22, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'T', line: 8.9 }, scale: 0.62, alpha: 0.20, silhouette: true },
+    { type: 'bgHouseNeighborhoodCottage', grid: { col: 'X', line: 8.9 }, scale: 0.60, alpha: 0.18, silhouette: true },
+
+    // Fence starts between I/J and runs right (behind the tree).
+    { type: 'fenceWhiteRow', grid: { col: 'I', colOffset: 1, line: 10, align: 'left' }, scale: 0.80 },
+    { type: 'fenceWhiteRow', grid: { col: 'M', line: 10, colOffset: 0.35 }, scale: 0.80 },
+
+    // Bench in front of fence.
+    { type: 'benchWood', grid: { col: 'L', line: 10 }, scale: 0.80 },
+
+    // House centered on R, slightly larger, and behind the left tree.
+    { type: 'houseNeighborhoodBrick', grid: { col: 'R', colOffset: -1.5, line: 10 }, scale: 1.52 },
+
+    // Left tree: between bench and shrubs, in front of fence, bottom slightly below line 10.
+    { type: 'treeOakRealistic', grid: { col: 'N', colOffset: -0.25, line: 10.4 }, scale: 1.22 },
+
+    // Bike as a small prop near the fence line.
+    { type: 'bikeRed', grid: { col: 'J', line: 10 }, scale: 0.82, yOffset: -2 },
+
+    // Shrubs tucked down into the grass.
+    { type: 'shrubCluster', grid: { col: 'O', line: 10.5 }, scale: 0.78 },
+
+    // Far-right tree centered between S and T, bottom slightly below line 10.
+    { type: 'treePineRealistic', grid: { col: 'S', colOffset: 0.5, line: 10.4 }, scale: 1.10 },
+
+    // Secondary house on the far right for depth, slightly smaller.
+    { type: 'houseNeighborhoodGray', grid: { col: 'W', line: 10 }, scale: 1.10 }
+  ]
+};
 
 function isInTimeSelector(x, y) { return y > 8 && y < 82 && x > 950 && x < 1195; }
 function handleTimeSelection(x, y) {
@@ -1174,19 +1638,20 @@ function getLevelSafetyTip(lvl) {
 }
 
 function getLevelDispatchCopy(lvl, phase) {
-  const name = baseLevels[lvl - 1]?.name || `Level ${lvl}`;
+  const levelData = baseLevels[lvl - 1] || {};
+  const name = levelData.name || `Level ${lvl}`;
   if (phase === 'complete') {
     return {
       tag: 'Dispatch - Clear',
       title: `${name} is out`,
-      body: `Dispatch confirms the scene at ${name} is under control and the unit is clear.`,
+      body: levelData.dispatchClearBody || `Dispatch confirms the scene at ${name} is under control and the unit is clear.`,
       note: 'Good work. Stand by for the next assignment.'
     };
   }
   return {
     tag: 'Dispatch',
     title: `${name}`,
-    body: `Dispatch to Kennard Fire: responding to ${name}. Crews are en route and the scene is loading now.`,
+    body: levelData.dispatchBody || `Dispatch to Kennard Fire: responding to ${name}. Crews are en route and the scene is loading now.`,
     note: 'Tap "Let’s Roll" or wait 2 seconds for automatic deployment.'
   };
 }
@@ -1314,6 +1779,7 @@ function loadLevel(lvl) {
   nextTankerSupportAt = tankerTiming.firstAt;
   tankerSupport = null;
   blackBoxTruckState = null;
+  blackBoxTruckPlan = null;
   ufoRaid = null;
   ufoPreview = null;
   if (dispatchAutoAdvance) {
@@ -1325,7 +1791,8 @@ function loadLevel(lvl) {
   else if (timeOfDay === 1) setTimeOfDay(0);
   preloadLevelSprites(lvl);
   showDispatchScreen(lvl, 'start');
-  const template = computeFireSpotsForLevel(lvl, levelData.entities);
+  let template = computeFireSpotsForLevel(lvl, levelData.entities);
+  template = selectSpotsForDifficulty(template, difficulty);
   const burnableBoxes = (levelData.entities || [])
     .filter((ent) => ent && isBurnableType(ent.type))
     .map((ent) => getEntityBounds(ent))
@@ -1334,19 +1801,18 @@ function loadLevel(lvl) {
     ? template.filter((spot) => burnableBoxes.some((box) => rectsOverlap(spot, box)))
     : template;
   fireSpots = filteredTemplate.map(s => {
-    let mult = 1.05;
-    if (difficulty === 2) mult = 2.2;
-    if (difficulty === 3) mult = 4.2;
-    if (lvl === 10 && s.isSemi && difficulty === 1) mult = 1.2;
-    if (lvl === 10 && s.isSemi && difficulty === 2) mult = 1.6;
+    let mult = 1.0;
+    if (difficulty === 2) mult = 1.85;
+    if (difficulty === 3) mult = 2.75;
     return { 
       ...s, 
       health: Math.floor(s.health * mult), 
       maxHealth: Math.floor(s.maxHealth * mult), 
-      growthRate: s.isSemi && lvl === 10 ? 2.0 : 3.2,
+      growthRate: s.growthRate ?? (s.roof ? 2.0 : (s.isSemi ? 2.2 : (s.isHay ? 2.6 : 2.3))),
       isHay: !!s.isHay,
       isVehicle: !!s.isVehicle,
-      isSemi: !!s.isSemi
+      isSemi: !!s.isSemi,
+      entityKey: s.entityKey
     };
   });
   const truckRect = getTruckDrawRect();
@@ -1356,6 +1822,13 @@ function loadLevel(lvl) {
   particles = [];
   gameState = 'playing';
   updateLevelSkipHud();
+  if (blackBoxTruckLevels.has(lvl)) {
+    // Surprise moment: one round-trip (out and back) at a random time.
+    const firstAt = 4500 + Math.random() * 6500;
+    const returnDelay = 2200 + Math.random() * 2400;
+    const firstDir = Math.random() < 0.5 ? 1 : -1;
+    blackBoxTruckPlan = { stage: 'waiting', firstAt, returnDelay, firstDir, returnAt: null };
+  }
   document.getElementById('levelCompleteScreen').style.display = 'none';
   document.getElementById('levelCompleteScreen').classList.remove('show');
   dispatchAutoAdvance = setTimeout(() => {
@@ -1439,7 +1912,8 @@ document.getElementById('codeCancelBtn').addEventListener('click', () => {
 document.getElementById('codeInput').addEventListener('keydown', (event) => {
   if (event.key === 'Enter') submitCodeGate();
 });
-showCodeGate();
+hideCodeGate();
+showTitleScreen();
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
@@ -1503,13 +1977,21 @@ class Particle {
     if (this.type === 'fire') { 
       this.vy -= 0.22 + Math.random() * 0.25; 
       this.vx += (Math.random() - 0.5) * 1.6; 
+    }
+    if (this.type === 'smoke') {
+      this.vy -= 0.02 + Math.random() * 0.04;
+      this.vx *= 0.99;
     } 
   }
   draw() { 
-    ctx.globalAlpha = Math.max(0.15, this.life / 45); 
+    const denom = this.type === 'smoke' ? 180 : 45;
+    const minA = this.type === 'smoke' ? 0.05 : 0.15;
+    ctx.globalAlpha = Math.max(minA, this.life / denom); 
     ctx.fillStyle = this.color; 
     if (this.type === 'water') { 
       ctx.fillRect(this.x - 1.8, this.y - 3, 3.6, 7); 
+    } else if (this.type === 'smoke') {
+      ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
     } else { 
       ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size); 
     } 
@@ -1517,10 +1999,10 @@ class Particle {
   }
 }
 
-function createFireParticles(x, y, intensity, sizeScale = 1) {
-  const count = Math.max(0, Math.min(14, Math.round(intensity)));
-  const spreadX = 10 + 10 * sizeScale;
-  const spreadY = 8 + 8 * sizeScale;
+function createFireParticles(x, y, intensity, sizeScale = 1, opts = {}) {
+  const count = Math.max(0, Math.min(10, Math.round(intensity * 0.78)));
+  const spreadX = 8 + 8 * sizeScale;
+  const spreadY = 6 + 7 * sizeScale;
   for (let i = 0; i < count; i++) {
     const vx = (Math.random() - 0.5) * (1.6 + 1.2 * sizeScale);
     const vy = -(1.8 + Math.random() * (2.8 + 1.6 * sizeScale));
@@ -1531,8 +2013,23 @@ function createFireParticles(x, y, intensity, sizeScale = 1) {
     particles.push(new Particle(
       x + (Math.random() - 0.5) * spreadX,
       y + (Math.random() - 0.5) * spreadY,
-      vx, vy, color, 42 + Math.random() * 14, size, 'fire'
+      vx, vy, color, 34 + Math.random() * 14, size, 'fire'
     ));
+  }
+  if ((opts.roof || opts.big) && Math.random() < 0.35) {
+    const smokeCount = opts.big ? 2 : 1;
+    for (let s = 0; s < smokeCount; s++) {
+      particles.push(new Particle(
+        x + (Math.random() - 0.5) * (18 + 10 * sizeScale),
+        y + (Math.random() - 0.5) * (10 + 8 * sizeScale),
+        (Math.random() - 0.5) * 0.9,
+        -(0.25 + Math.random() * 0.6),
+        'rgba(70,70,70,1)',
+        120 + Math.random() * 80,
+        6 + Math.random() * 8,
+        'smoke'
+      ));
+    }
   }
 }
 
@@ -1543,6 +2040,7 @@ function createSmoke(x, y) {
 }
 
 function getClampedHoseEnd() {
+  const truckY = getTruckY();
   const attachX = truck.x + nozzleAttachX * truckFacing;
   const attachY = truckY + nozzleAttachY;
   const dx = mouseX - attachX;
@@ -1598,18 +2096,18 @@ function getTankerSpriteKey(facing) {
 function startTankerSupport() {
   if (tankerSupport) return;
   const layout = ENTITY_LAYOUT.semiTankRight;
-  const targetX = Math.min(canvas.width - layout.w - 28, truck.x + 250);
+  const targetX = Math.min(canvas.width - layout.w - 28, truck.x + TANKER_FOLLOW_OFFSET_X);
   const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
   tankerSupport = {
-    x: canvas.width + 180,
-    y: truckY - layout.h,
+    x: canvas.width + TANKER_ENTRY_X,
+    y: TANKER_LANE_Y - layout.h,
     w: layout.w,
     h: layout.h,
     facing: -1,
     state: 'arrive',
     speed: 4.2,
     targetX,
-    followOffset: 250,
+    followOffset: TANKER_FOLLOW_OFFSET_X,
     holdMs: tankerTiming.hold,
     holdUntil: 0,
     attachHoldUntil: 0
@@ -1619,6 +2117,7 @@ function startTankerSupport() {
 function updateTankerSupport(dt) {
   if (!tankerSupport) return;
   const step = Math.max(0.2, dt / 16.67);
+  tankerSupport.y = TANKER_LANE_Y - tankerSupport.h;
   if (tankerSupport.state === 'arrive') {
     tankerSupport.x -= tankerSupport.speed * step;
     tankerSupport.facing = -1;
@@ -1638,7 +2137,7 @@ function updateTankerSupport(dt) {
   } else if (tankerSupport.state === 'depart') {
     tankerSupport.facing = 1;
     tankerSupport.x += (tankerSupport.speed + 0.8) * step;
-    if (tankerSupport.x > canvas.width + 180) {
+    if (tankerSupport.x > canvas.width + TANKER_EXIT_BUFFER_X) {
       tankerSupport = null;
       const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
       nextTankerSupportAt = levelElapsedMs + tankerTiming.repeat;
@@ -1702,6 +2201,48 @@ function drawTotalFireGauge() {
 
 function drawWaterGauge() {}
 
+function drawPlacementGrid() {
+  const cols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const cellW = GRID_CELL_W;
+  const cellH = GRID_CELL_H;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= 1200; x += cellW) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, 600);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= 600; y += cellH) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(1200, y);
+    ctx.stroke();
+  }
+
+  ctx.font = 'bold 16px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < Math.floor(1200 / cellW); i++) {
+    const x = i * cellW + cellW / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+    ctx.fillRect(x - 14, 4, 28, 22);
+    ctx.fillStyle = '#dff3ff';
+    ctx.fillText(cols[i], x, 15);
+  }
+
+  ctx.textAlign = 'left';
+  for (let row = 0; row < Math.floor(600 / cellH); row++) {
+    const y = row * cellH + cellH / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+    ctx.fillRect(2, y - 11, 24, 22);
+    ctx.fillStyle = '#dff3ff';
+    ctx.fillText(String(row + 1), 8, y);
+  }
+  ctx.restore();
+}
+
 function drawBackground() {
   let sky1, sky2, sunColor, sunX, sunY, grassColor;
   if (timeOfDay === 0) { sky1 = '#7BC4FF'; sky2 = '#C0E4FF'; sunColor = '#FFDD00'; sunX = 300; sunY = 120; grassColor = '#3D8C40'; }
@@ -1764,33 +2305,36 @@ function drawBackground() {
     ctx.fill();
   });
 
-  const backgroundTrees = [
-    { x: 40, y: 410, w: 78, h: 110, k: 'pine' },
-    { x: 164, y: 396, w: 86, h: 122, k: 'oak' },
-    { x: 284, y: 404, w: 72, h: 108, k: 'pine' },
-    { x: 470, y: 392, w: 92, h: 126, k: 'maple' },
-    { x: 630, y: 398, w: 84, h: 120, k: 'oak' },
-    { x: 830, y: 402, w: 92, h: 128, k: 'maple' },
-    { x: 1010, y: 394, w: 78, h: 118, k: 'pine' },
-    { x: 1128, y: 408, w: 70, h: 106, k: 'oak' }
-  ];
-  backgroundTrees.forEach((tree) => {
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = timeOfDay === 0 ? '#2f6d2d' : timeOfDay === 1 ? '#295e28' : '#102513';
-    ctx.beginPath();
-    if (tree.k === 'pine') {
-      ctx.moveTo(tree.x + tree.w / 2, tree.y - tree.h);
-      ctx.lineTo(tree.x + 10, tree.y - tree.h * 0.35);
-      ctx.lineTo(tree.x + tree.w - 10, tree.y - tree.h * 0.35);
-    } else {
-      ctx.arc(tree.x + tree.w / 2, tree.y - tree.h * 0.55, tree.w * 0.24, 0, Math.PI * 2);
-      ctx.arc(tree.x + tree.w * 0.34, tree.y - tree.h * 0.42, tree.w * 0.20, 0, Math.PI * 2);
-      ctx.arc(tree.x + tree.w * 0.66, tree.y - tree.h * 0.40, tree.w * 0.21, 0, Math.PI * 2);
-    }
-    ctx.fill();
-    ctx.fillRect(tree.x + tree.w * 0.46, tree.y - tree.h * 0.20, tree.w * 0.08, tree.h * 0.24);
-    ctx.globalAlpha = 1;
-  });
+  // Level 11 uses asset-based silhouette background props instead of the synthetic tree line.
+  if (currentLevel !== 11) {
+    const backgroundTrees = [
+      { x: 40, y: 410, w: 78, h: 110, k: 'pine' },
+      { x: 164, y: 396, w: 86, h: 122, k: 'oak' },
+      { x: 284, y: 404, w: 72, h: 108, k: 'pine' },
+      { x: 470, y: 392, w: 92, h: 126, k: 'maple' },
+      { x: 630, y: 398, w: 84, h: 120, k: 'oak' },
+      { x: 830, y: 402, w: 92, h: 128, k: 'maple' },
+      { x: 1010, y: 394, w: 78, h: 118, k: 'pine' },
+      { x: 1128, y: 408, w: 70, h: 106, k: 'oak' }
+    ];
+    backgroundTrees.forEach((tree) => {
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = timeOfDay === 0 ? '#2f6d2d' : timeOfDay === 1 ? '#295e28' : '#102513';
+      ctx.beginPath();
+      if (tree.k === 'pine') {
+        ctx.moveTo(tree.x + tree.w / 2, tree.y - tree.h);
+        ctx.lineTo(tree.x + 10, tree.y - tree.h * 0.35);
+        ctx.lineTo(tree.x + tree.w - 10, tree.y - tree.h * 0.35);
+      } else {
+        ctx.arc(tree.x + tree.w / 2, tree.y - tree.h * 0.55, tree.w * 0.24, 0, Math.PI * 2);
+        ctx.arc(tree.x + tree.w * 0.34, tree.y - tree.h * 0.42, tree.w * 0.20, 0, Math.PI * 2);
+        ctx.arc(tree.x + tree.w * 0.66, tree.y - tree.h * 0.40, tree.w * 0.21, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.fillRect(tree.x + tree.w * 0.46, tree.y - tree.h * 0.20, tree.w * 0.08, tree.h * 0.24);
+      ctx.globalAlpha = 1;
+    });
+  }
 
   ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)';
   for (let i = 0; i < 10; i++) {
@@ -1838,6 +2382,7 @@ function drawBackground() {
 function drawSideFireTruck() {
   const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
   const layout = ENTITY_LAYOUT.engine;
+  const truckY = getTruckY();
   if (SPRITE_READY[key]) {
     const rect = getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
     drawSprite(key, rect.x, rect.y, rect.w, rect.h);
@@ -2447,8 +2992,7 @@ function drawUfo(x, y, withBeam = false) {
   }
 }
 
-function startBlackBoxTruckPass() {
-  const direction = Math.random() < 0.5 ? 1 : -1;
+function startBlackBoxTruckPass(direction) {
   blackBoxTruckState = {
     direction,
     x: direction > 0 ? -200 : canvas.width + 200,
@@ -2460,8 +3004,14 @@ function startBlackBoxTruckPass() {
 
 function updateBlackBoxTruck(dt) {
   if (!blackBoxTruckState) {
-    if (gameState === 'playing' && blackBoxTruckLevels.has(currentLevel) && levelElapsedMs > 3500) {
-      startBlackBoxTruckPass();
+    if (gameState === 'playing' && blackBoxTruckPlan) {
+      if (blackBoxTruckPlan.stage === 'waiting' && levelElapsedMs >= blackBoxTruckPlan.firstAt) {
+        blackBoxTruckPlan.stage = 'first';
+        startBlackBoxTruckPass(blackBoxTruckPlan.firstDir);
+      } else if (blackBoxTruckPlan.stage === 'returnWaiting' && levelElapsedMs >= blackBoxTruckPlan.returnAt) {
+        blackBoxTruckPlan.stage = 'return';
+        startBlackBoxTruckPass(-blackBoxTruckPlan.firstDir);
+      }
     }
     return;
   }
@@ -2469,6 +3019,12 @@ function updateBlackBoxTruck(dt) {
   blackBoxTruckState.x += blackBoxTruckState.direction * blackBoxTruckState.speed * step;
   if ((blackBoxTruckState.direction > 0 && blackBoxTruckState.x > canvas.width + 220) || (blackBoxTruckState.direction < 0 && blackBoxTruckState.x < -260)) {
     blackBoxTruckState = null;
+    if (blackBoxTruckPlan?.stage === 'first') {
+      blackBoxTruckPlan.stage = 'returnWaiting';
+      blackBoxTruckPlan.returnAt = levelElapsedMs + blackBoxTruckPlan.returnDelay;
+    } else if (blackBoxTruckPlan?.stage === 'return') {
+      blackBoxTruckPlan.stage = 'done';
+    }
   }
 }
 
@@ -2492,7 +3048,7 @@ function drawBlackBoxTruckState() {
 }
 
 function getBossIgnitionTargets() {
-  const levelData = baseLevels[29];
+  const levelData = baseLevels[FINAL_LEVEL - 1];
   if (!levelData) return [];
   return levelData.entities
     .map((ent) => ({ ent, box: getEntityBounds(ent) }))
@@ -2501,21 +3057,12 @@ function getBossIgnitionTargets() {
 }
 
 function igniteBossTarget(target) {
-  if (!target || !target.ent) return;
-  const spawned = [];
-  addGenericLevelSpots(spawned, target.ent, 30);
-  const mult = difficulty === 2 ? 5.0 : difficulty === 3 ? 10.0 : 2.0;
-  spawned.forEach((spot) => {
-    const baseHealth = spot.health || 220;
-    const baseMax = spot.maxHealth || 320;
-    spot.health = Math.max(baseHealth, baseHealth * mult);
-    spot.maxHealth = Math.max(baseMax, baseMax * mult);
-    fireSpots.push(spot);
-  });
+  // Intentionally disabled: fire zones are derived only from model-defined burn zones.
+  return;
 }
 
 function updateUfoRaid(dt) {
-  if (!ufoRaid || currentLevel !== 30) return;
+  if (!ufoRaid || currentLevel !== FINAL_LEVEL) return;
   const step = Math.max(0.25, dt / 16.67);
   ufoRaid.timer += dt;
   if (ufoRaid.phase === 'enter') {
@@ -2552,8 +3099,6 @@ function updateUfoRaid(dt) {
       ufoRaid.activeTarget = target;
       ufoRaid.beamUntil = performance.now() + 1500;
       if (ufoRaid.timer > 1100) {
-        igniteBossTarget(target);
-    createFireParticles(cx, target.box.y + 18, 8, 1.2);
         ufoRaid.timer = 0;
         ufoRaid.beamTargetIndex += 1;
       }
@@ -2586,7 +3131,7 @@ function updateUfoPreview(dt) {
 }
 
 function drawUfoRaid() {
-  if (!ufoRaid || currentLevel !== 30) return;
+  if (!ufoRaid || currentLevel !== FINAL_LEVEL) return;
   const beamMode = ufoRaid.phase === 'beam';
   drawUfo(ufoRaid.leftX, ufoRaid.y, beamMode);
   drawUfo(ufoRaid.rightX, ufoRaid.y + 8, beamMode);
@@ -2654,7 +3199,7 @@ function syncThumbStickVisibility() {
   const controls = document.getElementById('truckControls');
   const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   stick.style.display = mobile ? 'block' : 'none';
-  controls.style.display = mobile ? 'flex' : 'none';
+  controls.style.display = mobile ? 'none' : 'flex';
 }
 
 let thumbPointerId = null;
@@ -2716,6 +3261,7 @@ function loop() {
   updateUfoRaid(dt);
   ctx.clearRect(0,0,1200,600);
   drawBackground();
+  if (currentLevel === 11) drawPlacementGrid();
   drawBlackBoxTruckState();
 
   const data = baseLevels[currentLevel-1];
@@ -2744,6 +3290,7 @@ function loop() {
   ctx.fillText("Night",1147,43);
 
   data.entities.forEach(ent => {
+    if (drawCatalogEntity(ent)) return;
     if (ent.type === 'shedWindow') drawShedWindow(ent.x);
     if (ent.type === 'smallShed') drawSmallShed(ent.x);
     if (ent.type === 'singleGarage') drawSingleGarage(ent.x);
@@ -2777,8 +3324,6 @@ function loop() {
   });
 
   drawSideFireTruck();
-  drawTankerSupport();
-  drawTankerConnection();
   drawUfoPreview();
   drawUfoRaid();
 
@@ -2803,14 +3348,24 @@ function loop() {
     if (spot.isHay) intensity += 1.8;
     if (spot.isSemi) intensity += 2.2;
     if (spot.isVehicle) intensity += 1.0;
-    createFireParticles(spot.x + spot.w/2, spot.y + spot.h/2, intensity * sizeScale, sizeScale);
+    if (spot.emitMs == null) spot.emitMs = 0;
+    spot.emitMs -= dt;
+    if (spot.emitMs <= 0) {
+      createFireParticles(
+        spot.x + spot.w/2, spot.y + spot.h/2,
+        intensity * sizeScale, sizeScale,
+        { roof: !!spot.roof, big: !!spot.isSemi || !!spot.isHay }
+      );
+      const cadence = 48 - Math.min(20, sizeScale * 7);
+      spot.emitMs = Math.max(18, cadence);
+    }
 
     for (let i = particles.length-1; i >= 0; i--) {
       const p = particles[i];
       if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
         let damage = difficulty === 1 ? 0.11 : difficulty === 2 ? 0.08 : 0.06;
         if (spot.isHay) damage = difficulty === 1 ? 0.032 : 0.022;
-        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05) * (currentLevel === 10 ? (difficulty === 1 ? 1.1 : difficulty === 2 ? 1.0 : 0.95) : 1);
+        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05);
         else if (spot.isVehicle) damage = difficulty === 1 ? 0.055 : 0.04;
         spot.health -= damage;
         p.life = 8;
@@ -2818,20 +3373,6 @@ function loop() {
     }
     if (spot.health <= 0) { createSmoke(spot.x + spot.w/2, spot.y + spot.h/2); score += 10; }
   });
-
-  if (currentLevel === 10) {
-    fireSpots.forEach(spot => {
-      if (spot.isSemi && Math.random() < 0.028) {
-        fireSpots.forEach(other => {
-          if (other.health > 0) {
-            const dist = Math.hypot(other.x - spot.x, other.y - spot.y);
-            if (dist < 180) other.health = Math.min(other.health + (difficulty === 1 ? 20 : 40), other.maxHealth);
-          }
-        });
-        createFireParticles(spot.x + 40, spot.y + 30, 10, 1.4);
-      }
-    });
-  }
 
   if (isSpraying) createWaterParticles();
 
@@ -2841,6 +3382,10 @@ function loop() {
     p.draw();
     if (p.life <= 0) particles.splice(i, 1);
   }
+
+  // Keep the support tanker on top of fire particles (lane 11) while it's present.
+  drawTankerSupport();
+  drawTankerConnection();
 
   drawTotalFireGauge();
 
