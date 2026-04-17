@@ -252,6 +252,36 @@ button:hover { filter: brightness(1.2); }
 #truckControls .wide {
   display: none;
 }
+
+.control-cue-flash {
+  animation: controlCuePulse 0.55s ease-in-out infinite alternate;
+}
+@keyframes controlCuePulse {
+  from { box-shadow: 0 0 0 0 rgba(255, 230, 70, 0.25), 0 4px 14px rgba(0,0,0,0.35); transform: scale(1); }
+  to { box-shadow: 0 0 0 7px rgba(255, 230, 70, 0.45), 0 8px 20px rgba(0,0,0,0.45); transform: scale(1.06); }
+}
+#truckControls.control-cue-flash::before {
+  content: "↔";
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffe94d;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+#thumbStick.control-cue-flash::before {
+  content: "↔";
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffe94d;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
 </style>
 </head>
 <body>
@@ -427,6 +457,14 @@ const SPRITE_FILES = {
   shrubCluster: 'Shrub_Bunch_4.webp',
   treeOakRealistic: 'Tree_Realistic_Oak_Single.webp',
   treePineRealistic: 'Tree_Realistic_Pine_Single.webp'
+  , horseEatLeft: 'horse_eating_459x145_Facing left.webp'
+  , horseEatRight: 'horse_eating_459x145_FacingRight.webp'
+  , playgroundSlideRight: 'Playground_Slide_FacingRight.webp'
+  , playgroundSwingRight: 'Playground_Swing_Set_RightFacing.webp'
+  , playgroundSlideLeft: 'Playground_Slide_Facingleft.webp'
+  , playgroundSwingLeft: 'Playground_Swing_Set_LeftFacing.webp'
+  , playgroundSlideTallLeft: 'Playground_Slide_Tall_Silver_Facingleft.webp'
+  , playgroundSlideShortLeft: 'Playground_Slide_Short_Silver_FacingLeft.webp'
 };
 
 const SPRITE_BASE_PATH = 'images/webp_converted/';
@@ -675,6 +713,13 @@ const ENTITY_LAYOUT = {
   shrubCluster: { x: -6, w: 138, h: 74, ground: true },
   benchWood: { x: -4, w: 114, h: 68, ground: true },
   fenceWhiteRow: { x: -8, w: 280, h: 74, ground: true }
+  , horse: { x: 0, w: 170, h: 64, ground: true }
+  , playgroundSlideRight: { x: -8, w: 150, h: 196, ground: true }
+  , playgroundSwingRight: { x: -6, w: 162, h: 128, ground: true }
+  , playgroundSlideLeft: { x: -8, w: 150, h: 196, ground: true }
+  , playgroundSwingLeft: { x: -6, w: 162, h: 128, ground: true }
+  , playgroundSlideTallLeft: { x: -8, w: 150, h: 210, ground: true }
+  , playgroundSlideShortLeft: { x: -6, w: 130, h: 152, ground: true }
 };
 
 function getSpriteFitRect(key, x, y, w, h, alignBottom = false) {
@@ -695,6 +740,10 @@ function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
 
 function preloadLevelSprites(lvl) {
   const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight']);
+  if (lvl === 7) {
+    needed.add('horseEatLeft');
+    needed.add('horseEatRight');
+  }
   const entities = baseLevels[lvl - 1]?.entities || [];
   entities.forEach((ent) => {
     const catalogSpec = getCatalogSpec(ent.type);
@@ -721,6 +770,14 @@ function preloadLevelSprites(lvl) {
     if (ent.type === 'pushMower') needed.add('pushMower');
     if (ent.type === 'pushManualMower') needed.add('pushManualMower');
     if (ent.type === 'busUpsideDown') needed.add('busUpsideDown');
+    if (ent.type === 'fallenTree') needed.add(ent.variant || 'treeOakRealistic');
+    if (ent.type === 'stormTree') needed.add(ent.variant || 'treeOakRealistic');
+    if (ent.type === 'playgroundSlideRight') needed.add('playgroundSlideRight');
+    if (ent.type === 'playgroundSwingRight') needed.add('playgroundSwingRight');
+    if (ent.type === 'playgroundSlideLeft') needed.add('playgroundSlideLeft');
+    if (ent.type === 'playgroundSwingLeft') needed.add('playgroundSwingLeft');
+    if (ent.type === 'playgroundSlideTallLeft') needed.add('playgroundSlideTallLeft');
+    if (ent.type === 'playgroundSlideShortLeft') needed.add('playgroundSlideShortLeft');
     if (ent.type === 'fence') needed.add('fence');
     if (ent.type === 'boat') needed.add('boat');
     if (ent.type === 'catTails') needed.add('cattails');
@@ -876,6 +933,15 @@ const TREE_SPOT_LAYOUTS = {
 };
 
 const CATALOG_ENTITY_SPECS = {
+  shedRed: {
+    sprite: 'shedRed',
+    burnable: true,
+    burnZones: [
+      [0.16, 0.10, 0.64, 0.18, { roof: true, difficultyTier: 1 }],
+      [0.18, 0.34, 0.28, 0.50, { difficultyTier: 1 }],
+      [0.54, 0.34, 0.28, 0.50, { difficultyTier: 2 }]
+    ]
+  },
   houseNeighborhoodGray: {
     sprite: 'normalHouseGray',
     burnable: true,
@@ -1023,6 +1089,7 @@ function isBurnableType(type) {
   if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'houseTallOld' || type === 'house' || type === 'smallHouse' || type === 'houseSmall') return true;
   if (type === 'garage' || type === 'garageSmall' || type === 'singleGarage' || type === 'shedRed' || type === 'smallShed' || type === 'shedWindow') return true;
   if (type === 'barnLarge' || type === 'miniBarn' || type === 'largeRedBarn') return true;
+  if (type === 'stormTree') return false;
   return false;
 }
 
@@ -1071,6 +1138,13 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
     spots.push({ x: box.x + box.w * 0.10, y: box.y + box.h * 0.12, w: box.w * 0.16, h: box.h * 0.46, isHay: true, entityKey });
     spots.push({ x: box.x + box.w * 0.34, y: box.y + box.h * 0.08, w: box.w * 0.16, h: box.h * 0.50, isHay: true, entityKey });
     spots.push({ x: box.x + box.w * 0.58, y: box.y + box.h * 0.10, w: box.w * 0.16, h: box.h * 0.48, isHay: true, entityKey });
+    return;
+  }
+  if (type === 'stormTree') {
+    const before = spots.length;
+    const variant = ent.variant || 'treeOakRealistic';
+    addTreeSpots(spots, box, variant.includes('pine') ? 'pineMedium' : 'oakMedium');
+    for (let i = before; i < spots.length; i++) spots[i] = { ...spots[i], entityKey, isTree: true };
     return;
   }
   if (type === 'tree' || type === 'treeWithSwing') {
@@ -1134,13 +1208,31 @@ function getEntityBounds(ent) {
   if (ent.type === 'shedWindow' || ent.type === 'smallShed') return getSpriteFitRect('shedRed', ent.x + ENTITY_LAYOUT.shedRed.x, groundedY('shedRed', GRASS_Y, ENTITY_LAYOUT.shedRed.h), ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h, true);
   if (ent.type === 'singleGarage') return getSpriteFitRect('garage', ent.x + ENTITY_LAYOUT.garage.x, groundedY('garage', GRASS_Y, ENTITY_LAYOUT.garage.h), ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h, true);
   if (ent.type === 'miniBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnMini.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnMini.h), ENTITY_LAYOUT.barnMini.w, ENTITY_LAYOUT.barnMini.h, true);
-  if (ent.type === 'largeRedBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnLarge.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnLarge.h), ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h, true);
+  if (ent.type === 'largeRedBarn') {
+    const scale = ent.scale || 1;
+    const baseY = ent.baseY ?? GRASS_Y;
+    return getSpriteFitRect(
+      'barnLarge',
+      ent.x + ENTITY_LAYOUT.barnLarge.x * scale,
+      groundedY('barnLarge', baseY, ENTITY_LAYOUT.barnLarge.h * scale),
+      ENTITY_LAYOUT.barnLarge.w * scale,
+      ENTITY_LAYOUT.barnLarge.h * scale,
+      true
+    );
+  }
   if (ent.type === 'smallHouse') return getSpriteFitRect('houseSmall', ent.x + ENTITY_LAYOUT.houseSmall.x, groundedY('houseSmall', GRASS_Y, ENTITY_LAYOUT.houseSmall.h), ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h, true);
   if (ent.type === 'house') return getSpriteFitRect('houseTall', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTall', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
   if (ent.type === 'houseTallWhite') return getSpriteFitRect('houseTallWhite', ent.x + ENTITY_LAYOUT.houseTallWhite.x, groundedY('houseTallWhite', GRASS_Y, ENTITY_LAYOUT.houseTallWhite.h), ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h, true);
   if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h), ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h, true);
-  if (ent.type === 'sedan') return getSpriteFitRect('sedanRed', ent.x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true);
-  if (ent.type === 'pickup') return getSpriteFitRect('pickupCyber', ent.x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true);
+  if (ent.type === 'sedan') {
+    const variant = (currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed';
+    const fitted = getSpriteContentFitRect(variant, ent.x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true);
+    return fitted.content;
+  }
+  if (ent.type === 'pickup') {
+    const fitted = getSpriteContentFitRect('pickupCyber', ent.x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true);
+    return fitted.content;
+  }
   if (ent.type === 'semi') {
     const semiKey = currentLevel === 10 ? 'semiWrecked' : 'semiTankRight';
     const layout = ENTITY_LAYOUT[semiKey];
@@ -1148,6 +1240,13 @@ function getEntityBounds(ent) {
   }
   if (ent.type === 'ridingMower') return getSpriteFitRect('mower', ent.x + ENTITY_LAYOUT.mower.x, groundedY('mower', GRASS_Y, ENTITY_LAYOUT.mower.h), ENTITY_LAYOUT.mower.w, ENTITY_LAYOUT.mower.h, true);
   if (ent.type === 'tractor') return getSpriteFitRect('tractor', ent.x + ENTITY_LAYOUT.tractor.x, groundedY('tractor', GRASS_Y, ENTITY_LAYOUT.tractor.h), ENTITY_LAYOUT.tractor.w, ENTITY_LAYOUT.tractor.h, true);
+  if (ent.type === 'stormTree') {
+    const variant = ent.variant || 'treeOakRealistic';
+    const layout = ENTITY_LAYOUT[variant] || ENTITY_LAYOUT.treeOakRealistic;
+    const scale = ent.scale || 1;
+    const baseY = ent.baseY ?? GRASS_Y;
+    return getSpriteFitRect(variant, ent.x + layout.x * scale, groundedY(variant, baseY, layout.h * scale), layout.w * scale, layout.h * scale, true);
+  }
   if (TREE_KIND_BY_TYPE[ent.type]) return getSpriteFitRect(ent.type, ent.x + ENTITY_LAYOUT[ent.type].x, groundedY(ent.type, GRASS_Y, ENTITY_LAYOUT[ent.type].h), ENTITY_LAYOUT[ent.type].w, ENTITY_LAYOUT[ent.type].h, true);
   if (ent.type === 'tree' || ent.type === 'treeWithSwing') {
     const layout = getLegacyTreeLayout(ent.x);
@@ -1261,6 +1360,7 @@ let timeOfDay = 0;
 let tornadoAngle = 0;
 let fireSpots = [];
 let particles = [];
+let pointPopups = [];
 let dispatchAutoTimer = null;
 let dispatchAutoAdvance = null;
 let pendingDispatchLevel = null;
@@ -1276,6 +1376,11 @@ let blackBoxTruckPlan = null;
 let ufoRaid = null;
 let ufoPreview = null;
 let requestedStartLevel = 11;
+let hasShownLevel3MoveCue = false;
+let moveCueTimer = null;
+let hasShownLevel6TimeCue = false;
+let timeCueUntilMs = 0;
+let levelHorseEvent = null;
 
 function getMaxLevel() {
   return baseLevels.length || FINAL_LEVEL;
@@ -1321,6 +1426,10 @@ const FIRETRUCK_LANE_Y = FIRETRUCK_LANE_LINE * GRID_CELL_H;
 // Keep the tanker one full block lower than the firetruck unless you want to tune it separately.
 const TANKER_LANE_LINE = FIRETRUCK_LANE_LINE + 1.0;
 const TANKER_LANE_Y = TANKER_LANE_LINE * GRID_CELL_H;
+
+// Thin solid roadway lane: bottom sits 1px lower than the firetruck lane.
+const ROAD_LANE_H = 5;
+const ROAD_LANE_Y = (FIRETRUCK_LANE_Y + 1) - ROAD_LANE_H;
 
 ///////// Firetruck.webp horizontal position and movement limits. /////////
 // `spawnX` = where the engine starts.
@@ -1506,15 +1615,19 @@ baseLevels[1] = {
   truckSide: 'left',
   entities: [
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'E', line: 8.9 }, scale: 0.56, filter: 'brightness(0.24) saturate(0.30) contrast(1.02)' },
-    { type: 'bgTreeOakRealistic', grid: { col: 'I', line: 8.85 }, scale: 0.44, filter: 'brightness(0.20) saturate(0.24) contrast(1.04)' },
+    { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.85 }, scale: 0.44, filter: 'brightness(0.20) saturate(0.24) contrast(1.04)' },
     { type: 'bgHouseNeighborhoodBrick', grid: { col: 'N', line: 8.9 }, scale: 0.60, filter: 'brightness(0.22) saturate(0.28) contrast(1.04)' },
 
-    { type: 'fenceWhiteRow', grid: { col: 'K', colOffset: -0.2, line: 10 }, scale: 0.78 },
-    { type: 'benchWood', grid: { col: 'M', colOffset: -0.15, line: 10.04 }, scale: 0.72 },
+    // Longer fence run behind the sedan.
+    { type: 'fenceWhiteRow', grid: { col: 'J', colOffset: 0.1, line: 10, align: 'left' }, scale: 0.76 },
+    { type: 'fenceWhiteRow', grid: { col: 'N', colOffset: -0.15, line: 10 }, scale: 0.76 },
+    // Bench in front of fence (keep it visible, not hidden by the car).
+    { type: 'benchWood', grid: { col: 'I', colOffset: 0.25, line: 10.06 }, scale: 0.66 },
 
-    { type: 'sedan', x: 610, yOffset: 10 },
-    { type: 'treeOakRealistic', grid: { col: 'Q', colOffset: -0.15, line: 10.35 }, scale: 1.04 },
-    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.15, line: 10.5 }, scale: 0.72 },
+    // Jam the sedan into the oak so the crash scene reads clearly.
+    { type: 'sedan', x: 705, yOffset: 26 },
+    { type: 'treeOakRealistic', grid: { col: 'N', colOffset: 0.2, line: 10.35 }, scale: 1.08 },
+    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.25, line: 10.55 }, scale: 0.70 },
     { type: 'treePineRealistic', grid: { col: 'U', colOffset: 0.15, line: 10.35 }, scale: 0.94 }
   ]
 };
@@ -1537,6 +1650,144 @@ baseLevels[2] = {
     { type: 'treeOakRealistic', grid: { col: 'R', colOffset: 0.1, line: 10.35 }, scale: 0.96 },
     { type: 'benchWood', grid: { col: 'H', colOffset: -0.05, line: 10.06 }, scale: 0.70 },
     { type: 'shrubCluster', grid: { col: 'M', colOffset: 0.35, line: 10.55 }, scale: 0.70 }
+  ]
+};
+
+baseLevels[3] = {
+  name: 'Shed and Maple Yard 4',
+  safetyTip: 'Move early so you can reach both the shed roof and the nearby tree line before flames spread.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a shed fire with extension into the maple at the fence line.',
+  dispatchClearBody: 'Dispatch confirms the shed, maple, and fence-side yard are fully under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'F', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.46, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'R', line: 8.9 }, scale: 0.62, alpha: 0.20, silhouette: true },
+
+    // Fence aligned to shed depth and scaled smaller (farther back).
+    // Second segment is directly adjacent to the first (no overlap).
+    { type: 'fenceWhiteRow', x: 680, scale: 0.66, baseY: 482 },
+    { type: 'fenceWhiteRow', x: 864.8, scale: 0.66, baseY: 482 },
+    { type: 'benchWood', grid: { col: 'I', colOffset: 0.2, line: 10.06 }, scale: 0.66 },
+
+    { type: 'shedRed', x: 846, baseY: 482, scale: 1.0 },
+    { type: 'mapleLarge', grid: { col: 'N', colOffset: -0.1, line: 10.4 }, scale: 1.08 },
+    { type: 'treePineRealistic', grid: { col: 'T', colOffset: 0.15, line: 10.35 }, scale: 0.96 },
+    // Shrubs at shed left-bottom corner, then moved left by half-grid.
+    { type: 'shrubCluster', x: 833, scale: 0.74, baseY: 490 }
+  ]
+};
+
+baseLevels[4] = {
+  name: 'Two-Story Drive Fire 5',
+  safetyTip: 'Work the driveway side first so fire does not run from the car into the home.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a two-story home with a car fire impingement at the front drive.',
+  dispatchClearBody: 'Dispatch confirms the house frontage and drive-side vehicle fire are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgTreeOakRealistic', grid: { col: 'G', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'Q', line: 8.9 }, scale: 0.64, alpha: 0.20, silhouette: true },
+
+    { type: 'fenceWhiteRow', grid: { col: 'L', colOffset: 0.1, line: 10, align: 'left' }, scale: 0.76 },
+    { type: 'fenceWhiteRow', grid: { col: 'P', colOffset: -0.15, line: 10 }, scale: 0.76 },
+    { type: 'benchWood', grid: { col: 'K', colOffset: 0.0, line: 10.06 }, scale: 0.66 },
+
+    // One primary home to keep the stack clean.
+    { type: 'houseNeighborhoodGray', grid: { col: 'R', colOffset: -0.4, line: 10 }, scale: 1.54 },
+    { type: 'sedan', x: 790, yOffset: 24 },
+    { type: 'treeOakRealistic', grid: { col: 'M', colOffset: -0.1, line: 10.4 }, scale: 0.98 },
+    { type: 'shrubCluster', grid: { col: 'Q', colOffset: 0.3, line: 10.55 }, scale: 0.76 }
+  ]
+};
+
+baseLevels[5] = {
+  name: 'Driveway House and Garage 6',
+  safetyTip: 'Attack the garage-side fire first, then sweep the house roof line before it runs the full structure.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a driveway home fire with extension into the sedan and front yard exposure.',
+  dispatchClearBody: 'Dispatch confirms the driveway house, sedan, and front yard exposure are under control.',
+  timeOfDay: 1,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'F', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+
+    { type: 'fenceWhiteRow', x: 520, scale: 0.72 },
+    { type: 'fenceWhiteRow', x: 721.6, scale: 0.72 },
+
+    // House shifted left and used as the only garage-bearing structure for this scene.
+    { type: 'houseNeighborhoodBrick', grid: { col: 'Q', colOffset: -0.25, line: 10 }, scale: 1.48 },
+    { type: 'sedan', x: 722, yOffset: 22 },
+    { type: 'treeOakRealistic', grid: { col: 'P', colOffset: 0.15, line: 10.4 }, scale: 1.00 },
+    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.25, line: 10.55 }, scale: 0.76 }
+  ]
+};
+
+baseLevels[6] = {
+  name: 'Barn Yard Fire 7',
+  safetyTip: 'Keep hay and machinery clear of sparks so barn fires do not spread across the yard.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a barn and hay line fire with extension to farm equipment.',
+  dispatchClearBody: 'Dispatch confirms the barn, hay line, and equipment exposures are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'E', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'Q', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+
+    { type: 'fenceWhiteRow', x: 727.2, scale: 0.74 },
+    { type: 'fenceWhiteRow', x: 934.4, scale: 0.74 },
+    { type: 'largeRedBarn', x: 690, scale: 1.16, baseY: 488 },
+    { type: 'hayBale', x: 710 },
+    { type: 'tractor', x: 540, facing: 'right' },
+    { type: 'treePineRealistic', grid: { col: 'S', colOffset: 0.25, line: 10.35 }, scale: 0.96 },
+    { type: 'shrubCluster', grid: { col: 'N', colOffset: 0.1, line: 10.55 }, scale: 0.76 }
+  ]
+};
+
+baseLevels[7] = {
+  name: 'Field and Barn Line 8',
+  safetyTip: 'Approach field fires from the open side and protect nearby structures first.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a field-side barn fire with extension into hay and a fence line.',
+  dispatchClearBody: 'Dispatch confirms the field-side barn scene and surrounding exposures are under control.',
+  timeOfDay: 1,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgTreeOakRealistic', grid: { col: 'F', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodCottage', grid: { col: 'M', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'T', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
+
+    { type: 'largeRedBarn', x: 610, scale: 1.22, baseY: 488 },
+    { type: 'hayBale', x: 920 },
+    { type: 'hayBale', x: 1010 },
+    { type: 'tractor', x: 1090, facing: 'left' },
+    { type: 'mapleLarge', grid: { col: 'N', colOffset: 0.1, line: 10.4 }, scale: 0.98 }
+  ]
+};
+
+baseLevels[8] = {
+  name: 'Kennard School Tornado 9',
+  safetyTip: 'During tornado response, stay clear of debris paths and keep road access open for rescue crews.',
+  dispatchBody: 'Dispatch to Kennard Fire: tornado damage at Kennard School with a flipped bus and active fire exposures.',
+  dispatchClearBody: 'Dispatch confirms the school grounds and tornado damage zone are under control.',
+  timeOfDay: 2,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgTreeOakRealistic', grid: { col: 'D', line: 8.85 }, scale: 0.40, alpha: 0.16, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'W', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
+
+    { type: 'kennardSchool', x: 760 },
+    { type: 'busUpsideDown', x: 610 },
+    { type: 'playgroundSlideTallLeft', x: 360, scale: 0.95 },
+    { type: 'playgroundSlideShortLeft', x: 445, scale: 0.92 },
+    { type: 'playgroundSwingLeft', x: 525, scale: 0.95 },
+    { type: 'tornado', x: 650 },
+    { type: 'stormTree', x: 470, variant: 'treePineRealistic', scale: 0.88, baseY: 486, fallAtX: 520 },
+    { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.58, baseY: 484, rotationDeg: -82, alpha: 0.92, fallAtX: 520 },
+    { type: 'stormTree', x: 980, variant: 'treeOakRealistic', scale: 1.06, baseY: 488, fallAtX: 940 },
+    { type: 'fallenTree', x: 980, variant: 'treeOakRealistic', scale: 0.66, baseY: 486, rotationDeg: 86, alpha: 0.90, fallAtX: 940 }
   ]
 };
 
@@ -1656,13 +1907,34 @@ function getLevelDispatchCopy(lvl, phase) {
   };
 }
 
+// Keep the yellow between-level message as Fire Safety Tips.
+function getLevelDispatchCopy(lvl, phase) {
+  const levelData = baseLevels[lvl - 1] || {};
+  const name = levelData.name || `Level ${lvl}`;
+  const tip = getLevelSafetyTip(lvl);
+  if (phase === 'complete') {
+    return {
+      tag: 'Dispatch - Clear',
+      title: `${name} is out`,
+      body: levelData.dispatchClearBody || `Dispatch confirms the scene at ${name} is under control and the unit is clear.`,
+      note: `Fire Safety Tip: ${tip}`
+    };
+  }
+  return {
+    tag: 'Dispatch',
+    title: `${name}`,
+    body: levelData.dispatchBody || `Dispatch to Kennard Fire: responding to ${name}. Crews are en route and the scene is loading now.`,
+    note: `Fire Safety Tip: ${tip}`
+  };
+}
+
 function showDispatchScreen(lvl, phase) {
   const copy = getLevelDispatchCopy(lvl, phase);
   const screen = document.getElementById('dispatchScreen');
   document.getElementById('dispatchTag').textContent = copy.tag;
   document.getElementById('dispatchTitle').textContent = copy.title;
   document.getElementById('dispatchBody').textContent = copy.body;
-  document.getElementById('dispatchNote').textContent = phase === 'complete' ? copy.note : getLevelSafetyTip(lvl);
+  document.getElementById('dispatchNote').textContent = copy.note;
   screen.style.display = 'flex';
   if (dispatchAutoTimer) clearTimeout(dispatchAutoTimer);
   dispatchAutoTimer = setTimeout(() => dismissDispatchScreen(true), 5000);
@@ -1694,6 +1966,7 @@ function showTitleScreen() {
 }
 
 function dismissDispatchScreen(fromAuto = false) {
+  const dispatchLevel = pendingDispatchLevel;
   const screen = document.getElementById('dispatchScreen');
   if (dispatchAutoTimer) {
     clearTimeout(dispatchAutoTimer);
@@ -1705,6 +1978,8 @@ function dismissDispatchScreen(fromAuto = false) {
     dispatchAutoAdvance = null;
   }
   pendingDispatchLevel = null;
+  if (dispatchLevel === 3) showLevel3MoveCue();
+  if (dispatchLevel === 6) showLevel6TimeCue();
 }
 
 function startGame(diff, startLevel = 1) {
@@ -1762,6 +2037,16 @@ function getOppositeTruckLane(levelData, lvl) {
 
 function loadLevel(lvl) {
   currentLevel = lvl;
+  if (lvl !== 3) hasShownLevel3MoveCue = false;
+  if (lvl !== 6) {
+    hasShownLevel6TimeCue = false;
+    timeCueUntilMs = 0;
+  }
+  clearMoveCue();
+  if (moveCueTimer) {
+    clearTimeout(moveCueTimer);
+    moveCueTimer = null;
+  }
   levelStartScore = score;
   const levelData = baseLevels[lvl - 1];
   const lane = getOppositeTruckLane(levelData, lvl);
@@ -1782,6 +2067,7 @@ function loadLevel(lvl) {
   blackBoxTruckPlan = null;
   ufoRaid = null;
   ufoPreview = null;
+  levelHorseEvent = null;
   if (dispatchAutoAdvance) {
     clearTimeout(dispatchAutoAdvance);
     dispatchAutoAdvance = null;
@@ -1815,11 +2101,27 @@ function loadLevel(lvl) {
       entityKey: s.entityKey
     };
   });
-  const truckRect = getTruckDrawRect();
-  fireSpots = fireSpots.map((spot) => pushFireSpotAwayFromTruck(spot, truckRect));
+  // Keep fire anchored to burnable model zones; do not shift spots off art.
   if (lvl === FINAL_LEVEL) initUfoRaid();
   if (lvl === 21) initUfoPreview();
+  if (lvl === 7) {
+    const treeEnt = (levelData.entities || []).find((ent) => ent.type === 'treePineRealistic' || ent.type === 'treeOakRealistic' || ent.type === 'tree');
+    const shrubEnt = (levelData.entities || []).find((ent) => ent.type === 'shrubCluster');
+    const treeBox = treeEnt ? getEntityBounds(treeEnt) : null;
+    const shrubBox = shrubEnt ? getEntityBounds(shrubEnt) : null;
+    const horseGroundY = treeBox ? (treeBox.y + treeBox.h) : GRASS_Y;
+    const eatX = shrubBox ? (shrubBox.x + shrubBox.w * 0.6) : 930;
+    levelHorseEvent = {
+      phase: 'runOut',
+      x: 910,
+      targetX: eatX,
+      y: horseGroundY,
+      speed: 1.9,
+      phaseTime: 0
+    };
+  }
   particles = [];
+  pointPopups = [];
   gameState = 'playing';
   updateLevelSkipHud();
   if (blackBoxTruckLevels.has(lvl)) {
@@ -1847,7 +2149,7 @@ function checkWin() {
     document.getElementById('encourageText').innerHTML = isFinal 
       ? "Thank you for playing!<br>Try a harder difficulty next time." 
       : "Great Work, Kennard Fire Defender!<br>You saved the day!";
-    document.getElementById('safetyTip').textContent = getLevelSafetyTip(currentLevel);
+    document.getElementById('safetyTip').textContent = `Fire Safety Tip: ${getLevelSafetyTip(currentLevel)}`;
     document.getElementById('normalButtons').style.display = isFinal ? 'none' : 'flex';
     document.getElementById('finalButtons').style.display = isFinal ? 'flex' : 'none';
 
@@ -1981,15 +2283,24 @@ class Particle {
     if (this.type === 'smoke') {
       this.vy -= 0.02 + Math.random() * 0.04;
       this.vx *= 0.99;
+    }
+    if (this.type === 'spark') {
+      this.vy += 0.02;
+      this.vx *= 0.98;
     } 
   }
   draw() { 
-    const denom = this.type === 'smoke' ? 180 : 45;
+    const denom = this.type === 'smoke' ? 180 : (this.type === 'spark' ? 34 : 45);
     const minA = this.type === 'smoke' ? 0.05 : 0.15;
     ctx.globalAlpha = Math.max(minA, this.life / denom); 
     ctx.fillStyle = this.color; 
     if (this.type === 'water') { 
       ctx.fillRect(this.x - 1.8, this.y - 3, 3.6, 7); 
+    } else if (this.type === 'spark') {
+      const s = Math.max(2, this.size);
+      ctx.fillRect(this.x - s * 0.5, this.y - 1, s, 2);
+      ctx.fillRect(this.x - 1, this.y - s * 0.5, 2, s);
+      ctx.fillRect(this.x - 1, this.y - 1, 2, 2);
     } else if (this.type === 'smoke') {
       ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
     } else { 
@@ -2039,6 +2350,58 @@ function createSmoke(x, y) {
   }
 }
 
+function addPointPopup(x, y, text, color = '#ffe96b', life = 66) {
+  pointPopups.push({ x, y, text, color, life, maxLife: life, vy: -0.42 });
+}
+
+function updateAndDrawPointPopups(dt) {
+  const step = Math.max(0.2, dt / 16.67);
+  for (let i = pointPopups.length - 1; i >= 0; i--) {
+    const p = pointPopups[i];
+    p.life -= step;
+    p.y += p.vy * step;
+    p.vy -= 0.004 * step;
+    if (p.life <= 0) {
+      pointPopups.splice(i, 1);
+      continue;
+    }
+    const alpha = Math.max(0.06, p.life / p.maxLife);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.restore();
+  }
+}
+
+function createBonusStars(x, y, count = 6) {
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle(
+      x + (Math.random() - 0.5) * 34,
+      y + (Math.random() - 0.5) * 16,
+      (Math.random() - 0.5) * 2.6,
+      -1.1 - Math.random() * 1.9,
+      '#ffe96b',
+      20 + Math.random() * 16,
+      3 + Math.random() * 2,
+      'spark'
+    ));
+  }
+}
+
+function getSpotExtinguishScore(spot) {
+  let pts = 8;
+  if (spot.roof) pts += 7;
+  if (spot.isVehicle) pts += 5;
+  if (spot.isHay) pts += 7;
+  if (spot.isSemi) pts += 10;
+  const area = Math.max(1, (spot.w || 0) * (spot.h || 0));
+  pts += Math.min(8, Math.round(Math.sqrt(area) / 55));
+  return Math.max(8, pts);
+}
+
 function getClampedHoseEnd() {
   const truckY = getTruckY();
   const attachX = truck.x + nozzleAttachX * truckFacing;
@@ -2056,19 +2419,22 @@ function createWaterParticles() {
   const truckPoint = getTruckNozzlePoint();
   const attachX = truckPoint.x;
   const attachY = truckPoint.y;
-  const dx = tip.x - attachX;
-  const dy = tip.y - attachY;
+  const impact = getFirstWaterImpactPoint(attachX, attachY, tip.x, tip.y);
+  const effectiveTip = impact ? impact : tip;
+  const dx = effectiveTip.x - attachX;
+  const dy = effectiveTip.y - attachY;
   const len = Math.hypot(dx, dy) || 1;
   const stretchFactor = Math.min(tip.length / maxHoseLength, 1);
   const coneSpread = 12 * (1 - stretchFactor * 0.93);
-  const waterSpeed = 6.5 + stretchFactor * 21;
-  const numStreams = stretchFactor > 0.7 ? 4 : 10;
+  const hitReduction = impact ? 0.35 : 1;
+  const waterSpeed = (6.5 + stretchFactor * 21) * hitReduction;
+  const numStreams = impact ? 3 : (stretchFactor > 0.7 ? 4 : 10);
   for (let s = 0; s < numStreams; s++) {
     const spread = coneSpread * (Math.random() - 0.5) * 0.8;
     const perpX = -dy / len;
     const perpY = dx / len;
-    const startX = tip.x + perpX * spread;
-    const startY = tip.y + perpY * spread;
+    const startX = effectiveTip.x + perpX * spread;
+    const startY = effectiveTip.y + perpY * spread;
     const vx = (dx / len) * waterSpeed;
     const vy = (dy / len) * waterSpeed + 4.2;
     for (let i = 0; i < 7; i++) {
@@ -2076,10 +2442,66 @@ function createWaterParticles() {
       particles.push(new Particle(
         startX + vx * progress * 0.6, startY + vy * progress * 0.6,
         vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
-        Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF', 32 + Math.random() * 12, 2.8 + Math.random() * 1.6, 'water'
+        Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF', (impact ? 12 : 32) + Math.random() * 10, 2.8 + Math.random() * 1.6, 'water'
       ));
     }
   }
+}
+
+function segmentRectHit(aX, aY, bX, bY, rect, pad = 2) {
+  const minX = rect.x - pad;
+  const minY = rect.y - pad;
+  const maxX = rect.x + rect.w + pad;
+  const maxY = rect.y + rect.h + pad;
+  const dx = bX - aX;
+  const dy = bY - aY;
+  let t0 = 0;
+  let t1 = 1;
+  const tests = [
+    [-dx, aX - minX],
+    [dx, maxX - aX],
+    [-dy, aY - minY],
+    [dy, maxY - aY]
+  ];
+  for (let i = 0; i < tests.length; i++) {
+    const p = tests[i][0];
+    const q = tests[i][1];
+    if (p === 0) {
+      if (q < 0) return null;
+      continue;
+    }
+    const r = q / p;
+    if (p < 0) {
+      if (r > t1) return null;
+      if (r > t0) t0 = r;
+    } else {
+      if (r < t0) return null;
+      if (r < t1) t1 = r;
+    }
+  }
+  if (t0 < 0 || t0 > 1) return null;
+  return { t: t0, x: aX + dx * t0, y: aY + dy * t0 };
+}
+
+function getFirstWaterImpactPoint(aX, aY, bX, bY) {
+  if (!fireSpots.length) return null;
+  let first = null;
+  for (let i = 0; i < fireSpots.length; i++) {
+    const spot = fireSpots[i];
+    if (!spot || spot.health <= 0) continue;
+    const hit = segmentRectHit(aX, aY, bX, bY, spot, 4);
+    if (!hit) continue;
+    if (!first || hit.t < first.t) first = hit;
+  }
+  if (!first) return null;
+  const dirX = bX - aX;
+  const dirY = bY - aY;
+  const len = Math.hypot(dirX, dirY) || 1;
+  const overSpray = 8 + Math.random() * 10;
+  return {
+    x: first.x + (dirX / len) * overSpray,
+    y: first.y + (dirY / len) * overSpray
+  };
 }
 
 function getTruckNozzlePoint() {
@@ -2677,8 +3099,17 @@ function drawMiniBarn(x) {
   ctx.fillStyle='#FFF';ctx.fillRect(x+78,310,55,170);
 }
 
-function drawLargeRedBarn(x) {
-  if (drawSpriteGroundedFitted('barnLarge', x + ENTITY_LAYOUT.barnLarge.x, GRASS_Y, ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h)) return;
+function drawLargeRedBarn(entOrX) {
+  const ent = typeof entOrX === 'number' ? { x: entOrX } : (entOrX || { x: 0 });
+  const x = ent.x || 0;
+  const scale = ent.scale || 1;
+  const baseY = ent.baseY ?? GRASS_Y;
+  const layout = ENTITY_LAYOUT.barnLarge;
+  const drawX = x + layout.x * scale;
+  const drawY = groundedY('barnLarge', baseY, layout.h * scale);
+  const drawW = layout.w * scale;
+  const drawH = layout.h * scale;
+  if (drawSpriteFitted('barnLarge', drawX, drawY, drawW, drawH, true)) return;
   ctx.globalAlpha = 0.75;
   ctx.fillStyle = '#C22'; ctx.fillRect(x+20,180,260,300);
   ctx.strokeStyle='#222'; ctx.lineWidth=4;
@@ -2686,6 +3117,132 @@ function drawLargeRedBarn(x) {
   ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x,180);ctx.lineTo(x+130,100);ctx.lineTo(x+280,180);ctx.fill();
   ctx.fillStyle='#FFF';ctx.fillRect(x+95,340,70,140);
   ctx.globalAlpha = 1;
+}
+
+function getLevel7BarnEntity() {
+  if (currentLevel !== 7) return null;
+  const data = baseLevels[currentLevel - 1];
+  return (data?.entities || []).find((ent) => ent.type === 'largeRedBarn') || null;
+}
+
+function drawLevel7BarnDoorOpen() {
+  if (currentLevel !== 7 || !levelHorseEvent) return;
+  if (levelHorseEvent.phase === 'gone') return;
+  const barn = getLevel7BarnEntity();
+  if (!barn) return;
+  const bounds = getEntityBounds(barn);
+  if (!bounds) return;
+  const doorW = bounds.w * 0.16;
+  const doorH = bounds.h * 0.24;
+  const doorX = bounds.x + bounds.w * 0.44;
+  const doorY = bounds.y + bounds.h * 0.60;
+  ctx.save();
+  ctx.fillStyle = 'rgba(18,18,18,0.82)';
+  ctx.fillRect(doorX, doorY, doorW, doorH);
+  ctx.fillStyle = 'rgba(35,35,35,0.75)';
+  ctx.beginPath();
+  ctx.moveTo(doorX + doorW, doorY + 6);
+  ctx.lineTo(doorX + doorW + doorW * 0.35, doorY + doorH * 0.25);
+  ctx.lineTo(doorX + doorW + doorW * 0.35, doorY + doorH * 0.92);
+  ctx.lineTo(doorX + doorW, doorY + doorH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function isTornadoPastX(targetX) {
+  return currentLevel === 9 && tornadoTravelX > targetX;
+}
+
+function shouldDrawFallenTree(ent) {
+  if (currentLevel !== 9) return true;
+  if (ent.fallAtX == null) return true;
+  return isTornadoPastX(ent.fallAtX);
+}
+
+function drawStormTree(ent) {
+  if (currentLevel === 9 && ent.fallAtX != null && isTornadoPastX(ent.fallAtX)) return;
+  const variant = ent.variant || 'treeOakRealistic';
+  const layout = ENTITY_LAYOUT[variant] || ENTITY_LAYOUT.treeOakRealistic;
+  const scale = ent.scale || 1;
+  const baseY = ent.baseY ?? GRASS_Y;
+  const drawX = ent.x + layout.x * scale;
+  const drawY = groundedY(variant, baseY, layout.h * scale);
+  const drawW = layout.w * scale;
+  const drawH = layout.h * scale;
+  if (drawSpriteFitted(variant, drawX, drawY, drawW, drawH, true)) return;
+  drawTreeAsset(variant, ent.x);
+}
+
+function drawPlaygroundAsset(ent) {
+  const key = ent.type;
+  const layout = ENTITY_LAYOUT[key];
+  if (!layout) return;
+  const scale = ent.scale || 1;
+  const baseY = ent.baseY ?? GRASS_Y;
+  const drawX = ent.x + layout.x * scale;
+  const drawY = groundedY(key, baseY, layout.h * scale);
+  const drawW = layout.w * scale;
+  const drawH = layout.h * scale;
+  drawSpriteFitted(key, drawX, drawY, drawW, drawH, true);
+}
+
+function getHorseRect() {
+  if (!levelHorseEvent || levelHorseEvent.phase === 'gone') return null;
+  const layout = ENTITY_LAYOUT.horse;
+  return {
+    x: levelHorseEvent.x,
+    y: groundedY('horse', levelHorseEvent.y, layout.h),
+    w: layout.w,
+    h: layout.h
+  };
+}
+
+function updateLevel7Horse(dt) {
+  if (currentLevel !== 7 || !levelHorseEvent) return;
+  const step = Math.max(0.2, dt / 16.67);
+  const horseRect = getHorseRect();
+  if (levelHorseEvent.phase === 'runOut') {
+    levelHorseEvent.x += levelHorseEvent.speed * step;
+    if (levelHorseEvent.x >= levelHorseEvent.targetX) {
+      levelHorseEvent.x = levelHorseEvent.targetX;
+      levelHorseEvent.phase = 'eat';
+      levelHorseEvent.phaseTime = 0;
+    }
+    return;
+  }
+  if (levelHorseEvent.phase === 'eat' && horseRect) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const particle = particles[i];
+      if (particle.type !== 'water') continue;
+      if (particle.x > horseRect.x && particle.x < horseRect.x + horseRect.w && particle.y > horseRect.y && particle.y < horseRect.y + horseRect.h) {
+        levelHorseEvent.phase = 'escapeBehindTree';
+        levelHorseEvent.speed = 5.4;
+        levelHorseEvent.phaseTime = 0;
+        particles[i].life = Math.min(particles[i].life, 8);
+        break;
+      }
+    }
+    return;
+  }
+  if (levelHorseEvent.phase === 'escapeBehindTree') {
+    levelHorseEvent.x += levelHorseEvent.speed * step;
+    if (levelHorseEvent.x > canvas.width + 80) {
+      levelHorseEvent.phase = 'gone';
+    }
+  }
+}
+
+function drawLevel7Horse(behindOnly = false) {
+  if (currentLevel !== 7 || !levelHorseEvent || levelHorseEvent.phase === 'gone') return;
+  const isBehind = levelHorseEvent.phase === 'escapeBehindTree';
+  if (behindOnly !== isBehind) return;
+  const rect = getHorseRect();
+  if (!rect) return;
+  const key = levelHorseEvent.phase === 'eat' ? 'horseEatLeft' : 'horseEatRight';
+  if (drawSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true)) return;
+  ctx.fillStyle = '#7e5236';
+  ctx.fillRect(rect.x + 8, rect.y + 18, rect.w - 20, rect.h - 24);
 }
 
 function drawHayBale(x) {
@@ -2998,7 +3555,8 @@ function startBlackBoxTruckPass(direction) {
     x: direction > 0 ? -200 : canvas.width + 200,
     y: 408,
     speed: 2.4,
-    scale: 0.55
+    scale: 0.55,
+    bonusCooldown: 0
   };
 }
 
@@ -3017,6 +3575,7 @@ function updateBlackBoxTruck(dt) {
   }
   const step = Math.max(0.25, dt / 16.67);
   blackBoxTruckState.x += blackBoxTruckState.direction * blackBoxTruckState.speed * step;
+  blackBoxTruckState.bonusCooldown = Math.max(0, (blackBoxTruckState.bonusCooldown || 0) - dt);
   if ((blackBoxTruckState.direction > 0 && blackBoxTruckState.x > canvas.width + 220) || (blackBoxTruckState.direction < 0 && blackBoxTruckState.x < -260)) {
     blackBoxTruckState = null;
     if (blackBoxTruckPlan?.stage === 'first') {
@@ -3026,6 +3585,45 @@ function updateBlackBoxTruck(dt) {
       blackBoxTruckPlan.stage = 'done';
     }
   }
+}
+
+function drawFallenTree(ent) {
+  const variant = ent.variant || 'treeOakRealistic';
+  const layout = ENTITY_LAYOUT[variant] || ENTITY_LAYOUT.treeOakRealistic;
+  const scale = ent.scale || 0.75;
+  const sprite = SPRITES[variant];
+  const ready = !!(SPRITE_READY[variant] && sprite && sprite.width && sprite.height);
+  const baseY = ent.baseY ?? GRASS_Y;
+  const centerX = ent.x || 0;
+  const rot = ((ent.rotationDeg == null ? -90 : ent.rotationDeg) * Math.PI) / 180;
+  const drawW = layout.w * scale;
+  const drawH = layout.h * scale * 0.56; // top half canopy only (fallen look)
+
+  ctx.save();
+  ctx.translate(centerX, baseY - 12);
+  ctx.rotate(rot);
+  ctx.globalAlpha = ent.alpha == null ? 0.95 : ent.alpha;
+  if (ready) {
+    ctx.drawImage(
+      sprite,
+      0, 0, sprite.width, Math.floor(sprite.height * 0.56),
+      -drawW * 0.5, -drawH * 0.5, drawW, drawH
+    );
+  } else {
+    ctx.fillStyle = '#2f7d2f';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, drawW * 0.46, drawH * 0.38, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function getBlackBoxTruckRect() {
+  if (!blackBoxTruckState) return null;
+  const layout = ENTITY_LAYOUT.blackBoxTruck;
+  const drawW = layout.w * blackBoxTruckState.scale;
+  const drawH = layout.h * blackBoxTruckState.scale;
+  return { x: blackBoxTruckState.x, y: blackBoxTruckState.y, w: drawW, h: drawH };
 }
 
 function drawBlackBoxTruckState() {
@@ -3158,34 +3756,43 @@ function drawTreeWithSwing(x) {
 
 let tornadoTravelX = -180;
 function drawTornado() {
-  tornadoAngle += 0.085;
-  tornadoTravelX += 2.2;
+  tornadoAngle += 0.05;
+  tornadoTravelX += 0.62;
   if (tornadoTravelX > canvas.width + 180) tornadoTravelX = -180;
   const x = tornadoTravelX;
-  const topTwist = Math.sin(tornadoAngle * 2.2) * 38;
-  const midTwist = Math.sin(tornadoAngle * 1.8) * 28;
-  const bottomTwist = Math.sin(tornadoAngle * 1.4) * 45;
-  ctx.globalAlpha = 0.75;
-  ctx.strokeStyle = '#222222'; ctx.lineWidth = 48;
-  ctx.beginPath();
-  ctx.moveTo(x - 22 + topTwist, 140);
-  ctx.quadraticCurveTo(x + 18 + midTwist, 235, x - 12 + bottomTwist, 355);
-  ctx.quadraticCurveTo(x + 35, 430, x + 15, 485);
-  ctx.stroke();
-  ctx.strokeStyle = '#444444'; ctx.lineWidth = 22;
-  ctx.beginPath();
-  ctx.moveTo(x - 18 + topTwist * 0.7, 145);
-  ctx.quadraticCurveTo(x + 12 + midTwist * 0.8, 240, x - 8 + bottomTwist * 0.6, 360);
-  ctx.stroke();
-  ctx.globalAlpha = 1.0;
-  ctx.fillStyle = '#555555';
-  for (let i = 0; i < 9; i++) {
-    const angle = tornadoAngle * 3 + i * 0.8;
-    const dist = 35 + i * 12;
-    const dx = Math.cos(angle) * dist;
-    const dy = Math.sin(angle) * dist * 0.6 - 80;
-    ctx.fillRect(x + dx - 3, 180 + dy, 6, 6);
+  const topY = 132;
+  const groundY = 492;
+  const rings = 14;
+  for (let ring = 0; ring < rings; ring++) {
+    const ringT = ring / (rings - 1);
+    const ry = topY + ringT * (groundY - topY);
+    const radius = 52 - ringT * 44; // wide top, narrow ground point
+    const dotCount = 10 + Math.floor((1 - ringT) * 8);
+    for (let j = 0; j < dotCount; j++) {
+      const angle = tornadoAngle * (2.7 - ringT * 0.5) + j * ((Math.PI * 2) / dotCount);
+      const wobble = Math.sin(tornadoAngle * 3 + ring * 0.9) * (2 + (1 - ringT) * 4);
+      const px = x + Math.cos(angle) * Math.max(2, radius + wobble);
+      const py = ry + Math.sin(angle) * (3 + (1 - ringT) * 8);
+      ctx.fillStyle = j % 2 ? 'rgba(176,178,183,0.62)' : 'rgba(104,108,116,0.60)';
+      ctx.fillRect(px - 2, py - 2, 4, 4);
+    }
   }
+  // Light wind streaks around funnel to improve "windy" readability.
+  ctx.strokeStyle = 'rgba(190,196,205,0.34)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 8; i++) {
+    const y = 170 + i * 38 + Math.sin(tornadoAngle * 1.2 + i) * 7;
+    const len = 28 + i * 4;
+    ctx.beginPath();
+    ctx.moveTo(x - len * 0.6, y);
+    ctx.quadraticCurveTo(x, y - 6, x + len * 0.5, y + 2);
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(88,84,78,0.50)';
+  ctx.beginPath();
+  ctx.ellipse(x, groundY + 2, 32, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 }
 
 function updateThumbKnob(dx) {
@@ -3200,6 +3807,62 @@ function syncThumbStickVisibility() {
   const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   stick.style.display = mobile ? 'block' : 'none';
   controls.style.display = mobile ? 'none' : 'flex';
+}
+
+function clearMoveCue() {
+  const controls = document.getElementById('truckControls');
+  const leftBtn = document.getElementById('truckLeftBtn');
+  const rightBtn = document.getElementById('truckRightBtn');
+  const stick = document.getElementById('thumbStick');
+  controls.classList.remove('control-cue-flash');
+  leftBtn.classList.remove('control-cue-flash');
+  rightBtn.classList.remove('control-cue-flash');
+  stick.classList.remove('control-cue-flash');
+}
+
+function showLevel3MoveCue() {
+  if (hasShownLevel3MoveCue || currentLevel !== 3) return;
+  hasShownLevel3MoveCue = true;
+  clearMoveCue();
+  const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  if (mobile) {
+    document.getElementById('thumbStick').classList.add('control-cue-flash');
+  } else {
+    document.getElementById('truckControls').classList.add('control-cue-flash');
+    document.getElementById('truckLeftBtn').classList.add('control-cue-flash');
+    document.getElementById('truckRightBtn').classList.add('control-cue-flash');
+  }
+  if (moveCueTimer) clearTimeout(moveCueTimer);
+  moveCueTimer = setTimeout(() => {
+    clearMoveCue();
+    moveCueTimer = null;
+  }, 3600);
+}
+
+function showLevel6TimeCue() {
+  if (hasShownLevel6TimeCue || currentLevel !== 6) return;
+  hasShownLevel6TimeCue = true;
+  timeCueUntilMs = levelElapsedMs + 3600;
+}
+
+function drawTimeSelectorCue() {
+  if (currentLevel !== 6 || levelElapsedMs >= timeCueUntilMs) return;
+  const pulse = 0.45 + (Math.sin(levelElapsedMs / 140) * 0.5 + 0.5) * 0.5;
+  const x = 972;
+  const y = 12;
+  const w = 214;
+  const h = 50;
+  ctx.save();
+  ctx.strokeStyle = `rgba(255, 234, 88, ${pulse})`;
+  ctx.lineWidth = 3 + pulse * 2;
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = `rgba(255, 234, 88, ${0.20 + pulse * 0.16})`;
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = `rgba(255, 234, 88, ${0.85})`;
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('↕', 1079, 78);
+  ctx.restore();
 }
 
 let thumbPointerId = null;
@@ -3259,12 +3922,14 @@ function loop() {
   updateBlackBoxTruck(dt);
   updateUfoPreview(dt);
   updateUfoRaid(dt);
+  updateLevel7Horse(dt);
   ctx.clearRect(0,0,1200,600);
   drawBackground();
   if (currentLevel === 11) drawPlacementGrid();
   drawBlackBoxTruckState();
 
   const data = baseLevels[currentLevel-1];
+  drawLevel7Horse(true);
   data.entities.forEach(ent => {
     if (ent.type === 'tornado') drawTornado();
   });
@@ -3288,6 +3953,7 @@ function loop() {
   ctx.fillText("Day",1011,43);
   ctx.fillText("Dusk",1079,43);
   ctx.fillText("Night",1147,43);
+  drawTimeSelectorCue();
 
   data.entities.forEach(ent => {
     if (drawCatalogEntity(ent)) return;
@@ -3300,7 +3966,7 @@ function loop() {
     if (ent.type === 'smallHouse') drawSmallHouse(ent.x, ent.color);
     if (ent.type === 'houseTallWhite') drawTallHouse(ent.x);
     if (ent.type === 'miniBarn') drawMiniBarn(ent.x);
-    if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent.x);
+    if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent);
     if (ent.type === 'hayBale') drawHayBale(ent.x);
     if (ent.type === 'tractor') drawTractor(ent.x, ent.facing || 'right');
     if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0);
@@ -3318,14 +3984,26 @@ function loop() {
     if (ent.type === 'pushMower') drawPushMower(ent.x);
     if (ent.type === 'pushManualMower') drawPushManualMower(ent.x);
     if (ent.type === 'busUpsideDown') drawBusUpsideDown(ent.x);
+    if (ent.type === 'fallenTree' && shouldDrawFallenTree(ent)) drawFallenTree(ent);
+    if (ent.type === 'stormTree') drawStormTree(ent);
+    if (ent.type === 'playgroundSlideRight' || ent.type === 'playgroundSwingRight') drawPlaygroundAsset(ent);
     if (ent.type === 'ufo') drawUfo(ent.x, ent.y || 90, currentLevel === FINAL_LEVEL && ufoRaid?.phase === 'beam');
     if (ent.type === 'tornado') return;
     if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
   });
 
+  // Solid road lane matched to the firetruck's movement range and level.
+  const truckLayout = ENTITY_LAYOUT.engine;
+  const roadStartX = Math.max(0, (truck.minX + truckLayout.x) - 34);
+  const roadEndX = Math.min(1200, (truck.maxX + truckLayout.x + truckLayout.w) + 34);
+  const roadW = Math.max(80, roadEndX - roadStartX);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
+
   drawSideFireTruck();
   drawUfoPreview();
   drawUfoRaid();
+  drawLevel7Horse(false);
 
   const tip = getClampedHoseEnd();
   ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
@@ -3360,6 +4038,7 @@ function loop() {
       spot.emitMs = Math.max(18, cadence);
     }
 
+    const level9FireLock = currentLevel === 9 && tornadoTravelX < 400;
     for (let i = particles.length-1; i >= 0; i--) {
       const p = particles[i];
       if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
@@ -3367,14 +4046,42 @@ function loop() {
         if (spot.isHay) damage = difficulty === 1 ? 0.032 : 0.022;
         else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05);
         else if (spot.isVehicle) damage = difficulty === 1 ? 0.055 : 0.04;
-        spot.health -= damage;
+        if (!level9FireLock) spot.health -= damage;
         p.life = 8;
       }
     }
-    if (spot.health <= 0) { createSmoke(spot.x + spot.w/2, spot.y + spot.h/2); score += 10; }
+    if (spot.health <= 0 && !spot.outAwarded) {
+      const outX = spot.x + spot.w/2;
+      const outY = spot.y + spot.h/2;
+      const firePts = getSpotExtinguishScore(spot);
+      createSmoke(outX, outY);
+      score += firePts;
+      addPointPopup(outX, outY - 8, `+${firePts}`, '#ffe96b');
+      spot.outAwarded = true;
+    }
   });
 
   if (isSpraying) createWaterParticles();
+
+  const blackBoxRect = getBlackBoxTruckRect();
+  if (blackBoxRect && isSpraying && gameState === 'playing') {
+    let blackBoxHit = false;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      if (p.type !== 'water') continue;
+      if (p.x > blackBoxRect.x && p.x < blackBoxRect.x + blackBoxRect.w && p.y > blackBoxRect.y && p.y < blackBoxRect.y + blackBoxRect.h) {
+        p.life = Math.min(p.life, 8);
+        blackBoxHit = true;
+      }
+    }
+    if (blackBoxHit && (blackBoxTruckState.bonusCooldown || 0) <= 0) {
+      const bonusPts = 2 + Math.floor(Math.random() * 3);
+      score += bonusPts;
+      addPointPopup(blackBoxRect.x + blackBoxRect.w * 0.52, blackBoxRect.y - 6, `+${bonusPts}`, '#8df6ff', 52);
+      createBonusStars(blackBoxRect.x + blackBoxRect.w * 0.5, blackBoxRect.y + blackBoxRect.h * 0.4, 7);
+      blackBoxTruckState.bonusCooldown = 220;
+    }
+  }
 
   for (let i = particles.length-1; i >= 0; i--) {
     const p = particles[i];
@@ -3382,6 +4089,7 @@ function loop() {
     p.draw();
     if (p.life <= 0) particles.splice(i, 1);
   }
+  updateAndDrawPointPopups(dt);
 
   // Keep the support tanker on top of fire particles (lane 11) while it's present.
   drawTankerSupport();
