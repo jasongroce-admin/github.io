@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kennard Fire Defender - Deluxe Test V2</title>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+  #wrap { position: relative; width: 100vw; height: 100vh; }
+  canvas { display: block; width: 100%; height: 100%; image-rendering: crisp-edges; }
+  #hud {
+    position: absolute; inset: 0; pointer-events: none; color: #fff;
+  }
+  .panel {
+    position: absolute; top: 14px; left: 18px; background: rgba(0,0,0,.88); padding: 12px 18px;
+    font-size: 28px; font-weight: 700; min-width: 300px;
+  }
+  .panel span { margin-right: 28px; }
+  .hint {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.75); padding: 10px 18px; border-radius: 12px; font-size: 18px;
+    pointer-events: auto;
+  }
+  .controls {
+    position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 14px; pointer-events: auto;
+  }
+  .btn {
+    width: 58px; height: 50px; border: 0; border-radius: 12px; background: #18304f; color: #fff;
+    font-size: 28px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,.35);
+  }
+  .gridNote {
+    position: absolute; right: 18px; top: 14px; background: rgba(0,0,0,.72); color: #9fe7ff;
+    padding: 10px 14px; font-size: 14px; border-radius: 10px; max-width: 340px; line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div class="panel"><span id="score">Score: 0</span><span id="level">Level: 1</span></div>
+    <div class="gridNote">Deluxe test grid: letters across the top, numbers down the left. Tell me coordinates like B6 or H4 and I’ll move things there.</div>
+    <div class="hint">Deluxe V2 · Level 1 only</div>
+    <div class="controls">
+      <button class="btn" id="leftBtn">◀</button>
+      <button class="btn" id="rightBtn">▶</button>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const gridCols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+let dpr = 1;
+let w = 0, h = 0;
+const ASSET = 'images/webp_converted/';
+const sprites = {};
+
+[
+  ['truck', 'fire_engine_kvfd1_RightFace680x322.webp'],
+  ['shed', 'redsmallshed_544x289.webp'],
+  ['tractor', 'Tractor_436x238.webp'],
+  ['tree', 'oaktreesmall.webp']
+].forEach(([key, file]) => {
+  const img = new Image();
+  img.src = ASSET + file;
+  sprites[key] = img;
+});
+
+const level = {
+  truckX: 120,
+  fireTruckFacing: 1,
+  fire: [
+  { x: 112, y: 180, w: 140, h: 105, health: 100 },
+  { x: 220, y: 220, w: 84, h: 108, health: 100 },
+  { x: 304, y: 300, w: 70, h: 94, health: 100 }
+  ],
+  objects: [
+    { type: 'shed', x: 92, y: 332, w: 180, h: 120, color: '#c84b2c' },
+    { type: 'tractor', x: 348, y: 366, w: 170, h: 90, color: '#2f8f2f' },
+    { type: 'tree', x: 572, y: 326, w: 90, h: 140, color: '#2b7b2b' },
+    { type: 'silhouetteHouse', x: 720, y: 342, w: 120, h: 56 },
+    { type: 'silhouetteTree', x: 920, y: 330, w: 78, h: 120 }
+  ]
+};
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  w = canvas.width / dpr;
+  h = canvas.height / dpr;
+  draw();
+}
+
+function worldX(x) { return x; }
+function worldY(y) { return y; }
+
+function drawGrid() {
+  const step = 80;
+  ctx.save();
+  ctx.globalAlpha = 0.28;
+  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= w; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y <= h; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  ctx.globalAlpha = 0.9;
+  ctx.font = '14px Arial';
+  for (let i = 0, x = 0; x <= w; x += step, i++) ctx.fillText(gridCols[i] || '', x + 4, 16);
+  for (let j = 0, y = 0; y <= h; y += step, j++) ctx.fillText(String(j + 1), 4, y + 16);
+  ctx.restore();
+}
+
+function drawSky() {
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#87c5f4');
+  g.addColorStop(.65, '#97cef8');
+  g.addColorStop(1, '#bfe0fa');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  ctx.beginPath(); ctx.ellipse(110, 90, 60, 20, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(210, 70, 50, 18, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(560, 90, 62, 21, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffd400';
+  ctx.beginPath(); ctx.arc(220, 110, 44, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(90, 145, 110, .24)';
+  ctx.beginPath(); ctx.ellipse(w * .52, h * .60, w * .46, 44, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(80, 130, 90, .30)';
+  ctx.beginPath(); ctx.ellipse(w * .28, h * .68, w * .25, 28, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  ctx.beginPath(); ctx.ellipse(w * .48, h * .80, w * .18, 16, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawGround() {
+  const y = h * .72;
+  const g = ctx.createLinearGradient(0, y, 0, h);
+  g.addColorStop(0, '#63a74d');
+  g.addColorStop(1, '#3a7a31');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, y, w, h - y);
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  for (let x = 0; x < w; x += 40) ctx.fillRect(x + 8, y + 28, 2, 26);
+  ctx.fillStyle = 'rgba(0,0,0,.10)';
+  ctx.beginPath();
+  ctx.moveTo(0, y + 20);
+  for (let x = 0; x <= w; x += 60) ctx.lineTo(x, y + 20 + ((x / 60) % 2 ? 14 : -8));
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.beginPath(); ctx.ellipse(w * .40, y + 28, w * .30, 10, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(w * .78, y + 30, w * .18, 8, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawTruck() {
+  const x = level.truckX;
+  const y = h * .64;
+  const img = sprites.truck;
+  if (img.complete && img.naturalWidth) {
+    ctx.drawImage(img, x - 10, y - 96, 270, 132);
+  } else {
+  ctx.fillStyle = '#d91d1d';
+  ctx.fillRect(x, y, 210, 95);
+  ctx.fillStyle = '#ffd400';
+  ctx.fillRect(x + 8, y + 35, 195, 18);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(x + 110, y - 40, 14, 60);
+  ctx.fillStyle = '#242424';
+  ctx.fillRect(x + 22, y - 62, 112, 46);
+  ctx.fillStyle = '#9bd0ff';
+  ctx.fillRect(x + 28, y - 56, 40, 30);
+  ctx.fillRect(x + 74, y - 56, 34, 30);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(x + 44, y + 96, 24, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 152, y + 96, 24, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 187, y + 96, 24, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ddd';
+  ctx.beginPath(); ctx.arc(x + 44, y + 96, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 152, y + 96, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 187, y + 96, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#2b2b2b';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(x + 120, y - 15);
+  ctx.quadraticCurveTo(x + 220, y - 100, x + 308, y - 10);
+  ctx.stroke();
+  }
+}
+
+function drawSilhouetteHouse(x, y, w0, h0) {
+  ctx.save();
+  ctx.globalAlpha = 0.72;
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.rect(x, y + 18, w0, h0 - 18);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x - 4, y + 18);
+  ctx.lineTo(x + w0 * 0.5, y - 8);
+  ctx.lineTo(x + w0 + 4, y + 18);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawSilhouetteTree(x, y, w0, h0) {
+  ctx.save();
+  ctx.globalAlpha = 0.72;
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + w0 * .44, y + h0 * .38, w0 * .12, h0 * .62);
+  ctx.beginPath(); ctx.arc(x + w0 * .50, y + h0 * .28, w0 * .27, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + w0 * .33, y + h0 * .38, w0 * .20, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + w0 * .67, y + h0 * .40, w0 * .20, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawObject(obj) {
+  if (obj.type === 'shed') {
+    const img = sprites.shed;
+    if (img.complete && img.naturalWidth) {
+      ctx.drawImage(img, obj.x - 6, obj.y - 18, 182, 124);
+      return;
+    }
+    ctx.fillStyle = '#b6492d';
+    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+    ctx.fillStyle = '#e6d4b7';
+    ctx.fillRect(obj.x + 74, obj.y + 42, 36, 78);
+    ctx.fillStyle = '#7e2f14';
+    ctx.beginPath(); ctx.moveTo(obj.x - 8, obj.y); ctx.lineTo(obj.x + obj.w/2, obj.y - 44); ctx.lineTo(obj.x + obj.w + 8, obj.y); ctx.closePath(); ctx.fill();
+  } else if (obj.type === 'tractor') {
+    const img = sprites.tractor;
+    if (img.complete && img.naturalWidth) {
+      ctx.drawImage(img, obj.x - 8, obj.y - 12, 160, 88);
+      return;
+    }
+    ctx.fillStyle = '#2d8f2d';
+    ctx.fillRect(obj.x, obj.y + 18, 120, 40);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(obj.x + 50, obj.y - 10, 34, 28);
+    ctx.fillStyle = '#9bd0ff';
+    ctx.fillRect(obj.x + 54, obj.y - 6, 20, 18);
+    ctx.beginPath(); ctx.arc(obj.x + 28, obj.y + 62, 20, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
+    ctx.beginPath(); ctx.arc(obj.x + 92, obj.y + 62, 14, 0, Math.PI * 2); ctx.fill();
+  } else if (obj.type === 'tree') {
+    const img = sprites.tree;
+    if (img.complete && img.naturalWidth) {
+      ctx.drawImage(img, obj.x - 8, obj.y - 28, 96, 142);
+      return;
+    }
+    ctx.fillStyle = '#6b4320';
+    ctx.fillRect(obj.x + 36, obj.y + 70, 18, 72);
+    ctx.fillStyle = '#318431';
+    ctx.beginPath(); ctx.arc(obj.x + 48, obj.y + 40, 38, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(obj.x + 28, obj.y + 55, 28, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(obj.x + 68, obj.y + 58, 28, 0, Math.PI * 2); ctx.fill();
+  } else if (obj.type === 'silhouetteHouse') {
+    drawSilhouetteHouse(obj.x, obj.y, obj.w, obj.h);
+  } else if (obj.type === 'silhouetteTree') {
+    drawSilhouetteTree(obj.x, obj.y, obj.w, obj.h);
+  }
+}
+
+function drawFire() {
+  for (const f of level.fire) {
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    const grad = ctx.createRadialGradient(f.x + f.w/2, f.y + f.h/2, 2, f.x + f.w/2, f.y + f.h/2, Math.max(f.w, f.h));
+    grad.addColorStop(0, 'rgba(255,255,210,.95)');
+    grad.addColorStop(.4, 'rgba(255,178,32,.88)');
+    grad.addColorStop(1, 'rgba(255,70,10,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(f.x + f.w/2, f.y + f.h/2, f.w/2.2, f.h/2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,220,120,.55)';
+    ctx.beginPath(); ctx.arc(f.x + f.w * .48, f.y + f.h * .42, Math.max(8, f.w * .08), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, w, h);
+  drawSky();
+  drawGround();
+  for (const obj of level.objects) drawObject(obj);
+  drawFire();
+  drawTruck();
+  drawGrid();
+  scoreEl.textContent = 'Score: 0';
+  levelEl.textContent = 'Level: 1';
+}
+
+document.getElementById('leftBtn').addEventListener('click', () => {
+  level.truckX = Math.max(30, level.truckX - 20);
+  draw();
+});
+document.getElementById('rightBtn').addEventListener('click', () => {
+  level.truckX = Math.min(w - 250, level.truckX + 20);
+  draw();
+});
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>

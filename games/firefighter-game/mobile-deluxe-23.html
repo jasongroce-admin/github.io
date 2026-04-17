@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kennard Fire Defender Deluxe (v2)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+<style>
+body { margin:0; background:#000; font-family:Arial, sans-serif; overflow:hidden; touch-action: none; }
+body .content { width: 100vw; max-width: none; margin: 0; padding: 0; }
+#gameContainer { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
+canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: crisp-edges; }
+
+#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 10; }
+
+button { 
+  pointer-events: auto; 
+  margin: 12px 8px; 
+  padding: 14px 32px; 
+  font-size: 18px; 
+  color: white; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  width: 220px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+button:hover { filter: brightness(1.2); }
+.difficulty-btn, .secondary-btn, #nextLevelBtn, #nextLevelBtnFinal { background: #0066CC; }
+.home-btn {
+  position:absolute;
+  top:14px;
+  left:14px;
+  width:auto;
+  padding:12px 18px;
+  margin:0;
+  text-decoration:none;
+  text-align:center;
+  background:#8b1414;
+  z-index:40;
+}
+
+.copyright { 
+  position: absolute; bottom: 8px; left: 12px; font-size: 9px; color:#777; 
+  text-align: left; z-index: 20; line-height: 1.1; 
+  background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; 
+}
+
+#landscapeMessage { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(0,0,0,0.95); color: #FFDD00; font-size: 24px; 
+  line-height: 1.4; display: none; align-items: center; justify-content: center; 
+  text-align: center; z-index: 200; padding: 30px; 
+}
+
+#levelCompleteScreen { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  display: none; align-items: center; justify-content: center; 
+  background: rgba(0,0,0,0.65); z-index: 30; 
+}
+#levelCompleteScreen > div { 
+  background: rgba(0,0,0,0.92); 
+  padding: 28px 32px; 
+  border-radius: 16px; 
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+#levelCompleteScreen h1 { font-size: 24px; color: #0F0; margin: 0 0 12px 0; }
+#levelCompleteScreen p { font-size: 15.5px; line-height: 1.4; margin: 8px 0; color: #ddd; }
+
+.buttons {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.button-slide {
+  opacity: 0;
+  transform: translateX(-200px);
+  transition: all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.button-slide.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#levelCompleteScreen.show > div {
+  animation: popIn 0.5s ease-out forwards;
+}
+@keyframes popIn {
+  from { transform: scale(0.75) translateY(40px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+#confirmDialog { 
+  position:absolute; top:0; left:0; width:100%; height:100%; 
+  background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:50; 
+}
+
+#dispatchScreen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 60;
+}
+#dispatchScreen > div {
+  width: min(560px, calc(100vw - 28px));
+  background: linear-gradient(180deg, rgba(18, 30, 44, 0.98), rgba(9, 14, 20, 0.98));
+  border: 2px solid #4c80bf;
+  border-radius: 18px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.65);
+  padding: 22px 22px 18px;
+  text-align: left;
+  color: #eaf4ff;
+}
+#dispatchScreen .dispatch-tag {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8fc5ff;
+  margin-bottom: 8px;
+}
+#dispatchScreen h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  color: #ffdd66;
+}
+#dispatchScreen p {
+  margin: 8px 0;
+  line-height: 1.45;
+  font-size: 17px;
+  color: #d8e4f3;
+}
+#dispatchScreen .dispatch-note {
+  color: #8cb2d9;
+  font-size: 14px;
+}
+#dispatchScreen .dispatch-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+#dispatchScreen button {
+  width: auto;
+  min-width: 160px;
+  margin: 0;
+}
+
+#codeGate {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.9);
+  z-index: 70;
+}
+#codeGate > div {
+  width: min(560px, calc(100vw - 28px));
+  background: linear-gradient(180deg, rgba(24, 34, 50, 0.98), rgba(9, 14, 20, 0.98));
+  border: 2px solid #4c80bf;
+  border-radius: 18px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.65);
+  padding: 22px 22px 18px;
+  text-align: center;
+  color: #eaf4ff;
+}
+#codeGate h2 { margin: 0 0 8px 0; font-size: 28px; color: #ffdd66; }
+#codeGate p { margin: 8px 0; line-height: 1.45; font-size: 17px; color: #d8e4f3; }
+#codeGate input {
+  width: min(240px, 100%);
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #4c80bf;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 18px;
+  text-align: center;
+}
+#codeGate .code-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+#thumbStick {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+  z-index: 55;
+  touch-action: none;
+  display: none;
+}
+#thumbStick .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.24);
+  background: rgba(0,0,0,0.16);
+}
+#thumbStick .knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 56px;
+  height: 56px;
+  margin-left: -28px;
+  margin-top: -28px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #69c8ff, #1862ad);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+}
+
+#truckControls {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 56;
+  pointer-events: auto;
+}
+#truckControls .row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+#truckControls button {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  font-size: 22px;
+  border-radius: 12px;
+  background: rgba(10, 20, 40, 0.82);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+#truckControls .wide {
+  width: 120px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="landscapeMessage">Please rotate your device to <strong>Landscape</strong> mode<br>for the best experience</div>
+<header class="site-header">
+  <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools & Projects</span></a>
+  <nav class="site-menu" aria-label="Primary">
+    <a class="menu-link" href="../../index.html">Home</a>
+    <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+    <div class="menu-group">
+      <a class="menu-link active" href="../index.html">Games</a>
+      <div class="submenu" aria-label="Games submenu">
+        <a href="../old-school-board-games/index.html">Board</a>
+        <a href="../work-in-progress/index.html">Web</a>
+        <a href="../work-in-progress/index.html">Work In Progress</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<div id="gameContainer" style="padding-top:92px;"><canvas id="game" width="1200" height="600"></canvas></div>
+
+<div id="codeGate">
+  <div>
+    <h2>Building in progress</h2>
+    <p>More coming soon.</p>
+    <p>Enter the code to test.</p>
+    <input id="codeInput" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="5" aria-label="Passcode">
+    <div class="code-actions">
+      <button class="difficulty-btn" id="codeSubmitBtn" type="button">Submit Code</button>
+      <button class="secondary-btn" id="codeCancelBtn" type="button">Back to Homepage</button>
+    </div>
+  </div>
+</div>
+  
+  <div id="overlay">
+  <div id="titleScreen" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.85);">
+    <h1 style="font-size:58px; margin:0 0 20px 0; color:#FF0; text-shadow: 0 0 20px #FF0, 0 0 40px #FF8800, 4px 4px 0 #000, -3px -3px 0 #000;">KENNARD FIRE DEFENDER DELUXE</h1>
+    <p style="font-size:26px; margin:0 0 40px 0; color:#FFDD88;">Choose Your Rank</p>
+    <div>
+      <button class="difficulty-btn" onclick="startGame(1)">RECRUIT</button>
+      <button class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
+      <button class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
+    </div>
+  </div>
+  <div id="levelSkipHud" aria-label="Level skip" style="position:fixed; top:104px; left:50%; transform:translateX(-50%); z-index:80; display:none; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:rgba(0,0,0,0.70); box-shadow:0 10px 30px rgba(0,0,0,0.35);">
+    <button id="levelSkipPrev" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">◀</button>
+    <div id="levelSkipLabel" style="min-width:112px; text-align:center; color:#fff; font-weight:800; letter-spacing:0.5px;">Level 1</div>
+    <button id="levelSkipNext" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">▶</button>
+  </div>
+</div>
+
+<div id="levelCompleteScreen">
+  <div>
+    <h1 id="levelTitle"></h1>
+    <p id="encourageText" style="font-size:18px; color:#0F0;"></p>
+    <p id="safetyTip" style="font-size:15px; color:#FFEE88; margin-top:12px;"></p>
+    
+    <div class="buttons" id="normalButtons">
+      <button id="nextLevelBtn" class="button-slide" onclick="nextLevel()">NEXT LEVEL</button>
+      <button class="secondary-btn button-slide" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="showRestartConfirm()">RESTART GAME</button>
+    </div>
+    
+    <div class="buttons" id="finalButtons" style="display:none;">
+      <button id="nextLevelBtnFinal" class="button-slide" onclick="playGameAgain()">PLAY GAME AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
+      <button class="secondary-btn button-slide" onclick="returnToFirePage()">Go to the Kennard Fire Department's Page</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmDialog">
+  <div style="background:#222; padding:30px; border-radius:12px; text-align:center; max-width:380px;">
+    <p style="font-size:18px; margin-bottom:20px; color:#fff;">Are you sure you want to restart the entire game from the beginning?</p>
+    <button onclick="confirmRestartYes()" style="background:#C00; margin:8px; width:160px; padding:12px;">YES, RESTART</button>
+    <button onclick="confirmRestartNo()" style="background:#0066CC; margin:8px; width:160px; padding:12px;">CANCEL</button>
+  </div>
+</div>
+
+<div id="dispatchScreen">
+  <div>
+    <div class="dispatch-tag" id="dispatchTag">Dispatch</div>
+    <h2 id="dispatchTitle">Stand by for assignment</h2>
+    <p id="dispatchBody">Crews are being dispatched. The next scene is loading now.</p>
+    <p class="dispatch-note" id="dispatchNote">Tap "Let's Roll" or wait a moment and we’ll send you in automatically.</p>
+    <div class="dispatch-actions">
+      <button id="dispatchGoBtn" class="difficulty-btn" onclick="dismissDispatchScreen()">Let's Roll</button>
+    </div>
+  </div>
+</div>
+
+<div id="thumbStick" aria-label="Virtual thumb stick">
+  <div class="ring"></div>
+  <div class="knob" id="thumbKnob"></div>
+</div>
+
+<div id="truckControls" aria-label="Truck controls">
+  <div class="row"><button id="truckUpBtn" class="wide" type="button">A / D</button></div>
+  <div class="row">
+    <button id="truckLeftBtn" type="button">◀</button>
+    <button id="truckRightBtn" type="button">▶</button>
+  </div>
+</div>
+
+<div class="copyright">
+  Free for public use.<br>
+  Created by Jason Groce - Kennard, IN<br>
+  If you enjoyed please consider a donation to the Kennard Volunteer Fire Department.
+</div>
+
+<script>
+// ============== COMPLETE KENNARD FIRE DEFENDER - FINAL FIXED VERSION ==============
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// Sprite assets are now sourced from the converted WebP set when available.
+// We fit each asset into a tuned world-space box so relative object size feels believable.
+const SPRITES = {};
+const SPRITE_READY = {};
+const SPRITE_CACHE = {};
+let ACTIVE_SPRITE_KEYS = new Set();
+const SPRITE_FILES = {
+  engineLeft: 'fire_engine_kvfd1_LeftFace680x322.webp',
+  engineRight: 'fire_engine_kvfd1_RightFace680x322.webp',
+  sedanRed: 'redsportscar_1168x784.webp',
+  sedanRed2: 'redcarsports2_459x145.webp',
+  sedanBlue: 'bluecoopcar_459x154.webp',
+  pickupCyber: 'cybertruck_1168x784.webp',
+  semiTankLeft: 'fire_tanker_kvfd_LeftFacing700x283.webp',
+  semiTankRight: 'fire_tanker_kvfd_RightFacing700x283.webp',
+  semiWrecked: 'wreckedsemi_792x276.webp',
+  hayA: 'hay_1_367x210.webp',
+  hayB: 'hay_2_432x214.webp',
+  houseSmall: 'house1flr_784x259.webp',
+  houseTall: 'house2flr_784x613.webp',
+  houseTallWhite: 'house2flwhite_784x1168.webp',
+  houseTallOld: 'housetallold_784x1168.webp',
+  kennardSchool: 'kennardschool.webp',
+  shedRed: 'redsmallshed_544x289.webp',
+  garage: 'garage1_652x251.webp',
+  garageSmall: 'garagesmall_543x237.webp',
+  barnLarge: 'RedBarnLarge_514x288.webp',
+  tractor: 'Tractor_436x238.webp',
+  mower: 'lawnmowerrider_876x469.webp',
+  pushMower: 'pushmower.webp',
+  pushManualMower: 'pushmanualmower.webp',
+  bikeRed: 'redbike.webp',
+  busUpsideDown: 'busupsidedown.webp',
+  fence: 'fence.webp',
+  boat: 'boat.webp',
+  cattails: 'cattails.webp',
+  tent: 'tent.webp',
+  blackBoxTruckLeft: 'blackboxtruckleftfacing.webp',
+  blackBoxTruckRight: 'blackboxtruckrightfacing.webp',
+  blackBoxTruck: 'blackboxtruck.webp',
+  ufo: 'ufo.webp',
+  ufoBeam: 'ufowithbeam.webp',
+  oakSmall: 'oaktreesmall.webp',
+  oakMedium: 'oaktreelarge.webp',
+  oakLarge: 'oaktreelarge.webp',
+  mapleSmall: 'Maplesm.webp',
+  mapleMedium: 'maplemed.webp',
+  mapleLarge: 'maplelarge.webp',
+  pineSmall: 'Pinesmall.webp',
+  pineMedium: 'pinemedium.webp'
+};
+
+const SPRITE_BASE_PATH = 'images/webp_converted/';
+const SPRITE_FALLBACK_PATH = 'images/';
+
+function loadSprite(key) {
+  if (SPRITES[key]) return;
+  const filename = SPRITE_FILES[key];
+  if (!filename) return;
+  const img = new Image();
+  img.onload = () => { SPRITE_READY[key] = true; };
+  img.src = `${SPRITE_BASE_PATH}${filename}`;
+  SPRITES[key] = img;
+}
+
+function ensureSpritesLoaded(keys) {
+  keys.forEach((key) => loadSprite(key));
+}
+
+function purgeSpriteCacheForKey(key) {
+  Object.keys(SPRITE_CACHE).forEach((cacheKey) => {
+    if (cacheKey.startsWith(`${key}:`)) delete SPRITE_CACHE[cacheKey];
+  });
+}
+
+function unloadSpritesExcept(keysToKeep) {
+  const keep = new Set(keysToKeep);
+  Object.keys(SPRITES).forEach((key) => {
+    if (keep.has(key)) return;
+    try {
+      SPRITES[key].src = '';
+    } catch (err) {}
+    delete SPRITES[key];
+    delete SPRITE_READY[key];
+    purgeSpriteCacheForKey(key);
+  });
+  ACTIVE_SPRITE_KEYS = keep;
+}
+
+function makeCanvas(width, height) {
+  const canvasEl = document.createElement('canvas');
+  canvasEl.width = Math.max(1, Math.round(width));
+  canvasEl.height = Math.max(1, Math.round(height));
+  return canvasEl;
+}
+
+function trimSpriteWhitespace(img) {
+  const source = makeCanvas(img.width, img.height);
+  const sourceCtx = source.getContext('2d');
+  if (!sourceCtx) return img;
+  sourceCtx.drawImage(img, 0, 0, img.width, img.height);
+  let imageData;
+  try {
+    imageData = sourceCtx.getImageData(0, 0, source.width, source.height);
+  } catch (err) {
+    return img;
+  }
+  const { data, width, height } = imageData;
+
+  function rowMostlyWhite(y) {
+    let solid = 0;
+    let white = 0;
+    const start = y * width * 4;
+    for (let x = 0; x < width; x++) {
+      const index = start + x * 4;
+      const alpha = data[index + 3];
+      if (alpha < 10) continue;
+      solid++;
+      if (data[index] > 248 && data[index + 1] > 248 && data[index + 2] > 248) white++;
+    }
+    return solid > 0 && white / solid > 0.985;
+  }
+
+  function colMostlyWhite(x) {
+    let solid = 0;
+    let white = 0;
+    for (let y = 0; y < height; y++) {
+      const index = (y * width + x) * 4;
+      const alpha = data[index + 3];
+      if (alpha < 10) continue;
+      solid++;
+      if (data[index] > 248 && data[index + 1] > 248 && data[index + 2] > 248) white++;
+    }
+    return solid > 0 && white / solid > 0.985;
+  }
+
+  let top = 0;
+  let bottom = height - 1;
+  let left = 0;
+  let right = width - 1;
+
+  while (top < bottom && rowMostlyWhite(top)) top++;
+  while (bottom > top && rowMostlyWhite(bottom)) bottom--;
+  while (left < right && colMostlyWhite(left)) left++;
+  while (right > left && colMostlyWhite(right)) right--;
+
+  const trimmedWidth = Math.max(1, right - left + 1);
+  const trimmedHeight = Math.max(1, bottom - top + 1);
+  if (trimmedWidth === width && trimmedHeight === height) return source;
+  const trimmed = makeCanvas(trimmedWidth, trimmedHeight);
+  const trimmedCtx = trimmed.getContext('2d');
+  if (!trimmedCtx) return source;
+  trimmedCtx.drawImage(source, left, top, trimmedWidth, trimmedHeight, 0, 0, trimmedWidth, trimmedHeight);
+  return trimmed;
+}
+
+function getCachedSprite(key, w, h) {
+  if (!SPRITE_READY[key]) return null;
+  const cacheKey = `${key}:${Math.round(w)}x${Math.round(h)}`;
+  if (SPRITE_CACHE[cacheKey]) return SPRITE_CACHE[cacheKey];
+
+  const img = SPRITES[key];
+  if (!img || !img.width || !img.height) return null;
+  const trimmed = trimSpriteWhitespace(img);
+  const cache = makeCanvas(w, h);
+  const cacheCtx = cache.getContext('2d');
+  if (!cacheCtx) return null;
+  cacheCtx.imageSmoothingEnabled = true;
+  cacheCtx.drawImage(trimmed, 0, 0, cache.width, cache.height);
+  SPRITE_CACHE[cacheKey] = cache;
+  return cache;
+}
+
+function drawSprite(key, x, y, w, h) {
+  const cached = getCachedSprite(key, w, h);
+  if (cached) {
+    ctx.drawImage(cached, x, y, w, h);
+    return true;
+  }
+  return false;
+}
+
+function drawSpriteGround(key, x, bottomY, w, h) {
+  return drawSprite(key, x, bottomY - h, w, h);
+}
+
+const ENTITY_LAYOUT = {
+  engine: { x: -22, w: 332, h: 190, ground: false },
+  shedRed: { x: 8, w: 260, h: 198, ground: true },
+  garage: { x: -12, w: 372, h: 208, ground: true },
+  garageSmall: { x: -4, w: 324, h: 186, ground: true },
+  barnMini: { x: -12, w: 336, h: 236, ground: true, key: 'barnLarge' },
+  barnLarge: { x: -22, w: 452, h: 296, ground: true },
+  houseSmall: { x: 4, w: 380, h: 218, ground: true },
+  houseTall: { x: -36, w: 384, h: 392, ground: true },
+  houseTallWhite: { x: -36, w: 384, h: 392, ground: true },
+  kennardSchool: { x: -72, w: 520, h: 324, ground: true },
+  sedan: { x: 12, w: 215, h: 110, ground: false },
+  pickupCyber: { x: 5, w: 250, h: 145, ground: false },
+  semiTank: { x: -10, w: 360, h: 146, ground: false },
+  semiTankLeft: { x: -10, w: 360, h: 146, ground: false },
+  semiTankRight: { x: -10, w: 360, h: 146, ground: false },
+  semiWrecked: { x: -10, w: 520, h: 205, ground: false },
+  mower: { x: 18, w: 120, h: 88, ground: true },
+  tractor: { x: 0, w: 170, h: 118, ground: true },
+  hayA: { x: -10, y: 392, w: 120, h: 100, ground: false },
+  hayB: { x: -10, y: 392, w: 120, h: 100, ground: false },
+  oakSmall: { x: -10, w: 110, h: 170, ground: true },
+  oakMedium: { x: -18, w: 145, h: 240, ground: true },
+  oakLarge: { x: -28, w: 190, h: 320, ground: true },
+  mapleSmall: { x: -10, w: 110, h: 170, ground: true },
+  mapleMedium: { x: -18, w: 145, h: 240, ground: true },
+  mapleLarge: { x: -28, w: 190, h: 320, ground: true },
+  pineSmall: { x: -8, w: 95, h: 170, ground: true },
+  pineMedium: { x: -14, w: 130, h: 240, ground: true },
+  tree: { x: -18, w: 145, h: 240, ground: true },
+  treeWithSwing: { x: -18, w: 145, h: 240, ground: true },
+  pond: { x: 0, w: 240, h: 90, ground: true },
+  boat: { x: -12, w: 184, h: 78, ground: true },
+  tent: { x: 0, w: 160, h: 124, ground: true },
+  catTails: { x: 0, w: 120, h: 90, ground: true },
+  bikeRed: { x: 0, w: 110, h: 60, ground: false },
+  pushMower: { x: 0, w: 130, h: 82, ground: true },
+  pushManualMower: { x: 0, w: 135, h: 90, ground: true },
+  busUpsideDown: { x: -20, w: 380, h: 160, ground: false }
+  , fence: { x: -10, w: 320, h: 90, ground: true },
+  blackBoxTruck: { x: 0, w: 170, h: 80, ground: false },
+  ufo: { x: -10, w: 140, h: 70, ground: false },
+  ufoBeam: { x: -10, w: 140, h: 130, ground: false }
+};
+
+function getSpriteFitRect(key, x, y, w, h, alignBottom = false) {
+  const img = SPRITES[key];
+  if (!img || !SPRITE_READY[key] || !img.width || !img.height) return { x, y, w, h };
+  const scale = Math.min(w / img.width, h / img.height);
+  const drawW = img.width * scale;
+  const drawH = img.height * scale;
+  const drawX = x + (w - drawW) / 2;
+  const drawY = alignBottom ? (y + h - drawH) : (y + (h - drawH) / 2);
+  return { x: drawX, y: drawY, w: drawW, h: drawH };
+}
+
+function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
+  const rect = getSpriteFitRect(key, x, y, w, h, alignBottom);
+  return drawSprite(key, rect.x, rect.y, rect.w, rect.h);
+}
+
+function preloadLevelSprites(lvl) {
+  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight']);
+  const entities = baseLevels[lvl - 1]?.entities || [];
+  entities.forEach((ent) => {
+  if (ent.type === 'shedWindow' || ent.type === 'smallShed') needed.add('shedRed');
+  if (ent.type === 'singleGarage') needed.add('garage');
+  if (ent.type === 'miniBarn' || ent.type === 'largeRedBarn') needed.add('barnLarge');
+  if (ent.type === 'smallHouse') needed.add('houseSmall');
+  if (ent.type === 'house') needed.add('houseTall');
+  if (ent.type === 'houseTallWhite') needed.add('houseTallWhite');
+  if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') needed.add('kennardSchool');
+    if (ent.type === 'sedan') {
+      needed.add('sedanRed');
+      needed.add('sedanRed2');
+      needed.add('sedanBlue');
+    }
+    if (ent.type === 'pickup') needed.add('pickupCyber');
+    if (ent.type === 'semi') needed.add(lvl === 10 ? 'semiWrecked' : 'semiTankRight');
+    if (ent.type === 'ridingMower') needed.add('mower');
+    if (ent.type === 'tractor') needed.add('tractor');
+    if (TREE_KIND_BY_TYPE[ent.type]) needed.add(ent.type);
+    if (ent.type === 'tree' || ent.type === 'treeWithSwing') needed.add(getLegacyTreeVariant(ent.x));
+    if (ent.type === 'bikeRed') needed.add('bikeRed');
+    if (ent.type === 'pushMower') needed.add('pushMower');
+    if (ent.type === 'pushManualMower') needed.add('pushManualMower');
+    if (ent.type === 'busUpsideDown') needed.add('busUpsideDown');
+    if (ent.type === 'fence') needed.add('fence');
+    if (ent.type === 'boat') needed.add('boat');
+    if (ent.type === 'catTails') needed.add('cattails');
+    if (ent.type === 'tent') needed.add('tent');
+    if (ent.type === 'pond' || ent.type === 'tent' || ent.type === 'catTails') {
+      // boat/cattails assets will be loaded when present; these shapes also have vector fallbacks.
+    }
+    if (ent.type === 'blackBoxTruck') { needed.add('blackBoxTruckLeft'); needed.add('blackBoxTruckRight'); needed.add('blackBoxTruck'); }
+    if (ent.type === 'ufo') { needed.add('ufo'); needed.add('ufoBeam'); }
+    if (ent.type === 'hayBale') {
+      needed.add('hayA');
+      needed.add('hayB');
+    }
+  });
+  needed.add('blackBoxTruckLeft');
+  needed.add('blackBoxTruckRight');
+  needed.add('blackBoxTruck');
+  if (lvl === FINAL_LEVEL) { needed.add('ufo'); needed.add('ufoBeam'); }
+  unloadSpritesExcept(needed);
+  ensureSpritesLoaded([...needed]);
+}
+
+const GRASS_Y = 480;
+const GROUND_OFFSETS = {
+  // Small grounding nudges for the SVG set.
+  shedRed: 4,
+  garage: 2,
+  garageSmall: 2,
+  barnLarge: 0,
+  houseSmall: 0,
+  houseTall: 0,
+  houseTallWhite: 0,
+  houseTallOld: 0,
+  kennardSchool: 0,
+  mower: 0,
+};
+function groundedY(key, bottomY, h) {
+  const off = GROUND_OFFSETS[key] || 0;
+  return (bottomY - h) + off;
+}
+function drawSpriteGrounded(key, x, bottomY, w, h) {
+  return drawSprite(key, x, groundedY(key, bottomY, h), w, h);
+}
+
+function drawSpriteGroundedFitted(key, x, bottomY, w, h) {
+  return drawSpriteFitted(key, x, groundedY(key, bottomY, h), w, h, true);
+}
+
+const TREE_KIND_BY_TYPE = {
+  oakSmall: 'oakSmall',
+  oakMedium: 'oakMedium',
+  oakLarge: 'oakLarge',
+  mapleSmall: 'mapleSmall',
+  mapleMedium: 'mapleMedium',
+  mapleLarge: 'mapleLarge',
+  pineSmall: 'pineSmall',
+  pineMedium: 'pineMedium'
+};
+
+const TREE_SPOT_LAYOUTS = {
+  oakSmall: [
+    [0.28, 0.12, 0.22, 0.18],
+    [0.44, 0.28, 0.26, 0.18]
+  ],
+  oakMedium: [
+    [0.22, 0.10, 0.24, 0.18],
+    [0.46, 0.22, 0.28, 0.20],
+    [0.34, 0.38, 0.22, 0.18]
+  ],
+  oakLarge: [
+    [0.20, 0.08, 0.22, 0.16],
+    [0.46, 0.18, 0.28, 0.20],
+    [0.28, 0.34, 0.24, 0.18],
+    [0.52, 0.44, 0.22, 0.16]
+  ],
+  mapleSmall: [
+    [0.30, 0.10, 0.22, 0.16],
+    [0.40, 0.28, 0.24, 0.18]
+  ],
+  mapleMedium: [
+    [0.24, 0.08, 0.24, 0.16],
+    [0.48, 0.20, 0.26, 0.18],
+    [0.30, 0.38, 0.24, 0.18]
+  ],
+  mapleLarge: [
+    [0.22, 0.06, 0.24, 0.16],
+    [0.46, 0.16, 0.28, 0.20],
+    [0.26, 0.34, 0.24, 0.18],
+    [0.50, 0.46, 0.22, 0.16]
+  ],
+  pineSmall: [
+    [0.32, 0.10, 0.18, 0.16],
+    [0.34, 0.30, 0.18, 0.18]
+  ],
+  pineMedium: [
+    [0.28, 0.08, 0.18, 0.16],
+    [0.34, 0.24, 0.20, 0.18],
+    [0.34, 0.42, 0.18, 0.16]
+  ]
+};
+
+function addSpotsFromRatios(spots, box, ratios, extra = {}) {
+  ratios.forEach(([rx, ry, rw, rh]) => {
+    spots.push({ x: box.x + box.w * rx, y: box.y + box.h * ry, w: box.w * rw, h: box.h * rh, ...extra });
+  });
+}
+
+function addTreeSpots(spots, box, type) {
+  const ratios = TREE_SPOT_LAYOUTS[type] || TREE_SPOT_LAYOUTS.oakMedium;
+  addSpotsFromRatios(spots, box, ratios, {});
+}
+
+function addVehicleSpots(spots, box, extra = {}) {
+  spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.48, w: box.w * 0.28, h: box.h * 0.22, isVehicle: true, ...extra });
+  spots.push({ x: box.x + box.w * 0.48, y: box.y + box.h * 0.36, w: box.w * 0.24, h: box.h * 0.20, isVehicle: true, ...extra });
+  spots.push({ x: box.x + box.w * 0.68, y: box.y + box.h * 0.46, w: box.w * 0.18, h: box.h * 0.18, isVehicle: true, ...extra });
+}
+
+function isBurnableType(type) {
+  if (!type) return false;
+  if (TREE_KIND_BY_TYPE[type]) return true;
+  if (type === 'tree' || type === 'treeWithSwing') return true;
+  if (type === 'hayBale' || type === 'catTails' || type === 'tent') return true;
+  if (type === 'sedan' || type === 'pickup' || type === 'semi' || type === 'busUpsideDown' || type === 'tractor' || type === 'ridingMower') return true;
+  if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'houseTallOld' || type === 'house' || type === 'smallHouse' || type === 'houseSmall') return true;
+  if (type === 'garage' || type === 'garageSmall' || type === 'singleGarage' || type === 'shedRed' || type === 'smallShed' || type === 'shedWindow') return true;
+  if (type === 'barnLarge' || type === 'miniBarn' || type === 'largeRedBarn') return true;
+  return false;
+}
+
+function addGenericLevelSpots(spots, ent, lvl) {
+  const box = getEntityBounds(ent);
+  if (!box) return;
+  const type = ent.type;
+  if (!isBurnableType(type)) return;
+  if (TREE_KIND_BY_TYPE[type]) {
+    addTreeSpots(spots, box, type);
+    return;
+  }
+  if (type === 'busUpsideDown') {
+    addVehicleSpots(spots, box, { isVehicle: true });
+    spots.push({ x: box.x + box.w * 0.22, y: box.y + box.h * 0.04, w: box.w * 0.56, h: box.h * 0.16, roof: true, isVehicle: true });
+    return;
+  }
+  if (type === 'tent') {
+    spots.push({ x: box.x + box.w * 0.26, y: box.y + box.h * 0.26, w: box.w * 0.44, h: box.h * 0.36 });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.08, w: box.w * 0.60, h: box.h * 0.16, roof: true });
+    return;
+  }
+  if (type === 'catTails') {
+    spots.push({ x: box.x + box.w * 0.10, y: box.y + box.h * 0.12, w: box.w * 0.16, h: box.h * 0.46, isHay: true });
+    spots.push({ x: box.x + box.w * 0.34, y: box.y + box.h * 0.08, w: box.w * 0.16, h: box.h * 0.50, isHay: true });
+    spots.push({ x: box.x + box.w * 0.58, y: box.y + box.h * 0.10, w: box.w * 0.16, h: box.h * 0.48, isHay: true });
+    return;
+  }
+  if (type === 'tree' || type === 'treeWithSwing') {
+    addTreeSpots(spots, box, getLegacyTreeVariant(ent.x));
+    return;
+  }
+  if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'house' || type === 'smallHouse') {
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28 });
+    spots.push({ x: box.x + box.w * 0.60, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28 });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.18, roof: true });
+    return;
+  }
+  if (type === 'garage' || type === 'garageSmall' || type === 'singleGarage' || type === 'shedRed' || type === 'smallShed' || type === 'shedWindow') {
+    spots.push({ x: box.x + box.w * 0.16, y: box.y + box.h * 0.08, w: box.w * 0.64, h: box.h * 0.18, roof: true });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50 });
+    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.28, h: box.h * 0.50 });
+    return;
+  }
+  if (type === 'barnLarge' || type === 'miniBarn' || type === 'largeRedBarn') {
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.10, w: box.w * 0.64, h: box.h * 0.18, roof: true });
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48 });
+    spots.push({ x: box.x + box.w * 0.54, y: box.y + box.h * 0.34, w: box.w * 0.26, h: box.h * 0.48 });
+    return;
+  }
+  if (type === 'sedan' || type === 'pickup' || type === 'semi') {
+    addVehicleSpots(spots, box, { isVehicle: true, isSemi: type === 'semi' });
+    if (type === 'semi') {
+      spots.push({ x: box.x + box.w * 0.08, y: box.y + box.h * 0.08, w: box.w * 0.72, h: box.h * 0.18, roof: true, isVehicle: true, isSemi: true });
+    }
+    return;
+  }
+  if (type === 'ridingMower' || type === 'tractor') {
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.42, w: box.w * 0.24, h: box.h * 0.24, isVehicle: true });
+    spots.push({ x: box.x + box.w * 0.46, y: box.y + box.h * 0.28, w: box.w * 0.22, h: box.h * 0.18, isVehicle: true });
+    return;
+  }
+  if (type === 'hayBale') {
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.18, w: box.w * 0.36, h: box.h * 0.26, isHay: true });
+    return;
+  }
+}
+
+function getEntityBounds(ent) {
+  // Return the same rectangle we draw so fires stay attached to the art.
+  const gy = GRASS_Y + (ent.yOffset || 0);
+  if (ent.type === 'shedWindow' || ent.type === 'smallShed') return getSpriteFitRect('shedRed', ent.x + ENTITY_LAYOUT.shedRed.x, groundedY('shedRed', GRASS_Y, ENTITY_LAYOUT.shedRed.h), ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h, true);
+  if (ent.type === 'singleGarage') return getSpriteFitRect('garage', ent.x + ENTITY_LAYOUT.garage.x, groundedY('garage', GRASS_Y, ENTITY_LAYOUT.garage.h), ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h, true);
+  if (ent.type === 'miniBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnMini.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnMini.h), ENTITY_LAYOUT.barnMini.w, ENTITY_LAYOUT.barnMini.h, true);
+  if (ent.type === 'largeRedBarn') return getSpriteFitRect('barnLarge', ent.x + ENTITY_LAYOUT.barnLarge.x, groundedY('barnLarge', GRASS_Y, ENTITY_LAYOUT.barnLarge.h), ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h, true);
+  if (ent.type === 'smallHouse') return getSpriteFitRect('houseSmall', ent.x + ENTITY_LAYOUT.houseSmall.x, groundedY('houseSmall', GRASS_Y, ENTITY_LAYOUT.houseSmall.h), ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h, true);
+  if (ent.type === 'house') return getSpriteFitRect('houseTall', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTall', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
+  if (ent.type === 'houseTallWhite') return getSpriteFitRect('houseTallWhite', ent.x + ENTITY_LAYOUT.houseTallWhite.x, groundedY('houseTallWhite', GRASS_Y, ENTITY_LAYOUT.houseTallWhite.h), ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h, true);
+  if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h), ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h, true);
+  if (ent.type === 'sedan') return getSpriteFitRect('sedanRed', ent.x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true);
+  if (ent.type === 'pickup') return getSpriteFitRect('pickupCyber', ent.x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true);
+  if (ent.type === 'semi') {
+    const semiKey = currentLevel === 10 ? 'semiWrecked' : 'semiTankRight';
+    const layout = ENTITY_LAYOUT[semiKey];
+    return getSpriteFitRect(semiKey, ent.x + layout.x, 480 - layout.h, layout.w, layout.h, true);
+  }
+  if (ent.type === 'ridingMower') return getSpriteFitRect('mower', ent.x + ENTITY_LAYOUT.mower.x, groundedY('mower', GRASS_Y, ENTITY_LAYOUT.mower.h), ENTITY_LAYOUT.mower.w, ENTITY_LAYOUT.mower.h, true);
+  if (ent.type === 'tractor') return getSpriteFitRect('tractor', ent.x + ENTITY_LAYOUT.tractor.x, groundedY('tractor', GRASS_Y, ENTITY_LAYOUT.tractor.h), ENTITY_LAYOUT.tractor.w, ENTITY_LAYOUT.tractor.h, true);
+  if (TREE_KIND_BY_TYPE[ent.type]) return getSpriteFitRect(ent.type, ent.x + ENTITY_LAYOUT[ent.type].x, groundedY(ent.type, GRASS_Y, ENTITY_LAYOUT[ent.type].h), ENTITY_LAYOUT[ent.type].w, ENTITY_LAYOUT[ent.type].h, true);
+  if (ent.type === 'tree' || ent.type === 'treeWithSwing') {
+    const layout = getLegacyTreeLayout(ent.x);
+    const variant = getLegacyTreeVariant(ent.x);
+    return getSpriteFitRect(variant, ent.x + layout.x, groundedY(variant, GRASS_Y, layout.h), layout.w, layout.h, true);
+  }
+  if (ent.type === 'fence') return getSpriteFitRect('fence', ent.x + ENTITY_LAYOUT.fence.x, groundedY('fence', GRASS_Y, ENTITY_LAYOUT.fence.h), ENTITY_LAYOUT.fence.w, ENTITY_LAYOUT.fence.h, true);
+  if (ent.type === 'pond') return getSpriteFitRect('pond', ent.x + ENTITY_LAYOUT.pond.x, groundedY('pond', GRASS_Y, ENTITY_LAYOUT.pond.h), ENTITY_LAYOUT.pond.w, ENTITY_LAYOUT.pond.h, true);
+  if (ent.type === 'boat') return getSpriteFitRect('boat', ent.x + ENTITY_LAYOUT.boat.x, GRASS_Y - ENTITY_LAYOUT.boat.h + 12, ENTITY_LAYOUT.boat.w, ENTITY_LAYOUT.boat.h, true);
+  if (ent.type === 'tent') return getSpriteFitRect('tent', ent.x + ENTITY_LAYOUT.tent.x, groundedY('tent', GRASS_Y, ENTITY_LAYOUT.tent.h), ENTITY_LAYOUT.tent.w, ENTITY_LAYOUT.tent.h, true);
+  if (ent.type === 'catTails') return getSpriteFitRect('catTails', ent.x + ENTITY_LAYOUT.catTails.x, groundedY('catTails', GRASS_Y, ENTITY_LAYOUT.catTails.h), ENTITY_LAYOUT.catTails.w, ENTITY_LAYOUT.catTails.h, true);
+  if (ent.type === 'blackBoxTruck') return getSpriteFitRect('blackBoxTruck', ent.x + ENTITY_LAYOUT.blackBoxTruck.x, 412 - ENTITY_LAYOUT.blackBoxTruck.h, ENTITY_LAYOUT.blackBoxTruck.w, ENTITY_LAYOUT.blackBoxTruck.h, true);
+  if (ent.type === 'ufo') return getSpriteFitRect('ufo', ent.x + ENTITY_LAYOUT.ufo.x, ent.y || 90, ENTITY_LAYOUT.ufo.w, ENTITY_LAYOUT.ufo.h, true);
+  if (ent.type === 'bikeRed') return getSpriteFitRect('bikeRed', ent.x + ENTITY_LAYOUT.bikeRed.x, gy - ENTITY_LAYOUT.bikeRed.h, ENTITY_LAYOUT.bikeRed.w, ENTITY_LAYOUT.bikeRed.h, true);
+  if (ent.type === 'pushMower') return getSpriteFitRect('pushMower', ent.x + ENTITY_LAYOUT.pushMower.x, groundedY('pushMower', GRASS_Y, ENTITY_LAYOUT.pushMower.h), ENTITY_LAYOUT.pushMower.w, ENTITY_LAYOUT.pushMower.h, true);
+  if (ent.type === 'pushManualMower') return getSpriteFitRect('pushManualMower', ent.x + ENTITY_LAYOUT.pushManualMower.x, groundedY('pushManualMower', GRASS_Y, ENTITY_LAYOUT.pushManualMower.h), ENTITY_LAYOUT.pushManualMower.w, ENTITY_LAYOUT.pushManualMower.h, true);
+  if (ent.type === 'busUpsideDown') return getSpriteFitRect('busUpsideDown', ent.x + ENTITY_LAYOUT.busUpsideDown.x, 470 - ENTITY_LAYOUT.busUpsideDown.h, ENTITY_LAYOUT.busUpsideDown.w, ENTITY_LAYOUT.busUpsideDown.h, true);
+  return null;
+}
+
+function getTruckDrawRect() {
+  const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
+  const layout = ENTITY_LAYOUT.engine;
+  return getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
+}
+
+function rectsOverlap(a, b) {
+  return a && b && a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function pushFireSpotAwayFromTruck(spot, truckRect) {
+  if (!rectsOverlap(spot, truckRect)) return spot;
+  const moved = { ...spot };
+  const truckCenter = truckRect.x + truckRect.w / 2;
+  const spotCenter = spot.x + spot.w / 2;
+  const direction = spotCenter < truckCenter ? -1 : 1;
+  let attempts = 0;
+  while (attempts < 3 && rectsOverlap(moved, truckRect)) {
+    moved.x += direction > 0 ? 180 : -180;
+    moved.y = Math.max(120, moved.y + (spot.roof ? -18 : 10));
+    attempts += 1;
+  }
+  return moved;
+}
+
+function computeFireSpotsForLevel(lvl, entities) {
+  const spots = [];
+  if (!entities || !entities.length) return spots;
+
+  entities.forEach((ent) => addGenericLevelSpots(spots, ent, lvl));
+
+  // Boss: slightly denser, but still attached to entities (no floating fire).
+  if (lvl === FINAL_LEVEL) {
+    const anchor = entities.find((e) => e && (e.type === 'houseTallWhite' || e.type === 'kennardSchool' || e.type === 'garage' || e.type === 'garageSmall' || e.type === 'barnLarge' || e.type === 'miniBarn' || e.type === 'largeRedBarn'));
+    const box = anchor ? getEntityBounds(anchor) : null;
+    if (box) spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.16, roof: true });
+  } else if (lvl > 10 && lvl % 5 === 0) {
+    const anchor = entities.find((e) => e && (e.type === 'semi' || e.type === 'busUpsideDown' || e.type === 'kennardSchool' || e.type === 'house' || e.type === 'houseTallWhite'));
+    const box = anchor ? getEntityBounds(anchor) : null;
+    if (box) spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.14, roof: true });
+  }
+
+  // Default health tuning (base numbers); difficulty multiplier is applied later.
+  spots.forEach((s) => {
+    const area = Math.max(1, (s.w || 0) * (s.h || 0));
+    const sizeBoost = Math.max(0.8, Math.min(2.2, Math.sqrt(area) / 55));
+    if (s.maxHealth == null) s.maxHealth = Math.round(420 * sizeBoost + (s.roof ? 80 : 0) + (s.isSemi ? 160 : 0));
+    if (s.health == null) s.health = Math.round(s.maxHealth * 0.78);
+  });
+  return spots;
+}
+
+let score = 0;
+let levelStartScore = 0;
+let mouseX = 500, mouseY = 300;
+let isSpraying = false;
+let gameState = 'title';
+let currentLevel = 1;
+let difficulty = 2;
+let timeOfDay = 0;
+let tornadoAngle = 0;
+let fireSpots = [];
+let particles = [];
+let dispatchAutoTimer = null;
+let dispatchAutoAdvance = null;
+let pendingDispatchLevel = null;
+let truckDrive = 0;
+let truckFacing = 1;
+let levelElapsedMs = 0;
+let lastFrameTime = 0;
+let tankerSupport = null;
+let nextTankerSupportAt = 15000;
+let blackBoxTruckLevels = new Set();
+let blackBoxTruckState = null;
+let ufoRaid = null;
+let ufoPreview = null;
+let requestedStartLevel = 1;
+
+function getMaxLevel() {
+  return baseLevels.length || FINAL_LEVEL;
+}
+
+function updateLevelSkipHud() {
+  const hud = document.getElementById('levelSkipHud');
+  if (!hud) return;
+  hud.style.display = 'flex';
+  const label = document.getElementById('levelSkipLabel');
+  const shownLevel = gameState === 'title' ? requestedStartLevel : currentLevel;
+  if (label) label.textContent = (gameState === 'title')
+    ? `Start: ${shownLevel} / ${getMaxLevel()}`
+    : `Level ${shownLevel} / ${getMaxLevel()}`;
+  const prev = document.getElementById('levelSkipPrev');
+  const next = document.getElementById('levelSkipNext');
+  if (prev) prev.disabled = shownLevel <= 1;
+  if (next) next.disabled = shownLevel >= getMaxLevel();
+}
+
+function jumpToLevel(lvl) {
+  const target = Math.max(1, Math.min(getMaxLevel(), Math.floor(lvl)));
+  if (Number.isNaN(target)) return;
+  if (gameState === 'title') {
+    requestedStartLevel = target;
+    updateLevelSkipHud();
+    return;
+  }
+  loadLevel(target);
+}
+const TRUCK_LANES = {
+  left: { spawnX: 110, minX: 80, maxX: 440 },
+  right: { spawnX: 760, minX: 650, maxX: 900 }
+};
+const truck = { x: 110, y: 480, speed: 3.8, minX: 80, maxX: 440 };
+
+const truckY = 480;
+const nozzleAttachX = 112;
+const nozzleAttachY = -45;
+const maxHoseLength = 300;
+
+const safetyTips = [
+  "Never play with matches or lighters.", "If your clothes catch fire, stop, drop, and roll.",
+  "Have a family escape plan and practice it.", "Check smoke alarms every month.",
+  "Keep a fire extinguisher accessible and know how to use it.", "Stay low and crawl under smoke to escape.",
+  "Never hide from fire — get low and go!", "Don't overload electrical outlets.",
+  "Keep flammable items away from heat sources.", "Practice fire safety every day — it could save lives."
+];
+
+const baseLevels = [
+  { name: "Small Shed Fire", truckSide: 'right', safetyTip: "Never play with matches or lighters.", fireSpots: [{x:154,y:252,w:98,h:34,health:320,maxHealth:400,roof:true},{x:164,y:286,w:92,h:92,health:580,maxHealth:720},{x:214,y:360,w:46,h:86,health:270,maxHealth:340},{x:430,y:418,w:46,h:24,health:220,maxHealth:300,isVehicle:true}], entities: [{type:'shedWindow',x:120}, {type:'ridingMower',x:380}, {type:'oakSmall',x:560}] },
+  { name: "Car + Tree Crash", safetyTip: "If your clothes catch fire, stop, drop, and roll.", fireSpots: [{x:634,y:406,w:98,h:30,health:380,maxHealth:480,isVehicle:true},{x:656,y:386,w:62,h:24,health:350,maxHealth:440,isVehicle:true},{x:790,y:330,w:36,h:112,health:430,maxHealth:530},{x:810,y:306,w:30,h:60,health:300,maxHealth:380}], entities: [{type:'sedan',x:580,yOffset:12},{type:'tree',x:810},{type:'oakSmall',x:260},{type:'pineSmall',x:1080}] },
+  { name: "Garage Fire", safetyTip: "Have a family escape plan and practice it.", fireSpots: [{x:916,y:312,w:106,h:28,health:480,maxHealth:600,roof:true},{x:922,y:340,w:48,h:150,health:350,maxHealth:440},{x:980,y:340,w:48,h:150,health:350,maxHealth:440},{x:944,y:448,w:30,h:20,health:240,maxHealth:300}], entities: [{type:'singleGarage',x:820},{type:'oakSmall',x:1080}] },
+  { name: "Small Shed + Tree with Tire Swing", safetyTip: "Check smoke alarms every month.", fireSpots: [{x:878,y:320,w:46,h:36,health:360,maxHealth:450},{x:906,y:298,w:52,h:28,health:610,maxHealth:760},{x:936,y:384,w:36,h:72,health:320,maxHealth:400},{x:676,y:404,w:36,h:26,health:340,maxHealth:430},{x:700,y:380,w:26,h:26,health:290,maxHealth:370},{x:860,y:262,w:72,h:22,health:420,maxHealth:520,roof:true}], entities: [{type:'smallShed',x:820},{type:'treeWithSwing',x:620},{type:'pineSmall',x:980}] },
+  { name: "Small House + Sedan", safetyTip: "Keep a fire extinguisher accessible and know how to use it.", fireSpots: [{x:926,y:318,w:42,h:56,health:380,maxHealth:480},{x:1006,y:318,w:42,h:56,health:380,maxHealth:480},{x:868,y:306,w:174,h:34,health:690,maxHealth:850,roof:true},{x:948,y:410,w:38,h:78,health:350,maxHealth:440,isVehicle:true}], entities: [{type:'smallHouse',x:850,color:'#FFCC99'}, {type:'houseTallWhite',x:620}, {type:'sedan',x:520,yOffset:8}, {type:'mapleSmall',x:150}, {type:'oakMedium',x:1110}] },
+  { name: "Tall House + Pickup + Burning Trees", safetyTip: "Stay low and crawl under smoke to escape.", fireSpots: [{x:900,y:268,w:54,h:78,health:410,maxHealth:510},{x:1018,y:268,w:54,h:78,health:410,maxHealth:510},{x:860,y:170,w:230,h:42,health:730,maxHealth:900,roof:true},{x:958,y:420,w:44,h:96,health:380,maxHealth:480,isVehicle:true},{x:680,y:320,w:40,h:104,health:370,maxHealth:470},{x:1148,y:320,w:40,h:104,health:370,maxHealth:470}], entities: [{type:'houseTallWhite',x:740}, {type:'pickup',x:520,yOffset:10}, {type:'tree',x:760}, {type:'tree',x:1120}, {type:'oakMedium',x:60}] },
+  { name: "Mini Barn", safetyTip: "Never hide from fire, get low and go.", fireSpots: [{x:878,y:284,w:72,h:204,health:500,maxHealth:620}, {x:916,y:228,w:82,h:38,health:350,maxHealth:430,roof:true}, {x:615,y:430,w:110,h:70,health:460,maxHealth:570,isHay:true}, {x:776,y:286,w:42,h:204,health:480,maxHealth:580}, {x:1016,y:286,w:42,h:204,health:480,maxHealth:580}, {x:936,y:286,w:32,h:108,health:420,maxHealth:520}, {x:976,y:286,w:32,h:108,health:420,maxHealth:520}, {x:915,y:158,w:36,h:30,health:340,maxHealth:410,roof:true}], entities: [{type:'miniBarn',x:820}, {type:'tractor',x:520,facing:'right'}, {type:'ridingMower',x:680}, {type:'oakSmall',x:1040}] },
+  { name: "Farm Fire", safetyTip: "Keep flammable items away from heat sources.", fireSpots: [{x:715,y:430,w:70,h:60,health:410,maxHealth:510,isHay:true},{x:795,y:416,w:70,h:60,health:430,maxHealth:530,isHay:true},{x:875,y:444,w:70,h:60,health:400,maxHealth:500,isHay:true},{x:945,y:430,w:70,h:60,health:460,maxHealth:570,isHay:true},{x:615,y:444,w:104,h:66,health:460,maxHealth:570,isHay:true}], entities: [{type:'largeRedBarn',x:1050},{type:'tractor',x:520,facing:'left'},{type:'hayBale',x:720},{type:'hayBale',x:800},{type:'hayBale',x:880},{type:'hayBale',x:950},{type:'pineSmall',x:100},{type:'oakLarge',x:1180}] },
+  { name: "Kennard School Tornado", safetyTip: "Practice fire safety every day, it could save lives.", fireSpots: [{x:774,y:272,w:58,h:78,health:520,maxHealth:650},{x:894,y:272,w:58,h:78,health:520,maxHealth:650},{x:736,y:166,w:238,h:44,health:820,maxHealth:1020,roof:true},{x:836,y:422,w:46,h:96,health:480,maxHealth:600},{x:406,y:370,w:290,h:148,health:560,maxHealth:720,isVehicle:true}], entities: [{type:'kennardSchool',x:740}, {type:'busUpsideDown',x:380}, {type:'tornado',x:620}, {type:'pineMedium',x:1040}] },
+  { name: "Big Car Wreck (Deluxe)", safetyTip: "Don't overload electrical outlets.", fireSpots: [{x:475,y:370,w:110,h:55,health:520,maxHealth:650,isVehicle:true},{x:505,y:335,w:70,h:45,health:460,maxHealth:580,isVehicle:true},{x:735,y:330,w:90,h:80,health:620,maxHealth:780,isSemi:true},{x:835,y:300,w:260,h:105,health:850,maxHealth:1060,isSemi:true},{x:975,y:370,w:130,h:55,health:550,maxHealth:690,isVehicle:true},{x:645,y:355,w:55,h:40,health:500,maxHealth:630,isSemi:true}], entities: [{type:'sedan',x:360,yOffset:12},{type:'sedan',x:520,yOffset:10},{type:'pickup',x:640,yOffset:8},{type:'semi',x:760}] }
+];
+
+function E(type, x, extra = {}) {
+  return { type, x, ...extra };
+}
+
+function buildBonusLevels() {
+  const tips = [
+    "Keep toys and bikes out of driveways and away from heat.",
+    "Clear dry leaves before lighting any outdoor fire pit.",
+    "Teach kids to stay behind firefighters and never play near hoses.",
+    "If you smell smoke, get low and leave right away.",
+    "Keep grass trimmed near buildings and fences.",
+    "Make sure smoke alarms work in every bedroom and hallway.",
+    "Never leave a mower running near dry brush.",
+    "Store gasoline outside living spaces and away from heat.",
+    "Use caution around downed lines and call for help.",
+    "Check that escape paths are wide enough for everyone.",
+    "Keep tree branches trimmed away from roofs and chimneys.",
+    "Close doors behind you to slow fire spread.",
+    "Practice two ways out of every room.",
+    "Keep the grill away from the house and garage.",
+    "Never park cars on dry grass or weeds.",
+    "Stay seated in a vehicle only if firefighters tell you to wait.",
+    "Do not hide from smoke under blankets or beds.",
+    "Make sure children know your meeting place outside.",
+    "Never run back inside for pets or toys without permission.",
+    "When in doubt, get out and stay out."
+  ];
+  const pondScene = (n) => ({
+    name: `Small Pond Rescue ${n}`,
+    tip: tips[2],
+    entities: [E('fence', 70), E('pond', 260), E('boat', 330), E('tent', 540), E('catTails', 760)],
+    fireSpots: [
+      { x: 560, y: 346, w: 84, h: 82, health: 340, maxHealth: 440 },
+      { x: 586, y: 324, w: 50, h: 36, health: 240, maxHealth: 300, roof: true },
+      { x: 776, y: 356, w: 92, h: 102, health: 220, maxHealth: 320, isHay: true }
+    ]
+  });
+  const bossScene = (n) => ({
+    name: `UFO Invasion ${n}`,
+    tip: tips[19],
+    entities: [
+      E('houseTallWhite', 90),
+      E('sedan', 300, { yOffset: 8 }),
+      E('fence', 500),
+      E('oakLarge', 700)
+    ],
+    fireSpots: [
+      { x: 118, y: 232, w: 102, h: 122, health: 220, maxHealth: 300 },
+      { x: 224, y: 188, w: 160, h: 48, health: 250, maxHealth: 320, roof: true },
+      { x: 336, y: 396, w: 76, h: 38, health: 190, maxHealth: 260, isVehicle: true },
+      { x: 492, y: 316, w: 60, h: 52, health: 180, maxHealth: 240 },
+      { x: 628, y: 366, w: 46, h: 48, health: 150, maxHealth: 210 }
+    ]
+  });
+  const sceneBuilders = [
+    (n) => ({ name: `Oak Park Response ${n}`, tip: tips[0], entities: [E('oakSmall', 120), E('oakMedium', 330), E('bikeRed', 520), E('pushMower', 780)] }),
+    (n) => n === 12 ? pondScene(n) : ({ name: `Maple Lane Fire ${n}`, tip: tips[1], entities: [E('mapleSmall', 110), E('houseSmall', 350), E('mapleMedium', 610), E('pushManualMower', 870)] }),
+    (n) => ({ name: `Pine Road Rescue ${n}`, tip: tips[2], entities: [E('pineSmall', 120), E('busUpsideDown', 420), E('pineMedium', 780), E('bikeRed', 980)] }),
+    (n) => ({ name: `Kennard School Front ${n}`, tip: tips[3], entities: [E('kennardSchool', 150), E('oakLarge', 660), E('mapleSmall', 980)] }),
+    (n) => ({ name: `Garage Row ${n}`, tip: tips[4], entities: [E('garageSmall', 150), E('houseTallWhite', 470), E('oakSmall', 790), E('sedan', 980, { yOffset: 10 })] }),
+    (n) => ({ name: `Barn Lane ${n}`, tip: tips[5], entities: [E('largeRedBarn', 860), E('hayBale', 260), E('tractor', 520), E('pineSmall', 110)] }),
+    (n) => ({ name: `Backyard Mix ${n}`, tip: tips[6], entities: [E('smallHouse', 170), E('oakMedium', 470), E('pushMower', 780), E('bikeRed', 980)] }),
+    (n) => ({ name: `Bus Roll ${n}`, tip: tips[7], entities: [E('busUpsideDown', 150), E('pineMedium', 540), E('mapleLarge', 870)] }),
+    (n) => ({ name: `Subdivision Block ${n}`, tip: tips[8], entities: [E('houseSmall', 120), E('house', 480), E('oakSmall', 820), E('bikeRed', 1020)] }),
+    (n) => n === 30 ? bossScene(n) : ({ name: `Mixed Mayday ${n}`, tip: tips[9], entities: [E('garageSmall', 320), E('pickup', 600, { yOffset: 8 }), E('kennardSchool', 860), E('oakLarge', 1080)] })
+  ];
+
+  const levels = [];
+  for (let i = 0; i < 20; i++) {
+    const scene = sceneBuilders[i % sceneBuilders.length](i + 11);
+    const variant = Math.floor(i / 10);
+    const shift = variant * 30;
+    levels.push({
+      name: scene.name,
+      safetyTip: tips[i],
+      timeOfDay: i % 3,
+      truckSide: i % 4 === 2 ? 'right' : 'left',
+      fireSpots: scene.fireSpots ? scene.fireSpots.map((s) => ({ ...s, x: s.x + shift })) : undefined,
+      entities: scene.entities.map((ent) => ({
+        ...ent,
+        x: ent.x + shift
+      }))
+    });
+  }
+  return levels;
+}
+
+baseLevels.push(...buildBonusLevels());
+
+// Deluxe-23 rules:
+// - Keep the original Deluxe content for Levels 1–22.
+// - Move the original Level 30 (UFO) to become the final Level 23.
+// - Remove original Levels 23–29 entirely.
+const FINAL_LEVEL = 23;
+const ORIGINAL_BOSS_LEVEL = 30;
+const bossLevel = baseLevels[ORIGINAL_BOSS_LEVEL - 1] ? { ...baseLevels[ORIGINAL_BOSS_LEVEL - 1] } : null;
+if (bossLevel) {
+  bossLevel.name = (bossLevel.name || 'UFO Invasion').replace(/\s30$/, ` ${FINAL_LEVEL}`);
+  baseLevels.splice(FINAL_LEVEL - 1);
+  baseLevels.push(bossLevel);
+}
+
+function isInTimeSelector(x, y) { return y > 8 && y < 82 && x > 950 && x < 1195; }
+function handleTimeSelection(x, y) {
+  if (x > 980 && x < 1042) setTimeOfDay(0);
+  else if (x > 1048 && x < 1110) setTimeOfDay(1);
+  else if (x > 1116 && x < 1178) setTimeOfDay(2);
+}
+
+function setTimeOfDay(mode) { timeOfDay = mode; }
+
+function setTruckDrive(value) {
+  truckDrive = Math.max(-1, Math.min(1, value));
+  if (Math.abs(truckDrive) > 0.05) truckFacing = truckDrive > 0 ? 1 : -1;
+  updateThumbKnob(truckDrive);
+}
+
+function initBlackBoxTruckLevels() {
+  const totalLevels = baseLevels.length;
+  const pool = Array.from({ length: totalLevels }, (_, i) => i + 1).filter((n) => n !== 6 && n !== FINAL_LEVEL);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  blackBoxTruckLevels = new Set([6, ...pool.slice(0, 2)].sort((a, b) => a - b));
+}
+
+function initUfoRaid() {
+  ufoRaid = {
+    phase: 'enter',
+    timer: 0,
+    leftX: -220,
+    rightX: canvas.width + 80,
+    leftTargetX: 440,
+    rightTargetX: 740,
+    y: 97,
+    flashUntil: 0,
+    beamUntil: 0,
+    beamTargetIndex: 0,
+    exitScale: 1,
+    targets: getBossIgnitionTargets(),
+    activeTarget: null
+  };
+}
+
+function initUfoPreview() {
+  ufoPreview = {
+    x: -160,
+    y: 97,
+    speed: 3.4
+  };
+}
+
+function getLevelSafetyTip(lvl) {
+  return baseLevels[lvl - 1]?.safetyTip || safetyTips[Math.max(0, Math.min(safetyTips.length - 1, lvl - 1))];
+}
+
+function getLevelDispatchCopy(lvl, phase) {
+  const name = baseLevels[lvl - 1]?.name || `Level ${lvl}`;
+  if (phase === 'complete') {
+    return {
+      tag: 'Dispatch - Clear',
+      title: `${name} is out`,
+      body: `Dispatch confirms the scene at ${name} is under control and the unit is clear.`,
+      note: 'Good work. Stand by for the next assignment.'
+    };
+  }
+  return {
+    tag: 'Dispatch',
+    title: `${name}`,
+    body: `Dispatch to Kennard Fire: responding to ${name}. Crews are en route and the scene is loading now.`,
+    note: 'Tap "Let’s Roll" or wait 2 seconds for automatic deployment.'
+  };
+}
+
+function showDispatchScreen(lvl, phase) {
+  const copy = getLevelDispatchCopy(lvl, phase);
+  const screen = document.getElementById('dispatchScreen');
+  document.getElementById('dispatchTag').textContent = copy.tag;
+  document.getElementById('dispatchTitle').textContent = copy.title;
+  document.getElementById('dispatchBody').textContent = copy.body;
+  document.getElementById('dispatchNote').textContent = phase === 'complete' ? copy.note : getLevelSafetyTip(lvl);
+  screen.style.display = 'flex';
+  if (dispatchAutoTimer) clearTimeout(dispatchAutoTimer);
+  dispatchAutoTimer = setTimeout(() => dismissDispatchScreen(true), 5000);
+}
+
+function showCodeGate() {
+  document.getElementById('codeGate').style.display = 'flex';
+  document.getElementById('overlay').style.display = 'none';
+}
+
+function hideCodeGate() {
+  document.getElementById('codeGate').style.display = 'none';
+  document.getElementById('overlay').style.display = 'block';
+}
+
+function submitCodeGate() {
+  const entered = (document.getElementById('codeInput').value || '').trim();
+  if (entered === '47351') {
+    hideCodeGate();
+    showTitleScreen();
+    return;
+  }
+  alert('Incorrect code. Please try again.');
+}
+
+function showTitleScreen() {
+  document.getElementById('titleScreen').style.display = 'flex';
+  updateLevelSkipHud();
+}
+
+function dismissDispatchScreen(fromAuto = false) {
+  const screen = document.getElementById('dispatchScreen');
+  if (dispatchAutoTimer) {
+    clearTimeout(dispatchAutoTimer);
+    dispatchAutoTimer = null;
+  }
+  screen.style.display = 'none';
+  if (dispatchAutoAdvance) {
+    clearTimeout(dispatchAutoAdvance);
+    dispatchAutoAdvance = null;
+  }
+  pendingDispatchLevel = null;
+}
+
+function startGame(diff, startLevel = 1) {
+  difficulty = diff;
+  initBlackBoxTruckLevels();
+  document.getElementById('titleScreen').style.display = 'none';
+  const chosen = startLevel == null ? requestedStartLevel : startLevel;
+  requestedStartLevel = Math.max(1, Math.min(getMaxLevel(), Math.floor(chosen)));
+  loadLevel(requestedStartLevel);
+}
+
+function getTankerSupportSchedule(level, diff) {
+  let firstAt = diff === 1 ? 22000 : diff === 2 ? 15000 : 11500;
+  let repeat = diff === 1 ? 46000 : diff === 2 ? 33000 : 25000;
+  if (level >= 11) {
+    firstAt -= 1800;
+    repeat -= 2800;
+  }
+  if (level >= 21) {
+    firstAt -= 1500;
+    repeat -= 2200;
+  }
+  return {
+    firstAt: Math.max(9000, firstAt),
+    repeat: Math.max(16000, repeat),
+    hold: diff === 1 ? 6500 : diff === 2 ? 8000 : 9000
+  };
+}
+
+function getOppositeTruckLane(levelData, lvl) {
+  const points = [];
+  if (levelData?.entities?.length) {
+    const spots = computeFireSpotsForLevel(lvl, levelData.entities);
+    spots.forEach((s) => points.push(s.x + (s.w || 0) / 2));
+    if (!points.length) {
+      levelData.entities.forEach((ent) => {
+        const box = getEntityBounds(ent);
+        if (box) points.push(box.x + box.w / 2);
+      });
+    }
+  }
+  if (!points.length) return TRUCK_LANES.left;
+  let leftCount = 0;
+  let rightCount = 0;
+  let sum = 0;
+  points.forEach((x) => {
+    sum += x;
+    if (x < 600) leftCount += 1;
+    else rightCount += 1;
+  });
+  if (leftCount > rightCount) return TRUCK_LANES.right;
+  if (rightCount > leftCount) return TRUCK_LANES.left;
+  return (sum / points.length) >= 600 ? TRUCK_LANES.left : TRUCK_LANES.right;
+}
+
+function loadLevel(lvl) {
+  currentLevel = lvl;
+  levelStartScore = score;
+  const levelData = baseLevels[lvl - 1];
+  const lane = getOppositeTruckLane(levelData, lvl);
+  truck.x = lane.spawnX;
+  truck.minX = lane.minX;
+  truck.maxX = lane.maxX;
+  truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
+  setTruckDrive(0);
+  isSpraying = false;
+  tornadoTravelX = -180;
+  pendingDispatchLevel = lvl;
+  levelElapsedMs = 0;
+  lastFrameTime = 0;
+  const tankerTiming = getTankerSupportSchedule(lvl, difficulty);
+  nextTankerSupportAt = tankerTiming.firstAt;
+  tankerSupport = null;
+  blackBoxTruckState = null;
+  ufoRaid = null;
+  ufoPreview = null;
+  if (dispatchAutoAdvance) {
+    clearTimeout(dispatchAutoAdvance);
+    dispatchAutoAdvance = null;
+  }
+  if (levelData && levelData.timeOfDay != null) setTimeOfDay(levelData.timeOfDay);
+  else if (lvl === 8) setTimeOfDay(1);
+  else if (timeOfDay === 1) setTimeOfDay(0);
+  preloadLevelSprites(lvl);
+  showDispatchScreen(lvl, 'start');
+  const template = computeFireSpotsForLevel(lvl, levelData.entities);
+  const burnableBoxes = (levelData.entities || [])
+    .filter((ent) => ent && isBurnableType(ent.type))
+    .map((ent) => getEntityBounds(ent))
+    .filter(Boolean);
+  const filteredTemplate = burnableBoxes.length
+    ? template.filter((spot) => burnableBoxes.some((box) => rectsOverlap(spot, box)))
+    : template;
+  fireSpots = filteredTemplate.map(s => {
+    let mult = 1.05;
+    if (difficulty === 2) mult = 2.2;
+    if (difficulty === 3) mult = 4.2;
+    if (lvl === 10 && s.isSemi && difficulty === 1) mult = 1.2;
+    if (lvl === 10 && s.isSemi && difficulty === 2) mult = 1.6;
+    return { 
+      ...s, 
+      health: Math.floor(s.health * mult), 
+      maxHealth: Math.floor(s.maxHealth * mult), 
+      growthRate: s.isSemi && lvl === 10 ? 2.0 : 3.2,
+      isHay: !!s.isHay,
+      isVehicle: !!s.isVehicle,
+      isSemi: !!s.isSemi
+    };
+  });
+  const truckRect = getTruckDrawRect();
+  fireSpots = fireSpots.map((spot) => pushFireSpotAwayFromTruck(spot, truckRect));
+  if (lvl === FINAL_LEVEL) initUfoRaid();
+  if (lvl === 21) initUfoPreview();
+  particles = [];
+  gameState = 'playing';
+  updateLevelSkipHud();
+  document.getElementById('levelCompleteScreen').style.display = 'none';
+  document.getElementById('levelCompleteScreen').classList.remove('show');
+  dispatchAutoAdvance = setTimeout(() => {
+    if (pendingDispatchLevel === lvl && gameState === 'playing') dismissDispatchScreen(true);
+  }, 5000);
+}
+
+function checkWin() {
+  if (gameState !== 'playing') return;
+  if (currentLevel === FINAL_LEVEL && ufoRaid) return;
+  if (fireSpots.every(s => s.health <= 0)) {
+    gameState = 'levelComplete';
+    const isFinal = currentLevel === FINAL_LEVEL;
+    const copy = getLevelDispatchCopy(currentLevel, 'complete');
+    document.getElementById('levelTitle').textContent = copy.title;
+    document.getElementById('encourageText').innerHTML = isFinal 
+      ? "Thank you for playing!<br>Try a harder difficulty next time." 
+      : "Great Work, Kennard Fire Defender!<br>You saved the day!";
+    document.getElementById('safetyTip').textContent = getLevelSafetyTip(currentLevel);
+    document.getElementById('normalButtons').style.display = isFinal ? 'none' : 'flex';
+    document.getElementById('finalButtons').style.display = isFinal ? 'flex' : 'none';
+
+    const screen = document.getElementById('levelCompleteScreen');
+    screen.style.display = 'flex';
+    setTimeout(() => {
+      screen.classList.add('show');
+      setTimeout(() => {
+        const btns = screen.querySelectorAll('.button-slide');
+        btns.forEach((btn, i) => {
+          btn.style.transitionDelay = (i * 100) + 'ms';
+          btn.classList.add('show');
+        });
+      }, 3000);
+    }, 40);
+  }
+}
+
+function nextLevel() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
+    if (currentLevel < baseLevels.length) loadLevel(currentLevel + 1);
+    else { alert(`You completed all ${baseLevels.length} levels! Congratulations!`); location.reload(); }
+  }, 500);
+}
+
+function redoLevel() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
+    score = levelStartScore;
+    loadLevel(currentLevel);
+  }, 400);
+}
+
+function playGameAgain() {
+  const screen = document.getElementById('levelCompleteScreen');
+  screen.classList.remove('show');
+  setTimeout(() => {
+    screen.style.display = 'none';
+    score = 0;
+    document.getElementById('titleScreen').style.display = 'flex';
+    gameState = 'title';
+    updateLevelSkipHud();
+  }, 400);
+}
+
+function returnToFirePage() { window.location.href = 'https://kennardin.com/fire-department.html'; }
+function showRestartConfirm() { document.getElementById('confirmDialog').style.display = 'flex'; }
+function confirmRestartYes() { document.getElementById('confirmDialog').style.display = 'none'; location.reload(); }
+function confirmRestartNo() { document.getElementById('confirmDialog').style.display = 'none'; }
+
+document.getElementById('codeSubmitBtn').addEventListener('click', submitCodeGate);
+document.getElementById('codeCancelBtn').addEventListener('click', () => {
+  window.location.href = '../../index.html';
+});
+document.getElementById('codeInput').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') submitCodeGate();
+});
+showCodeGate();
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  let clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 500);
+  let clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 300);
+  mouseX = (clientX - rect.left) * (1200 / rect.width);
+  mouseY = (clientY - rect.top) * (600 / rect.height);
+  mouseX = Math.max(80, Math.min(mouseX, 1160));
+  mouseY = Math.max(80, Math.min(mouseY, 520));
+}
+
+function handleStart(e) { 
+  e.preventDefault(); 
+  getPos(e); 
+  if (gameState === 'playing') { 
+    if (isInTimeSelector(mouseX, mouseY)) { 
+      handleTimeSelection(mouseX, mouseY); 
+      return; 
+    } 
+    isSpraying = true; 
+  }
+}
+function handleMove(e) { e.preventDefault(); getPos(e); }
+function handleEnd(e) { e.preventDefault(); isSpraying = false; }
+
+canvas.addEventListener('mousemove', handleMove);
+canvas.addEventListener('mousedown', handleStart);
+canvas.addEventListener('mouseup', handleEnd);
+canvas.addEventListener('mouseleave', handleEnd);
+canvas.addEventListener('touchstart', handleStart, { passive: false });
+canvas.addEventListener('touchmove', handleMove, { passive: false });
+canvas.addEventListener('touchend', handleEnd, { passive: false });
+canvas.addEventListener('touchcancel', handleEnd, { passive: false });
+canvas.addEventListener('click', function(e) { 
+  getPos(e); 
+  if (isInTimeSelector(mouseX, mouseY)) handleTimeSelection(mouseX, mouseY); 
+});
+
+document.getElementById('levelSkipPrev')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  const shown = gameState === 'title' ? requestedStartLevel : currentLevel;
+  jumpToLevel(shown - 1);
+});
+document.getElementById('levelSkipNext')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  const shown = gameState === 'title' ? requestedStartLevel : currentLevel;
+  jumpToLevel(shown + 1);
+});
+
+// Show the tester level-skip controls immediately (title screen too).
+updateLevelSkipHud();
+
+class Particle {
+  constructor(x, y, vx, vy, color, life, size, type) { 
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy; 
+    this.color = color; this.life = life; this.size = size; this.type = type; 
+  }
+  update() { 
+    this.x += this.vx; this.y += this.vy; this.life--; 
+    if (this.type === 'water') this.vy += 0.13; 
+    if (this.type === 'fire') { 
+      this.vy -= 0.22 + Math.random() * 0.25; 
+      this.vx += (Math.random() - 0.5) * 1.6; 
+    } 
+  }
+  draw() { 
+    ctx.globalAlpha = Math.max(0.15, this.life / 45); 
+    ctx.fillStyle = this.color; 
+    if (this.type === 'water') { 
+      ctx.fillRect(this.x - 1.8, this.y - 3, 3.6, 7); 
+    } else { 
+      ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size); 
+    } 
+    ctx.globalAlpha = 1; 
+  }
+}
+
+function createFireParticles(x, y, intensity, sizeScale = 1) {
+  const count = Math.max(0, Math.min(14, Math.round(intensity)));
+  const spreadX = 10 + 10 * sizeScale;
+  const spreadY = 8 + 8 * sizeScale;
+  for (let i = 0; i < count; i++) {
+    const vx = (Math.random() - 0.5) * (1.6 + 1.2 * sizeScale);
+    const vy = -(1.8 + Math.random() * (2.8 + 1.6 * sizeScale));
+    let color = '#FFEE55';
+    if (Math.random() < 0.30) color = '#FFAA22';
+    else if (Math.random() < 0.60) color = '#FF5500';
+    const size = (2.4 + Math.random() * 2.4) * (0.85 + sizeScale * 0.35);
+    particles.push(new Particle(
+      x + (Math.random() - 0.5) * spreadX,
+      y + (Math.random() - 0.5) * spreadY,
+      vx, vy, color, 42 + Math.random() * 14, size, 'fire'
+    ));
+  }
+}
+
+function createSmoke(x, y) {
+  for (let i = 0; i < 12; i++) {
+    particles.push(new Particle(x + (Math.random()-0.5)*45, y + (Math.random()-0.5)*26, (Math.random()-0.5)*2.1, -1.0 - Math.random()*1.7, '#555555', 580, 8 + Math.random()*8, 'smoke'));
+  }
+}
+
+function getClampedHoseEnd() {
+  const attachX = truck.x + nozzleAttachX * truckFacing;
+  const attachY = truckY + nozzleAttachY;
+  const dx = mouseX - attachX;
+  const dy = mouseY - attachY;
+  const dist = Math.hypot(dx, dy);
+  if (dist <= maxHoseLength || dist === 0) return { x: mouseX, y: mouseY, length: dist };
+  const ratio = maxHoseLength / dist;
+  return { x: attachX + dx * ratio, y: attachY + dy * ratio, length: maxHoseLength };
+}
+
+function createWaterParticles() {
+  const tip = getClampedHoseEnd();
+  const truckPoint = getTruckNozzlePoint();
+  const attachX = truckPoint.x;
+  const attachY = truckPoint.y;
+  const dx = tip.x - attachX;
+  const dy = tip.y - attachY;
+  const len = Math.hypot(dx, dy) || 1;
+  const stretchFactor = Math.min(tip.length / maxHoseLength, 1);
+  const coneSpread = 12 * (1 - stretchFactor * 0.93);
+  const waterSpeed = 6.5 + stretchFactor * 21;
+  const numStreams = stretchFactor > 0.7 ? 4 : 10;
+  for (let s = 0; s < numStreams; s++) {
+    const spread = coneSpread * (Math.random() - 0.5) * 0.8;
+    const perpX = -dy / len;
+    const perpY = dx / len;
+    const startX = tip.x + perpX * spread;
+    const startY = tip.y + perpY * spread;
+    const vx = (dx / len) * waterSpeed;
+    const vy = (dy / len) * waterSpeed + 4.2;
+    for (let i = 0; i < 7; i++) {
+      const progress = i / 6;
+      particles.push(new Particle(
+        startX + vx * progress * 0.6, startY + vy * progress * 0.6,
+        vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
+        Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF', 32 + Math.random() * 12, 2.8 + Math.random() * 1.6, 'water'
+      ));
+    }
+  }
+}
+
+function getTruckNozzlePoint() {
+  const rect = getTruckDrawRect();
+  const xRatio = truckFacing > 0 ? 0.74 : 0.30;
+  const yRatio = 0.29;
+  return { x: rect.x + rect.w * xRatio, y: rect.y + rect.h * yRatio };
+}
+
+function getTankerSpriteKey(facing) {
+  return facing < 0 ? 'semiTankLeft' : 'semiTankRight';
+}
+
+function startTankerSupport() {
+  if (tankerSupport) return;
+  const layout = ENTITY_LAYOUT.semiTankRight;
+  const targetX = Math.min(canvas.width - layout.w - 28, truck.x + 250);
+  const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
+  tankerSupport = {
+    x: canvas.width + 180,
+    y: truckY - layout.h,
+    w: layout.w,
+    h: layout.h,
+    facing: -1,
+    state: 'arrive',
+    speed: 4.2,
+    targetX,
+    followOffset: 250,
+    holdMs: tankerTiming.hold,
+    holdUntil: 0,
+    attachHoldUntil: 0
+  };
+}
+
+function updateTankerSupport(dt) {
+  if (!tankerSupport) return;
+  const step = Math.max(0.2, dt / 16.67);
+  if (tankerSupport.state === 'arrive') {
+    tankerSupport.x -= tankerSupport.speed * step;
+    tankerSupport.facing = -1;
+    tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
+    if (tankerSupport.x <= tankerSupport.targetX) {
+      tankerSupport.x = tankerSupport.targetX;
+      tankerSupport.state = 'refill';
+      tankerSupport.holdUntil = levelElapsedMs + tankerSupport.holdMs;
+    }
+  } else if (tankerSupport.state === 'refill') {
+    tankerSupport.facing = -1;
+    tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
+    tankerSupport.x += (tankerSupport.targetX - tankerSupport.x) * Math.min(0.18, 0.06 * step);
+    if (levelElapsedMs >= tankerSupport.holdUntil) {
+      tankerSupport.state = 'depart';
+    }
+  } else if (tankerSupport.state === 'depart') {
+    tankerSupport.facing = 1;
+    tankerSupport.x += (tankerSupport.speed + 0.8) * step;
+    if (tankerSupport.x > canvas.width + 180) {
+      tankerSupport = null;
+      const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
+      nextTankerSupportAt = levelElapsedMs + tankerTiming.repeat;
+    }
+  }
+}
+
+function drawTankerSupport() {
+  if (!tankerSupport) return;
+  const key = getTankerSpriteKey(tankerSupport.facing);
+  if (drawSpriteFitted(key, tankerSupport.x, tankerSupport.y, tankerSupport.w, tankerSupport.h, true)) return;
+  const bodyX = tankerSupport.x;
+  const bodyY = tankerSupport.y;
+  const wheelY = bodyY + tankerSupport.h - 12;
+  ctx.fillStyle = '#D8D8D8';
+  ctx.fillRect(bodyX + 12, bodyY + 34, tankerSupport.w - 24, tankerSupport.h - 54);
+  ctx.fillStyle = '#B22';
+  ctx.fillRect(bodyX + (tankerSupport.facing < 0 ? 18 : tankerSupport.w - 122), bodyY + 16, 100, 52);
+  ctx.fillStyle = '#111';
+  [0.18, 0.52, 0.82].forEach((p) => {
+    ctx.beginPath(); ctx.arc(bodyX + tankerSupport.w * p, wheelY, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#DDD';
+    ctx.beginPath(); ctx.arc(bodyX + tankerSupport.w * p, wheelY, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+  });
+}
+
+function drawTankerConnection() {
+  if (!tankerSupport || tankerSupport.state === 'depart') return;
+  const truckPoint = getTruckNozzlePoint();
+  const tankerPoint = {
+    x: tankerSupport.x + (tankerSupport.facing < 0 ? 58 : tankerSupport.w - 58),
+    y: tankerSupport.y + 92
+  };
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(tankerPoint.x, tankerPoint.y);
+  ctx.quadraticCurveTo((tankerPoint.x + truckPoint.x) / 2, tankerPoint.y - 28, truckPoint.x, truckPoint.y + 8);
+  ctx.stroke();
+  ctx.fillStyle = '#808080';
+  ctx.beginPath(); ctx.arc(tankerPoint.x, tankerPoint.y, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(truckPoint.x, truckPoint.y + 8, 8, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawTotalFireGauge() {
+  if (fireSpots.length === 0) return;
+  let totalCurrent = 0; let totalMax = 0;
+  fireSpots.forEach(s => { totalCurrent += Math.max(0, s.health); totalMax += s.maxHealth; });
+  const percent = totalMax > 0 ? totalCurrent / totalMax : 0;
+  const gaugeX = 480; const gaugeY = 25; const gaugeWidth = 240; const gaugeHeight = 18;
+  ctx.fillStyle = '#333'; ctx.fillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  const grad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeWidth, gaugeY);
+  grad.addColorStop(0, '#FF2200'); grad.addColorStop(1, '#FFDD00');
+  ctx.fillStyle = grad; ctx.fillRect(gaugeX, gaugeY, gaugeWidth * percent, gaugeHeight);
+  ctx.strokeStyle = '#FFF'; ctx.lineWidth = 2; ctx.strokeRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  ctx.fillStyle = '#FFF'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('TOTAL FIRE', gaugeX + gaugeWidth/2, gaugeY - 6);
+}
+
+function drawWaterGauge() {}
+
+function drawBackground() {
+  let sky1, sky2, sunColor, sunX, sunY, grassColor;
+  if (timeOfDay === 0) { sky1 = '#7BC4FF'; sky2 = '#C0E4FF'; sunColor = '#FFDD00'; sunX = 300; sunY = 120; grassColor = '#3D8C40'; }
+  else if (timeOfDay === 1) { sky1 = '#FF8800'; sky2 = '#FFBB66'; sunColor = '#FFAA00'; sunX = 900; sunY = 140; grassColor = '#2A6B2F'; }
+  else { sky1 = '#112244'; sky2 = '#223366'; sunColor = '#EEEEEE'; sunX = 600; sunY = 130; grassColor = '#1F4A22'; }
+  const grad = ctx.createLinearGradient(0, 0, 0, 520);
+  grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
+  ctx.fillStyle = sunColor; ctx.beginPath(); ctx.arc(sunX, sunY, 45, 0, Math.PI*2); ctx.fill();
+  const fieldGrad = ctx.createLinearGradient(0, 430, 0, 600);
+  fieldGrad.addColorStop(0, timeOfDay === 0 ? '#73b85f' : timeOfDay === 1 ? '#4d8f43' : '#264f2a');
+  fieldGrad.addColorStop(0.45, grassColor);
+  fieldGrad.addColorStop(1, timeOfDay === 0 ? '#244f22' : timeOfDay === 1 ? '#1f4520' : '#102916');
+  ctx.fillStyle = fieldGrad;
+  ctx.fillRect(0, 430, 1200, 170);
+
+  const horizonGrad = ctx.createLinearGradient(0, 360, 0, 470);
+  horizonGrad.addColorStop(0, timeOfDay === 0 ? 'rgba(115,184,95,0.30)' : timeOfDay === 1 ? 'rgba(77,143,67,0.25)' : 'rgba(38,79,42,0.22)');
+  horizonGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = horizonGrad;
+  ctx.beginPath();
+  ctx.moveTo(0, 420);
+  ctx.quadraticCurveTo(170, 372, 320, 406);
+  ctx.quadraticCurveTo(520, 444, 680, 404);
+  ctx.quadraticCurveTo(880, 360, 1040, 402);
+  ctx.quadraticCurveTo(1140, 426, 1200, 414);
+  ctx.lineTo(1200, 470);
+  ctx.lineTo(0, 470);
+  ctx.closePath();
+  ctx.fill();
+
+  const cloudShift = (levelElapsedMs * 0.018) % 340;
+  if (timeOfDay !== 2) {
+    ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.32)' : 'rgba(255,230,190,0.18)';
+    const clouds = [
+      { x: 110 - cloudShift, y: 95, s: 1.0 },
+      { x: 430 - cloudShift * 0.72, y: 150, s: 0.82 },
+      { x: 830 - cloudShift * 0.55, y: 110, s: 1.1 }
+    ];
+    clouds.forEach(({ x, y, s }) => {
+      ctx.beginPath();
+      ctx.ellipse(x, y, 34 * s, 16 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 26 * s, y - 8 * s, 28 * s, 18 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 56 * s, y, 36 * s, 17 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  const berms = [
+    { x: -80, y: 468, w: 420, h: 42 },
+    { x: 220, y: 458, w: 390, h: 36 },
+    { x: 520, y: 470, w: 360, h: 34 },
+    { x: 790, y: 462, w: 360, h: 38 },
+    { x: 1030, y: 474, w: 250, h: 28 }
+  ];
+  ctx.fillStyle = timeOfDay === 0 ? 'rgba(90,145,74,0.9)' : timeOfDay === 1 ? 'rgba(59,107,51,0.88)' : 'rgba(39,78,41,0.88)';
+  berms.forEach(berm => {
+    ctx.beginPath();
+    ctx.ellipse(berm.x + berm.w / 2, berm.y, berm.w / 2, berm.h, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+  });
+
+  const backgroundTrees = [
+    { x: 40, y: 410, w: 78, h: 110, k: 'pine' },
+    { x: 164, y: 396, w: 86, h: 122, k: 'oak' },
+    { x: 284, y: 404, w: 72, h: 108, k: 'pine' },
+    { x: 470, y: 392, w: 92, h: 126, k: 'maple' },
+    { x: 630, y: 398, w: 84, h: 120, k: 'oak' },
+    { x: 830, y: 402, w: 92, h: 128, k: 'maple' },
+    { x: 1010, y: 394, w: 78, h: 118, k: 'pine' },
+    { x: 1128, y: 408, w: 70, h: 106, k: 'oak' }
+  ];
+  backgroundTrees.forEach((tree) => {
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = timeOfDay === 0 ? '#2f6d2d' : timeOfDay === 1 ? '#295e28' : '#102513';
+    ctx.beginPath();
+    if (tree.k === 'pine') {
+      ctx.moveTo(tree.x + tree.w / 2, tree.y - tree.h);
+      ctx.lineTo(tree.x + 10, tree.y - tree.h * 0.35);
+      ctx.lineTo(tree.x + tree.w - 10, tree.y - tree.h * 0.35);
+    } else {
+      ctx.arc(tree.x + tree.w / 2, tree.y - tree.h * 0.55, tree.w * 0.24, 0, Math.PI * 2);
+      ctx.arc(tree.x + tree.w * 0.34, tree.y - tree.h * 0.42, tree.w * 0.20, 0, Math.PI * 2);
+      ctx.arc(tree.x + tree.w * 0.66, tree.y - tree.h * 0.40, tree.w * 0.21, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.fillRect(tree.x + tree.w * 0.46, tree.y - tree.h * 0.20, tree.w * 0.08, tree.h * 0.24);
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)';
+  for (let i = 0; i < 10; i++) {
+    const stripeX = i * 130 + ((i % 2) * 18);
+    ctx.beginPath();
+    ctx.moveTo(stripeX, 470);
+    ctx.quadraticCurveTo(stripeX + 38, 505, stripeX + 96, 600);
+    ctx.lineTo(stripeX + 132, 600);
+    ctx.quadraticCurveTo(stripeX + 65, 505, stripeX + 24, 470);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = timeOfDay === 0 ? '#2c6b2e' : timeOfDay === 1 ? '#295628' : '#173619';
+  ctx.lineWidth = 2;
+  for (let x = 20; x < 1200; x += 28) {
+    const baseY = 484 + ((x / 28) % 3);
+    ctx.beginPath();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x - 4, baseY - 13);
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x + 3, baseY - 11);
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x - 1, baseY - 16);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = timeOfDay === 0 ? 'rgba(36,74,31,0.5)' : 'rgba(18,41,20,0.45)';
+  ctx.lineWidth = 1.5;
+  for (let x = 0; x < 1200; x += 48) {
+    ctx.beginPath();
+    ctx.moveTo(x, 520);
+    ctx.lineTo(x + 18, 600);
+    ctx.stroke();
+  }
+  if (timeOfDay === 2) {
+    ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.8;
+    const twinkle = Math.sin(levelElapsedMs / 650) * 0.35 + 0.65;
+    ctx.globalAlpha = 0.5 + twinkle * 0.35;
+    ctx.fillRect(200,80,3,3); ctx.fillRect(450,50,2,2); ctx.fillRect(720,110,3,3); ctx.fillRect(950,70,2,2); ctx.fillRect(1100,40,3,3);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawSideFireTruck() {
+  const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
+  const layout = ENTITY_LAYOUT.engine;
+  if (SPRITE_READY[key]) {
+    const rect = getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
+    drawSprite(key, rect.x, rect.y, rect.w, rect.h);
+    return;
+  }
+  const flip = truckFacing < 0 ? -1 : 1;
+  const bodyW = 292;
+  ctx.save();
+  ctx.translate(truck.x + (truckFacing < 0 ? bodyW : 0), 0);
+  ctx.scale(flip, 1);
+  ctx.fillStyle = '#E22'; ctx.fillRect(8, truckY - 58, 222, 98);
+  ctx.fillStyle = '#C11'; ctx.fillRect(18, truckY - 90, 82, 44);
+  ctx.fillStyle = '#AACCFF'; ctx.fillRect(28, truckY - 82, 32, 28); ctx.fillRect(66, truckY - 82, 30, 28);
+  ctx.fillStyle = '#FF0'; ctx.fillRect(12, truckY - 22, 210, 16);
+  ctx.fillStyle = '#000'; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('KENNARD', 152, truckY + 2);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(68, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(164, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(220, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(68, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(164, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(220, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00F'; ctx.fillRect(25, truckY - 82, 12, 6);
+  ctx.restore();
+}
+
+function drawPixelSprite(x, y, rows, scale, palette) {
+  for (let row = 0; row < rows.length; row++) {
+    const line = rows[row];
+    for (let col = 0; col < line.length; col++) {
+      const key = line[col];
+      if (key === '.') continue;
+      ctx.fillStyle = palette[key];
+      ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+    }
+  }
+}
+
+function drawSedan(x,yOffset=0) {
+  const gy = 480 + yOffset;
+  const variant = (currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed';
+  if (drawSpriteFitted(variant, x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true)) return;
+  const body = [
+    "......bbbbb.............",
+    "....bbbbbbbbbb..........",
+    "..bbbbrrrrrrrrbbb.......",
+    ".bbrrrrrrrrrrrrrrbb.....",
+    ".brrrrwwwwwwwwrrrrrb....",
+    "brrrrrwwwwwwwwwwrrrrrb..",
+    "brrrbbbbbbbbbbbbbbrrrrb.",
+    "brrbggggggggggggggbrrrb.",
+    "brrbg..gggggggg..gbrrrb.",
+    "brrbbbbbbbbbbbbbbbbrrrb.",
+    ".bbbbbbbbbbb..bbbbbbbbb..",
+    "....w....w......w....w..."
+  ];
+  const palette = {
+    r: '#D62B2B',
+    b: '#8A1010',
+    g: '#0D3158',
+    w: '#BFDFFF'
+  };
+  drawPixelSprite(x + 24, gy - 102, body, 4, palette);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 56, gy - 10, 30, 16);
+  ctx.fillRect(x + 146, gy - 10, 30, 16);
+  ctx.fillStyle = '#DDD';
+  ctx.fillRect(x + 64, gy - 4, 12, 8);
+  ctx.fillRect(x + 154, gy - 4, 12, 8);
+}
+
+function drawPickup(x,yOffset=0) {
+  const gy = 480 + yOffset;
+  if (drawSpriteFitted('pickupCyber', x + ENTITY_LAYOUT.pickupCyber.x, gy - ENTITY_LAYOUT.pickupCyber.h, ENTITY_LAYOUT.pickupCyber.w, ENTITY_LAYOUT.pickupCyber.h, true)) return;
+  const body = [
+    "...........bbb..........",
+    ".........bbbbbbb........",
+    "...bbbbrrrrrrrrrrbbb....",
+    "..brrrrrrrrrrrrrrrrbbb..",
+    ".brrrrwwwwrrrrrrrrrrrrb.",
+    "brrrrrwwwwrrrbbbbrrrrrrb",
+    "brrrbbbbbbbbbbgggbbrrrb.",
+    "brrbgggggggggggggggbrrb.",
+    "brrbg..gggggggg..gggbrb.",
+    "brrbggggggggggggggggbrb.",
+    ".bbbbbbbbbbbbbbbbbbbbbb.",
+    "....w.......w..........."
+  ];
+  const palette = {
+    r: '#C91F1F',
+    b: '#861212',
+    g: '#173C66',
+    w: '#B7DBFF'
+  };
+  drawPixelSprite(x + 30, gy - 104, body, 4, palette);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 62, gy - 10, 32, 16);
+  ctx.fillRect(x + 214, gy - 10, 32, 16);
+  ctx.fillStyle = '#DDD';
+  ctx.fillRect(x + 70, gy - 4, 12, 8);
+  ctx.fillRect(x + 222, gy - 4, 12, 8);
+}
+
+function drawSemi(x) {
+  const gy = 480;
+  const semiKey = (currentLevel === 10) ? 'semiWrecked' : 'semiTankRight';
+  const layout = ENTITY_LAYOUT[semiKey];
+  if (drawSpriteFitted(semiKey, x + layout.x, gy - layout.h, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#C00'; ctx.fillRect(x, gy-95, 135, 135);
+  ctx.fillStyle = '#DDD'; ctx.fillRect(x+125, gy-88, 390, 125);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(x+55, gy+12, 32, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+280, gy+12, 38, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+340, gy+12, 38, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD';
+  ctx.beginPath(); ctx.arc(x+55, gy+12, 17, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+280, gy+12, 20, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+340, gy+12, 20, 0, Math.PI*2); ctx.fill();
+}
+
+function drawRidingLawnMower(x) {
+  const gy = 465;
+  if (drawSpriteGroundedFitted('mower', x + ENTITY_LAYOUT.mower.x, GRASS_Y, ENTITY_LAYOUT.mower.w, ENTITY_LAYOUT.mower.h)) return;
+  ctx.fillStyle = '#228B22'; ctx.fillRect(x+25, gy-38, 115, 42);
+  ctx.fillStyle = '#1E5A1E'; ctx.fillRect(x+12, gy-12, 138, 28);
+  ctx.fillStyle = '#222'; ctx.fillRect(x+88, gy-58, 38, 24);
+  ctx.fillStyle = '#111'; ctx.fillRect(x+98, gy-68, 8, 14);
+  ctx.beginPath(); ctx.arc(x+102, gy-71, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x+42, gy+12, 23, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD'; ctx.beginPath(); ctx.arc(x+42, gy+12, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x+122, gy+8, 14, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#DDD'; ctx.beginPath(); ctx.arc(x+122, gy+8, 8, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1E5A1E'; ctx.fillRect(x+28, gy-48, 55, 18);
+}
+
+function drawShedWindow(x) {
+  // In Deluxe, use the red shed art (with fallback to the original drawing).
+  if (drawSpriteGroundedFitted('shedRed', x + ENTITY_LAYOUT.shedRed.x, GRASS_Y, ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h)) return;
+  const wall = [
+    ".........rrrrrrrrrrrr.........",
+    "........rrrrrrrrrrrrrr........",
+    ".......rrrrrrrrrrrrrrrr.......",
+    "......rrrrwwwwrrrrwwwwrrrr.....",
+    ".....rrrrwwwwwwrrrrwwwwwwrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr....",
+    ".....rrrrrrrwwwwrrrrrrrrrrr....",
+    ".....rrrrrrrwwwwrrrrrrrrrrr....",
+    ".....rrrrrrrrrrrrrrrrrrrrrr...."
+  ];
+  drawPixelSprite(x + 16, 182, wall, 4, {
+    r: '#E5D2B2',
+    w: '#A9D3FF'
+  });
+  ctx.fillStyle = '#7A3A16';
+  ctx.fillRect(x + 88, 350, 42, 120);
+  ctx.fillStyle = '#5B2A0F';
+  ctx.fillRect(x + 92, 354, 34, 116);
+  ctx.fillStyle = '#B86A2A';
+  ctx.fillRect(x + 36, 252, 168, 16);
+  ctx.fillStyle = '#6A1D10';
+  ctx.fillRect(x + 8, 252, 120, 14);
+}
+
+function drawSmallShed(x) {
+  if (drawSpriteGroundedFitted('shedRed', x + ENTITY_LAYOUT.shedRed.x, GRASS_Y, ENTITY_LAYOUT.shedRed.w, ENTITY_LAYOUT.shedRed.h)) return;
+  const shed = [
+    ".......rrrrrrrrrrrrr........",
+    "......rrrrrrrrrrrrrrrr.......",
+    ".....rrrrrrrrrrrrrrrrrr......",
+    "....rrrrwwwwrrrrwwwwrrrr.....",
+    "...rrrrwwwwwwrrrrwwwwwwrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrrrrrrrrrrrrrrrrr....",
+    "...rrrrrrwwwwrrrrrrrrrrrr....",
+    "...rrrrrrwwwwrrrrrrrrrrrr...."
+  ];
+  drawPixelSprite(x + 18, 188, shed, 4, {
+    r: '#E6D3B6',
+    w: '#A5CFF5'
+  });
+  ctx.fillStyle = '#7A3A16';
+  ctx.fillRect(x + 76, 348, 38, 118);
+}
+
+function drawSingleGarage(x) {
+  // Use the larger garage; if it fails, try the smaller variant.
+  if (drawSpriteGroundedFitted('garage', x + ENTITY_LAYOUT.garage.x, GRASS_Y, ENTITY_LAYOUT.garage.w, ENTITY_LAYOUT.garage.h)) return;
+  if (drawSpriteGroundedFitted('garageSmall', x + ENTITY_LAYOUT.garageSmall.x, GRASS_Y, ENTITY_LAYOUT.garageSmall.w, ENTITY_LAYOUT.garageSmall.h)) return;
+  const garage = [
+    "..........rrrrrrrrrr..........",
+    "........rrrrrrrrrrrrrr........",
+    ".......rrrrrrrrrrrrrrrr.......",
+    "......rrrrwwwwrrrrwwwwrrrr....",
+    ".....rrrrwwwwwwrrrrwwwwwwrr...",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr..",
+    "....rrrrrrrrrrrrrrrrrrrrrrrr.."
+  ];
+  drawPixelSprite(x + 4, 168, garage, 4, {
+    r: '#E5D2B2',
+    w: '#9EC9EF'
+  });
+  ctx.fillStyle = '#7B7B7B';
+  ctx.fillRect(x + 96, 258, 110, 220);
+  ctx.fillStyle = '#5A330F';
+  ctx.fillRect(x + 128, 258, 46, 220);
+}
+
+function drawSchoolhouse(x) {
+  if (drawSpriteGroundedFitted('kennardSchool', x + ENTITY_LAYOUT.kennardSchool.x, GRASS_Y, ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h)) return;
+  // Fallback: draw a tall house if the sprite isn't ready yet.
+  drawTallHouse(x - 40);
+}
+
+function drawTallHouse(x) {
+  if (drawSpriteGroundedFitted('houseTall', x + ENTITY_LAYOUT.houseTall.x, GRASS_Y, ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h)) return;
+  if (drawSpriteGroundedFitted('houseTallWhite', x + ENTITY_LAYOUT.houseTallWhite.x, GRASS_Y, ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h)) return;
+  if (drawSpriteGroundedFitted('houseTallOld', x + ENTITY_LAYOUT.houseTall.x, GRASS_Y, ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h)) return;
+  const house = [
+    "..............rrrrrrrr..............",
+    "............rrrrrrrrrrrr............",
+    "..........rrrrrrrrrrrrrrrr..........",
+    "........rrrrwwwwrrrrwwwwrrrr........",
+    "......rrrrwwwwwwrrrrwwwwwwrrrr......",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr.....",
+    ".....rrrrrrrrrrrrrrrrrrrrrrrrrr....."
+  ];
+  drawPixelSprite(x - 4, 92, house, 4, {
+    r: '#E6D4B7',
+    w: '#A8D2F4'
+  });
+  ctx.fillStyle = '#7A3A16';
+  ctx.fillRect(x + 112, 410, 44, 110);
+  ctx.fillStyle = '#4D2A12';
+  ctx.fillRect(x + 117, 415, 34, 105);
+  ctx.fillStyle = '#8B3A1A';
+  ctx.fillRect(x + 170, 112, 26, 58);
+}
+
+function drawSmallHouse(x,color='#FFCC99') {
+  if (drawSpriteGroundedFitted('houseSmall', x + ENTITY_LAYOUT.houseSmall.x, GRASS_Y, ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h)) return;
+  const house = [
+    ".........rrrrrrrrrrrr.........",
+    ".......rrrrrrrrrrrrrrrr.......",
+    ".....rrrrrrrrrrrrrrrrrrrr.....",
+    "...rrrrwwwwrrrrwwwwrrrrrrrr...",
+    "..rrrrwwwwwwrrrrwwwwwwrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr..",
+    "..rrrrrrrrrrrrrrrrrrrrrrrrrr.."
+  ];
+  drawPixelSprite(x + 12, 136, house, 4, {
+    r: color === '#FFCC99' ? '#E7C39D' : '#D6B57E',
+    w: '#A7D1F8'
+  });
+  ctx.fillStyle = '#7A3A16';
+  ctx.fillRect(x + 95, 396, 40, 84);
+  ctx.fillStyle = '#4D2A12';
+  ctx.fillRect(x + 100, 400, 30, 80);
+}
+
+function drawMiniBarn(x) {
+  if (drawSpriteGroundedFitted('barnLarge', x + ENTITY_LAYOUT.barnMini.x, GRASS_Y, ENTITY_LAYOUT.barnMini.w, ENTITY_LAYOUT.barnMini.h)) return;
+  ctx.fillStyle = '#C22'; ctx.fillRect(x+40,230,180,250);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<9;i++){ctx.beginPath();ctx.moveTo(x+48,245+i*24);ctx.lineTo(x+212,245+i*24);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x+20,230);ctx.lineTo(x+130,170);ctx.lineTo(x+220,230);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.fillRect(x+78,310,55,170);
+}
+
+function drawLargeRedBarn(x) {
+  if (drawSpriteGroundedFitted('barnLarge', x + ENTITY_LAYOUT.barnLarge.x, GRASS_Y, ENTITY_LAYOUT.barnLarge.w, ENTITY_LAYOUT.barnLarge.h)) return;
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = '#C22'; ctx.fillRect(x+20,180,260,300);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  for(let i=0;i<13;i++){ctx.beginPath();ctx.moveTo(x+30,195+i*22);ctx.lineTo(x+270,195+i*22);ctx.stroke();}
+  ctx.fillStyle='#8B2A00'; ctx.beginPath();ctx.moveTo(x,180);ctx.lineTo(x+130,100);ctx.lineTo(x+280,180);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.fillRect(x+95,340,70,140);
+  ctx.globalAlpha = 1;
+}
+
+function drawHayBale(x) {
+  // Alternate between two hay images for variety.
+  const key = (Math.floor(x / 40) % 2 === 0) ? 'hayA' : 'hayB';
+  const layout = ENTITY_LAYOUT[key];
+  if (drawSpriteFitted(key, x + layout.x, layout.y, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#E8B070'; ctx.fillRect(x,415,80,60);
+  ctx.strokeStyle='#222'; ctx.lineWidth=4; ctx.strokeRect(x,415,80,60);
+  ctx.fillStyle='#D9A060'; for(let i=0;i<5;i++) ctx.fillRect(x+10+i*12,420,8,50);
+}
+
+function drawTreeEntity(type, x) {
+  const layout = ENTITY_LAYOUT[type];
+  if (!layout) return;
+  if (drawSpriteGroundedFitted(type, x + layout.x, GRASS_Y, layout.w, layout.h)) return;
+  // Fallback: render a stylized tree with size matching the sprite box.
+  const trunkX = x + layout.w * 0.47;
+  const trunkW = layout.w * 0.12;
+  const trunkH = layout.h * 0.28;
+  ctx.fillStyle = '#5b3a1c';
+  ctx.fillRect(trunkX, GRASS_Y - trunkH, trunkW, trunkH);
+  ctx.fillStyle = type.includes('pine') ? '#1e8c2e' : '#2f7c2f';
+  const crownCenterX = x + layout.w * 0.52;
+  const baseY = GRASS_Y - layout.h * 0.20;
+  if (type.includes('pine')) {
+    const layers = type === 'pineSmall' ? 2 : 3;
+    for (let i = 0; i < layers; i++) {
+      const top = GRASS_Y - layout.h * (0.88 - i * 0.16);
+      const half = layout.w * (0.18 + i * 0.03);
+      ctx.beginPath();
+      ctx.moveTo(crownCenterX, top);
+      ctx.lineTo(crownCenterX - half, baseY - i * layout.h * 0.12);
+      ctx.lineTo(crownCenterX + half, baseY - i * layout.h * 0.12);
+      ctx.fill();
+    }
+  } else {
+    const canopyRadius = type.endsWith('Large') ? layout.w * 0.26 : type.endsWith('Medium') ? layout.w * 0.23 : layout.w * 0.20;
+    const canopyY = GRASS_Y - layout.h * 0.72;
+    ctx.beginPath(); ctx.arc(crownCenterX, canopyY, canopyRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(crownCenterX - canopyRadius * 0.55, canopyY + canopyRadius * 0.20, canopyRadius * 0.75, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(crownCenterX + canopyRadius * 0.55, canopyY + canopyRadius * 0.20, canopyRadius * 0.75, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function getLegacyTreeVariant(x) {
+  const seeds = ['oakSmall', 'oakMedium', 'mapleMedium', 'pineMedium', 'oakLarge'];
+  return seeds[Math.abs(Math.floor(x / 160) + currentLevel) % seeds.length];
+}
+
+function getLegacyTreeLayout(x) {
+  const variant = getLegacyTreeVariant(x);
+  return ENTITY_LAYOUT[variant] || ENTITY_LAYOUT.oakMedium;
+}
+
+function drawLegacyTree(x, withSwing = false) {
+  const variant = getLegacyTreeVariant(x);
+  drawTreeEntity(variant, x);
+  if (!withSwing) return;
+  const layout = getLegacyTreeLayout(x);
+  const centerX = x + layout.x + layout.w * 0.52;
+  const branchY = GRASS_Y - layout.h * 0.45;
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(centerX, branchY - 20); ctx.lineTo(centerX, branchY + 56); ctx.stroke();
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.arc(centerX, branchY + 66, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.arc(centerX, branchY + 66, 10, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawBikeRed(x) {
+  const layout = ENTITY_LAYOUT.bikeRed;
+  if (drawSpriteFitted('bikeRed', x + layout.x, 420, layout.w, layout.h, true)) return;
+  ctx.strokeStyle = '#ce2a2a';
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(x + 26, 450, 12, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 70, 450, 12, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 26, 450); ctx.lineTo(x + 48, 430); ctx.lineTo(x + 64, 450); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 48, 430); ctx.lineTo(x + 54, 418); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 54, 418); ctx.lineTo(x + 64, 418); ctx.stroke();
+}
+
+function drawPushMower(x) {
+  if (drawSpriteFitted('pushMower', x + ENTITY_LAYOUT.pushMower.x, GRASS_Y - ENTITY_LAYOUT.pushMower.h, ENTITY_LAYOUT.pushMower.w, ENTITY_LAYOUT.pushMower.h, true)) return;
+  ctx.fillStyle = '#247a24';
+  ctx.fillRect(x + 12, 430, 86, 24);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 74, 404, 28, 16);
+  ctx.fillStyle = '#ddd';
+  ctx.beginPath(); ctx.arc(x + 28, 454, 11, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 82, 454, 11, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawPushManualMower(x) {
+  if (drawSpriteFitted('pushManualMower', x + ENTITY_LAYOUT.pushManualMower.x, GRASS_Y - ENTITY_LAYOUT.pushManualMower.h, ENTITY_LAYOUT.pushManualMower.w, ENTITY_LAYOUT.pushManualMower.h, true)) return;
+  ctx.fillStyle = '#2d8b2d';
+  ctx.fillRect(x + 14, 434, 88, 22);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 76, 404, 18, 20);
+  ctx.strokeStyle = '#8f8f8f';
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(x + 66, 406); ctx.lineTo(x + 92, 374); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 30, 454, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 82, 454, 10, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawBusUpsideDown(x) {
+  if (drawSpriteFitted('busUpsideDown', x + ENTITY_LAYOUT.busUpsideDown.x, 348, ENTITY_LAYOUT.busUpsideDown.w, ENTITY_LAYOUT.busUpsideDown.h, true)) return;
+  ctx.fillStyle = '#ffcc33';
+  ctx.fillRect(x + 18, 388, 320, 104);
+  ctx.fillStyle = '#444';
+  ctx.fillRect(x + 44, 366, 250, 28);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 30, 490, 42, 24);
+  ctx.fillRect(x + 288, 490, 42, 24);
+}
+
+function drawTreeAsset(type, x) {
+  const layout = ENTITY_LAYOUT[type];
+  if (!layout) return;
+  if (drawSpriteGroundedFitted(type, x + layout.x, GRASS_Y, layout.w, layout.h)) return;
+  ctx.fillStyle = '#4d3317';
+  ctx.fillRect(x + layout.w * 0.42, GRASS_Y - layout.h * 0.28, layout.w * 0.12, layout.h * 0.30);
+  ctx.fillStyle = type.includes('pine') ? '#1e8c2e' : '#2d7b2d';
+  const baseX = x + layout.w * 0.50;
+  const topY = GRASS_Y - layout.h * 0.85;
+  if (type.includes('pine')) {
+    ctx.beginPath(); ctx.moveTo(baseX, topY); ctx.lineTo(baseX - layout.w * 0.28, GRASS_Y - layout.h * 0.30); ctx.lineTo(baseX + layout.w * 0.28, GRASS_Y - layout.h * 0.30); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(baseX, topY + layout.h * 0.22); ctx.lineTo(baseX - layout.w * 0.24, GRASS_Y - layout.h * 0.15); ctx.lineTo(baseX + layout.w * 0.24, GRASS_Y - layout.h * 0.15); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(baseX, topY + layout.h * 0.18, layout.w * 0.26, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(baseX - layout.w * 0.12, topY + layout.h * 0.28, layout.w * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(baseX + layout.w * 0.13, topY + layout.h * 0.30, layout.w * 0.23, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawBikeRed(x) {
+  const layout = ENTITY_LAYOUT.bikeRed;
+  if (drawSpriteFitted('bikeRed', x + layout.x, 420, layout.w, layout.h, true)) return;
+  ctx.strokeStyle = '#d62929';
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(x + 28, 450, 12, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 72, 450, 12, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 28, 450); ctx.lineTo(x + 48, 430); ctx.lineTo(x + 63, 450); ctx.lineTo(x + 72, 450); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 48, 430); ctx.lineTo(x + 52, 418); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 52, 418); ctx.lineTo(x + 61, 418); ctx.stroke();
+}
+
+function drawPushMowerAsset(x, key) {
+  const layout = ENTITY_LAYOUT[key];
+  if (drawSpriteFitted(key, x + layout.x, GRASS_Y - layout.h, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#247a24';
+  ctx.fillRect(x + 10, 425, 90, 26);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 70, 402, 30, 18);
+  ctx.fillStyle = '#ddd';
+  ctx.beginPath(); ctx.arc(x + 26, 453, 11, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 78, 453, 11, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawBusUpsideDown(x) {
+  const layout = ENTITY_LAYOUT.busUpsideDown;
+  if (drawSpriteFitted('busUpsideDown', x + layout.x, 360, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#ffcc33';
+  ctx.fillRect(x + 20, 390, 320, 110);
+  ctx.fillStyle = '#444';
+  ctx.fillRect(x + 60, 370, 240, 30);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + 30, 490, 40, 24);
+  ctx.fillRect(x + 290, 490, 40, 24);
+}
+
+function drawTractor(x,facing) {
+  // Prefer the SVG tractor; flip it when needed. Fallback to the old vector tractor if it hasn't loaded.
+  if (SPRITE_READY.tractor) {
+    const rect = getEntityBounds({ type:'tractor', x });
+    ctx.save();
+    if (facing === 'left') {
+      ctx.translate(rect.x + rect.w, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(SPRITES.tractor, 0, rect.y, rect.w, rect.h);
+    } else {
+      ctx.drawImage(SPRITES.tractor, rect.x, rect.y, rect.w, rect.h);
+    }
+    ctx.restore();
+    return;
+  }
+  const flip = facing==='left'?-1:1;
+  ctx.save();
+  ctx.translate(x+75,410); ctx.scale(flip,1);
+  ctx.fillStyle='#228B22';ctx.fillRect(-65,0,130,65);
+  ctx.fillStyle='#111';ctx.fillRect(-45,-30,65,38);
+  ctx.fillStyle='#AACCFF';ctx.fillRect(-38,-25,38,28);
+  ctx.fillStyle='#1A6B1A';ctx.fillRect(10,-10,55,38);
+  ctx.fillStyle='#111'; ctx.beginPath();ctx.arc(-45,65,22,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#DDD';ctx.beginPath();ctx.arc(-45,65,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath();ctx.arc(35,65,14,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#DDD';ctx.beginPath();ctx.arc(35,65,7,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function drawFence(x) {
+  if (drawSpriteGroundedFitted('fence', x + ENTITY_LAYOUT.fence.x, GRASS_Y, ENTITY_LAYOUT.fence.w, ENTITY_LAYOUT.fence.h)) return;
+  ctx.fillStyle = '#8a6536';
+  ctx.fillRect(x + 6, 420, 14, 60);
+  ctx.fillRect(x + 60, 420, 14, 60);
+  ctx.fillRect(x + 114, 420, 14, 60);
+  ctx.fillRect(x + 168, 420, 14, 60);
+  ctx.fillRect(x + 222, 420, 14, 60);
+  ctx.fillRect(x + 276, 420, 14, 60);
+  ctx.fillRect(x + 0, 434, 290, 8);
+  ctx.fillRect(x + 0, 458, 290, 8);
+}
+
+function drawPond(x) {
+  const layout = ENTITY_LAYOUT.pond;
+  ctx.fillStyle = '#8ad7ff';
+  ctx.beginPath();
+  ctx.ellipse(x + 120, GRASS_Y - 6, 130, 38, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#5fb9e8';
+  ctx.beginPath();
+  ctx.ellipse(x + 120, GRASS_Y - 8, 108, 30, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.20)';
+  ctx.beginPath();
+  ctx.ellipse(x + 88, GRASS_Y - 18, 36, 10, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBoat(x) {
+  const layout = ENTITY_LAYOUT.boat;
+  if (drawSpriteFitted('boat', x + layout.x, GRASS_Y - layout.h + 12, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#6d4224';
+  ctx.beginPath();
+  ctx.moveTo(x + 16, 440);
+  ctx.lineTo(x + 146, 440);
+  ctx.lineTo(x + 126, 456);
+  ctx.lineTo(x + 34, 456);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#d8d8d8';
+  ctx.fillRect(x + 50, 398, 54, 26);
+}
+
+function drawTent(x) {
+  if (drawSpriteGroundedFitted('tent', x + ENTITY_LAYOUT.tent.x, GRASS_Y, ENTITY_LAYOUT.tent.w, ENTITY_LAYOUT.tent.h, true)) return;
+  ctx.fillStyle = '#cc5533';
+  ctx.beginPath();
+  ctx.moveTo(x + 20, 470);
+  ctx.lineTo(x + 76, 392);
+  ctx.lineTo(x + 132, 470);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#f2d1a0';
+  ctx.fillRect(x + 56, 428, 40, 42);
+}
+
+function drawCatTails(x) {
+  if (drawSpriteFitted('cattails', x + ENTITY_LAYOUT.catTails.x, GRASS_Y - ENTITY_LAYOUT.catTails.h, ENTITY_LAYOUT.catTails.w, ENTITY_LAYOUT.catTails.h, true)) return;
+  ctx.strokeStyle = '#7a5b2b';
+  ctx.lineWidth = 4;
+  for (let i = 0; i < 5; i++) {
+    const px = x + 20 + i * 18;
+    ctx.beginPath(); ctx.moveTo(px, 470); ctx.lineTo(px, 430 - (i % 2) * 10); ctx.stroke();
+    ctx.fillStyle = '#6b4f28';
+    ctx.beginPath(); ctx.arc(px, 424 - (i % 2) * 10, 6, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawBlackBoxTruck(state) {
+  if (!state) return;
+  const key = state.facing < 0 ? 'blackBoxTruckLeft' : 'blackBoxTruckRight';
+  const y = 412;
+  const w = 170;
+  const h = 80;
+  if (drawSpriteFitted(key, state.x, y, w, h, true)) return;
+  ctx.fillStyle = '#151515';
+  ctx.fillRect(state.x + 10, y + 26, 130, 34);
+  ctx.fillStyle = '#333';
+  ctx.fillRect(state.x + 18, y + 18, 56, 24);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(state.x + 42, y + 60, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(state.x + 112, y + 60, 12, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawUfo(x, y, withBeam = false) {
+  const key = withBeam ? 'ufoBeam' : 'ufo';
+  const layout = ENTITY_LAYOUT[key];
+  if (drawSpriteGroundedFitted(key, x + layout.x, y, layout.w, layout.h, false)) return;
+  ctx.fillStyle = '#d9d9d9';
+  ctx.beginPath(); ctx.ellipse(x + 70, y + 28, 56, 20, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#66d9ff';
+  ctx.beginPath(); ctx.arc(x + 70, y + 18, 18, 0, Math.PI * 2); ctx.fill();
+  if (withBeam) {
+    ctx.fillStyle = 'rgba(120,220,255,0.45)';
+    ctx.beginPath();
+    ctx.moveTo(x + 70, y + 42);
+    ctx.lineTo(x + 25, y + 126);
+    ctx.lineTo(x + 115, y + 126);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function startBlackBoxTruckPass() {
+  const direction = Math.random() < 0.5 ? 1 : -1;
+  blackBoxTruckState = {
+    direction,
+    x: direction > 0 ? -200 : canvas.width + 200,
+    y: 408,
+    speed: 2.4,
+    scale: 0.55
+  };
+}
+
+function updateBlackBoxTruck(dt) {
+  if (!blackBoxTruckState) {
+    if (gameState === 'playing' && blackBoxTruckLevels.has(currentLevel) && levelElapsedMs > 3500) {
+      startBlackBoxTruckPass();
+    }
+    return;
+  }
+  const step = Math.max(0.25, dt / 16.67);
+  blackBoxTruckState.x += blackBoxTruckState.direction * blackBoxTruckState.speed * step;
+  if ((blackBoxTruckState.direction > 0 && blackBoxTruckState.x > canvas.width + 220) || (blackBoxTruckState.direction < 0 && blackBoxTruckState.x < -260)) {
+    blackBoxTruckState = null;
+  }
+}
+
+function drawBlackBoxTruckState() {
+  if (!blackBoxTruckState) return;
+  const layout = ENTITY_LAYOUT.blackBoxTruck;
+  const key = blackBoxTruckState.direction < 0 ? 'blackBoxTruckLeft' : 'blackBoxTruckRight';
+  const drawW = layout.w * blackBoxTruckState.scale;
+  const drawH = layout.h * blackBoxTruckState.scale;
+  const drawX = blackBoxTruckState.x;
+  const drawY = blackBoxTruckState.y;
+  if (drawSpriteFitted(key, drawX, drawY, drawW, drawH, true)) return;
+  ctx.fillStyle = '#0f0f0f';
+  ctx.fillRect(drawX + 5, drawY + 15, 110, 30);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(drawX + 14, drawY + 9, 34, 16);
+  ctx.fillRect(drawX + 50, drawY + 9, 34, 16);
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(drawX + 28, drawY + 55, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(drawX + 86, drawY + 55, 10, 0, Math.PI * 2); ctx.fill();
+}
+
+function getBossIgnitionTargets() {
+  const levelData = baseLevels[29];
+  if (!levelData) return [];
+  return levelData.entities
+    .map((ent) => ({ ent, box: getEntityBounds(ent) }))
+    .filter(({ ent, box }) => box && ['houseTallWhite', 'sedan', 'houseSmall', 'smallShed', 'singleGarage', 'miniBarn', 'largeRedBarn'].includes(ent.type))
+    .sort((a, b) => a.box.x - b.box.x);
+}
+
+function igniteBossTarget(target) {
+  if (!target || !target.ent) return;
+  const spawned = [];
+  addGenericLevelSpots(spawned, target.ent, 30);
+  const mult = difficulty === 2 ? 5.0 : difficulty === 3 ? 10.0 : 2.0;
+  spawned.forEach((spot) => {
+    const baseHealth = spot.health || 220;
+    const baseMax = spot.maxHealth || 320;
+    spot.health = Math.max(baseHealth, baseHealth * mult);
+    spot.maxHealth = Math.max(baseMax, baseMax * mult);
+    fireSpots.push(spot);
+  });
+}
+
+function updateUfoRaid(dt) {
+  if (!ufoRaid || currentLevel !== 30) return;
+  const step = Math.max(0.25, dt / 16.67);
+  ufoRaid.timer += dt;
+  if (ufoRaid.phase === 'enter') {
+    ufoRaid.leftX += 3.0 * step;
+    ufoRaid.rightX -= 3.0 * step;
+    if (ufoRaid.leftX >= ufoRaid.leftTargetX && ufoRaid.rightX <= ufoRaid.rightTargetX) {
+      ufoRaid.phase = 'hover';
+      ufoRaid.timer = 0;
+    }
+    return;
+  }
+  if (ufoRaid.phase === 'hover') {
+    if (ufoRaid.timer > 1200) {
+      ufoRaid.phase = 'beam';
+      ufoRaid.timer = 0;
+    }
+    return;
+  }
+  if (ufoRaid.phase === 'beam') {
+    const targets = ufoRaid.targets || [];
+    if (targets.length === 0) {
+      ufoRaid.phase = 'exit';
+      ufoRaid.flashUntil = performance.now() + 240;
+      ufoRaid.exitScale = 1;
+      return;
+    }
+    const target = targets[ufoRaid.beamTargetIndex];
+    if (target) {
+      const cx = target.box.x + target.box.w / 2;
+      const topY = Math.max(58, target.box.y - 150);
+      ufoRaid.leftX = cx - 128;
+      ufoRaid.rightX = cx + 18;
+      ufoRaid.y = topY;
+      ufoRaid.activeTarget = target;
+      ufoRaid.beamUntil = performance.now() + 1500;
+      if (ufoRaid.timer > 1100) {
+        igniteBossTarget(target);
+    createFireParticles(cx, target.box.y + 18, 8, 1.2);
+        ufoRaid.timer = 0;
+        ufoRaid.beamTargetIndex += 1;
+      }
+    }
+    if (ufoRaid.beamTargetIndex >= targets.length) {
+      ufoRaid.phase = 'exit';
+      ufoRaid.flashUntil = performance.now() + 260;
+      ufoRaid.exitScale = 1;
+    }
+    return;
+  }
+  if (ufoRaid.phase === 'exit') {
+    ufoRaid.leftX -= 1.8 * step;
+    ufoRaid.rightX += 1.8 * step;
+    ufoRaid.y -= 1.0 * step;
+    ufoRaid.exitScale *= 0.975;
+    if (ufoRaid.exitScale < 0.08) {
+      ufoRaid = null;
+    }
+  }
+}
+
+function updateUfoPreview(dt) {
+  if (!ufoPreview || currentLevel !== 21) return;
+  const step = Math.max(0.25, dt / 16.67);
+  ufoPreview.x += ufoPreview.speed * step;
+  if (ufoPreview.x > canvas.width + 180) {
+    ufoPreview = null;
+  }
+}
+
+function drawUfoRaid() {
+  if (!ufoRaid || currentLevel !== 30) return;
+  const beamMode = ufoRaid.phase === 'beam';
+  drawUfo(ufoRaid.leftX, ufoRaid.y, beamMode);
+  drawUfo(ufoRaid.rightX, ufoRaid.y + 8, beamMode);
+  if (ufoRaid.phase === 'exit' && ufoRaid.flashUntil > performance.now()) {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, 300, 95, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawUfoPreview() {
+  if (!ufoPreview || currentLevel !== 21) return;
+  drawUfo(ufoPreview.x, ufoPreview.y, false);
+}
+
+function drawTree(x) {
+  drawLegacyTree(x, false);
+}
+
+function drawTreeWithSwing(x) {
+  drawLegacyTree(x, true);
+}
+
+let tornadoTravelX = -180;
+function drawTornado() {
+  tornadoAngle += 0.085;
+  tornadoTravelX += 2.2;
+  if (tornadoTravelX > canvas.width + 180) tornadoTravelX = -180;
+  const x = tornadoTravelX;
+  const topTwist = Math.sin(tornadoAngle * 2.2) * 38;
+  const midTwist = Math.sin(tornadoAngle * 1.8) * 28;
+  const bottomTwist = Math.sin(tornadoAngle * 1.4) * 45;
+  ctx.globalAlpha = 0.75;
+  ctx.strokeStyle = '#222222'; ctx.lineWidth = 48;
+  ctx.beginPath();
+  ctx.moveTo(x - 22 + topTwist, 140);
+  ctx.quadraticCurveTo(x + 18 + midTwist, 235, x - 12 + bottomTwist, 355);
+  ctx.quadraticCurveTo(x + 35, 430, x + 15, 485);
+  ctx.stroke();
+  ctx.strokeStyle = '#444444'; ctx.lineWidth = 22;
+  ctx.beginPath();
+  ctx.moveTo(x - 18 + topTwist * 0.7, 145);
+  ctx.quadraticCurveTo(x + 12 + midTwist * 0.8, 240, x - 8 + bottomTwist * 0.6, 360);
+  ctx.stroke();
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = '#555555';
+  for (let i = 0; i < 9; i++) {
+    const angle = tornadoAngle * 3 + i * 0.8;
+    const dist = 35 + i * 12;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist * 0.6 - 80;
+    ctx.fillRect(x + dx - 3, 180 + dy, 6, 6);
+  }
+}
+
+function updateThumbKnob(dx) {
+  const knob = document.getElementById('thumbKnob');
+  const max = 40;
+  knob.style.transform = `translate(${Math.max(-max, Math.min(max, dx * max))}px, 0px)`;
+}
+
+function syncThumbStickVisibility() {
+  const stick = document.getElementById('thumbStick');
+  const controls = document.getElementById('truckControls');
+  const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  stick.style.display = mobile ? 'block' : 'none';
+  controls.style.display = mobile ? 'flex' : 'none';
+}
+
+let thumbPointerId = null;
+const thumbStick = document.getElementById('thumbStick');
+thumbStick.addEventListener('pointerdown', (e) => {
+  thumbPointerId = e.pointerId;
+  thumbStick.setPointerCapture(e.pointerId);
+});
+thumbStick.addEventListener('pointermove', (e) => {
+  if (thumbPointerId !== e.pointerId) return;
+  const rect = thumbStick.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const dx = (e.clientX - cx) / (rect.width / 2);
+  setTruckDrive(dx);
+});
+function releaseThumb() {
+  thumbPointerId = null;
+  setTruckDrive(0);
+}
+thumbStick.addEventListener('pointerup', releaseThumb);
+thumbStick.addEventListener('pointercancel', releaseThumb);
+document.getElementById('truckLeftBtn').addEventListener('pointerdown', () => setTruckDrive(-1));
+document.getElementById('truckRightBtn').addEventListener('pointerdown', () => setTruckDrive(1));
+document.getElementById('truckLeftBtn').addEventListener('pointerup', () => setTruckDrive(0));
+document.getElementById('truckRightBtn').addEventListener('pointerup', () => setTruckDrive(0));
+document.getElementById('truckLeftBtn').addEventListener('pointercancel', () => setTruckDrive(0));
+document.getElementById('truckRightBtn').addEventListener('pointercancel', () => setTruckDrive(0));
+window.addEventListener('resize', syncThumbStickVisibility);
+syncThumbStickVisibility();
+
+function stopTruckDrive() {
+  setTruckDrive(0);
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
+  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') setTruckDrive(-1);
+  if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(1);
+});
+window.addEventListener('keyup', (e) => {
+  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(0);
+});
+
+function loop() {
+  const now = performance.now();
+  const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16.67;
+  lastFrameTime = now;
+  truck.x += truckDrive * truck.speed;
+  truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
+  if (gameState === 'playing' && pendingDispatchLevel === null) {
+    levelElapsedMs += dt;
+    if (!tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
+      startTankerSupport();
+    }
+  }
+  updateTankerSupport(dt);
+  updateBlackBoxTruck(dt);
+  updateUfoPreview(dt);
+  updateUfoRaid(dt);
+  ctx.clearRect(0,0,1200,600);
+  drawBackground();
+  drawBlackBoxTruckState();
+
+  const data = baseLevels[currentLevel-1];
+  data.entities.forEach(ent => {
+    if (ent.type === 'tornado') drawTornado();
+  });
+
+  ctx.fillStyle = 'rgba(0,0,0,0.92)';
+  ctx.fillRect(20,18,320,48);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 26px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Score: ${score}`,35,48);
+  ctx.fillText(`Level: ${currentLevel}`,195,48);
+
+  ctx.fillStyle = '#0066CC';
+  ctx.fillRect(980,18,62,38);
+  ctx.fillRect(1048,18,62,38);
+  ctx.fillRect(1116,18,62,38);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("Day",1011,43);
+  ctx.fillText("Dusk",1079,43);
+  ctx.fillText("Night",1147,43);
+
+  data.entities.forEach(ent => {
+    if (ent.type === 'shedWindow') drawShedWindow(ent.x);
+    if (ent.type === 'smallShed') drawSmallShed(ent.x);
+    if (ent.type === 'singleGarage') drawSingleGarage(ent.x);
+    if (ent.type === 'schoolhouse') drawSchoolhouse(ent.x);
+    if (ent.type === 'kennardSchool') drawSchoolhouse(ent.x);
+    if (ent.type === 'house') drawTallHouse(ent.x);
+    if (ent.type === 'smallHouse') drawSmallHouse(ent.x, ent.color);
+    if (ent.type === 'houseTallWhite') drawTallHouse(ent.x);
+    if (ent.type === 'miniBarn') drawMiniBarn(ent.x);
+    if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent.x);
+    if (ent.type === 'hayBale') drawHayBale(ent.x);
+    if (ent.type === 'tractor') drawTractor(ent.x, ent.facing || 'right');
+    if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0);
+    if (ent.type === 'pickup') drawPickup(ent.x, ent.yOffset || 0);
+    if (ent.type === 'semi') drawSemi(ent.x);
+    if (ent.type === 'tree') drawTree(ent.x);
+    if (ent.type === 'treeWithSwing') drawTreeWithSwing(ent.x);
+    if (ent.type === 'oakSmall' || ent.type === 'oakMedium' || ent.type === 'oakLarge' || ent.type === 'mapleSmall' || ent.type === 'mapleMedium' || ent.type === 'mapleLarge' || ent.type === 'pineSmall' || ent.type === 'pineMedium') drawTreeEntity(ent.type, ent.x);
+    if (ent.type === 'fence') drawFence(ent.x);
+    if (ent.type === 'pond') drawPond(ent.x);
+    if (ent.type === 'boat') drawBoat(ent.x);
+    if (ent.type === 'tent') drawTent(ent.x);
+    if (ent.type === 'catTails') drawCatTails(ent.x);
+    if (ent.type === 'bikeRed') drawBikeRed(ent.x);
+    if (ent.type === 'pushMower') drawPushMower(ent.x);
+    if (ent.type === 'pushManualMower') drawPushManualMower(ent.x);
+    if (ent.type === 'busUpsideDown') drawBusUpsideDown(ent.x);
+    if (ent.type === 'ufo') drawUfo(ent.x, ent.y || 90, currentLevel === FINAL_LEVEL && ufoRaid?.phase === 'beam');
+    if (ent.type === 'tornado') return;
+    if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
+  });
+
+  drawSideFireTruck();
+  drawTankerSupport();
+  drawTankerConnection();
+  drawUfoPreview();
+  drawUfoRaid();
+
+  const tip = getClampedHoseEnd();
+  ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
+  const truckPoint = getTruckNozzlePoint();
+  ctx.beginPath(); ctx.moveTo(truckPoint.x, truckPoint.y);
+  ctx.quadraticCurveTo(truckPoint.x + (truckFacing > 0 ? 90 : -90), truckPoint.y - 165, tip.x, tip.y); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+  ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+
+  const sortedSpots = [...fireSpots].sort((a, b) => a.x - b.x);
+  sortedSpots.forEach(spot => {
+    if (spot.health <= 0) return;
+    const regrowthChance = difficulty === 1 ? 0.015 : 0.022;
+    if (Math.random() < regrowthChance) spot.health = Math.min(spot.health + (spot.growthRate || 4.2), spot.maxHealth);
+    const healthPercent = spot.health / spot.maxHealth;
+    const area = Math.max(1, spot.w * spot.h);
+    const sizeScale = Math.max(0.70, Math.min(2.25, Math.sqrt(area) / 85));
+    let intensity = 2 + healthPercent * 7;
+    if (spot.isHay) intensity += 1.8;
+    if (spot.isSemi) intensity += 2.2;
+    if (spot.isVehicle) intensity += 1.0;
+    createFireParticles(spot.x + spot.w/2, spot.y + spot.h/2, intensity * sizeScale, sizeScale);
+
+    for (let i = particles.length-1; i >= 0; i--) {
+      const p = particles[i];
+      if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
+        let damage = difficulty === 1 ? 0.11 : difficulty === 2 ? 0.08 : 0.06;
+        if (spot.isHay) damage = difficulty === 1 ? 0.032 : 0.022;
+        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05) * (currentLevel === 10 ? (difficulty === 1 ? 1.1 : difficulty === 2 ? 1.0 : 0.95) : 1);
+        else if (spot.isVehicle) damage = difficulty === 1 ? 0.055 : 0.04;
+        spot.health -= damage;
+        p.life = 8;
+      }
+    }
+    if (spot.health <= 0) { createSmoke(spot.x + spot.w/2, spot.y + spot.h/2); score += 10; }
+  });
+
+  if (currentLevel === 10) {
+    fireSpots.forEach(spot => {
+      if (spot.isSemi && Math.random() < 0.028) {
+        fireSpots.forEach(other => {
+          if (other.health > 0) {
+            const dist = Math.hypot(other.x - spot.x, other.y - spot.y);
+            if (dist < 180) other.health = Math.min(other.health + (difficulty === 1 ? 20 : 40), other.maxHealth);
+          }
+        });
+        createFireParticles(spot.x + 40, spot.y + 30, 10, 1.4);
+      }
+    });
+  }
+
+  if (isSpraying) createWaterParticles();
+
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.update(); 
+    p.draw();
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  drawTotalFireGauge();
+
+  ctx.fillStyle = '#FF0';
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'right';
+  ctx.fillText('KVFD - Kennard, IN',1180,580);
+
+  if (gameState === 'playing') checkWin();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
+
+
+
+
+
+
