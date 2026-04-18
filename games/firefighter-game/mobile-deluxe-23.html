@@ -224,14 +224,14 @@ button:hover { filter: brightness(1.2); }
 }
 
 #truckControls {
-  position: absolute;
+  position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 12px;
+  bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 56;
+  z-index: 90;
   pointer-events: auto;
 }
 #truckControls .row {
@@ -261,23 +261,23 @@ button:hover { filter: brightness(1.2); }
   to { box-shadow: 0 0 0 7px rgba(255, 230, 70, 0.45), 0 8px 20px rgba(0,0,0,0.45); transform: scale(1.06); }
 }
 #truckControls.control-cue-flash::before {
-  content: "↔";
+content: "Move";
   position: absolute;
   left: 50%;
   top: -34px;
   transform: translateX(-50%);
-  font-size: 34px;
+  font-size: 22px;
   font-weight: 900;
   color: #ffe94d;
   text-shadow: 0 2px 8px rgba(0,0,0,0.7);
 }
 #thumbStick.control-cue-flash::before {
-  content: "↔";
+content: "Move";
   position: absolute;
   left: 50%;
   top: -34px;
   transform: translateX(-50%);
-  font-size: 34px;
+  font-size: 22px;
   font-weight: 900;
   color: #ffe94d;
   text-shadow: 0 2px 8px rgba(0,0,0,0.7);
@@ -2299,6 +2299,10 @@ function loadLevel(lvl, options = {}) {
   pointPopups = [];
   gameState = 'playing';
   updateLevelSkipHud();
+  if (skipDispatch) {
+    if (lvl === 3) setTimeout(() => showLevel3MoveCue(), 250);
+    if (lvl === 6) setTimeout(() => showLevel6TimeCue(), 250);
+  }
   if (blackBoxTruckLevels.has(lvl)) {
     // Surprise moment: one round-trip (out and back) at a random time.
     const firstAt = 4500 + Math.random() * 6500;
@@ -4092,7 +4096,10 @@ function updateThumbKnob(dx) {
 function syncThumbStickVisibility() {
   const stick = document.getElementById('thumbStick');
   const controls = document.getElementById('truckControls');
-  const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  // Some laptops report a coarse pointer because they have touch screens.
+  // Prefer showing desktop arrows whenever a fine pointer is available.
+  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+  const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches && !hasFinePointer;
   stick.style.display = mobile ? 'block' : 'none';
   controls.style.display = mobile ? 'none' : 'flex';
 }
@@ -4149,7 +4156,7 @@ function drawTimeSelectorCue() {
   ctx.fillStyle = `rgba(255, 234, 88, ${0.85})`;
   ctx.font = 'bold 18px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('↕', 1079, 78);
+  ctx.fillText('Tap', 1079, 78);
   ctx.restore();
 }
 
