@@ -4268,13 +4268,19 @@ function stopTruckDrive() {
 }
 
 window.addEventListener('keydown', (e) => {
-  if (e.repeat) return;
-  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') setTruckDrive(-1);
-  if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(1);
-});
+  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (e.repeat) return;
+    if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') setTruckDrive(-1);
+    if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(1);
+  }
+}, true);
 window.addEventListener('keyup', (e) => {
-  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(0);
-});
+  if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    setTruckDrive(0);
+  }
+}, true);
 
 function loop() {
   const now = performance.now();
