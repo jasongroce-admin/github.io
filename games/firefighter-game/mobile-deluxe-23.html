@@ -474,6 +474,7 @@ const SPRITE_FILES = {
   garage: 'garage1_652x251.webp',
   garageSmall: 'garagesmall_543x237.webp',
   barnLarge: 'RedBarnLarge_514x288.webp',
+  farmWindmill: 'Farm_Windmill.webp',
   tractor: 'Tractor_436x238.webp',
   mower: 'lawnmowerrider_876x469.webp',
   pushMower: 'pushmower.webp',
@@ -717,6 +718,7 @@ const ENTITY_LAYOUT = {
   garageSmall: { x: -4, w: 324, h: 186, ground: true },
   barnMini: { x: -12, w: 336, h: 236, ground: true, key: 'barnLarge' },
   barnLarge: { x: -22, w: 452, h: 296, ground: true },
+  farmWindmill: { x: -10, w: 168, h: 282, ground: true },
   houseSmall: { x: 4, w: 380, h: 218, ground: true },
   houseTall: { x: -36, w: 384, h: 392, ground: true },
   houseTallWhite: { x: -36, w: 384, h: 392, ground: true },
@@ -1114,6 +1116,7 @@ const CATALOG_ENTITY_SPECS = {
     ]
   },
   bgTreeOakRealistic: { sprite: 'treeOakRealistic', burnable: false, filter: 'brightness(0.18) saturate(0.25) contrast(1.08)' },
+  farmWindmill: { sprite: 'farmWindmill', burnable: false },
   shrubCluster: { sprite: 'shrubCluster', burnable: false },
   benchWood: { sprite: 'benchWood', burnable: false },
   fenceWhiteRow: { sprite: 'fenceWhiteRow', burnable: false }
@@ -1210,8 +1213,8 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
         h: box.h * rh,
         entityKey,
         difficultyTier,
-        flameScale: extra.flameScale ?? (isRoof ? 1.28 : 0.82),
-        smokeScale: extra.smokeScale ?? (isRoof ? 1.25 : 0.72),
+        flameScale: extra.flameScale ?? (isRoof ? 1.12 : 0.68),
+        smokeScale: extra.smokeScale ?? (isRoof ? 1.05 : 0.60),
         ...extra
       });
     });
@@ -1230,8 +1233,9 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
     return;
   }
   if (type === 'tent') {
-    spots.push({ x: box.x + box.w * 0.26, y: box.y + box.h * 0.26, w: box.w * 0.44, h: box.h * 0.36, entityKey });
-    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.08, w: box.w * 0.60, h: box.h * 0.16, roof: true, entityKey });
+    // Tent zones are medium+ difficulty only so easy mode does not light tents.
+    spots.push({ x: box.x + box.w * 0.26, y: box.y + box.h * 0.26, w: box.w * 0.44, h: box.h * 0.36, entityKey, difficultyTier: 2 });
+    spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.08, w: box.w * 0.60, h: box.h * 0.16, roof: true, entityKey, difficultyTier: 2 });
     return;
   }
   if (type === 'catTails') {
@@ -1253,7 +1257,7 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
     for (let i = before; i < spots.length; i++) spots[i] = { ...spots[i], entityKey, isTree: true };
     return;
   }
-  if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'house' || type === 'smallHouse') {
+  if (type === 'kennardSchool' || type === 'schoolhouse' || type === 'houseTall' || type === 'houseTallWhite' || type === 'houseTallOld' || type === 'house' || type === 'smallHouse') {
     spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28, entityKey });
     spots.push({ x: box.x + box.w * 0.60, y: box.y + box.h * 0.32, w: box.w * 0.22, h: box.h * 0.28, entityKey });
     spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.06, w: box.w * 0.64, h: box.h * 0.18, roof: true, entityKey });
@@ -1323,6 +1327,7 @@ function getEntityBounds(ent) {
   if (ent.type === 'smallHouse') return getSpriteFitRect('houseSmall', ent.x + ENTITY_LAYOUT.houseSmall.x, groundedY('houseSmall', GRASS_Y, ENTITY_LAYOUT.houseSmall.h), ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h, true);
   if (ent.type === 'house') return getSpriteFitRect('houseTall', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTall', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
   if (ent.type === 'houseTallWhite') return getSpriteFitRect('houseTallWhite', ent.x + ENTITY_LAYOUT.houseTallWhite.x, groundedY('houseTallWhite', GRASS_Y, ENTITY_LAYOUT.houseTallWhite.h), ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h, true);
+  if (ent.type === 'houseTallOld') return getSpriteFitRect('houseTallOld', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTallOld', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
   if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') {
     const scale = ent.scale || 1;
     return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x * scale, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h * scale), ENTITY_LAYOUT.kennardSchool.w * scale, ENTITY_LAYOUT.kennardSchool.h * scale, true);
@@ -1386,6 +1391,15 @@ function rectsOverlap(a, b) {
   return a && b && a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
+function intersectionArea(a, b) {
+  const x1 = Math.max(a.x, b.x);
+  const y1 = Math.max(a.y, b.y);
+  const x2 = Math.min(a.x + a.w, b.x + b.w);
+  const y2 = Math.min(a.y + a.h, b.y + b.h);
+  if (x2 <= x1 || y2 <= y1) return 0;
+  return (x2 - x1) * (y2 - y1);
+}
+
 function pushFireSpotAwayFromTruck(spot, truckRect) {
   if (!rectsOverlap(spot, truckRect)) return spot;
   const moved = { ...spot };
@@ -1418,7 +1432,19 @@ function computeFireSpotsForLevel(lvl, entities) {
   return spots;
 }
 
-function selectSpotsForDifficulty(spots, diff) {
+function keepSpotsOppositeTruckSide(spots, truckSide = 'left') {
+  if (!spots.length) return spots;
+  const splitX = canvas.width * 0.5;
+  const margin = 24;
+  const opposite = spots.filter((spot) => {
+    const centerX = spot.x + (spot.w || 0) * 0.5;
+    if (truckSide === 'left') return centerX > (splitX + margin);
+    return centerX < (splitX - margin);
+  });
+  return opposite.length ? opposite : spots;
+}
+
+function selectSpotsForDifficulty(spots, diff, lvl = 1) {
   if (!spots.length) return spots;
   if (diff >= 3) return spots.filter((s) => (s.difficultyTier ?? 1) <= 3);
   const byKey = new Map();
@@ -1429,7 +1455,7 @@ function selectSpotsForDifficulty(spots, diff) {
   });
   const chosen = [];
   byKey.forEach((group) => {
-    const allowedTier = diff === 1 ? 1 : 2;
+    const allowedTier = diff === 1 ? 1 : (lvl >= 17 ? 3 : 2);
     const tierFiltered = group.filter((s) => (s.difficultyTier ?? 1) <= allowedTier);
     const source = tierFiltered.length ? tierFiltered : group;
     const sorted = [...source].sort((a, b) => {
@@ -1451,7 +1477,7 @@ function selectSpotsForDifficulty(spots, diff) {
       chosen.push(...sorted.slice(0, Math.min(take, sorted.length)));
       return;
     }
-    const take = isTree ? 2 : Math.min(4, sorted.length);
+    const take = isTree ? (lvl >= 17 ? 3 : 2) : Math.min(lvl >= 17 ? 6 : 4, sorted.length);
     chosen.push(...sorted.slice(0, Math.min(take, sorted.length)));
   });
   return chosen;
@@ -1928,10 +1954,10 @@ baseLevels[9] = {
     { type: 'bgHouseNeighborhoodBrickGarage', grid: { col: 'E', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
     { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
     { type: 'bgHouseNeighborhoodClassic', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
-    // One right-facing car tucked slightly behind the semi's left-front fender.
-    { type: 'sedan', x: 708, yOffset: 20, variant: 'sedanSilverRight' },
-    { type: 'semi', x: 808, variant: 'semiWrecked' },
-    { type: 'treeOakRealistic', grid: { col: 'U', colOffset: 0.1, line: 10.35 }, scale: 0.94 }
+    // Shifted left so all major props stay fully on screen.
+    { type: 'sedan', x: 560, yOffset: 20, variant: 'sedanSilverRight' },
+    { type: 'semi', x: 668, variant: 'semiWrecked' },
+    { type: 'treeOakRealistic', grid: { col: 'R', colOffset: 0.1, line: 10.35 }, scale: 0.94 }
   ]
 };
 
@@ -1992,9 +2018,10 @@ baseLevels[11] = {
     { type: 'pond', x: 190 },
     { type: 'boat', x: 308 },
     { type: 'tent', x: 470, scale: 1.03 },
-    { type: 'catTails', x: 565 },
-    { type: 'catTails', x: 620, scale: 0.94 },
-    { type: 'catTails', x: 672, scale: 0.88 }
+    // Three cattails: right of the tree and left of the pond.
+    { type: 'catTails', x: 114, scale: 0.86 },
+    { type: 'catTails', x: 156, scale: 0.84 },
+    { type: 'catTails', x: 196, scale: 0.82 }
   ],
   tankerRightOnly: true
 };
@@ -2012,11 +2039,159 @@ baseLevels[12] = {
     { type: 'bgHouseNeighborhoodClassic', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
     { type: 'houseNeighborhoodClassic', grid: { col: 'M', colOffset: -0.1, line: 10 }, scale: 1.36 },
     { type: 'houseNeighborhoodCottageAlt', grid: { col: 'Q', colOffset: -0.2, line: 10 }, scale: 1.30 },
-    { type: 'sedan', x: 630, yOffset: 20, variant: 'sedanSilverLeft' },
-    { type: 'sedan', x: 860, yOffset: 20, variant: 'sedanGreenRight' },
     { type: 'treeOakRealistic', grid: { col: 'T', colOffset: 0.15, line: 10.35 }, scale: 0.98 },
     { type: 'fenceWhiteRow', x: 520, scale: 0.74 },
-    { type: 'fenceWhiteRow', x: 727.2, scale: 0.74 }
+    { type: 'fenceWhiteRow', x: 727.2, scale: 0.74 },
+    // Cars draw after fence so they sit visually on top of the fence line.
+    { type: 'sedan', x: 630, yOffset: 20, variant: 'sedanSilverLeft' },
+    { type: 'sedan', x: 860, yOffset: 20, variant: 'sedanGreenRight' }
+  ]
+};
+
+baseLevels[13] = {
+  name: 'Beige House Front 14',
+  safetyTip: 'Work the roofline first, then sweep down to windows and yard exposures.',
+  dispatchBody: 'Dispatch to Kennard Fire: beige home involved with tree and bike exposures on the left approach.',
+  dispatchClearBody: 'Dispatch confirms the beige home frontage and left-side exposures are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodClassic', grid: { col: 'E', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.46, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'R', line: 8.9 }, scale: 0.62, alpha: 0.20, silhouette: true },
+    { type: 'fenceWhiteRow', x: 720, scale: 0.74 },
+    { type: 'fenceWhiteRow', x: 927.2, scale: 0.74 },
+    { type: 'treeOakRealistic', grid: { col: 'N', colOffset: -0.05, line: 10.4 }, scale: 1.02 },
+    { type: 'bikeRed', grid: { col: 'O', colOffset: -0.15, line: 10.05 }, scale: 0.80 },
+    { type: 'houseNeighborhoodBeige', grid: { col: 'Q', colOffset: -0.15, line: 10 }, scale: 1.58 },
+    { type: 'shrubCluster', grid: { col: 'Q', colOffset: 0.15, line: 10.55 }, scale: 0.78 }
+  ]
+};
+
+baseLevels[14] = {
+  name: 'Garage Right Stack 15',
+  safetyTip: 'Keep front access open so crews can cover the car and house at the same time.',
+  dispatchBody: 'Dispatch to Kennard Fire: right-side home fire with silver sedan and shrub exposure.',
+  dispatchClearBody: 'Dispatch confirms right-side home, sedan, and shrub line are under control.',
+  timeOfDay: 1,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'D', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrickGarage', grid: { col: 'Q', line: 8.9 }, scale: 0.62, alpha: 0.20, silhouette: true },
+    // Home stays behind the silver sedan and behind the shrub foreground.
+    { type: 'houseNeighborhoodBrickGarage', x: 820, scale: 1.34, baseY: 488 },
+    { type: 'sedan', x: 760, yOffset: 20, variant: 'sedanSilverRight' },
+    { type: 'shrubCluster', x: 842, scale: 0.82, baseY: 492 },
+    { type: 'fenceWhiteRow', x: 640, scale: 0.72 }
+  ]
+};
+
+baseLevels[15] = {
+  name: 'Windmill Barn Line 16',
+  safetyTip: 'Secure farm access lanes so apparatus can reach every exposure quickly.',
+  dispatchBody: 'Dispatch to Kennard Fire: left-side farm fire around a barn, windmill, and equipment line.',
+  dispatchClearBody: 'Dispatch confirms the barnyard, windmill line, and tractor exposure are under control.',
+  timeOfDay: 1,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgHouseNeighborhoodCottageAlt', grid: { col: 'C', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'H', line: 8.85 }, scale: 0.42, alpha: 0.16, silhouette: true },
+    { type: 'farmWindmill', x: 290, scale: 0.92, baseY: 488 },
+    { type: 'tractor', x: 160, facing: 'right' },
+    { type: 'largeRedBarn', x: 430, scale: 1.12, baseY: 488 },
+    { type: 'hayBale', x: 636, scale: 0.88 },
+    { type: 'fenceWhiteRow', x: 520, scale: 0.72 }
+  ]
+};
+
+baseLevels[17] = {
+  name: 'Parkside Shed Rescue 18',
+  safetyTip: 'Keep play areas clear and protect nearby structures from exposure.',
+  dispatchBody: 'Dispatch to Kennard Fire: park edge scene with active fire in a shed and nearby cottage.',
+  dispatchClearBody: 'Dispatch confirms the park edge shed and cottage exposures are under control.',
+  timeOfDay: 2,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'D', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
+    { type: 'playgroundSwingLeft', x: 450, scale: 0.78 },
+    { type: 'playgroundSlideShortLeft', x: 560, scale: 0.78 },
+    { type: 'shedRed', x: 760, scale: 1.00, baseY: 488 },
+    { type: 'houseNeighborhoodCottageAlt', x: 915, scale: 1.24, baseY: 488 },
+    { type: 'treePineRealistic', x: 1060, scale: 0.94, baseY: 488 },
+    { type: 'fenceWhiteRow', x: 690, scale: 0.72 }
+  ]
+};
+
+baseLevels[18] = {
+  name: 'Twin Home Block 19',
+  safetyTip: 'Prioritize separation lines between homes to stop extension across the block.',
+  dispatchBody: 'Dispatch to Kennard Fire: two-home fire with bike and shrub exposures in front.',
+  dispatchClearBody: 'Dispatch confirms both homes and front-yard exposures are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'E', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
+    { type: 'houseNeighborhoodGray', x: 650, scale: 1.20, baseY: 488 },
+    // Left home moved to the right side of the second home.
+    { type: 'houseNeighborhoodBeige', x: 920, scale: 1.24, baseY: 488 },
+    { type: 'shrubCluster', x: 928, scale: 0.80, baseY: 492 },
+    { type: 'bikeRed', x: 952, scale: 0.82, yOffset: -1 },
+    { type: 'fenceWhiteRow', x: 610, scale: 0.72 }
+  ]
+};
+
+baseLevels[20] = {
+  name: 'Major Left Exposure 21',
+  safetyTip: 'Attack the biggest structure first, then protect nearby secondary exposures.',
+  dispatchBody: 'Dispatch to Kennard Fire: heavy left-side structure fire with multiple nearby exposures.',
+  dispatchClearBody: 'Dispatch confirms major left-side structure and nearby exposures are controlled.',
+  timeOfDay: 2,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgHouseNeighborhoodClassic', grid: { col: 'B', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'H', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
+    { type: 'houseNeighborhoodBrickGarage', x: 190, scale: 1.46, baseY: 488 },
+    { type: 'garageSmall', x: 430, scale: 1.08, baseY: 488 },
+    { type: 'treeOakRealistic', x: 600, scale: 0.96, baseY: 488 },
+    { type: 'sedan', x: 470, yOffset: 22, variant: 'sedanGreenLeft' },
+    { type: 'fenceWhiteRow', x: 140, scale: 0.74 }
+  ]
+};
+
+baseLevels[21] = {
+  name: 'Right Home and Mower 22',
+  safetyTip: 'Clear mowers and yard tools from access routes so crews can reach the structure fast.',
+  dispatchBody: 'Dispatch to Kennard Fire: right-side home fire with mower exposure in the front yard.',
+  dispatchClearBody: 'Dispatch confirms the right-side home and mower-side yard exposure are under control.',
+  timeOfDay: 2,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'E', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
+    { type: 'houseNeighborhoodClassic', x: 840, scale: 1.38, baseY: 488 },
+    { type: 'pushManualMower', x: 826, scale: 0.94, baseY: 492 },
+    { type: 'treeOakRealistic', x: 1030, scale: 0.92, baseY: 488 },
+    { type: 'fenceWhiteRow', x: 720, scale: 0.72 }
+  ]
+};
+
+baseLevels[22] = {
+  name: 'Old Home Final Alarm 23',
+  safetyTip: 'Control roof fire first and hold the driveway side to protect nearby vehicles.',
+  dispatchBody: 'Dispatch to Kennard Fire: final alarm at an older right-side home with car exposure.',
+  dispatchClearBody: 'Dispatch confirms the older home and vehicle exposure are under control.',
+  timeOfDay: 2,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'D', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
+    { type: 'houseTallOld', x: 940, scale: 1.02, baseY: 488 },
+    { type: 'sedan', x: 805, yOffset: 22, variant: 'sedanBlueLeft' },
+    { type: 'shrubCluster', x: 890, scale: 0.82, baseY: 492 },
+    { type: 'fenceWhiteRow', x: 742, scale: 0.72 }
   ]
 };
 
@@ -2298,15 +2473,33 @@ function loadLevel(lvl, options = {}) {
     }
   }
   let template = computeFireSpotsForLevel(lvl, levelData.entities);
-  template = selectSpotsForDifficulty(template, difficulty);
-  const burnableBoxes = (levelData.entities || [])
-    .filter((ent) => ent && isBurnableType(ent.type))
-    .map((ent) => getEntityBounds(ent))
-    .filter(Boolean);
+  template = selectSpotsForDifficulty(template, difficulty, lvl);
+  const burnableBoxesByKey = new Map();
+  (levelData.entities || []).forEach((ent, idx) => {
+    if (!ent || !isBurnableType(ent.type)) return;
+    const box = getEntityBounds(ent);
+    if (!box) return;
+    burnableBoxesByKey.set(`${ent.type}:${idx}`, box);
+  });
+  const burnableBoxes = Array.from(burnableBoxesByKey.values());
   const filteredTemplate = burnableBoxes.length
-    ? template.filter((spot) => burnableBoxes.some((box) => rectsOverlap(spot, box)))
+    ? template.filter((spot) => {
+      const ownerBox = spot.entityKey ? burnableBoxesByKey.get(spot.entityKey) : null;
+      if (ownerBox) {
+        const overlap = intersectionArea(spot, ownerBox);
+        const spotArea = Math.max(1, spot.w * spot.h);
+        return overlap >= (spotArea * 0.52);
+      }
+      return burnableBoxes.some((box) => rectsOverlap(spot, box));
+    })
     : template;
-  fireSpots = filteredTemplate.map(s => {
+  const onScreenTemplate = filteredTemplate.filter((spot) => (
+    spot.x >= 0 && spot.y >= 0 &&
+    (spot.x + spot.w) <= canvas.width &&
+    (spot.y + spot.h) <= canvas.height
+  ));
+  const oppositeSideTemplate = keepSpotsOppositeTruckSide(onScreenTemplate.length ? onScreenTemplate : filteredTemplate, levelData.truckSide || 'left');
+  fireSpots = oppositeSideTemplate.map(s => {
     let mult = 1.0;
     if (difficulty === 2) mult = 1.85;
     if (difficulty === 3) mult = 2.75;
@@ -4347,6 +4540,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'house') drawTallHouse(ent.x);
     if (ent.type === 'smallHouse') drawSmallHouse(ent.x, ent.color);
     if (ent.type === 'houseTallWhite') drawTallHouse(ent.x);
+    if (ent.type === 'houseTallOld') drawTallHouse(ent.x);
     if (ent.type === 'miniBarn') drawMiniBarn(ent.x);
     if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent);
     if (ent.type === 'hayBale') drawHayBale(ent.x);
