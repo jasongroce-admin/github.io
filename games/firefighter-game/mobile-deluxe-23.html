@@ -331,6 +331,8 @@ button:hover { filter: brightness(1.2); }
   <div id="levelSkipHud" aria-label="Level skip" style="position:fixed; top:104px; left:50%; transform:translateX(-50%); z-index:80; display:none; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:rgba(0,0,0,0.70); box-shadow:0 10px 30px rgba(0,0,0,0.35);">
     <button id="levelSkipPrev" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">◀</button>
     <div id="levelSkipLabel" style="min-width:112px; text-align:center; color:#fff; font-weight:800; letter-spacing:0.5px;">Level 1</div>
+    <input id="levelSkipInput" type="number" min="1" value="1" style="width:68px; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.3); background:rgba(5,15,25,0.85); color:#fff; font-weight:700; text-align:center;" />
+    <button id="levelSkipGo" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">GO</button>
     <button id="levelSkipNext" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">▶</button>
   </div>
 </div>
@@ -410,9 +412,16 @@ const SPRITE_FILES = {
   sedanRed: 'redsportscar_1168x784.webp',
   sedanRed2: 'redcarsports2_459x145.webp',
   sedanBlue: 'bluecoopcar_459x154.webp',
+  sedanGreenLeft: 'Vehicle_Sedan_Green_LeftFacing.webp',
+  sedanGreenRight: 'Vehicle_Sedan_Green_RightFacing.webp',
+  sedanSilverLeft: 'Vehicle_Sedan_Silver_FacingLeft.webp',
+  sedanSilverRight: 'Vehicle_Sedan_Silver_FacingRight.webp',
+  sedanBlueLeft: 'Vehicle_Sedan_Blue_Left.webp',
   pickupCyber: 'cybertruck_1168x784.webp',
   semiTankLeft: 'fire_tanker_kvfd_LeftFacing700x283.webp',
   semiTankRight: 'fire_tanker_kvfd_RightFacing700x283.webp',
+  boroTankerLeft: 'FTBoroLeftFacing.webp',
+  boroTankerRight: 'FTBoroRightFacing.webp',
   semiWrecked: 'wreckedsemi_792x276.webp',
   hayA: 'hay_1_367x210.webp',
   hayB: 'hay_2_432x214.webp',
@@ -457,6 +466,10 @@ const SPRITE_FILES = {
   shrubCluster: 'Shrub_Bunch_4.webp',
   treeOakRealistic: 'Tree_Realistic_Oak_Single.webp',
   treePineRealistic: 'Tree_Realistic_Pine_Single.webp'
+  , normalHouseClassic: 'Normal_House_01.webp'
+  , normalHouseBrickGarage: 'Normal_House_03_Brick_Garage.webp'
+  , normalHouseCottageAlt: 'Normal_House_04_Cottage.webp'
+  , busSchoolLeft: 'Vehicle_School_Bus_YellowleftFacing.webp'
   , horseEatLeft: 'horse_eating_459x145_Facing left.webp'
   , horseEatRight: 'horse_eating_459x145_FacingRight.webp'
   , playgroundSlideRight: 'Playground_Slide_FacingRight.webp'
@@ -673,6 +686,8 @@ const ENTITY_LAYOUT = {
   semiTank: { x: -10, w: 360, h: 146, ground: false },
   semiTankLeft: { x: -10, w: 360, h: 146, ground: false },
   semiTankRight: { x: -10, w: 360, h: 146, ground: false },
+  boroTankerLeft: { x: -10, w: 360, h: 146, ground: false },
+  boroTankerRight: { x: -10, w: 360, h: 146, ground: false },
   semiWrecked: { x: -10, w: 520, h: 205, ground: false },
   mower: { x: 18, w: 120, h: 88, ground: true },
   tractor: { x: 0, w: 170, h: 118, ground: true },
@@ -704,6 +719,9 @@ const ENTITY_LAYOUT = {
   houseNeighborhoodBeige: { x: -20, w: 320, h: 228, ground: true },
   houseNeighborhoodBrick: { x: -18, w: 310, h: 224, ground: true },
   houseNeighborhoodCottage: { x: -10, w: 270, h: 198, ground: true },
+  houseNeighborhoodClassic: { x: -16, w: 306, h: 220, ground: true },
+  houseNeighborhoodBrickGarage: { x: -20, w: 322, h: 228, ground: true },
+  houseNeighborhoodCottageAlt: { x: -12, w: 286, h: 206, ground: true },
   bgHouseNeighborhoodGray: { x: -10, w: 170, h: 124, ground: true },
   bgHouseNeighborhoodBrick: { x: -10, w: 164, h: 118, ground: true },
   bgHouseNeighborhoodCottage: { x: -10, w: 150, h: 112, ground: true },
@@ -714,6 +732,7 @@ const ENTITY_LAYOUT = {
   benchWood: { x: -4, w: 114, h: 68, ground: true },
   fenceWhiteRow: { x: -8, w: 280, h: 74, ground: true }
   , horse: { x: 0, w: 170, h: 64, ground: true }
+  , busSchoolLeft: { x: -12, w: 330, h: 136, ground: false }
   , playgroundSlideRight: { x: -8, w: 150, h: 196, ground: true }
   , playgroundSwingRight: { x: -6, w: 162, h: 128, ground: true }
   , playgroundSlideLeft: { x: -8, w: 150, h: 196, ground: true }
@@ -739,13 +758,14 @@ function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
 }
 
 function preloadLevelSprites(lvl) {
-  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight']);
+  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight']);
   if (lvl === 7) {
     needed.add('horseEatLeft');
     needed.add('horseEatRight');
   }
   const entities = baseLevels[lvl - 1]?.entities || [];
   entities.forEach((ent) => {
+    if (ent.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
     const catalogSpec = getCatalogSpec(ent.type);
     if (catalogSpec) needed.add(catalogSpec.sprite);
   if (ent.type === 'shedWindow' || ent.type === 'smallShed') needed.add('shedRed');
@@ -769,6 +789,7 @@ function preloadLevelSprites(lvl) {
     if (ent.type === 'bikeRed') needed.add('bikeRed');
     if (ent.type === 'pushMower') needed.add('pushMower');
     if (ent.type === 'pushManualMower') needed.add('pushManualMower');
+    if (ent.type === 'busSchoolLeft') needed.add('busSchoolLeft');
     if (ent.type === 'busUpsideDown') needed.add('busUpsideDown');
     if (ent.type === 'fallenTree') needed.add(ent.variant || 'treeOakRealistic');
     if (ent.type === 'stormTree') needed.add(ent.variant || 'treeOakRealistic');
@@ -990,10 +1011,49 @@ const CATALOG_ENTITY_SPECS = {
       [0.58, 0.38, 0.16, 0.17, { difficultyTier: 2 }]
     ]
   },
+  houseNeighborhoodClassic: {
+    sprite: 'normalHouseClassic',
+    burnable: true,
+    burnZones: [
+      [0.14, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 1 }],
+      [0.34, 0.10, 0.22, 0.11, { roof: true, difficultyTier: 2 }],
+      [0.54, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 3 }],
+      [0.18, 0.34, 0.19, 0.20, { difficultyTier: 1 }],
+      [0.40, 0.39, 0.13, 0.15, { difficultyTier: 2 }],
+      [0.58, 0.34, 0.19, 0.20, { difficultyTier: 2 }]
+    ]
+  },
+  houseNeighborhoodBrickGarage: {
+    sprite: 'normalHouseBrickGarage',
+    burnable: true,
+    burnZones: [
+      [0.14, 0.10, 0.24, 0.11, { roof: true, difficultyTier: 1 }],
+      [0.35, 0.10, 0.20, 0.11, { roof: true, difficultyTier: 2 }],
+      [0.53, 0.10, 0.26, 0.11, { roof: true, difficultyTier: 3 }],
+      [0.18, 0.34, 0.18, 0.19, { difficultyTier: 1 }],
+      [0.40, 0.33, 0.20, 0.24, { difficultyTier: 2 }],
+      [0.61, 0.36, 0.18, 0.19, { difficultyTier: 3 }]
+    ]
+  },
+  houseNeighborhoodCottageAlt: {
+    sprite: 'normalHouseCottageAlt',
+    burnable: true,
+    burnZones: [
+      [0.16, 0.09, 0.22, 0.10, { roof: true, difficultyTier: 1 }],
+      [0.36, 0.09, 0.20, 0.10, { roof: true, difficultyTier: 2 }],
+      [0.54, 0.09, 0.22, 0.10, { roof: true, difficultyTier: 3 }],
+      [0.20, 0.34, 0.18, 0.19, { difficultyTier: 1 }],
+      [0.41, 0.36, 0.14, 0.18, { difficultyTier: 2 }],
+      [0.58, 0.34, 0.18, 0.19, { difficultyTier: 2 }]
+    ]
+  },
   // Background neighborhood helpers: opaque, dimmed (colored), not transparent overlays.
   bgHouseNeighborhoodGray: { sprite: 'normalHouseGray', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
   bgHouseNeighborhoodBrick: { sprite: 'normalHouseBrick', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
   bgHouseNeighborhoodCottage: { sprite: 'normalHouseWhiteCottage', burnable: false, filter: 'brightness(0.22) saturate(0.35) contrast(1.05)' },
+  bgHouseNeighborhoodClassic: { sprite: 'normalHouseClassic', burnable: false, filter: 'brightness(0.22) saturate(0.30) contrast(1.05)' },
+  bgHouseNeighborhoodBrickGarage: { sprite: 'normalHouseBrickGarage', burnable: false, filter: 'brightness(0.22) saturate(0.30) contrast(1.05)' },
+  bgHouseNeighborhoodCottageAlt: { sprite: 'normalHouseCottageAlt', burnable: false, filter: 'brightness(0.22) saturate(0.30) contrast(1.05)' },
   treeOakRealistic: {
     sprite: 'treeOakRealistic',
     burnable: true,
@@ -1225,7 +1285,9 @@ function getEntityBounds(ent) {
   if (ent.type === 'houseTallWhite') return getSpriteFitRect('houseTallWhite', ent.x + ENTITY_LAYOUT.houseTallWhite.x, groundedY('houseTallWhite', GRASS_Y, ENTITY_LAYOUT.houseTallWhite.h), ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h, true);
   if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h), ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h, true);
   if (ent.type === 'sedan') {
-    const variant = (currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed';
+    const variant = (ent.variant && SPRITE_FILES[ent.variant])
+      ? ent.variant
+      : ((currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed');
     const fitted = getSpriteContentFitRect(variant, ent.x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true);
     return fitted.content;
   }
@@ -1234,7 +1296,9 @@ function getEntityBounds(ent) {
     return fitted.content;
   }
   if (ent.type === 'semi') {
-    const semiKey = currentLevel === 10 ? 'semiWrecked' : 'semiTankRight';
+    const semiKey = (ent.variant && SPRITE_FILES[ent.variant])
+      ? ent.variant
+      : (currentLevel === 10 ? 'semiWrecked' : 'semiTankRight');
     const layout = ENTITY_LAYOUT[semiKey];
     return getSpriteFitRect(semiKey, ent.x + layout.x, 480 - layout.h, layout.w, layout.h, true);
   }
@@ -1263,6 +1327,7 @@ function getEntityBounds(ent) {
   if (ent.type === 'bikeRed') return getSpriteFitRect('bikeRed', ent.x + ENTITY_LAYOUT.bikeRed.x, gy - ENTITY_LAYOUT.bikeRed.h, ENTITY_LAYOUT.bikeRed.w, ENTITY_LAYOUT.bikeRed.h, true);
   if (ent.type === 'pushMower') return getSpriteFitRect('pushMower', ent.x + ENTITY_LAYOUT.pushMower.x, groundedY('pushMower', GRASS_Y, ENTITY_LAYOUT.pushMower.h), ENTITY_LAYOUT.pushMower.w, ENTITY_LAYOUT.pushMower.h, true);
   if (ent.type === 'pushManualMower') return getSpriteFitRect('pushManualMower', ent.x + ENTITY_LAYOUT.pushManualMower.x, groundedY('pushManualMower', GRASS_Y, ENTITY_LAYOUT.pushManualMower.h), ENTITY_LAYOUT.pushManualMower.w, ENTITY_LAYOUT.pushManualMower.h, true);
+  if (ent.type === 'busSchoolLeft') return getSpriteFitRect('busSchoolLeft', ent.x + ENTITY_LAYOUT.busSchoolLeft.x, 470 - ENTITY_LAYOUT.busSchoolLeft.h, ENTITY_LAYOUT.busSchoolLeft.w, ENTITY_LAYOUT.busSchoolLeft.h, true);
   if (ent.type === 'busUpsideDown') return getSpriteFitRect('busUpsideDown', ent.x + ENTITY_LAYOUT.busUpsideDown.x, 470 - ENTITY_LAYOUT.busUpsideDown.h, ENTITY_LAYOUT.busUpsideDown.w, ENTITY_LAYOUT.busUpsideDown.h, true);
   return null;
 }
@@ -1370,6 +1435,8 @@ let levelElapsedMs = 0;
 let lastFrameTime = 0;
 let tankerSupport = null;
 let nextTankerSupportAt = 15000;
+let boroTankerSupport = null;
+let nextBoroTankerAt = 26000;
 let blackBoxTruckLevels = new Set();
 let blackBoxTruckState = null;
 let blackBoxTruckPlan = null;
@@ -1381,6 +1448,7 @@ let moveCueTimer = null;
 let hasShownLevel6TimeCue = false;
 let timeCueUntilMs = 0;
 let levelHorseEvent = null;
+let tornadoCompleted = false;
 
 function getMaxLevel() {
   return baseLevels.length || FINAL_LEVEL;
@@ -1397,6 +1465,12 @@ function updateLevelSkipHud() {
     : `Level ${shownLevel} / ${getMaxLevel()}`;
   const prev = document.getElementById('levelSkipPrev');
   const next = document.getElementById('levelSkipNext');
+  const levelInput = document.getElementById('levelSkipInput');
+  if (levelInput) {
+    levelInput.min = '1';
+    levelInput.max = String(getMaxLevel());
+    levelInput.value = String(shownLevel);
+  }
   if (prev) prev.disabled = shownLevel <= 1;
   if (next) next.disabled = shownLevel >= getMaxLevel();
 }
@@ -1404,12 +1478,18 @@ function updateLevelSkipHud() {
 function jumpToLevel(lvl) {
   const target = Math.max(1, Math.min(getMaxLevel(), Math.floor(lvl)));
   if (Number.isNaN(target)) return;
+  const completeScreen = document.getElementById('levelCompleteScreen');
+  if (completeScreen) {
+    completeScreen.classList.remove('show');
+    completeScreen.style.display = 'none';
+    document.querySelectorAll('.button-slide').forEach((button) => button.classList.remove('show'));
+  }
   if (gameState === 'title') {
     requestedStartLevel = target;
     updateLevelSkipHud();
     return;
   }
-  loadLevel(target);
+  loadLevel(target, { skipDispatch: true });
 }
 
 ///////// Placement grid sizing. /////////
@@ -1534,15 +1614,15 @@ function buildBonusLevels() {
   });
   const sceneBuilders = [
     (n) => ({ name: `Oak Park Response ${n}`, tip: tips[0], entities: [E('oakSmall', 120), E('oakMedium', 330), E('bikeRed', 520), E('pushMower', 780)] }),
-    (n) => n === 12 ? pondScene(n) : ({ name: `Maple Lane Fire ${n}`, tip: tips[1], entities: [E('mapleSmall', 110), E('houseSmall', 350), E('mapleMedium', 610), E('pushManualMower', 870)] }),
+    (n) => n === 12 ? pondScene(n) : ({ name: `Maple Lane Fire ${n}`, tip: tips[1], entities: [E('mapleSmall', 110), E('houseNeighborhoodClassic', 350, { scale: 1.25 }), E('mapleMedium', 610), E('pushManualMower', 870)] }),
     (n) => ({ name: `Pine Road Rescue ${n}`, tip: tips[2], entities: [E('pineSmall', 120), E('busUpsideDown', 420), E('pineMedium', 780), E('bikeRed', 980)] }),
     (n) => ({ name: `Kennard School Front ${n}`, tip: tips[3], entities: [E('kennardSchool', 150), E('oakLarge', 660), E('mapleSmall', 980)] }),
-    (n) => ({ name: `Garage Row ${n}`, tip: tips[4], entities: [E('garageSmall', 150), E('houseTallWhite', 470), E('oakSmall', 790), E('sedan', 980, { yOffset: 10 })] }),
+    (n) => ({ name: `Garage Row ${n}`, tip: tips[4], entities: [E('garageSmall', 150), E('houseNeighborhoodBrickGarage', 470, { scale: 1.28 }), E('oakSmall', 790), E('sedan', 980, { yOffset: 10, variant: 'sedanSilverRight' })] }),
     (n) => ({ name: `Barn Lane ${n}`, tip: tips[5], entities: [E('largeRedBarn', 860), E('hayBale', 260), E('tractor', 520), E('pineSmall', 110)] }),
-    (n) => ({ name: `Backyard Mix ${n}`, tip: tips[6], entities: [E('smallHouse', 170), E('oakMedium', 470), E('pushMower', 780), E('bikeRed', 980)] }),
+    (n) => ({ name: `Backyard Mix ${n}`, tip: tips[6], entities: [E('houseNeighborhoodCottageAlt', 170, { scale: 1.22 }), E('oakMedium', 470), E('pushMower', 780), E('bikeRed', 980)] }),
     (n) => ({ name: `Bus Roll ${n}`, tip: tips[7], entities: [E('busUpsideDown', 150), E('pineMedium', 540), E('mapleLarge', 870)] }),
-    (n) => ({ name: `Subdivision Block ${n}`, tip: tips[8], entities: [E('houseSmall', 120), E('house', 480), E('oakSmall', 820), E('bikeRed', 1020)] }),
-    (n) => n === 30 ? bossScene(n) : ({ name: `Mixed Mayday ${n}`, tip: tips[9], entities: [E('garageSmall', 320), E('pickup', 600, { yOffset: 8 }), E('kennardSchool', 860), E('oakLarge', 1080)] })
+    (n) => ({ name: `Subdivision Block ${n}`, tip: tips[8], entities: [E('houseNeighborhoodGray', 120, { scale: 1.24 }), E('houseNeighborhoodBeige', 480, { scale: 1.22 }), E('oakSmall', 820), E('bikeRed', 1020)] }),
+    (n) => n === 30 ? bossScene(n) : ({ name: `Mixed Mayday ${n}`, tip: tips[9], entities: [E('garageSmall', 320), E('sedan', 600, { yOffset: 8, variant: 'sedanGreenLeft' }), E('houseNeighborhoodBrick', 860, { scale: 1.20 }), E('oakLarge', 1080)] })
   ];
 
   const levels = [];
@@ -1618,17 +1698,17 @@ baseLevels[1] = {
     { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.85 }, scale: 0.44, filter: 'brightness(0.20) saturate(0.24) contrast(1.04)' },
     { type: 'bgHouseNeighborhoodBrick', grid: { col: 'N', line: 8.9 }, scale: 0.60, filter: 'brightness(0.22) saturate(0.28) contrast(1.04)' },
 
-    // Longer fence run behind the sedan.
-    { type: 'fenceWhiteRow', grid: { col: 'J', colOffset: 0.1, line: 10, align: 'left' }, scale: 0.76 },
-    { type: 'fenceWhiteRow', grid: { col: 'N', colOffset: -0.15, line: 10 }, scale: 0.76 },
+    // Longer fence run behind the sedan, touching without overlap.
+    { type: 'fenceWhiteRow', x: 655, scale: 0.74 },
+    { type: 'fenceWhiteRow', x: 862.2, scale: 0.74 },
     // Bench in front of fence (keep it visible, not hidden by the car).
-    { type: 'benchWood', grid: { col: 'I', colOffset: 0.25, line: 10.06 }, scale: 0.66 },
+    { type: 'benchWood', grid: { col: 'I', colOffset: 0.05, line: 10.06 }, scale: 0.66 },
 
-    // Jam the sedan into the oak so the crash scene reads clearly.
-    { type: 'sedan', x: 705, yOffset: 26 },
-    { type: 'treeOakRealistic', grid: { col: 'N', colOffset: 0.2, line: 10.35 }, scale: 1.08 },
-    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.25, line: 10.55 }, scale: 0.70 },
-    { type: 'treePineRealistic', grid: { col: 'U', colOffset: 0.15, line: 10.35 }, scale: 0.94 }
+    { type: 'shrubCluster', grid: { col: 'M', colOffset: 0.10, line: 10.55 }, scale: 0.72 },
+    // Car + tree moved to the right of shrubs and kept fully in view.
+    { type: 'sedan', x: 740, yOffset: 26, variant: 'sedanBlueLeft' },
+    { type: 'treeOakRealistic', grid: { col: 'P', colOffset: 0.1, line: 10.35 }, scale: 1.10 },
+    { type: 'treePineRealistic', grid: { col: 'S', colOffset: 0.1, line: 10.35 }, scale: 0.90 }
   ]
 };
 
@@ -1644,10 +1724,9 @@ baseLevels[2] = {
     { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.46, filter: 'brightness(0.20) saturate(0.22) contrast(1.04)' },
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'Q', line: 8.9 }, scale: 0.64, filter: 'brightness(0.22) saturate(0.30) contrast(1.03)' },
 
-    { type: 'houseNeighborhoodGray', grid: { col: 'L', colOffset: -0.2, line: 10 }, scale: 1.30 },
+    { type: 'houseNeighborhoodBrickGarage', grid: { col: 'N', colOffset: -0.05, line: 10 }, scale: 1.60 },
     { type: 'fenceWhiteRow', grid: { col: 'J', colOffset: -0.3, line: 10 }, scale: 0.76 },
-    { type: 'singleGarage', x: 855 },
-    { type: 'treeOakRealistic', grid: { col: 'R', colOffset: 0.1, line: 10.35 }, scale: 0.96 },
+    { type: 'treeOakRealistic', grid: { col: 'S', colOffset: -0.1, line: 10.35 }, scale: 1.02 },
     { type: 'benchWood', grid: { col: 'H', colOffset: -0.05, line: 10.06 }, scale: 0.70 },
     { type: 'shrubCluster', grid: { col: 'M', colOffset: 0.35, line: 10.55 }, scale: 0.70 }
   ]
@@ -1669,7 +1748,7 @@ baseLevels[3] = {
     // Second segment is directly adjacent to the first (no overlap).
     { type: 'fenceWhiteRow', x: 680, scale: 0.66, baseY: 482 },
     { type: 'fenceWhiteRow', x: 864.8, scale: 0.66, baseY: 482 },
-    { type: 'benchWood', grid: { col: 'I', colOffset: 0.2, line: 10.06 }, scale: 0.66 },
+    { type: 'benchWood', grid: { col: 'N', colOffset: 0.18, line: 10.08 }, scale: 0.66 },
 
     { type: 'shedRed', x: 846, baseY: 482, scale: 1.0 },
     { type: 'mapleLarge', grid: { col: 'N', colOffset: -0.1, line: 10.4 }, scale: 1.08 },
@@ -1753,16 +1832,16 @@ baseLevels[7] = {
   dispatchBody: 'Dispatch to Kennard Fire: respond to a field-side barn fire with extension into hay and a fence line.',
   dispatchClearBody: 'Dispatch confirms the field-side barn scene and surrounding exposures are under control.',
   timeOfDay: 1,
-  truckSide: 'right',
+  truckSide: 'left',
   entities: [
     { type: 'bgTreeOakRealistic', grid: { col: 'F', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
     { type: 'bgHouseNeighborhoodCottage', grid: { col: 'M', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
     { type: 'bgTreeOakRealistic', grid: { col: 'T', line: 8.85 }, scale: 0.44, alpha: 0.17, silhouette: true },
 
-    { type: 'largeRedBarn', x: 610, scale: 1.22, baseY: 488 },
-    { type: 'hayBale', x: 920 },
-    { type: 'hayBale', x: 1010 },
-    { type: 'tractor', x: 1090, facing: 'left' },
+    { type: 'largeRedBarn', x: 585, scale: 1.22, baseY: 488, flipX: true },
+    { type: 'hayBale', x: 860 },
+    { type: 'hayBale', x: 945 },
+    { type: 'tractor', x: 1010, facing: 'left' },
     { type: 'mapleLarge', grid: { col: 'N', colOffset: 0.1, line: 10.4 }, scale: 0.98 }
   ]
 };
@@ -1779,15 +1858,34 @@ baseLevels[8] = {
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'W', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
 
     { type: 'kennardSchool', x: 760 },
-    { type: 'busUpsideDown', x: 610 },
-    { type: 'playgroundSlideTallLeft', x: 360, scale: 0.95 },
-    { type: 'playgroundSlideShortLeft', x: 445, scale: 0.92 },
-    { type: 'playgroundSwingLeft', x: 525, scale: 0.95 },
+    { type: 'busSchoolLeft', x: 520, stormSwapAtX: 730 },
+    { type: 'busUpsideDown', x: 600, hiddenUntilStorm: true, stormSwapAtX: 730, stormSlideX: 38 },
+    { type: 'playgroundSlideTallLeft', x: 360, scale: 0.74 },
+    { type: 'playgroundSlideShortLeft', x: 445, scale: 0.72 },
+    { type: 'playgroundSwingLeft', x: 525, scale: 0.78 },
     { type: 'tornado', x: 650 },
     { type: 'stormTree', x: 470, variant: 'treePineRealistic', scale: 0.88, baseY: 486, fallAtX: 520 },
-    { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.58, baseY: 484, rotationDeg: -82, alpha: 0.92, fallAtX: 520 },
+    { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.72, baseY: 484, rotationDeg: -82, alpha: 0.92, fallAtX: 520 },
     { type: 'stormTree', x: 980, variant: 'treeOakRealistic', scale: 1.06, baseY: 488, fallAtX: 940 },
-    { type: 'fallenTree', x: 980, variant: 'treeOakRealistic', scale: 0.66, baseY: 486, rotationDeg: 86, alpha: 0.90, fallAtX: 940 }
+    { type: 'fallenTree', x: 980, variant: 'treeOakRealistic', scale: 0.80, baseY: 486, rotationDeg: 86, alpha: 0.90, fallAtX: 940 }
+  ]
+};
+
+baseLevels[9] = {
+  name: 'Highway Wreck Line 10',
+  safetyTip: 'Slow down near crash scenes so responders can work safely around vehicles.',
+  dispatchBody: 'Dispatch to Kennard Fire: highway wreck with one tanker and two passenger vehicles involved.',
+  dispatchClearBody: 'Dispatch confirms the tanker wreck, passenger vehicles, and roadway scene are under control.',
+  timeOfDay: 0,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodBrickGarage', grid: { col: 'E', line: 8.9 }, scale: 0.56, alpha: 0.18, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodClassic', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    // One right-facing car tucked slightly behind the semi's left-front fender.
+    { type: 'sedan', x: 708, yOffset: 20, variant: 'sedanSilverRight' },
+    { type: 'semi', x: 808, variant: 'semiWrecked' },
+    { type: 'treeOakRealistic', grid: { col: 'U', colOffset: 0.1, line: 10.35 }, scale: 0.94 }
   ]
 };
 
@@ -1830,6 +1928,49 @@ baseLevels[10] = {
 
     // Secondary house on the far right for depth, slightly smaller.
     { type: 'houseNeighborhoodGray', grid: { col: 'W', line: 10 }, scale: 1.10 }
+  ]
+};
+
+baseLevels[11] = {
+  name: 'Pond Edge Rescue 12',
+  safetyTip: 'Keep boats and shoreline clear so crews can reach campsite fires fast.',
+  dispatchBody: 'Dispatch to Kennard Fire: pond-side incident with extension from camp gear into shoreline cattails.',
+  dispatchClearBody: 'Dispatch confirms the pond edge, camp area, and shoreline are fully under control.',
+  timeOfDay: 1,
+  truckSide: 'right',
+  entities: [
+    { type: 'bgHouseNeighborhoodClassic', grid: { col: 'G', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'N', line: 8.85 }, scale: 0.48, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrickGarage', grid: { col: 'T', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    { type: 'treePineRealistic', x: 46, scale: 0.98, baseY: 488 },
+    { type: 'pond', x: 190 },
+    { type: 'boat', x: 308 },
+    { type: 'tent', x: 470, scale: 1.03 },
+    { type: 'catTails', x: 565 },
+    { type: 'catTails', x: 620, scale: 0.94 },
+    { type: 'catTails', x: 672, scale: 0.88 }
+  ],
+  tankerRightOnly: true
+};
+
+baseLevels[12] = {
+  name: 'Neighborhood Triple Exposure 13',
+  safetyTip: 'Report smoke early so crews can stop roof fire spread before it reaches neighboring homes.',
+  dispatchBody: 'Dispatch to Kennard Fire: multiple structure exposure on one block with two vehicle extensions.',
+  dispatchClearBody: 'Dispatch confirms the block front, homes, and vehicle exposures are fully under control.',
+  timeOfDay: 2,
+  truckSide: 'left',
+  entities: [
+    { type: 'bgHouseNeighborhoodCottageAlt', grid: { col: 'D', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
+    { type: 'bgHouseNeighborhoodClassic', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    { type: 'houseNeighborhoodClassic', grid: { col: 'M', colOffset: -0.1, line: 10 }, scale: 1.36 },
+    { type: 'houseNeighborhoodCottageAlt', grid: { col: 'Q', colOffset: -0.2, line: 10 }, scale: 1.30 },
+    { type: 'sedan', x: 630, yOffset: 20, variant: 'sedanSilverLeft' },
+    { type: 'sedan', x: 860, yOffset: 20, variant: 'sedanGreenRight' },
+    { type: 'treeOakRealistic', grid: { col: 'T', colOffset: 0.15, line: 10.35 }, scale: 0.98 },
+    { type: 'fenceWhiteRow', x: 520, scale: 0.74 },
+    { type: 'fenceWhiteRow', x: 727.2, scale: 0.74 }
   ]
 };
 
@@ -1982,7 +2123,7 @@ function dismissDispatchScreen(fromAuto = false) {
   if (dispatchLevel === 6) showLevel6TimeCue();
 }
 
-function startGame(diff, startLevel = 1) {
+function startGame(diff, startLevel = null) {
   difficulty = diff;
   initBlackBoxTruckLevels();
   document.getElementById('titleScreen').style.display = 'none';
@@ -2006,6 +2147,21 @@ function getTankerSupportSchedule(level, diff) {
     firstAt: Math.max(9000, firstAt),
     repeat: Math.max(16000, repeat),
     hold: diff === 1 ? 6500 : diff === 2 ? 8000 : 9000
+  };
+}
+
+function getBoroTankerSupportSchedule(level, diff) {
+  // A second tanker is a rare assist on the biggest scenes (boss level / long burns).
+  let firstAt = diff === 1 ? 38000 : diff === 2 ? 28000 : 24000;
+  let repeat = diff === 1 ? 70000 : diff === 2 ? 56000 : 48000;
+  if (level >= 21) {
+    firstAt -= 4500;
+    repeat -= 6500;
+  }
+  return {
+    firstAt: Math.max(16000, firstAt),
+    repeat: Math.max(28000, repeat),
+    hold: diff === 1 ? 7500 : diff === 2 ? 9000 : 10500
   };
 }
 
@@ -2035,7 +2191,8 @@ function getOppositeTruckLane(levelData, lvl) {
   return (sum / points.length) >= 600 ? TRUCK_LANES.left : TRUCK_LANES.right;
 }
 
-function loadLevel(lvl) {
+function loadLevel(lvl, options = {}) {
+  const skipDispatch = !!options.skipDispatch;
   currentLevel = lvl;
   if (lvl !== 3) hasShownLevel3MoveCue = false;
   if (lvl !== 6) {
@@ -2049,7 +2206,11 @@ function loadLevel(lvl) {
   }
   levelStartScore = score;
   const levelData = baseLevels[lvl - 1];
-  const lane = getOppositeTruckLane(levelData, lvl);
+  const lane = (levelData?.truckSide === 'left')
+    ? TRUCK_LANES.left
+    : (levelData?.truckSide === 'right')
+      ? TRUCK_LANES.right
+      : getOppositeTruckLane(levelData, lvl);
   truck.x = lane.spawnX;
   truck.minX = lane.minX;
   truck.maxX = lane.maxX;
@@ -2057,12 +2218,16 @@ function loadLevel(lvl) {
   setTruckDrive(0);
   isSpraying = false;
   tornadoTravelX = -180;
-  pendingDispatchLevel = lvl;
+  tornadoCompleted = false;
+  pendingDispatchLevel = skipDispatch ? null : lvl;
   levelElapsedMs = 0;
   lastFrameTime = 0;
   const tankerTiming = getTankerSupportSchedule(lvl, difficulty);
   nextTankerSupportAt = tankerTiming.firstAt;
   tankerSupport = null;
+  const boroTiming = getBoroTankerSupportSchedule(lvl, difficulty);
+  nextBoroTankerAt = boroTiming.firstAt;
+  boroTankerSupport = null;
   blackBoxTruckState = null;
   blackBoxTruckPlan = null;
   ufoRaid = null;
@@ -2076,7 +2241,16 @@ function loadLevel(lvl) {
   else if (lvl === 8) setTimeOfDay(1);
   else if (timeOfDay === 1) setTimeOfDay(0);
   preloadLevelSprites(lvl);
-  showDispatchScreen(lvl, 'start');
+  if (!skipDispatch) {
+    showDispatchScreen(lvl, 'start');
+  } else {
+    const screen = document.getElementById('dispatchScreen');
+    if (screen) screen.style.display = 'none';
+    if (dispatchAutoTimer) {
+      clearTimeout(dispatchAutoTimer);
+      dispatchAutoTimer = null;
+    }
+  }
   let template = computeFireSpotsForLevel(lvl, levelData.entities);
   template = selectSpotsForDifficulty(template, difficulty);
   const burnableBoxes = (levelData.entities || [])
@@ -2117,7 +2291,8 @@ function loadLevel(lvl) {
       targetX: eatX,
       y: horseGroundY,
       speed: 1.9,
-      phaseTime: 0
+      phaseTime: 0,
+      hideBehindX: treeBox ? (treeBox.x + treeBox.w * 0.25) : 1020
     };
   }
   particles = [];
@@ -2133,9 +2308,11 @@ function loadLevel(lvl) {
   }
   document.getElementById('levelCompleteScreen').style.display = 'none';
   document.getElementById('levelCompleteScreen').classList.remove('show');
-  dispatchAutoAdvance = setTimeout(() => {
-    if (pendingDispatchLevel === lvl && gameState === 'playing') dismissDispatchScreen(true);
-  }, 5000);
+  if (!skipDispatch) {
+    dispatchAutoAdvance = setTimeout(() => {
+      if (pendingDispatchLevel === lvl && gameState === 'playing') dismissDispatchScreen(true);
+    }, 5000);
+  }
 }
 
 function checkWin() {
@@ -2263,6 +2440,17 @@ document.getElementById('levelSkipNext')?.addEventListener('click', (e) => {
   e.preventDefault();
   const shown = gameState === 'title' ? requestedStartLevel : currentLevel;
   jumpToLevel(shown + 1);
+});
+document.getElementById('levelSkipGo')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  const val = Number(document.getElementById('levelSkipInput')?.value || requestedStartLevel);
+  jumpToLevel(val);
+});
+document.getElementById('levelSkipInput')?.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const val = Number(document.getElementById('levelSkipInput')?.value || requestedStartLevel);
+  jumpToLevel(val);
 });
 
 // Show the tester level-skip controls immediately (title screen too).
@@ -2515,6 +2703,10 @@ function getTankerSpriteKey(facing) {
   return facing < 0 ? 'semiTankLeft' : 'semiTankRight';
 }
 
+function getBoroTankerSpriteKey(facing) {
+  return facing < 0 ? 'boroTankerLeft' : 'boroTankerRight';
+}
+
 function startTankerSupport() {
   if (tankerSupport) return;
   const layout = ENTITY_LAYOUT.semiTankRight;
@@ -2585,6 +2777,62 @@ function drawTankerSupport() {
     ctx.beginPath(); ctx.arc(bodyX + tankerSupport.w * p, wheelY, 12, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#111';
   });
+}
+
+function startBoroTankerSupport() {
+  if (boroTankerSupport) return;
+  const layout = ENTITY_LAYOUT.boroTankerRight;
+  const timing = getBoroTankerSupportSchedule(currentLevel, difficulty);
+  const targetX = Math.max(24, Math.min(canvas.width - layout.w - 24, truck.x - (layout.w - 72)));
+  boroTankerSupport = {
+    x: -layout.w - 220,
+    y: TANKER_LANE_Y - layout.h,
+    w: layout.w,
+    h: layout.h,
+    facing: 1,
+    state: 'arrive',
+    speed: 4.0,
+    targetX,
+    holdMs: timing.hold,
+    holdUntil: 0
+  };
+}
+
+function updateBoroTankerSupport(dt) {
+  if (!boroTankerSupport) return;
+  const step = Math.max(0.2, dt / 16.67);
+  boroTankerSupport.y = TANKER_LANE_Y - boroTankerSupport.h;
+  if (boroTankerSupport.state === 'arrive') {
+    boroTankerSupport.facing = 1;
+    boroTankerSupport.x += boroTankerSupport.speed * step;
+    boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
+    if (boroTankerSupport.x >= boroTankerSupport.targetX) {
+      boroTankerSupport.x = boroTankerSupport.targetX;
+      boroTankerSupport.state = 'hold';
+      boroTankerSupport.holdUntil = levelElapsedMs + boroTankerSupport.holdMs;
+    }
+  } else if (boroTankerSupport.state === 'hold') {
+    boroTankerSupport.facing = 1;
+    boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
+    boroTankerSupport.x += (boroTankerSupport.targetX - boroTankerSupport.x) * Math.min(0.18, 0.06 * step);
+    if (levelElapsedMs >= boroTankerSupport.holdUntil) {
+      boroTankerSupport.state = 'depart';
+    }
+  } else if (boroTankerSupport.state === 'depart') {
+    boroTankerSupport.facing = -1;
+    boroTankerSupport.x -= (boroTankerSupport.speed + 0.9) * step;
+    if (boroTankerSupport.x < -boroTankerSupport.w - 260) {
+      boroTankerSupport = null;
+      const timing = getBoroTankerSupportSchedule(currentLevel, difficulty);
+      nextBoroTankerAt = levelElapsedMs + timing.repeat;
+    }
+  }
+}
+
+function drawBoroTankerSupport() {
+  if (!boroTankerSupport) return;
+  const key = getBoroTankerSpriteKey(boroTankerSupport.facing);
+  drawSpriteFitted(key, boroTankerSupport.x, boroTankerSupport.y, boroTankerSupport.w, boroTankerSupport.h, true);
 }
 
 function drawTankerConnection() {
@@ -2845,9 +3093,11 @@ function drawPixelSprite(x, y, rows, scale, palette) {
   }
 }
 
-function drawSedan(x,yOffset=0) {
+function drawSedan(x,yOffset=0,variantOverride='') {
   const gy = 480 + yOffset;
-  const variant = (currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed';
+  const variant = (variantOverride && SPRITE_FILES[variantOverride])
+    ? variantOverride
+    : ((currentLevel % 3 === 1) ? 'sedanRed2' : (currentLevel % 3 === 2) ? 'sedanBlue' : 'sedanRed');
   if (drawSpriteFitted(variant, x + ENTITY_LAYOUT.sedan.x, gy - ENTITY_LAYOUT.sedan.h, ENTITY_LAYOUT.sedan.w, ENTITY_LAYOUT.sedan.h, true)) return;
   const body = [
     "......bbbbb.............",
@@ -2910,9 +3160,13 @@ function drawPickup(x,yOffset=0) {
   ctx.fillRect(x + 222, gy - 4, 12, 8);
 }
 
-function drawSemi(x) {
+function drawSemi(entOrX) {
+  const ent = typeof entOrX === 'number' ? { x: entOrX } : (entOrX || { x: 0 });
+  const x = ent.x || 0;
   const gy = 480;
-  const semiKey = (currentLevel === 10) ? 'semiWrecked' : 'semiTankRight';
+  const semiKey = (ent.variant && SPRITE_FILES[ent.variant])
+    ? ent.variant
+    : ((currentLevel === 10) ? 'semiWrecked' : 'semiTankRight');
   const layout = ENTITY_LAYOUT[semiKey];
   if (drawSpriteFitted(semiKey, x + layout.x, gy - layout.h, layout.w, layout.h, true)) return;
   ctx.fillStyle = '#C00'; ctx.fillRect(x, gy-95, 135, 135);
@@ -3109,7 +3363,17 @@ function drawLargeRedBarn(entOrX) {
   const drawY = groundedY('barnLarge', baseY, layout.h * scale);
   const drawW = layout.w * scale;
   const drawH = layout.h * scale;
-  if (drawSpriteFitted('barnLarge', drawX, drawY, drawW, drawH, true)) return;
+  if (ent.flipX) {
+    const rect = getSpriteFitRect('barnLarge', drawX, drawY, drawW, drawH, true);
+    if (SPRITE_READY.barnLarge) {
+      ctx.save();
+      ctx.translate(rect.x + rect.w, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(SPRITES.barnLarge, 0, rect.y, rect.w, rect.h);
+      ctx.restore();
+      return;
+    }
+  } else if (drawSpriteFitted('barnLarge', drawX, drawY, drawW, drawH, true)) return;
   ctx.globalAlpha = 0.75;
   ctx.fillStyle = '#C22'; ctx.fillRect(x+20,180,260,300);
   ctx.strokeStyle='#222'; ctx.lineWidth=4;
@@ -3235,7 +3499,7 @@ function updateLevel7Horse(dt) {
 
 function drawLevel7Horse(behindOnly = false) {
   if (currentLevel !== 7 || !levelHorseEvent || levelHorseEvent.phase === 'gone') return;
-  const isBehind = levelHorseEvent.phase === 'escapeBehindTree';
+  const isBehind = levelHorseEvent.phase === 'escapeBehindTree' && levelHorseEvent.x >= (levelHorseEvent.hideBehindX || 9999);
   if (behindOnly !== isBehind) return;
   const rect = getHorseRect();
   if (!rect) return;
@@ -3414,6 +3678,21 @@ function drawBusUpsideDown(x) {
   ctx.fillStyle = '#111';
   ctx.fillRect(x + 30, 490, 40, 24);
   ctx.fillRect(x + 290, 490, 40, 24);
+}
+
+function drawBusSchoolLeft(entOrX) {
+  const ent = typeof entOrX === 'number' ? { x: entOrX } : (entOrX || { x: 0 });
+  const x = ent.x || 0;
+  const layout = ENTITY_LAYOUT.busSchoolLeft;
+  const y = 470 - layout.h;
+  if (drawSpriteFitted('busSchoolLeft', x + layout.x, y, layout.w, layout.h, true)) return;
+  ctx.fillStyle = '#f0b325';
+  ctx.fillRect(x + 14, y + 18, 292, 88);
+  ctx.fillStyle = '#2f4568';
+  ctx.fillRect(x + 38, y + 28, 206, 26);
+  ctx.fillStyle = '#171717';
+  ctx.fillRect(x + 42, y + 98, 36, 18);
+  ctx.fillRect(x + 238, y + 98, 36, 18);
 }
 
 function drawTractor(x,facing) {
@@ -3756,9 +4035,18 @@ function drawTreeWithSwing(x) {
 
 let tornadoTravelX = -180;
 function drawTornado() {
+  if (currentLevel === 9 && tornadoCompleted) return;
   tornadoAngle += 0.05;
   tornadoTravelX += 0.62;
-  if (tornadoTravelX > canvas.width + 180) tornadoTravelX = -180;
+  if (currentLevel === 9) {
+    if (tornadoTravelX > canvas.width + 180) {
+      tornadoTravelX = canvas.width + 180;
+      tornadoCompleted = true;
+      return;
+    }
+  } else if (tornadoTravelX > canvas.width + 180) {
+    tornadoTravelX = -180;
+  }
   const x = tornadoTravelX;
   const topY = 132;
   const groundY = 492;
@@ -3917,15 +4205,21 @@ function loop() {
     if (!tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
       startTankerSupport();
     }
+    const levelData = baseLevels[currentLevel - 1] || {};
+    const allowBoro = currentLevel === FINAL_LEVEL && !levelData.tankerRightOnly;
+    if (allowBoro && !boroTankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextBoroTankerAt) {
+      startBoroTankerSupport();
+    }
   }
   updateTankerSupport(dt);
+  updateBoroTankerSupport(dt);
   updateBlackBoxTruck(dt);
   updateUfoPreview(dt);
   updateUfoRaid(dt);
   updateLevel7Horse(dt);
   ctx.clearRect(0,0,1200,600);
   drawBackground();
-  if (currentLevel === 11) drawPlacementGrid();
+if (false && currentLevel === 11) drawPlacementGrid();
   drawBlackBoxTruckState();
 
   const data = baseLevels[currentLevel-1];
@@ -3969,9 +4263,9 @@ function loop() {
     if (ent.type === 'largeRedBarn') drawLargeRedBarn(ent);
     if (ent.type === 'hayBale') drawHayBale(ent.x);
     if (ent.type === 'tractor') drawTractor(ent.x, ent.facing || 'right');
-    if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0);
+    if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0, ent.variant || '');
     if (ent.type === 'pickup') drawPickup(ent.x, ent.yOffset || 0);
-    if (ent.type === 'semi') drawSemi(ent.x);
+    if (ent.type === 'semi') drawSemi(ent);
     if (ent.type === 'tree') drawTree(ent.x);
     if (ent.type === 'treeWithSwing') drawTreeWithSwing(ent.x);
     if (ent.type === 'oakSmall' || ent.type === 'oakMedium' || ent.type === 'oakLarge' || ent.type === 'mapleSmall' || ent.type === 'mapleMedium' || ent.type === 'mapleLarge' || ent.type === 'pineSmall' || ent.type === 'pineMedium') drawTreeEntity(ent.type, ent.x);
@@ -3983,10 +4277,20 @@ function loop() {
     if (ent.type === 'bikeRed') drawBikeRed(ent.x);
     if (ent.type === 'pushMower') drawPushMower(ent.x);
     if (ent.type === 'pushManualMower') drawPushManualMower(ent.x);
-    if (ent.type === 'busUpsideDown') drawBusUpsideDown(ent.x);
+    if (ent.type === 'busSchoolLeft') {
+      const trigger = ent.stormSwapAtX ?? 730;
+      if (!isTornadoPastX(trigger)) drawBusSchoolLeft(ent);
+    }
+    if (ent.type === 'busUpsideDown') {
+      const trigger = ent.stormSwapAtX ?? 730;
+      if (!ent.hiddenUntilStorm || isTornadoPastX(trigger)) {
+        const slide = Math.max(0, tornadoTravelX - trigger);
+        drawBusUpsideDown((ent.x || 0) + Math.min(ent.stormSlideX || 0, slide * 0.18));
+      }
+    }
     if (ent.type === 'fallenTree' && shouldDrawFallenTree(ent)) drawFallenTree(ent);
     if (ent.type === 'stormTree') drawStormTree(ent);
-    if (ent.type === 'playgroundSlideRight' || ent.type === 'playgroundSwingRight') drawPlaygroundAsset(ent);
+    if (ent.type === 'playgroundSlideRight' || ent.type === 'playgroundSwingRight' || ent.type === 'playgroundSlideLeft' || ent.type === 'playgroundSwingLeft' || ent.type === 'playgroundSlideTallLeft' || ent.type === 'playgroundSlideShortLeft') drawPlaygroundAsset(ent);
     if (ent.type === 'ufo') drawUfo(ent.x, ent.y || 90, currentLevel === FINAL_LEVEL && ufoRaid?.phase === 'beam');
     if (ent.type === 'tornado') return;
     if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
@@ -4093,6 +4397,7 @@ function loop() {
 
   // Keep the support tanker on top of fire particles (lane 11) while it's present.
   drawTankerSupport();
+  drawBoroTankerSupport();
   drawTankerConnection();
 
   drawTotalFireGauge();
