@@ -9,10 +9,14 @@
 html, body { width: 100%; height: 100%; }
 body { margin:0; background:#000; font-family:Arial, sans-serif; overflow:hidden; touch-action: none; }
 body .content { width: 100vw; max-width: none; margin: 0; padding: 0; }
-#gameContainer { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; padding-top: 0 !important; }
+#gameContainer { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; padding-top: 0 !important; z-index: 1; }
 canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: crisp-edges; }
 
-#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 10; }
+#overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 1200; }
+#titleScreen { pointer-events: auto; position: relative; z-index: 1201; }
+#titleScreen * { pointer-events: auto; }
+.site-header { position: relative; z-index: 1400; }
+body.builder-active .site-header { display: none !important; }
 
 button { 
   pointer-events: auto; 
@@ -324,6 +328,640 @@ button:hover { filter: brightness(1.2); }
   color: #fff;
   font-weight: 700;
 }
+
+#builderScreen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 1300;
+  background: transparent;
+  color: #e8f1ff;
+  pointer-events: none;
+  --builder-left-width: clamp(330px, 26vw, 420px);
+  --builder-right-width: 420px;
+}
+#builderShell {
+  display: grid;
+  grid-template-columns: var(--builder-left-width) minmax(0, 1fr) var(--builder-right-width);
+  height: 100dvh;
+  width: 100vw;
+}
+.builder-panel {
+  border-right: 1px solid rgba(140, 166, 194, 0.28);
+  background: rgba(12, 20, 32, 0.95);
+  overflow: auto;
+  pointer-events: auto;
+}
+#builderRightPanel {
+  border-right: none;
+  border-left: 1px solid rgba(140, 166, 194, 0.28);
+}
+.builder-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(140, 166, 194, 0.28);
+  background: rgba(15, 30, 48, 0.9);
+}
+.builder-head h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #a8d0ff;
+}
+.builder-body {
+  padding: 12px 14px 18px;
+}
+.builder-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.builder-field label {
+  font-size: 12px;
+  color: #a7bdd9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.builder-inline-value {
+  float: right;
+  color: #d8ebff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.builder-field.required label {
+  color: #ffd278;
+  text-shadow: 0 0 8px rgba(255, 188, 74, 0.28);
+}
+.builder-field.truck-attn {
+  position: relative;
+  border-radius: 10px;
+  padding: 8px 10px 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+  background: rgba(255, 230, 70, 0.06);
+  box-shadow: 0 0 0 2px rgba(255, 230, 70, 0.16), 0 0 24px rgba(255, 230, 70, 0.10);
+  animation: builderTruckGlow 1.35s ease-in-out infinite;
+}
+.builder-field.truck-attn label {
+  color: rgba(255, 236, 138, 0.98);
+}
+.builder-field.truck-attn .builder-attn-arrow {
+  position: absolute;
+  right: 10px;
+  top: -10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(10, 18, 28, 0.92);
+  border: 1px solid rgba(255, 230, 70, 0.55);
+  color: rgba(255, 230, 70, 0.98);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.36);
+  pointer-events: none;
+  z-index: 2;
+}
+.builder-field.truck-attn .builder-attn-arrow .arrow {
+  font-size: 16px;
+  animation: builderArrowNudge 0.85s ease-in-out infinite;
+}
+@keyframes builderTruckGlow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255, 230, 70, 0.16), 0 0 24px rgba(255, 230, 70, 0.08); }
+  50% { box-shadow: 0 0 0 3px rgba(255, 230, 70, 0.38), 0 0 32px rgba(255, 230, 70, 0.18); }
+}
+@keyframes builderArrowNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-6px); }
+}
+.builder-field input,
+.builder-field select,
+.builder-field textarea {
+  border-radius: 8px;
+  border: 1px solid rgba(168, 195, 225, 0.36);
+  background: rgba(6, 14, 24, 0.92);
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.builder-field textarea {
+  min-height: 56px;
+  resize: vertical;
+}
+.builder-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.builder-actions button {
+  width: 100%;
+  margin: 0;
+  padding: 10px 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: #174d89;
+}
+.builder-actions button.alt {
+  background: #384a63;
+}
+.builder-actions button.warn {
+  background: #7f281e;
+}
+#builderCenter {
+  position: relative;
+  background: transparent;
+  pointer-events: none;
+}
+#builderTitleBar {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  min-width: min(900px, calc(100% - 24px));
+  max-width: calc(100% - 24px);
+  z-index: 10;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(8, 16, 26, 0.82);
+  border: 1px solid rgba(150, 184, 220, 0.30);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: auto;
+}
+#builderAssetSearch {
+  width: 100%;
+}
+#builderAssetList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  max-height: calc(100dvh - 170px);
+  overflow: auto;
+  padding-right: 4px;
+}
+.builder-asset {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 195, 225, 0.26);
+  background: rgba(11, 20, 34, 0.92);
+  padding: 6px 8px;
+  cursor: grab;
+  min-height: 84px;
+}
+.builder-asset:hover {
+  border-color: rgba(192, 221, 255, 0.48);
+  background: rgba(18, 32, 52, 0.98);
+}
+.builder-asset img {
+  width: 100%;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.35);
+}
+.builder-asset .name {
+  font-size: 12px;
+  color: #dceaff;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.builder-asset-section {
+  border: 1px solid rgba(145, 175, 210, 0.24);
+  border-radius: 9px;
+  background: rgba(8, 15, 26, 0.42);
+  overflow: hidden;
+}
+.builder-asset-section > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #b6d2f0;
+  background: rgba(15, 30, 48, 0.45);
+}
+.builder-asset-section > summary::-webkit-details-marker { display: none; }
+.builder-asset-section > .asset-items {
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+#builderTips {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #9fb6d4;
+}
+.builder-chip {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(40, 72, 108, 0.76);
+  color: #d2e6ff;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.builder-layer-list {
+  max-height: none;
+  overflow: visible;
+  border: 1px solid rgba(168, 195, 225, 0.28);
+  border-radius: 8px;
+  background: rgba(7, 14, 24, 0.8);
+  padding: 6px;
+  display: grid;
+  gap: 4px;
+}
+.builder-layer-item {
+  border-radius: 6px;
+  border: 1px solid rgba(168, 195, 225, 0.24);
+  background: rgba(16, 26, 42, 0.9);
+  color: #dceaff;
+  font-size: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.builder-layer-item.active {
+  border-color: rgba(105, 197, 255, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(105, 197, 255, 0.4);
+  background: rgba(23, 44, 70, 0.96);
+}
+.builder-mini-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+.builder-mini-actions button {
+  width: 100%;
+  margin: 0;
+  padding: 7px 6px;
+  border-radius: 7px;
+  font-size: 12px;
+  background: #2f4561;
+}
+.builder-mini-actions button.builder-danger-btn {
+  background: rgba(255, 84, 68, 0.18);
+  border-color: rgba(255, 84, 68, 0.35);
+}
+.builder-mini-actions button.builder-danger-btn:hover {
+  filter: brightness(1.15);
+}
+.builder-section {
+  border: 1px solid rgba(145, 175, 210, 0.30);
+  border-radius: 9px;
+  margin-bottom: 10px;
+  background: rgba(8, 15, 26, 0.62);
+}
+.builder-section > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #b6d2f0;
+}
+.builder-section > summary::-webkit-details-marker { display: none; }
+.builder-section > .section-content {
+  padding: 0 10px 10px;
+}
+.builder-top-sections {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: stretch;
+}
+.builder-top-column {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  transition: flex-basis 0.2s ease, width 0.2s ease;
+}
+.builder-top-column .builder-section {
+  margin-bottom: 0;
+  height: 100%;
+}
+.builder-top-column .column-toggle {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 7px;
+  background: rgba(27, 56, 89, 0.95);
+}
+.builder-top-column .column-restore {
+  display: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 9px;
+  border: 1px solid rgba(145, 175, 210, 0.34);
+  background: rgba(8, 15, 26, 0.76);
+  color: #b6d2f0;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 10px 6px;
+}
+.builder-top-column.collapsed {
+  flex: 0 0 44px;
+}
+.builder-top-column.collapsed .builder-section,
+.builder-top-column.collapsed .column-toggle {
+  display: none;
+}
+.builder-top-column.collapsed .column-restore {
+  display: block;
+}
+.builder-section .selected-empty-hint {
+  display: none;
+}
+.builder-section.no-selection-mode .selected-empty-hint {
+  display: block;
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: #9cb8d8;
+}
+.builder-section.no-selection-mode .builder-field {
+  display: none;
+}
+.builder-section.no-selection-mode .builder-field.builder-layer-field {
+  display: flex;
+}
+.builder-top-sections .builder-section > .section-content {
+  max-height: calc(100dvh - 128px);
+  overflow: auto;
+}
+.builder-top-sections .builder-field {
+  min-width: 0;
+}
+.builder-top-sections .builder-field input,
+.builder-top-sections .builder-field select,
+.builder-top-sections .builder-field textarea {
+  width: 100%;
+  min-width: 0;
+}
+.builder-left-props {
+  margin-top: 10px;
+  border: 1px solid rgba(145, 175, 210, 0.30);
+  border-radius: 9px;
+  background: rgba(8, 15, 26, 0.62);
+  padding: 10px;
+}
+.builder-left-props h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #b6d2f0;
+}
+.builder-left-props .note {
+  font-size: 11px;
+  color: #9ab3d1;
+  margin-top: 6px;
+}
+.builder-legal-note {
+  margin-top: 10px;
+  border: 1px solid rgba(145, 175, 210, 0.30);
+  border-radius: 9px;
+  background: rgba(8, 15, 26, 0.62);
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #a9c4e4;
+}
+.builder-burn-wrap {
+  border: 1px solid rgba(145, 175, 210, 0.28);
+  border-radius: 8px;
+  background: rgba(6, 13, 22, 0.8);
+  padding: 8px;
+}
+.builder-burn-preview {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(150, 185, 220, 0.28);
+  background: #02060b;
+  min-height: 128px;
+}
+.builder-burn-preview img {
+  width: 100%;
+  max-height: 170px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0.32) contrast(1.15) saturate(0.15);
+}
+#builderBurnPreviewOverlay {
+  position: absolute;
+  inset: 0;
+}
+.builder-burn-zone-box {
+  position: absolute;
+  border: 2px solid rgba(255, 153, 88, 0.92);
+  background: rgba(255, 104, 26, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(255, 201, 168, 0.45);
+}
+.builder-burn-zone-box.off {
+  border-color: rgba(104, 122, 138, 0.68);
+  background: rgba(66, 77, 88, 0.14);
+  box-shadow: none;
+}
+.builder-burn-zone-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+.builder-burn-zone-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #d4e6fd;
+}
+.builder-burn-zone-item .tier {
+  color: #93b1d3;
+  font-size: 11px;
+}
+.builder-burn-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #93aeca;
+}
+.builder-tour-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 16, 0.72);
+  z-index: 1600;
+  display: none;
+}
+.builder-tour-highlight {
+  position: fixed;
+  border: 2px solid #7fd3ff;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45), 0 0 20px rgba(80, 190, 255, 0.4);
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 1602;
+  display: none;
+}
+.builder-tour-card {
+  position: fixed;
+  max-width: 340px;
+  background: rgba(11, 21, 35, 0.98);
+  border: 1px solid rgba(155, 196, 235, 0.45);
+  border-radius: 10px;
+  padding: 10px;
+  color: #dff0ff;
+  z-index: 1603;
+  display: none;
+}
+.builder-tour-card .arrow {
+  font-size: 18px;
+  color: #8ed7ff;
+  margin-bottom: 4px;
+}
+.builder-tour-title {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.builder-tour-body {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c2d9f3;
+}
+.builder-tour-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.builder-tour-actions button {
+  width: auto;
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.builder-help-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1580;
+  background: rgba(4, 10, 18, 0.70);
+}
+.builder-help-card {
+  width: min(760px, calc(100% - 24px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  border: 1px solid rgba(155, 196, 235, 0.45);
+  border-radius: 12px;
+  background: rgba(9, 18, 30, 0.98);
+  color: #dff0ff;
+  padding: 14px;
+}
+.builder-help-card h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+.builder-help-card ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  color: #c5daef;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.builder-help-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.builder-instructions-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1590;
+  background: rgba(4, 10, 18, 0.68);
+}
+.builder-instructions-card {
+  width: min(500px, calc(100% - 24px));
+  border: 1px solid rgba(155, 196, 235, 0.45);
+  border-radius: 12px;
+  background: rgba(9, 18, 30, 0.98);
+  color: #dff0ff;
+  padding: 14px;
+}
+.builder-instructions-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+#builderTourCard {
+  max-width: min(340px, calc(100vw - 20px));
+}
+#builderQuickPlayBtn {
+  background: linear-gradient(180deg, #36d979, #16964f) !important;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 0 0 2px rgba(80, 230, 142, 0.35), 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+@media (max-width: 1200px) {
+  .builder-top-sections { flex-direction: column; }
+  .builder-top-column.collapsed {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  .builder-top-column .column-restore {
+    writing-mode: horizontal-tb;
+    transform: none;
+    height: 42px;
+  }
+  #builderShell {
+    grid-template-columns: minmax(300px, 36vw) minmax(0, 1fr) minmax(280px, 34vw);
+  }
+}
+@media (max-width: 980px) {
+  #builderShell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+  .builder-panel {
+    max-height: 32dvh;
+    border-right: none;
+    border-left: none;
+  }
+  #builderAssetList {
+    max-height: 190px;
+    grid-template-columns: 1fr 1fr;
+  }
+}
 </style>
 </head>
 <body>
@@ -334,6 +972,7 @@ button:hover { filter: brightness(1.2); }
   <nav class="site-menu" aria-label="Primary">
     <a class="menu-link" href="../../index.html">Home</a>
     <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+    <a class="menu-link" href="#" id="openBuilderMenuBtn">Builder</a>
     <div class="menu-group">
       <a class="menu-link active" href="../index.html">Games</a>
       <div class="submenu" aria-label="Games submenu">
@@ -346,6 +985,376 @@ button:hover { filter: brightness(1.2); }
 </header>
 
 <div id="gameContainer"><canvas id="game" width="1200" height="600"></canvas></div>
+
+<div id="builderScreen" aria-label="Level builder workspace">
+  <div id="builderShell">
+    <div class="builder-panel" id="builderLeftPanel">
+      <div class="builder-head"><h2>Asset Library</h2></div>
+      <div class="builder-body">
+        <div class="builder-field">
+          <label>Upload Image</label>
+          <div class="builder-mini-actions" style="margin-top:0;">
+            <button id="builderUploadImageBtn" type="button">Upload PNG</button>
+            <button id="builderCaptureImageBtn" type="button">Camera Snap</button>
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderAssetSearch">Search Images</label>
+          <input id="builderAssetSearch" type="text" placeholder="Find sprite by name">
+        </div>
+        <div class="builder-field">
+          <label for="builderAssetCategory">Category</label>
+          <select id="builderAssetCategory">
+            <option value="all">All</option>
+            <option value="vehicles">Vehicles</option>
+            <option value="animals">Animals</option>
+            <option value="buildings">Buildings</option>
+            <option value="nature">Nature</option>
+            <option value="props">Props</option>
+            <option value="scifi">Sci-Fi</option>
+            <option value="uploaded">Uploaded</option>
+            <option value="misc">Misc</option>
+          </select>
+        </div>
+        <div class="builder-mini-actions" style="margin-bottom:8px;">
+          <button id="builderAddLakeBtn" type="button">Add Lake</button>
+          <button id="builderClearPendingAssetBtn" type="button">Clear Place Tool</button>
+        </div>
+        <div id="builderAssetList"></div>
+        <div id="builderTips">
+          Drag a model onto the canvas, or tap a model then tap canvas to place.
+        Snap grid is on by default. Resize range is clamped to 60% - 140%.
+        </div>
+        <div id="builderLegalNote" class="builder-legal-note">
+          Game copyright stays with Jason Groce. Level creator credit will be saved from your creator name.
+          Please consider donating to the Kennard Volunteer Fire Department.
+        </div>
+      </div>
+    </div>
+
+    <div id="builderCenter">
+      <div id="builderTitleBar">
+        <span class="builder-chip">Kennard Volunteer Fire Department Personal Level Creator</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <label for="builderTestDifficulty" style="font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:#b6d2f0;">Test Difficulty</label>
+          <select id="builderTestDifficulty" style="border-radius:8px; border:1px solid rgba(168,195,225,0.36); background:rgba(6,14,24,0.92); color:#fff; padding:7px 9px; font-size:13px;">
+            <option value="1">Easy</option>
+            <option value="2">Medium</option>
+            <option value="3">Hard</option>
+          </select>
+          <button id="builderHelpBtn" type="button" class="secondary-btn" style="width:auto; margin:0; padding:8px 12px; font-size:13px;">Help</button>
+          <button id="builderQuickPlayBtn" type="button" class="difficulty-btn" style="width:auto; margin:0; padding:8px 14px; font-size:13px;">Quick Play</button>
+          <span id="builderStatusText">Build your own level, save and play.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-panel" id="builderRightPanel">
+      <div class="builder-head"><h2>Builder Tools</h2></div>
+      <div class="builder-body">
+        <div class="builder-field">
+          <label for="builderLevelName">Level Name</label>
+          <input id="builderLevelName" type="text" maxlength="80">
+        </div>
+        <div class="builder-field">
+          <label for="builderCreatorName">Created By</label>
+          <input id="builderCreatorName" type="text" maxlength="60" placeholder="Your name">
+        </div>
+        <div class="builder-field">
+          <label for="builderSafetyTip">Instruction Tip</label>
+          <textarea id="builderSafetyTip" maxlength="220" readonly></textarea>
+        </div>
+        <div class="builder-field">
+          <label for="builderTruckSide">Truck Side</label>
+          <select id="builderTruckSide">
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTimeOfDay">Background</label>
+          <select id="builderTimeOfDay">
+            <option value="0">Day</option>
+            <option value="1">Dusk</option>
+            <option value="2">Night</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTankerStart">Tanker Arrival (ms)</label>
+          <input id="builderTankerStart" type="number" min="3000" step="500">
+        </div>
+        <div class="builder-field">
+          <label for="builderTankerRepeat">Tanker Repeat (ms)</label>
+          <input id="builderTankerRepeat" type="number" min="6000" step="500">
+        </div>
+        <div class="builder-field">
+          <label for="builderTankerHold">Tanker Hold (ms)</label>
+          <input id="builderTankerHold" type="number" min="2000" step="500">
+        </div>
+        <div class="builder-field">
+          <label for="builderBoroEnabled">Bonus Tanker</label>
+          <select id="builderBoroEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBoroStart">Bonus Tanker Arrival (ms)</label>
+          <input id="builderBoroStart" type="number" min="6000" step="500">
+        </div>
+        <div class="builder-field">
+          <label for="builderBlackBoxEnabled">Black Box Truck</label>
+          <select id="builderBlackBoxEnabled">
+            <option value="1">On</option>
+            <option value="0">Off</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBlackBoxStart">Black Box Arrival (ms)</label>
+          <input id="builderBlackBoxStart" type="number" min="1000" step="250">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoEnabled">Tornado</label>
+          <select id="builderTornadoEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoSpeed">Tornado Speed</label>
+          <input id="builderTornadoSpeed" type="range" min="0.2" max="2.5" step="0.05" value="0.62">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoDirection">Tornado Direction</label>
+          <select id="builderTornadoDirection">
+            <option value="1">Left To Right</option>
+            <option value="-1">Right To Left</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoStartDelay">Tornado Start Delay (ms)</label>
+          <input id="builderTornadoStartDelay" type="number" min="0" step="250" value="0">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoTravelPercent">Tornado Travel Percent</label>
+          <input id="builderTornadoTravelPercent" type="range" min="10" max="100" step="1" value="100">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoReturnEnabled">Tornado Return</label>
+          <select id="builderTornadoReturnEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoReturnPercent">Return At Percent</label>
+          <input id="builderTornadoReturnPercent" type="range" min="10" max="100" step="1" value="65">
+        </div>
+        <div class="builder-field">
+          <label>Selected WebP (Quick)</label>
+          <input id="builderQuickScale" type="range" min="0.6" max="1.4" step="0.01">
+          <div class="builder-mini-actions">
+            <button id="builderQuickNudgeLeftBtn" type="button">Nudge Left</button>
+            <button id="builderQuickNudgeRightBtn" type="button">Nudge Right</button>
+            <button id="builderQuickNudgeUpBtn" type="button">Nudge Up</button>
+            <button id="builderQuickNudgeDownBtn" type="button">Nudge Down</button>
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderObjScale">Selected Scale</label>
+          <input id="builderObjScale" type="range" min="0.6" max="1.4" step="0.01">
+        </div>
+        <div class="builder-field">
+          <label for="builderObjX">Selected X</label>
+          <input id="builderObjX" type="number" step="1">
+        </div>
+        <div class="builder-field">
+          <label for="builderObjY">Selected Base Y</label>
+          <input id="builderObjY" type="number" step="1">
+        </div>
+        <div class="builder-field">
+          <label for="builderTargetLevelSlot">Save as Official Slot</label>
+          <input id="builderTargetLevelSlot" type="number" min="1" max="23" value="1">
+        </div>
+        <div class="builder-field">
+          <label for="builderEditLevelSelect">Load Existing Level</label>
+          <select id="builderEditLevelSelect"></select>
+          <div class="builder-mini-actions" style="margin-top:4px;">
+            <button id="builderLoadSelectedLevelBtn" type="button">Load Selected Level</button>
+            <button id="builderLoadCurrentLevelBtn2" type="button">Load Current Level</button>
+          </div>
+        </div>
+        <div class="builder-field">
+          <label>Layer Stack (Top at Top)</label>
+          <div id="builderLayerList" class="builder-layer-list"></div>
+          <div class="builder-mini-actions">
+            <button id="builderLayerTopBtn" type="button">Move To Top</button>
+            <button id="builderLayerUpBtn" type="button">Move Up</button>
+            <button id="builderLayerDownBtn" type="button">Move Down</button>
+            <button id="builderLayerBottomBtn" type="button">Move To Bottom</button>
+            <button id="builderLayerDeleteBtn" type="button" class="builder-danger-btn">Delete Layer</button>
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerFilter">Layer Filter</label>
+          <input id="builderLayerFilter" type="text" placeholder="e.g. brightness(0.9) saturate(1.2)">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerOpacity">Layer Opacity</label>
+          <input id="builderLayerOpacity" type="range" min="0.05" max="1" step="0.01" value="1">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerBurnable">Layer Burnability</label>
+          <select id="builderLayerBurnable">
+            <option value="auto">Auto</option>
+            <option value="on">On</option>
+            <option value="off">Off</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label>Burn Zones (Per Object)</label>
+          <div id="builderBurnZonesWrap" class="builder-burn-wrap">
+            <div class="builder-burn-preview">
+              <img id="builderBurnPreviewImage" alt="Burn zone preview">
+              <div id="builderBurnPreviewOverlay"></div>
+            </div>
+            <div id="builderBurnZoneList" class="builder-burn-zone-list"></div>
+            <div id="builderBurnZoneHint" class="builder-burn-hint">Select a burnable object to edit its burn zones.</div>
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerSilhouette">Layer Silhouette</label>
+          <select id="builderLayerSilhouette">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerSilhouetteStrength">Silhouette Darkness <span id="builderLayerSilhouetteStrengthValue" class="builder-inline-value">0.85</span></label>
+          <input id="builderLayerSilhouetteStrength" type="range" min="0.05" max="1" step="0.01" value="0.85">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerFlipX">Flip Horizontal</label>
+          <select id="builderLayerFlipX">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerFlipY">Flip Vertical</label>
+          <select id="builderLayerFlipY">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerLocked">Lock Position (Physics)</label>
+          <select id="builderLayerLocked">
+            <option value="1">Locked</option>
+            <option value="0">Unlocked</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerWaterMove">Moveable By Water</label>
+          <select id="builderLayerWaterMove">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerTornadoFall">Tree Falls With Tornado</label>
+          <select id="builderLayerTornadoFall">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderAnimalExitDirection">Animal Water Exit Direction</label>
+          <select id="builderAnimalExitDirection">
+            <option value="nearest">Nearest Edge</option>
+            <option value="right">Exit Right</option>
+            <option value="left">Exit Left</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderAnimalExitSpeed">Animal Exit Speed</label>
+          <input id="builderAnimalExitSpeed" type="range" min="0.5" max="7" step="0.1" value="2.2">
+        </div>
+        <div class="builder-field">
+          <label for="builderAnimalBonusPoints">Animal Bonus Points</label>
+          <input id="builderAnimalBonusPoints" type="number" min="0" max="50" step="1" value="0">
+        </div>
+
+        <div class="builder-actions">
+          <button id="builderToolSelectBtn" type="button">Select Tool</button>
+          <button id="builderToolMoveBtn" type="button" class="alt">Move Tool</button>
+          <button id="builderFlipXBtn" type="button" class="alt">Flip Horizontal</button>
+          <button id="builderFlipYBtn" type="button" class="alt">Flip Vertical</button>
+          <button id="builderSilhouetteBtn" type="button" class="alt">Toggle Silhouette</button>
+          <button id="builderBurnableBtn" type="button" class="alt">Toggle Burnable</button>
+          <button id="builderDeleteBtn" type="button" class="warn">Delete Selected</button>
+          <button id="builderClearBtn" type="button" class="warn">Clear Level</button>
+          <button id="builderLoadCurrentBtn" type="button">Load Current Level</button>
+          <button id="builderNewBtn" type="button" class="alt">New Blank</button>
+          <button id="builderSaveLocalBtn" type="button">Save Local</button>
+          <button id="builderLoadLocalBtn" type="button" class="alt">Load Local</button>
+          <button id="builderExportBtn" type="button">Package</button>
+          <button id="builderExportOfflineBtn" type="button" class="alt">Save Offline Folder</button>
+          <button id="builderImportBtn" type="button" class="alt">Load Package</button>
+          <button id="builderShareBtn" type="button">Share</button>
+          <button id="builderSaveSubmissionBtn" type="button" class="alt">Save Submission File</button>
+          <button id="builderPrintBtn" type="button" class="alt">Print</button>
+          <button id="builderTestBtn" type="button">Test Level</button>
+          <button id="builderPublishBtn" type="button">Save To Game Slot</button>
+          <button id="builderCloseBtn" type="button" class="warn">Exit Builder</button>
+        </div>
+        <input id="builderImportFileInput" type="file" accept=".json,.kvfdlevel" style="display:none">
+        <input id="builderUploadImageInput" type="file" accept="image/*" style="display:none">
+        <input id="builderCaptureImageInput" type="file" accept="image/*" capture="environment" style="display:none">
+      </div>
+    </div>
+  </div>
+</div>
+<div id="builderHelpModal" class="builder-help-modal" aria-hidden="true">
+  <div class="builder-help-card">
+    <h3>Builder Help</h3>
+    <ul>
+      <li>Set your <strong>Level Name</strong>, then place models from the Asset Library onto the canvas to start building.</li>
+      <li>Use the left <strong>Asset Library</strong> to pick or upload images, then click canvas once to place.</li>
+      <li>Use <strong>Layers</strong> to move, scale, flip, lock physics, set burnability, and tune burn boxes.</li>
+          <li>The fire truck starts on the <strong>Left</strong>. Change <strong>Truck Side</strong> to Right anytime.</li>
+      <li>Burn boxes start on Easy so every burnable object works immediately; raise box tiers to Medium/Hard if wanted.</li>
+      <li>Use <strong>Test Difficulty</strong> + <strong>Quick Play</strong> to test easy/medium/hard behavior.</li>
+      <li>Use <strong>Events</strong> for tankers, tornado timing, and bonus vehicles. Save/Package from Export and Test.</li>
+    </ul>
+    <div class="builder-help-actions">
+      <button id="builderHelpTourBtn" type="button" class="difficulty-btn">Start Guided Tour</button>
+      <button id="builderHelpCloseBtn" type="button" class="secondary-btn">Close</button>
+    </div>
+  </div>
+</div>
+<div id="builderInstructionsModal" class="builder-instructions-modal" aria-hidden="true">
+  <div class="builder-instructions-card">
+    <h3>Do you want instructions?</h3>
+    <p style="margin:0; color:#c6daee; font-size:13px; line-height:1.35;">Choose <strong>Show Instructions</strong> for a quick guided tour with arrows and click-through tips, or <strong>Go To Builder</strong> to start editing immediately.</p>
+    <div class="builder-help-actions">
+      <button id="builderInstructionsNoBtn" type="button" class="secondary-btn">Go To Builder</button>
+      <button id="builderInstructionsYesBtn" type="button" class="difficulty-btn">Show Instructions</button>
+    </div>
+  </div>
+</div>
+<div id="builderTourOverlay" class="builder-tour-overlay"></div>
+<div id="builderTourHighlight" class="builder-tour-highlight"></div>
+<div id="builderTourCard" class="builder-tour-card">
+  <div class="arrow">➜</div>
+  <div class="builder-tour-title" id="builderTourTitle"></div>
+  <div class="builder-tour-body" id="builderTourBody"></div>
+  <div class="builder-tour-actions">
+    <button id="builderTourSkipBtn" type="button" class="secondary-btn">Skip</button>
+    <button id="builderTourBackBtn" type="button" class="secondary-btn">Back</button>
+    <button id="builderTourNextBtn" type="button" class="difficulty-btn">Next</button>
+  </div>
+</div>
 
 <div id="levelSelectHud" aria-label="Level select">
   <label for="levelSkipSelect" id="levelSkipLabel">Current Level</label>
@@ -370,9 +1379,10 @@ button:hover { filter: brightness(1.2); }
     <h1 style="font-size:58px; margin:0 0 20px 0; color:#FF0; text-shadow: 0 0 20px #FF0, 0 0 40px #FF8800, 4px 4px 0 #000, -3px -3px 0 #000;">KENNARD FIRE DEFENDER DELUXE</h1>
     <p style="font-size:26px; margin:0 0 40px 0; color:#FFDD88;">Choose Your Rank</p>
     <div>
-      <button class="difficulty-btn" onclick="startGame(1)">RECRUIT</button>
-      <button class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
-      <button class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
+      <button id="titleRecruitBtn" class="difficulty-btn" onclick="startGame(1)">RECRUIT</button>
+      <button id="titleMemberBtn" class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
+      <button id="titleCaptainBtn" class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
+      <button id="titleBuilderBtn" class="secondary-btn" onclick="builderOpen()">LEVEL BUILDER</button>
     </div>
   </div>
 </div>
@@ -429,6 +1439,8 @@ button:hover { filter: brightness(1.2); }
   </div>
 </div>
 
+<button id="builderReturnFromTestBtn" type="button" class="secondary-btn" style="position:fixed;right:14px;top:86px;z-index:1602;width:auto;padding:10px 14px;margin:0;display:none;">Return To Builder</button>
+
 <div class="copyright">
   Free for public use.<br>
   Created by Jason Groce - Kennard, IN<br>
@@ -445,6 +1457,7 @@ const ctx = canvas.getContext('2d');
 const SPRITES = {};
 const SPRITE_READY = {};
 const SPRITE_CACHE = {};
+const CUSTOM_SPRITE_DATA = {};
 let ACTIVE_SPRITE_KEYS = new Set();
 const SPRITE_FILES = {
   engineLeft: 'fire_engine_kvfd1_LeftFace680x322.webp',
@@ -523,14 +1536,191 @@ const SPRITE_FILES = {
 
 const SPRITE_BASE_PATH = 'images/webp_converted/';
 const SPRITE_FALLBACK_PATH = 'images/';
+const DISCOVERED_SPRITE_FILENAMES = [
+  'alien_base_792x276.webp',
+  'alienfirebasewithufos.webp',
+  'aplant1.webp',
+  'ATree1.webp',
+  'atree2.webp',
+  'basketball_459x145.webp',
+  'blackboxtruck.webp',
+  'blackboxtruckleftfacing.webp',
+  'blackboxtruckprop.webp',
+  'blackboxtruckrightfacing.webp',
+  'bluecoopcar_459x154.webp',
+  'boat.webp',
+  'bush_group_3_459x145.webp',
+  'busupsidedown.webp',
+  'car_pickup_blue_side_left_459x145.webp',
+  'car_sedan_red_front_459x145.webp',
+  'car_sedan_red_rear_459x145.webp',
+  'car_suv_silver_34_left_459x145.webp',
+  'cattails.webp',
+  'cybertruck_1168x784.webp',
+  'dog_running_1_459x145.webp',
+  'dog_running_2_459x145.webp',
+  'dog_running_3_459x145.webp',
+  'dog_sitting_459x145.webp',
+  'Farm_Barn_Red.webp',
+  'Farm_Barn_RedFacingRight.webp',
+  'Farm_Combine_Harvester_Red.webp',
+  'Farm_Corn_Field_Deep.webp',
+  'Farm_Hay_Bales.webp',
+  'Farm_Tractor_Green.webp',
+  'Farm_Wagon_Wooden.webp',
+  'Farm_Wheat_Field.webp',
+  'farm_chicken_left_459x145.webp',
+  'farm_chicken_right_459x145.webp',
+  'farm_cow_grazing_left_459x145.webp',
+  'farm_cow_grazing_right_459x145.webp',
+  'farm_cow_standing_left_459x145.webp',
+  'farm_cow_standing_right_459x145.webp',
+  'farm_pig_standing_left_459x145.webp',
+  'farm_pig_standing_right_459x145.webp',
+  'farm_sheep_standing_459x145.webp',
+  'farm_sheep_standing_right_459x145.webp',
+  'fence.webp',
+  'fire_engine_kvfd1_680x322.webp',
+  'fire_engine_kvfd1_LeftFace680x322.webp',
+  'fire_engine_kvfd1_RightFace680x322.webp',
+  'fire_tanker_kvfd_700x283.webp',
+  'fire_tanker_kvfd_LeftFacing700x283.webp',
+  'fire_tanker_kvfd_RightFacing700x283.webp',
+  'flower_patch_459x145.webp',
+  'FTBoroLeftFacing.webp',
+  'FTBoroRightFacing.webp',
+  'garage1_652x251.webp',
+  'garage_brick_onecar_facingleft_459x145.webp',
+  'garage_brick_onecar_facingright_459x145.webp',
+  'garagesmall_543x237.webp',
+  'garage_wood_onecar_facingleft_459x145.webp',
+  'garage_wood_onecar_facingright_459x145.webp',
+  'hay_1_367x210.webp',
+  'hay_2_432x214.webp',
+  'home_brick_ranch_1story_2_Facingleft_459x145.webp',
+  'home_brick_ranch_1story_2_Facingright_459x145.webp',
+  'home_brick_ranch_facingleft_1story_459x145.webp',
+  'home_brick_ranch_facingright_1story_459x145.webp',
+  'home_wood_ranch_1story_2_facingleft_459x145.webp',
+  'home_wood_ranch_1story_2_facingright_459x145.webp',
+  'home_wood_ranch_1story_459x145.webp',
+  'home_wood_ranch_1story_facingright_459x145.webp',
+  'horse_eating_459x145_Facing left.webp',
+  'horse_eating_459x145_FacingRight.webp',
+  'house1flr_784x259.webp',
+  'house2flr_784x613.webp',
+  'house2flr_784x1168.webp',
+  'house2flwhite_784x1168.webp',
+  'housetallold_784x1168.webp',
+  'kennardschool.webp',
+  'lawnmowerrider_876x469.webp',
+  'maplelarge.webp',
+  'maplemed.webp',
+  'Maplesm.webp',
+  'Normal_House_01.webp',
+  'Normal_House_03_Brick_Garage.webp',
+  'Normal_House_04_Cottage.webp',
+  'Normal_House_09_LightGray.webp',
+  'Normal_House_10_Beige_BayWindow.webp',
+  'Normal_House_11_BrownBrick.webp',
+  'Normal_House_12_White_Cottage.webp',
+  'oaktreelarge.webp',
+  'oaktreesmall.webp',
+  'Park_Bench_Metal_Facingleft.webp',
+  'Park_Bench_Metal_FacingRight.webp',
+  'Park_Bench_Wooden.webp',
+  'picnictable.webp',
+  'pinemedium.webp',
+  'Pinesmall.webp',
+  'Playground_Monkey_Bars_FacingLeft.webp',
+  'Playground_Monkey_Bars_Facingright.webp',
+  'Playground_Slide_Facingleft.webp',
+  'Playground_Slide_FacingRight.webp',
+  'Playground_Slide_Short_Silver_FacingLeft.webp',
+  'Playground_Slide_Short_Silver_FacingRight.webp',
+  'Playground_Slide_Tall_Silver_Facingleft.webp',
+  'Playground_Slide_Tall_Silver_FacingRight.webp',
+  'Playground_Swing_Set_LeftFacing.webp',
+  'Playground_Swing_Set_RightFacing.webp',
+  'pond.webp',
+  'pushmanualmower.webp',
+  'pushmower.webp',
+  'redbike.webp',
+  'redsportscar_1168x784.webp',
+  'redcarsports2_459x145.webp',
+  'redsmallshed_544x289.webp',
+  'RedBarnLarge_514x288.webp',
+  'ridingmower_876x469.webp',
+  'schoolhouse_1008x535.webp',
+  'shed_red_small_facingleft_459x145.webp',
+  'shed_red_small_facingright_459x145.webp',
+  'shed_wood_large_facingleft_459x145.webp',
+  'shed_wood_large_facingright_459x145.webp',
+  'Shrub_Bunch_4.webp',
+  'Shrub_Bushy_Single.webp',
+  'shrub_group_1_459x145.webp',
+  'shrub_group_2_459x145.webp',
+  'spacefiretruckleftfacing.webp',
+  'spacefiretruckrghtfacing.webp',
+  'tent.webp',
+  'Tree_Bunch_2_Large.webp',
+  'tree_Bunch_4.webp',
+  'Tree_Realistic_Oak_Single.webp',
+  'Tree_Realistic_Pine_Single.webp',
+  'Tree_Bunch_Realistic_3.webp',
+  'Tractor_436x238.webp',
+  'Tree_Realistic_Oak_Single.webp',
+  'ufo.webp',
+  'ufowithbeam.webp',
+  'Vehicle_School_Bus_YellowleftFacing.webp',
+  'Vehicle_School_Bus_YellowRightFacing.webp',
+  'Vehicle_Sedan_Blue_Left.webp',
+  'Vehicle_Sedan_Blue_Left2.webp',
+  'Vehicle_Sedan_Blue_left3.webp',
+  'Vehicle_Sedan_Green_LeftFacing.webp',
+  'Vehicle_Sedan_Green_RightFacing.webp',
+  'Vehicle_Sedan_Red_LeftFacing.webp',
+  'Vehicle_Sedan_Red_RightFacing.webp',
+  'Vehicle_Sedan_Silver_FacingLeft.webp',
+  'Vehicle_Sedan_Silver_FacingRight.webp',
+  'wrecked_car_pickup_blue_side_left_459x145.webp',
+  'wrecked_car_sedan_red_front_459x145.webp',
+  'wrecked_car_sedan_red_side_left_459x145.webp',
+  'wrecked_car_sedan_red_side_right_459x145.webp',
+  'wrecked_car_suv_silver_34_left_459x145.webp',
+  'wreckedsemi_792x276.webp'
+];
+
+function toSpriteKeyFromFilename(filename) {
+  const base = String(filename || '').replace(/\.[^/.]+$/,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();
+  return base ? `img_${base}` : '';
+}
+
+function registerDiscoveredSpriteFiles() {
+  const existingFiles = new Set(Object.values(SPRITE_FILES).map((file) => String(file || '').toLowerCase()));
+  const usedKeys = new Set(Object.keys(SPRITE_FILES));
+  DISCOVERED_SPRITE_FILENAMES.forEach((filename) => {
+    const lower = String(filename || '').toLowerCase();
+    if (!lower || existingFiles.has(lower)) return;
+    let key = toSpriteKeyFromFilename(filename);
+    if (!key) return;
+    let idx = 2;
+    while (usedKeys.has(key)) { key = `${toSpriteKeyFromFilename(filename)}_${idx++}`; }
+    SPRITE_FILES[key] = filename;
+    usedKeys.add(key);
+    existingFiles.add(lower);
+  });
+}
+registerDiscoveredSpriteFiles();
 
 function loadSprite(key) {
   if (SPRITES[key]) return;
   const filename = SPRITE_FILES[key];
-  if (!filename) return;
+  const custom = CUSTOM_SPRITE_DATA[key];
+  if (!filename && !custom) return;
   const img = new Image();
   img.onload = () => { SPRITE_READY[key] = true; };
-  img.src = `${SPRITE_BASE_PATH}${filename}`;
+  img.src = custom?.dataUrl || `${SPRITE_BASE_PATH}${filename}`;
   SPRITES[key] = img;
 }
 
@@ -807,6 +1997,9 @@ function preloadLevelSprites(lvl) {
   }
   const entities = baseLevels[lvl - 1]?.entities || [];
   entities.forEach((ent) => {
+    if (ent.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) {
+      needed.add(ent.spriteKey);
+    }
     if (ent.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
     const catalogSpec = getCatalogSpec(ent.type);
     if (catalogSpec) needed.add(catalogSpec.sprite);
@@ -915,6 +2108,18 @@ function drawSilhouetteSpriteFitted(key, x, y, w, h, alignBottom = false, alpha 
   return true;
 }
 
+function getEntitySilhouetteAlpha(ent, fallback = 0.26) {
+  const raw = (ent && ent.silhouetteStrength != null)
+    ? ent.silhouetteStrength
+    : ((ent && ent.alpha != null) ? ent.alpha : fallback);
+  return clamp(Number(raw || fallback), 0.05, 1);
+}
+
+function updateSilhouetteStrengthReadout(value) {
+  if (!BUILDER_UI.layerSilhouetteStrengthValue) return;
+  BUILDER_UI.layerSilhouetteStrengthValue.textContent = Number(value || 0).toFixed(2);
+}
+
 function drawCatalogEntity(ent) {
   const spec = getCatalogSpec(ent.type);
   if (!spec) return false;
@@ -929,17 +2134,91 @@ function drawCatalogEntity(ent) {
   const drawY = layout.ground
     ? groundedY(ent.type, baseY, drawH)
     : ((ent.y ?? baseY) - drawH + (ent.yOffset || 0));
+  const rect = getSpriteFitRect(spec.sprite, drawX, drawY, drawW, drawH, true);
   ctx.save();
   const filter = ent.filter ?? spec.filter;
   if (filter) ctx.filter = filter;
+  if (ent.alpha != null) ctx.globalAlpha = clamp(Number(ent.alpha), 0.05, 1);
+  const flipX = !!ent.flipX;
+  const flipY = !!ent.flipY;
+  const rotationDeg = Number(ent.rotationDeg || 0);
+  if (flipX || flipY || rotationDeg) {
+    const cx = rect.x + rect.w * 0.5;
+    const cy = rect.y + rect.h * 0.5;
+    ctx.translate(cx, cy);
+    if (rotationDeg) ctx.rotate((rotationDeg * Math.PI) / 180);
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+    ctx.translate(-cx, -cy);
+  }
   let ok = false;
   if (ent.silhouette || spec.silhouette) {
-    ok = drawSilhouetteSpriteFitted(spec.sprite, drawX, drawY, drawW, drawH, true, ent.alpha ?? spec.alpha ?? 0.18);
+    ok = drawSilhouetteSpriteFitted(spec.sprite, drawX, drawY, drawW, drawH, true, getEntitySilhouetteAlpha(ent, spec.alpha ?? 0.18));
   } else {
     ok = drawSpriteFitted(spec.sprite, drawX, drawY, drawW, drawH, true);
   }
   ctx.restore();
   return ok;
+}
+
+function getBuilderSpriteBaseSize(spriteKey) {
+  const sprite = SPRITES[spriteKey];
+  if (!sprite || !sprite.width || !sprite.height) return { w: 220, h: 160 };
+  const maxW = 290;
+  const maxH = 250;
+  const fit = Math.min(maxW / sprite.width, maxH / sprite.height, 1.7);
+  return { w: Math.max(56, sprite.width * fit), h: Math.max(42, sprite.height * fit) };
+}
+
+function getBuilderSpriteRect(ent) {
+  if (!ent || !ent.spriteKey) return null;
+  const size = getBuilderSpriteBaseSize(ent.spriteKey);
+    const scale = Math.max(0.6, Math.min(1.4, Number(ent.scale || 1)));
+  const drawW = size.w * scale;
+  const drawH = size.h * scale;
+  const baseY = Number(ent.baseY ?? GRASS_Y);
+  const x = Number(ent.x || 0);
+  return { x: x - drawW * 0.5, y: baseY - drawH, w: drawW, h: drawH };
+}
+
+function drawBuilderSpriteEntity(ent) {
+  const rect = getBuilderSpriteRect(ent);
+  if (!rect) return;
+  const key = ent.spriteKey;
+  const sprite = SPRITES[key];
+  ctx.save();
+  if (ent.filter) ctx.filter = ent.filter;
+  if (ent.alpha != null) ctx.globalAlpha = clamp(Number(ent.alpha), 0.05, 1);
+  const flipX = !!ent.flipX;
+  const flipY = !!ent.flipY;
+  const rotationDeg = Number(ent.rotationDeg || 0);
+  if (flipX || flipY || rotationDeg) {
+    const cx = rect.x + rect.w * 0.5;
+    const cy = rect.y + rect.h * 0.5;
+    ctx.translate(cx, cy);
+    if (rotationDeg) ctx.rotate((rotationDeg * Math.PI) / 180);
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+    ctx.translate(-cx, -cy);
+  }
+  if (ent.silhouette) {
+    drawSilhouetteSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true, getEntitySilhouetteAlpha(ent, 0.26));
+    ctx.restore();
+    return;
+  }
+  if (sprite && (SPRITE_READY[key] || (sprite.complete && sprite.naturalWidth > 0))) {
+    drawSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true);
+  } else {
+    ensureSpritesLoaded([key]);
+    ctx.strokeStyle = 'rgba(130, 190, 255, 0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#dbe9ff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading...', rect.x + rect.w * 0.5, rect.y + rect.h * 0.52);
+  }
+  ctx.restore();
 }
 
 const TREE_KIND_BY_TYPE = {
@@ -1201,11 +2480,44 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
   if (!box) return;
   const type = ent.type;
   const entityKey = `${type}:${entityIndex}`;
+  const forceBurnable = ent?.burnableOverride === true;
+  const forceUnburnable = ent?.burnableOverride === false;
+  if (forceUnburnable) return;
+  if (type === 'builderSprite') {
+    const builderBurnable = forceBurnable || ent?.burnable !== false;
+    if (!builderBurnable) return;
+    const state = getSelectedEntityBurnZoneState(ent);
+    if (state.template.length) {
+      state.template.forEach((zone, idx) => {
+        if (state.enabled[idx] === false) return;
+        const [rx, ry, rw, rh, extra = {}] = zone;
+        const isRoof = !!extra.roof;
+        spots.push({
+          x: box.x + box.w * rx,
+          y: box.y + box.h * ry,
+          w: box.w * rw,
+          h: box.h * rh,
+          roof: isRoof,
+          entityKey,
+          difficultyTier: clamp(Number(state.tiers[idx] ?? 1), 1, 3),
+          flameScale: extra.flameScale ?? (isRoof ? 1.10 : 0.66),
+          smokeScale: extra.smokeScale ?? (isRoof ? 1.0 : 0.58)
+        });
+      });
+    } else {
+      spots.push({ x: box.x + box.w * 0.16, y: box.y + box.h * 0.10, w: box.w * 0.68, h: box.h * 0.20, roof: true, entityKey, difficultyTier: 1 });
+      spots.push({ x: box.x + box.w * 0.18, y: box.y + box.h * 0.38, w: box.w * 0.30, h: box.h * 0.48, entityKey, difficultyTier: 1 });
+      spots.push({ x: box.x + box.w * 0.52, y: box.y + box.h * 0.38, w: box.w * 0.30, h: box.h * 0.48, entityKey, difficultyTier: 1 });
+    }
+    return;
+  }
   const catalogSpec = getCatalogSpec(type);
   if (catalogSpec?.burnZones?.length) {
-    catalogSpec.burnZones.forEach(([rx, ry, rw, rh, extra = {}]) => {
+    const state = getSelectedEntityBurnZoneState(ent);
+    catalogSpec.burnZones.forEach(([rx, ry, rw, rh, extra = {}], idx) => {
+      if (state.enabled.length && state.enabled[idx] === false) return;
       const isRoof = !!extra.roof;
-      const difficultyTier = extra.difficultyTier ?? (isRoof ? 2 : 1);
+      const difficultyTier = clamp(Number(state.tiers[idx] ?? (extra.difficultyTier ?? (isRoof ? 2 : 1))), 1, 3);
       spots.push({
         x: box.x + box.w * rx,
         y: box.y + box.h * ry,
@@ -1220,7 +2532,12 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
     });
     return;
   }
-  if (!isBurnableType(type)) return;
+  if (!isBurnableType(type)) {
+    if (!forceBurnable) return;
+    spots.push({ x: box.x + box.w * 0.22, y: box.y + box.h * 0.18, w: box.w * 0.56, h: box.h * 0.28, roof: true, entityKey, difficultyTier: 2 });
+    spots.push({ x: box.x + box.w * 0.20, y: box.y + box.h * 0.48, w: box.w * 0.60, h: box.h * 0.36, entityKey, difficultyTier: 1 });
+    return;
+  }
   if (TREE_KIND_BY_TYPE[type]) {
     const before = spots.length;
     addTreeSpots(spots, box, type);
@@ -1295,6 +2612,9 @@ function addGenericLevelSpots(spots, ent, lvl, entityIndex = 0) {
 
 function getEntityBounds(ent) {
   // Return the same rectangle we draw so fires stay attached to the art.
+  if (ent?.type === 'builderSprite') {
+    return getBuilderSpriteRect(ent);
+  }
   const catalogSpec = getCatalogSpec(ent.type);
   if (catalogSpec) {
     ent = resolveCatalogEntityPlacement(ent);
@@ -1366,7 +2686,15 @@ function getEntityBounds(ent) {
     return getSpriteFitRect(variant, ent.x + layout.x, groundedY(variant, GRASS_Y, layout.h), layout.w, layout.h, true);
   }
   if (ent.type === 'fence') return getSpriteFitRect('fence', ent.x + ENTITY_LAYOUT.fence.x, groundedY('fence', GRASS_Y, ENTITY_LAYOUT.fence.h), ENTITY_LAYOUT.fence.w, ENTITY_LAYOUT.fence.h, true);
-  if (ent.type === 'pond') return getSpriteFitRect('pond', ent.x + ENTITY_LAYOUT.pond.x, groundedY('pond', GRASS_Y, ENTITY_LAYOUT.pond.h), ENTITY_LAYOUT.pond.w, ENTITY_LAYOUT.pond.h, true);
+  if (ent.type === 'pond') {
+    const scale = ent.scale || 1;
+    const drawW = ENTITY_LAYOUT.pond.w * scale;
+    const drawH = ENTITY_LAYOUT.pond.h * scale;
+    const baseY = ent.baseY ?? GRASS_Y;
+    const drawX = ent.x + ENTITY_LAYOUT.pond.x * scale;
+    const drawY = baseY - drawH + 8;
+    return { x: drawX, y: drawY, w: drawW, h: drawH };
+  }
   if (ent.type === 'boat') return getSpriteFitRect('boat', ent.x + ENTITY_LAYOUT.boat.x, GRASS_Y - ENTITY_LAYOUT.boat.h + 12, ENTITY_LAYOUT.boat.w, ENTITY_LAYOUT.boat.h, true);
   if (ent.type === 'tent') return getSpriteFitRect('tent', ent.x + ENTITY_LAYOUT.tent.x, groundedY('tent', GRASS_Y, ENTITY_LAYOUT.tent.h), ENTITY_LAYOUT.tent.w, ENTITY_LAYOUT.tent.h, true);
   if (ent.type === 'catTails') return getSpriteFitRect('catTails', ent.x + ENTITY_LAYOUT.catTails.x, groundedY('catTails', GRASS_Y, ENTITY_LAYOUT.catTails.h), ENTITY_LAYOUT.catTails.w, ENTITY_LAYOUT.catTails.h, true);
@@ -1377,6 +2705,7 @@ function getEntityBounds(ent) {
   if (ent.type === 'pushManualMower') return getSpriteFitRect('pushManualMower', ent.x + ENTITY_LAYOUT.pushManualMower.x, groundedY('pushManualMower', GRASS_Y, ENTITY_LAYOUT.pushManualMower.h), ENTITY_LAYOUT.pushManualMower.w, ENTITY_LAYOUT.pushManualMower.h, true);
   if (ent.type === 'busSchoolLeft') return getSpriteFitRect('busSchoolLeft', ent.x + ENTITY_LAYOUT.busSchoolLeft.x, 470 - ENTITY_LAYOUT.busSchoolLeft.h, ENTITY_LAYOUT.busSchoolLeft.w, ENTITY_LAYOUT.busSchoolLeft.h, true);
   if (ent.type === 'busUpsideDown') return getSpriteFitRect('busUpsideDown', ent.x + ENTITY_LAYOUT.busUpsideDown.x, 470 - ENTITY_LAYOUT.busUpsideDown.h, ENTITY_LAYOUT.busUpsideDown.w, ENTITY_LAYOUT.busUpsideDown.h, true);
+  if (ent.type === 'tornado') return { x: (ent.x ?? 140) - 56, y: 132, w: 112, h: 360 };
   return null;
 }
 
@@ -1518,6 +2847,1467 @@ let hasShownLevel6TimeCue = false;
 let timeCueUntilMs = 0;
 let levelHorseEvent = null;
 let tornadoCompleted = false;
+let tornadoState = null;
+let builderState = null;
+let builderSelectedId = null;
+let builderPendingSpriteKey = null;
+let builderPendingEntityType = null;
+let builderTool = 'select';
+let builderPointer = { active: false, mode: '', entityId: null, offsetX: 0, offsetY: 0, startScale: 1, startDist: 1 };
+let builderTestLevelIndex = null;
+let builderLastPlaceAt = 0;
+let builderTestActive = false;
+let builderLastPreloadAt = 0;
+
+const BUILDER_UI = {
+  screen: document.getElementById('builderScreen'),
+  status: document.getElementById('builderStatusText'),
+  helpBtn: document.getElementById('builderHelpBtn'),
+  helpModal: document.getElementById('builderHelpModal'),
+  instructionsModal: document.getElementById('builderInstructionsModal'),
+  instructionsYesBtn: document.getElementById('builderInstructionsYesBtn'),
+  instructionsNoBtn: document.getElementById('builderInstructionsNoBtn'),
+  helpTourBtn: document.getElementById('builderHelpTourBtn'),
+  helpCloseBtn: document.getElementById('builderHelpCloseBtn'),
+  tourOverlay: document.getElementById('builderTourOverlay'),
+  tourHighlight: document.getElementById('builderTourHighlight'),
+  tourCard: document.getElementById('builderTourCard'),
+  tourTitle: document.getElementById('builderTourTitle'),
+  tourBody: document.getElementById('builderTourBody'),
+  tourBackBtn: document.getElementById('builderTourBackBtn'),
+  tourNextBtn: document.getElementById('builderTourNextBtn'),
+  tourSkipBtn: document.getElementById('builderTourSkipBtn'),
+  name: document.getElementById('builderLevelName'),
+  creatorName: document.getElementById('builderCreatorName'),
+  testDifficulty: document.getElementById('builderTestDifficulty'),
+  tip: document.getElementById('builderSafetyTip'),
+  truckSide: document.getElementById('builderTruckSide'),
+  timeOfDay: document.getElementById('builderTimeOfDay'),
+  tankerStart: document.getElementById('builderTankerStart'),
+  tankerRepeat: document.getElementById('builderTankerRepeat'),
+  tankerHold: document.getElementById('builderTankerHold'),
+  boroEnabled: document.getElementById('builderBoroEnabled'),
+  boroStart: document.getElementById('builderBoroStart'),
+  blackBoxEnabled: document.getElementById('builderBlackBoxEnabled'),
+  blackBoxStart: document.getElementById('builderBlackBoxStart'),
+  tornadoEnabled: document.getElementById('builderTornadoEnabled'),
+  tornadoSpeed: document.getElementById('builderTornadoSpeed'),
+  tornadoDirection: document.getElementById('builderTornadoDirection'),
+  tornadoStartDelay: document.getElementById('builderTornadoStartDelay'),
+  tornadoTravelPercent: document.getElementById('builderTornadoTravelPercent'),
+  tornadoReturnEnabled: document.getElementById('builderTornadoReturnEnabled'),
+  tornadoReturnPercent: document.getElementById('builderTornadoReturnPercent'),
+  assetSearch: document.getElementById('builderAssetSearch'),
+  assetCategory: document.getElementById('builderAssetCategory'),
+  assetList: document.getElementById('builderAssetList'),
+  addLakeBtn: document.getElementById('builderAddLakeBtn'),
+  captureImageBtn: document.getElementById('builderCaptureImageBtn'),
+  quickScale: document.getElementById('builderQuickScale'),
+  objScale: document.getElementById('builderObjScale'),
+  objX: document.getElementById('builderObjX'),
+  objY: document.getElementById('builderObjY'),
+  targetSlot: document.getElementById('builderTargetLevelSlot'),
+  editLevelSelect: document.getElementById('builderEditLevelSelect'),
+  layerList: document.getElementById('builderLayerList'),
+  layerFilter: document.getElementById('builderLayerFilter'),
+  layerOpacity: document.getElementById('builderLayerOpacity'),
+  layerBurnable: document.getElementById('builderLayerBurnable'),
+  burnPreviewImage: document.getElementById('builderBurnPreviewImage'),
+  burnPreviewOverlay: document.getElementById('builderBurnPreviewOverlay'),
+  burnZoneList: document.getElementById('builderBurnZoneList'),
+  burnZoneHint: document.getElementById('builderBurnZoneHint'),
+  layerSilhouette: document.getElementById('builderLayerSilhouette'),
+  layerSilhouetteStrength: document.getElementById('builderLayerSilhouetteStrength'),
+  layerSilhouetteStrengthValue: document.getElementById('builderLayerSilhouetteStrengthValue'),
+  layerFlipX: document.getElementById('builderLayerFlipX'),
+  layerFlipY: document.getElementById('builderLayerFlipY'),
+  layerLocked: document.getElementById('builderLayerLocked'),
+  layerWaterMove: document.getElementById('builderLayerWaterMove'),
+  layerTornadoFall: document.getElementById('builderLayerTornadoFall'),
+  animalExitDirection: document.getElementById('builderAnimalExitDirection'),
+  animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
+  animalBonusPoints: document.getElementById('builderAnimalBonusPoints'),
+  legalNote: document.getElementById('builderLegalNote'),
+  uploadImageInput: document.getElementById('builderUploadImageInput'),
+  captureImageInput: document.getElementById('builderCaptureImageInput')
+};
+
+function createEmptyBuilderLevel() {
+  return normalizeBuilderLevel({
+    name: 'Custom Builder Level',
+    creatorName: '',
+    testDifficulty: 1,
+    safetyTip: 'Use the builder tools to set fire behavior and test your custom scene.',
+    truckSide: 'left',
+    truckPlaced: true,
+    timeOfDay: 0,
+    entities: []
+  });
+}
+
+function getBuilderEntityById(id) {
+  return (builderState.entities || []).find((ent) => ent.id === id) || null;
+}
+
+function builderSetStatus(message) {
+  if (BUILDER_UI.status) BUILDER_UI.status.textContent = message;
+}
+
+const BUILDER_TOUR_SEEN_KEY = 'KVFD_BUILDER_TOUR_SEEN_V1';
+let builderTourIndex = -1;
+const BUILDER_TOUR_STEPS = [
+  { selector: '#builderAssetList', title: 'Asset Library', body: 'Pick any model or uploaded image, then click the canvas once to place it.' },
+  { selector: '#builderTopSelectedSection', title: 'Layers', body: 'Use this column for layer stack and selected WebP properties.' },
+  { selector: '#builderTopLevelSection', title: 'Level Properties', body: 'Set level title, creator, background, and load/save slot settings here.' },
+  { selector: '#builderBurnZonesWrap', title: 'Burn Boxes', body: 'Toggle boxes on/off and set each box to Easy, Medium, or Hard intensity.' },
+  { selector: '#builderTestDifficulty', title: 'Test Difficulty', body: 'Choose Easy, Medium, or Hard before Quick Play to test fire challenge levels.' },
+  { selector: '#builderQuickPlayBtn', title: 'Quick Play', body: 'Starts the level immediately using your selected test difficulty.' },
+  { selector: '#builderRightPanel .builder-actions', title: 'Save, Package, Share', body: 'Use these actions to save local, package offline, import/export, and publish.' }
+];
+
+function builderHashText(text) {
+  const str = String(text || '');
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  return Math.abs(hash);
+}
+
+function builderGenerateSafetyTip(levelName) {
+  const fallbackTips = [
+    'Keep clear paths for responders and protect nearby exposures early.',
+    'Stay low below smoke and move to a clear exit path.',
+    'Call emergency services early and keep access routes open.'
+  ];
+  const tips = (Array.isArray(safetyTips) && safetyTips.length) ? safetyTips : fallbackTips;
+  const idx = builderHashText(levelName || 'Custom Builder Level') % tips.length;
+  return String(tips[idx] || fallbackTips[0]);
+}
+
+function builderApplyAutoSafetyTip() {
+  const tip = builderGenerateSafetyTip(builderState?.name || 'Custom Builder Level');
+  builderState.safetyTip = tip;
+  if (BUILDER_UI.tip) BUILDER_UI.tip.value = tip;
+}
+
+function builderShowHelpModal(open = true) {
+  if (!BUILDER_UI.helpModal) return;
+  BUILDER_UI.helpModal.style.display = open ? 'flex' : 'none';
+  BUILDER_UI.helpModal.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+
+function builderShowInstructionsPrompt(open = true) {
+  if (!BUILDER_UI.instructionsModal) return;
+  BUILDER_UI.instructionsModal.style.display = open ? 'flex' : 'none';
+  BUILDER_UI.instructionsModal.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+
+function builderEndTour(markSeen = true) {
+  builderTourIndex = -1;
+  if (BUILDER_UI.tourOverlay) BUILDER_UI.tourOverlay.style.display = 'none';
+  if (BUILDER_UI.tourHighlight) BUILDER_UI.tourHighlight.style.display = 'none';
+  if (BUILDER_UI.tourCard) BUILDER_UI.tourCard.style.display = 'none';
+  if (markSeen) localStorage.setItem(BUILDER_TOUR_SEEN_KEY, '1');
+}
+
+function builderRenderTourStep(index) {
+  const step = BUILDER_TOUR_STEPS[index];
+  if (!step) return builderEndTour(true);
+  const target = document.querySelector(step.selector);
+  if (!target) return builderEndTour(false);
+  try { target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); } catch (err) {}
+  const rect = target.getBoundingClientRect();
+  if (BUILDER_UI.tourOverlay) BUILDER_UI.tourOverlay.style.display = 'block';
+  if (BUILDER_UI.tourHighlight) {
+    BUILDER_UI.tourHighlight.style.display = 'block';
+    BUILDER_UI.tourHighlight.style.left = `${Math.max(6, rect.left - 6)}px`;
+    BUILDER_UI.tourHighlight.style.top = `${Math.max(6, rect.top - 6)}px`;
+    BUILDER_UI.tourHighlight.style.width = `${Math.max(24, rect.width + 12)}px`;
+    BUILDER_UI.tourHighlight.style.height = `${Math.max(24, rect.height + 12)}px`;
+  }
+  if (BUILDER_UI.tourTitle) BUILDER_UI.tourTitle.textContent = `${index + 1}/${BUILDER_TOUR_STEPS.length} • ${step.title}`;
+  if (BUILDER_UI.tourBody) BUILDER_UI.tourBody.textContent = step.body;
+  if (BUILDER_UI.tourCard) {
+    BUILDER_UI.tourCard.style.display = 'block';
+    const cardRect = BUILDER_UI.tourCard.getBoundingClientRect();
+    const canRight = rect.right + 14 + cardRect.width <= (window.innerWidth - 10);
+    const canLeft = rect.left - 14 - cardRect.width >= 10;
+    const preferBottom = rect.top < (window.innerHeight * 0.42);
+    const top = preferBottom
+      ? Math.min(window.innerHeight - cardRect.height - 10, rect.bottom + 10)
+      : Math.max(10, rect.top - cardRect.height - 10);
+    let left = Math.min(window.innerWidth - cardRect.width - 10, Math.max(10, rect.left));
+    if (canRight) left = rect.right + 14;
+    else if (canLeft) left = rect.left - cardRect.width - 14;
+    left = Math.max(10, Math.min(window.innerWidth - cardRect.width - 10, left));
+    BUILDER_UI.tourCard.style.top = `${top}px`;
+    BUILDER_UI.tourCard.style.left = `${left}px`;
+  }
+  if (BUILDER_UI.tourBackBtn) BUILDER_UI.tourBackBtn.disabled = index === 0;
+  if (BUILDER_UI.tourNextBtn) BUILDER_UI.tourNextBtn.textContent = index >= BUILDER_TOUR_STEPS.length - 1 ? 'Done' : 'Next';
+}
+
+function builderStartTour(force = false) {
+  if (gameState !== 'builder') return;
+  if (!force && localStorage.getItem(BUILDER_TOUR_SEEN_KEY) === '1') return;
+  builderShowHelpModal(false);
+  builderShowInstructionsPrompt(false);
+  builderTourIndex = 0;
+  builderRenderTourStep(builderTourIndex);
+}
+
+const BUILDER_DEFAULT_BURN_ZONES = [
+  [0.16, 0.10, 0.68, 0.20, { roof: true, difficultyTier: 1 }],
+  [0.18, 0.38, 0.30, 0.48, { difficultyTier: 1 }],
+  [0.52, 0.38, 0.30, 0.48, { difficultyTier: 1 }]
+];
+
+function isAnimalEntity(ent) {
+  if (!ent) return false;
+  const type = String(ent.type || '').toLowerCase();
+  const spriteKey = String(ent.spriteKey || '').toLowerCase();
+  return /horse|cow|dog|cat|goat|pig|animal/.test(`${type} ${spriteKey}`);
+}
+
+function getBurnZoneTemplateForEntity(ent) {
+  if (!ent) return [];
+  if (ent.type === 'builderSprite') return BUILDER_DEFAULT_BURN_ZONES.map((z) => [...z]);
+  const catalogSpec = getCatalogSpec(ent.type);
+  if (catalogSpec?.burnZones?.length) return catalogSpec.burnZones.map((z) => [...z]);
+  return [];
+}
+
+function getSelectedEntityBurnZoneState(ent) {
+  const template = getBurnZoneTemplateForEntity(ent);
+  if (!template.length) return { template: [], enabled: [], tiers: [] };
+  const enabledRaw = Array.isArray(ent?.burnZonesEnabled) ? ent.burnZonesEnabled : [];
+  const tierRaw = Array.isArray(ent?.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers : [];
+  const enabled = template.map((_, idx) => enabledRaw[idx] !== false);
+  const tiers = template.map((zone, idx) => {
+    const zoneDefault = clamp(Number(zone?.[4]?.difficultyTier ?? 1), 1, 3);
+    return clamp(Number(tierRaw[idx] ?? zoneDefault), 1, 3);
+  });
+  return { template, enabled, tiers };
+}
+
+function entityHasAnyEnabledBurnZone(ent) {
+  const state = getSelectedEntityBurnZoneState(ent);
+  if (!state.template.length) return true;
+  return state.enabled.some(Boolean);
+}
+
+function getEntityPreviewImageSrc(ent) {
+  if (!ent) return '';
+  if (ent.type === 'builderSprite') {
+    const key = ent.spriteKey || '';
+    if (!key) return '';
+    return CUSTOM_SPRITE_DATA[key]?.dataUrl || `./images/webp_converted/${SPRITE_FILES[key] || ''}`;
+  }
+  const spec = getCatalogSpec(ent.type);
+  const key = spec?.sprite || ent.type;
+  if (!key || !SPRITE_FILES[key]) return '';
+  return `./images/webp_converted/${SPRITE_FILES[key]}`;
+}
+
+function builderRefreshCreatorNotice() {
+  if (!BUILDER_UI.legalNote) return;
+  const creator = (builderState?.creatorName || 'Not set').trim() || 'Not set';
+  BUILDER_UI.legalNote.textContent = `Game copyright stays with Jason Groce. Level creator credit: ${creator}. Please consider donating to the Kennard Volunteer Fire Department.`;
+}
+
+function builderPlaceTruckForUser(side) {
+  const lane = side === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
+  builderState.truckSide = side === 'right' ? 'right' : 'left';
+  builderState.truckPlaced = true;
+  builderState.truckPlacementX = lane.spawnX;
+  const label = builderState.truckSide === 'right' ? 'Right' : 'Left';
+  builderSetStatus(`Fire truck placed on the ${label} lane. Add props/models now.`);
+}
+
+let builderTruckSideAttentionTimer = null;
+function builderStopTruckSideAttention() {
+  const field = BUILDER_UI.truckSide?.closest('.builder-field');
+  if (!field) return;
+  field.classList.remove('truck-attn');
+  const arrow = field.querySelector('.builder-attn-arrow');
+  if (arrow) arrow.remove();
+  if (builderTruckSideAttentionTimer) clearTimeout(builderTruckSideAttentionTimer);
+  builderTruckSideAttentionTimer = null;
+}
+
+function builderStartTruckSideAttention() {
+  const field = BUILDER_UI.truckSide?.closest('.builder-field');
+  if (!field) return;
+  builderStopTruckSideAttention();
+  field.classList.add('truck-attn');
+  const arrow = document.createElement('div');
+  arrow.className = 'builder-attn-arrow';
+  arrow.innerHTML = '<span class="arrow">➜</span><span>Change truck side here</span>';
+  field.appendChild(arrow);
+  builderTruckSideAttentionTimer = setTimeout(() => builderStopTruckSideAttention(), 10000);
+}
+
+function builderHasTruckPlaced() {
+  return !!(builderState?.truckPlaced && (builderState?.truckSide === 'left' || builderState?.truckSide === 'right'));
+}
+
+function builderRenderBurnZoneEditor(selected) {
+  if (!BUILDER_UI.burnZoneList || !BUILDER_UI.burnPreviewOverlay || !BUILDER_UI.burnPreviewImage || !BUILDER_UI.burnZoneHint) return;
+  BUILDER_UI.burnZoneList.innerHTML = '';
+  BUILDER_UI.burnPreviewOverlay.innerHTML = '';
+  const src = getEntityPreviewImageSrc(selected);
+  BUILDER_UI.burnPreviewImage.src = src || '';
+  BUILDER_UI.burnPreviewImage.style.visibility = src ? 'visible' : 'hidden';
+  const state = getSelectedEntityBurnZoneState(selected);
+  if (!selected || !state.template.length) {
+    BUILDER_UI.burnZoneHint.textContent = 'Select a burnable object to edit its burn zones.';
+    return;
+  }
+  BUILDER_UI.burnZoneHint.textContent = 'Uncheck zones to disable them. If all are off, burnability turns Off.';
+  state.template.forEach((zone, idx) => {
+    const [rx, ry, rw, rh, extra = {}] = zone;
+    const on = state.enabled[idx] !== false;
+    const box = document.createElement('button');
+    box.type = 'button';
+    box.className = `builder-burn-zone-box${on ? '' : ' off'}`;
+    box.style.left = `${rx * 100}%`;
+    box.style.top = `${ry * 100}%`;
+    box.style.width = `${rw * 100}%`;
+    box.style.height = `${rh * 100}%`;
+    box.title = `Burn Box ${idx + 1}`;
+    box.addEventListener('click', () => {
+      const ent = getBuilderEntityById(builderSelectedId);
+      if (!ent) return;
+      const entState = getSelectedEntityBurnZoneState(ent);
+      ent.burnZonesEnabled = entState.enabled.map((v, i) => i === idx ? !v : v);
+      if (!ent.burnZonesEnabled.some(Boolean)) {
+        ent.burnableOverride = false;
+        if (BUILDER_UI.layerBurnable) BUILDER_UI.layerBurnable.value = 'off';
+      } else if (ent.burnableOverride === false) {
+        ent.burnableOverride = true;
+        if (BUILDER_UI.layerBurnable) BUILDER_UI.layerBurnable.value = 'on';
+      }
+      builderRenderBurnZoneEditor(ent);
+      builderSaveLastDraft();
+    });
+    BUILDER_UI.burnPreviewOverlay.appendChild(box);
+
+    const row = document.createElement('label');
+    row.className = 'builder-burn-zone-item';
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = on;
+    check.addEventListener('change', () => box.click());
+    const label = document.createElement('span');
+    label.textContent = `Burn Box ${idx + 1}`;
+    const tier = document.createElement('select');
+    tier.className = 'tier';
+    tier.innerHTML = '<option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option>';
+    tier.value = String(clamp(Number(state.tiers[idx] ?? extra.difficultyTier ?? 1), 1, 3));
+    tier.addEventListener('change', () => {
+      const ent = getBuilderEntityById(builderSelectedId);
+      if (!ent) return;
+      const entState = getSelectedEntityBurnZoneState(ent);
+      ent.burnZoneDifficultyTiers = entState.tiers.map((v, i) => i === idx ? clamp(Number(tier.value || 1), 1, 3) : v);
+      builderSaveLastDraft();
+    });
+    row.appendChild(check);
+    row.appendChild(label);
+    row.appendChild(tier);
+    BUILDER_UI.burnZoneList.appendChild(row);
+  });
+}
+
+function builderSyncAnimalControlsForSelection(selected) {
+  const isAnimal = isAnimalEntity(selected);
+  if (BUILDER_UI.animalExitDirection) {
+    BUILDER_UI.animalExitDirection.disabled = !isAnimal;
+    BUILDER_UI.animalExitDirection.value = String(selected?.waterExitDirection || 'nearest');
+  }
+  if (BUILDER_UI.animalExitSpeed) {
+    BUILDER_UI.animalExitSpeed.disabled = !isAnimal;
+    BUILDER_UI.animalExitSpeed.value = String(clamp(Number(selected?.waterExitSpeed ?? 2.2), 0.5, 7));
+  }
+  if (BUILDER_UI.animalBonusPoints) {
+    BUILDER_UI.animalBonusPoints.disabled = !isAnimal;
+    BUILDER_UI.animalBonusPoints.value = String(clamp(Number(selected?.waterExitBonusPoints ?? 0), 0, 50));
+  }
+}
+
+function builderSyncPhysicsControlsForSelection(selected) {
+  const isLocked = selected ? (selected.lockedPosition !== false) : true;
+  if (BUILDER_UI.layerLocked) BUILDER_UI.layerLocked.value = isLocked ? '1' : '0';
+  if (BUILDER_UI.layerWaterMove) BUILDER_UI.layerWaterMove.disabled = isLocked;
+  if (BUILDER_UI.layerTornadoFall) BUILDER_UI.layerTornadoFall.disabled = isLocked;
+}
+
+function builderRecalculateRightPanelWidth() {
+  const screen = document.getElementById('builderScreen');
+  if (!screen) return;
+  const cols = [
+    document.getElementById('builderTopSelectedColumn'),
+    document.getElementById('builderTopLevelColumn'),
+    document.getElementById('builderTopExportColumn')
+  ].filter(Boolean);
+  if (!cols.length) return;
+  let openCount = 0;
+  let collapsedCount = 0;
+  cols.forEach((col) => {
+    if (col.classList.contains('collapsed')) collapsedCount += 1;
+    else openCount += 1;
+  });
+  const desired = (openCount * 320) + (collapsedCount * 48) + 18;
+  const minW = 150;
+  const maxW = Math.max(320, Math.floor(window.innerWidth * 0.52));
+  const width = clamp(desired, minW, maxW);
+  screen.style.setProperty('--builder-right-width', `${width}px`);
+}
+
+function builderUpdateTopColumnOrder() {
+  const topSections = document.querySelector('#builderRightPanel .builder-top-sections');
+  const selectedCol = document.getElementById('builderTopSelectedColumn');
+  const levelCol = document.getElementById('builderTopLevelColumn');
+  const exportCol = document.getElementById('builderTopExportColumn');
+  if (!topSections || !selectedCol || !levelCol || !exportCol) return;
+  topSections.appendChild(selectedCol);
+  topSections.appendChild(levelCol);
+  topSections.appendChild(exportCol);
+  builderRecalculateRightPanelWidth();
+}
+
+function builderUpdateTopColumnsForSelection(selected) {
+  const selectedCol = document.getElementById('builderTopSelectedColumn');
+  const levelCol = document.getElementById('builderTopLevelColumn');
+  const selectedSection = document.getElementById('builderTopSelectedSection');
+  const levelSection = document.getElementById('builderTopLevelSection');
+  if (!selectedCol) return;
+  const hasSelection = !!selected;
+  if (!selectedSection || !levelSection || !levelCol) return;
+  const attachDetailsToColumn = (details, column) => {
+    if (!details || !column) return;
+    if (details.parentElement === column) return;
+    const beforeNode = column.querySelector('.column-toggle') || column.firstChild;
+    if (beforeNode) column.insertBefore(details, beforeNode);
+    else column.appendChild(details);
+  };
+  attachDetailsToColumn(selectedSection, selectedCol);
+  attachDetailsToColumn(levelSection, levelCol);
+  selectedSection.classList.toggle('no-selection-mode', !hasSelection);
+  if (!hasSelection) selectedCol.classList.remove('collapsed');
+  builderUpdateTopColumnOrder();
+}
+
+function builderApplyStateToUi() {
+  if (!BUILDER_UI.name) return;
+  builderApplyAutoSafetyTip();
+  BUILDER_UI.name.value = builderState.name || '';
+  if (BUILDER_UI.creatorName) BUILDER_UI.creatorName.value = builderState.creatorName || '';
+  if (BUILDER_UI.testDifficulty) BUILDER_UI.testDifficulty.value = String(clamp(Number(builderState.testDifficulty ?? 1), 1, 3));
+  BUILDER_UI.tip.value = builderState.safetyTip || '';
+  BUILDER_UI.truckSide.value = (builderState.truckSide === 'right') ? 'right' : 'left';
+  const truckField = BUILDER_UI.truckSide?.closest('.builder-field');
+  if (truckField) truckField.classList.toggle('required', !builderHasTruckPlaced());
+  BUILDER_UI.timeOfDay.value = String(builderState.timeOfDay ?? 0);
+  BUILDER_UI.tankerStart.value = String(builderState?.tankerSchedule?.firstAt ?? 15000);
+  BUILDER_UI.tankerRepeat.value = String(builderState?.tankerSchedule?.repeat ?? 33000);
+  BUILDER_UI.tankerHold.value = String(builderState?.tankerSchedule?.hold ?? 8000);
+  BUILDER_UI.boroEnabled.value = builderState?.boroSchedule?.enabled ? '1' : '0';
+  BUILDER_UI.boroStart.value = String(builderState?.boroSchedule?.firstAt ?? 28000);
+  BUILDER_UI.blackBoxEnabled.value = builderState?.blackBoxPlan?.enabled === false ? '0' : '1';
+  BUILDER_UI.blackBoxStart.value = String(builderState?.blackBoxPlan?.firstAt ?? 7200);
+  BUILDER_UI.tornadoEnabled.value = builderState?.tornadoConfig?.enabled ? '1' : '0';
+  BUILDER_UI.tornadoSpeed.value = String(builderState?.tornadoConfig?.speed ?? 0.62);
+  BUILDER_UI.tornadoDirection.value = String((builderState?.tornadoConfig?.direction ?? 1) < 0 ? -1 : 1);
+  BUILDER_UI.tornadoStartDelay.value = String(builderState?.tornadoConfig?.startDelayMs ?? 0);
+  BUILDER_UI.tornadoTravelPercent.value = String(builderState?.tornadoConfig?.travelPercent ?? 100);
+  BUILDER_UI.tornadoReturnEnabled.value = builderState?.tornadoConfig?.returnEnabled ? '1' : '0';
+  BUILDER_UI.tornadoReturnPercent.value = String(builderState?.tornadoConfig?.returnPercent ?? 65);
+  const selected = getBuilderEntityById(builderSelectedId);
+  BUILDER_UI.objScale.value = String(clamp(Number(selected?.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE));
+  BUILDER_UI.quickScale.value = String(clamp(Number(selected?.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE));
+  BUILDER_UI.objX.value = String(Math.round(Number(selected?.x ?? 0)));
+  BUILDER_UI.objY.value = String(Math.round(Number(selected?.baseY ?? GRASS_Y)));
+  BUILDER_UI.layerFilter.value = selected?.filter || '';
+  BUILDER_UI.layerOpacity.value = String(clamp(Number(selected?.alpha ?? 1), 0.05, 1));
+  BUILDER_UI.layerBurnable.value = selected?.burnableOverride === true ? 'on' : (selected?.burnableOverride === false ? 'off' : 'auto');
+  BUILDER_UI.layerSilhouette.value = selected?.silhouette ? '1' : '0';
+  if (BUILDER_UI.layerSilhouetteStrength) {
+    const silhouetteAlpha = getEntitySilhouetteAlpha(selected, 0.26);
+    BUILDER_UI.layerSilhouetteStrength.value = String(silhouetteAlpha);
+    updateSilhouetteStrengthReadout(silhouetteAlpha);
+    BUILDER_UI.layerSilhouetteStrength.disabled = !selected || !selected.silhouette;
+  }
+  BUILDER_UI.layerFlipX.value = selected?.flipX ? '1' : '0';
+  BUILDER_UI.layerFlipY.value = selected?.flipY ? '1' : '0';
+  BUILDER_UI.layerWaterMove.value = selected?.movableWithWater ? '1' : '0';
+  BUILDER_UI.layerTornadoFall.value = selected?.fallWithTornado ? '1' : '0';
+  builderSyncPhysicsControlsForSelection(selected);
+  builderSyncAnimalControlsForSelection(selected);
+  builderUpdateTopColumnsForSelection(selected);
+  builderRenderBurnZoneEditor(selected);
+  builderRefreshCreatorNotice();
+  builderRenderLayerList();
+}
+
+function builderReadUiIntoState() {
+  if (!BUILDER_UI.name) return;
+  builderState.name = (BUILDER_UI.name.value || 'Custom Builder Level').trim();
+  if (BUILDER_UI.creatorName) builderState.creatorName = (BUILDER_UI.creatorName.value || '').trim();
+  if (BUILDER_UI.testDifficulty) builderState.testDifficulty = clamp(Number(BUILDER_UI.testDifficulty.value || 1), 1, 3);
+  builderApplyAutoSafetyTip();
+  const selectedSide = BUILDER_UI.truckSide.value === 'right' ? 'right' : 'left';
+  if (builderState.truckSide !== selectedSide || !builderState.truckPlaced) builderPlaceTruckForUser(selectedSide);
+  builderState.truckSide = selectedSide;
+  builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 2);
+  builderState.tankerSchedule.firstAt = clamp(Number(BUILDER_UI.tankerStart.value || 15000), 3000, 120000);
+  builderState.tankerSchedule.repeat = clamp(Number(BUILDER_UI.tankerRepeat.value || 33000), 6000, 180000);
+  builderState.tankerSchedule.hold = clamp(Number(BUILDER_UI.tankerHold.value || 8000), 2000, 30000);
+  builderState.boroSchedule.enabled = BUILDER_UI.boroEnabled.value === '1';
+  builderState.boroSchedule.firstAt = clamp(Number(BUILDER_UI.boroStart.value || 28000), 6000, 180000);
+  builderState.blackBoxPlan.enabled = BUILDER_UI.blackBoxEnabled.value !== '0';
+  builderState.blackBoxPlan.firstAt = clamp(Number(BUILDER_UI.blackBoxStart.value || 7200), 1200, 40000);
+  builderState.tornadoConfig.enabled = BUILDER_UI.tornadoEnabled.value === '1';
+  builderState.tornadoConfig.speed = clamp(Number(BUILDER_UI.tornadoSpeed.value || 0.62), 0.2, 2.5);
+  builderState.tornadoConfig.direction = Number(BUILDER_UI.tornadoDirection.value || 1) < 0 ? -1 : 1;
+  builderState.tornadoConfig.startDelayMs = clamp(Number(BUILDER_UI.tornadoStartDelay.value || 0), 0, 120000);
+  builderState.tornadoConfig.travelPercent = clamp(Number(BUILDER_UI.tornadoTravelPercent.value || 100), 10, 100);
+  builderState.tornadoConfig.returnEnabled = BUILDER_UI.tornadoReturnEnabled.value === '1';
+  builderState.tornadoConfig.returnPercent = clamp(Number(BUILDER_UI.tornadoReturnPercent.value || 65), 10, 100);
+  const hasTornadoEntity = (builderState.entities || []).some((ent) => ent.type === 'tornado');
+  if (builderState.tornadoConfig.enabled && !hasTornadoEntity) {
+    builderState.entities.push(normalizeBuilderEntity({ type: 'tornado', x: 120 }));
+  } else if (!builderState.tornadoConfig.enabled && hasTornadoEntity) {
+    builderState.entities = builderState.entities.filter((ent) => ent.type !== 'tornado');
+  }
+}
+
+function builderSaveLastDraft() {
+  localStorage.setItem(BUILDER_LAST_DRAFT_KEY, JSON.stringify(builderState));
+}
+
+function builderPopulateLevelSelect() {
+  const select = BUILDER_UI.editLevelSelect;
+  if (!select) return;
+  const previous = Number(select.value || 1);
+  select.innerHTML = '';
+  const max = Math.min(BUILDER_SLOT_MAX, baseLevels.length);
+  for (let i = 1; i <= max; i++) {
+    const option = document.createElement('option');
+    const levelName = baseLevels[i - 1]?.name || `Level ${i}`;
+    option.value = String(i);
+    option.textContent = `Level ${i}: ${levelName}`;
+    select.appendChild(option);
+  }
+  const desired = clamp(previous || currentLevel || 1, 1, max || 1);
+  select.value = String(desired);
+}
+
+function builderSelectEntity(id) {
+  builderSelectedId = id || null;
+  builderApplyStateToUi();
+}
+
+function getLayerLabel(ent) {
+  if (!ent) return 'Unknown';
+  if (ent.type === 'builderSprite') return ent.spriteKey || 'builderSprite';
+  if (ent.variant) return `${ent.type} (${ent.variant})`;
+  return ent.type || 'entity';
+}
+
+function getAssetDisplayName(key) {
+  if (key === 'semiTankLeft') return 'Water Tanker (Facing Left)';
+  if (key === 'semiTankRight') return 'Water Tanker (Facing Right)';
+  if (key === 'boroTankerLeft') return 'Boro Water Tanker (Facing Left)';
+  if (key === 'boroTankerRight') return 'Boro Water Tanker (Facing Right)';
+  if (key === 'pond') return 'Lake / Pond';
+  if (String(key).startsWith('img_')) return String(key).replace(/^img_/,'').replace(/_/g,' ');
+  return key;
+}
+
+function builderRenderLayerList() {
+  if (!BUILDER_UI.layerList) return;
+  BUILDER_UI.layerList.innerHTML = '';
+  const entities = builderState.entities || [];
+  for (let i = entities.length - 1; i >= 0; i--) {
+    const ent = entities[i];
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = `builder-layer-item${ent.id === builderSelectedId ? ' active' : ''}`;
+    row.textContent = `${entities.length - i}. ${getLayerLabel(ent)}`;
+    row.addEventListener('click', () => builderSelectEntity(ent.id));
+    BUILDER_UI.layerList.appendChild(row);
+  }
+}
+
+function builderMoveSelectedLayer(mode) {
+  if (!builderSelectedId) return;
+  const entities = builderState.entities || [];
+  const index = entities.findIndex((ent) => ent.id === builderSelectedId);
+  if (index < 0) return;
+  const [selected] = entities.splice(index, 1);
+  let target = index;
+  if (mode === 'up') target = Math.min(entities.length, index + 1);
+  if (mode === 'down') target = Math.max(0, index - 1);
+  if (mode === 'top') target = entities.length;
+  if (mode === 'bottom') target = 0;
+  entities.splice(target, 0, selected);
+  builderState.entities = entities;
+  builderSelectEntity(selected.id);
+  builderSaveLastDraft();
+}
+
+function builderDeleteSelectedLayer() {
+  if (!builderSelectedId) return;
+  const entities = builderState.entities || [];
+  const index = entities.findIndex((ent) => ent.id === builderSelectedId);
+  if (index < 0) return;
+  const [removed] = entities.splice(index, 1);
+  builderState.entities = entities;
+  const next = entities[Math.min(index, entities.length - 1)]?.id || null;
+  builderSelectedId = next;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+  builderSetStatus(`Deleted layer: ${getLayerLabel(removed)}.`);
+}
+
+function builderInitCollapsibleSections() {
+  const panel = document.getElementById('builderRightPanel');
+  const body = panel?.querySelector('.builder-body');
+  if (!body || body.dataset.sectionsReady === '1') return;
+  const applyColumnState = (column, collapsed) => {
+    if (!column) return;
+    column.classList.toggle('collapsed', !!collapsed);
+    builderUpdateTopColumnOrder();
+  };
+  const createTopColumn = (detailsNode, columnId, label, startCollapsed = false) => {
+    const column = document.createElement('div');
+    column.className = 'builder-top-column';
+    column.id = columnId;
+    const collapseBtn = document.createElement('button');
+    collapseBtn.type = 'button';
+    collapseBtn.className = 'column-toggle';
+    collapseBtn.textContent = 'Collapse';
+    collapseBtn.addEventListener('click', () => applyColumnState(column, true));
+    const restoreBtn = document.createElement('button');
+    restoreBtn.type = 'button';
+    restoreBtn.className = 'column-restore';
+    restoreBtn.textContent = label;
+    restoreBtn.addEventListener('click', () => applyColumnState(column, false));
+    column.appendChild(detailsNode);
+    column.appendChild(collapseBtn);
+    column.appendChild(restoreBtn);
+    applyColumnState(column, startCollapsed);
+    return column;
+  };
+  const wrap = (title, selectors, parent = body, id = '') => {
+    const details = document.createElement('details');
+    details.className = 'builder-section';
+    if (id) details.id = id;
+    details.open = true;
+    const summary = document.createElement('summary');
+    summary.textContent = title;
+    const content = document.createElement('div');
+    content.className = 'section-content';
+    details.appendChild(summary);
+    details.appendChild(content);
+    selectors.forEach((selector) => {
+      const node = body.querySelector(selector);
+      if (node) content.appendChild(node.closest('.builder-field') || node);
+    });
+    parent.appendChild(details);
+    return details;
+  };
+  const topSections = document.createElement('div');
+  topSections.className = 'builder-top-sections';
+  body.appendChild(topSections);
+  const selectedSection = wrap('Layers', [
+    '#builderQuickScale',
+    '#builderObjScale',
+    '#builderObjX',
+    '#builderObjY',
+    '#builderLayerList',
+    '#builderLayerTopBtn',
+    '#builderLayerFilter',
+    '#builderLayerOpacity',
+    '#builderLayerBurnable',
+    '#builderBurnZoneList',
+    '#builderLayerSilhouette',
+    '#builderLayerSilhouetteStrength',
+    '#builderLayerFlipX',
+    '#builderLayerFlipY',
+    '#builderLayerLocked',
+    '#builderLayerWaterMove',
+    '#builderLayerTornadoFall',
+    '#builderAnimalExitDirection',
+    '#builderAnimalExitSpeed',
+    '#builderAnimalBonusPoints'
+  ], topSections, 'builderTopSelectedSection');
+  const selectedContent = selectedSection.querySelector('.section-content');
+  const layerField = selectedSection.querySelector('#builderLayerList')?.closest('.builder-field');
+  if (layerField) layerField.classList.add('builder-layer-field');
+  if (selectedContent) {
+    const hint = document.createElement('div');
+    hint.className = 'selected-empty-hint';
+    hint.textContent = 'No object selected. Use the layer stack below, or select a WebP to edit its properties.';
+    selectedContent.insertBefore(hint, selectedContent.firstChild);
+  }
+  const levelSection = wrap('Level Properties', [
+    '#builderLevelName',
+    '#builderCreatorName',
+    '#builderSafetyTip',
+    '#builderTruckSide',
+    '#builderTimeOfDay',
+    '#builderTankerStart',
+    '#builderTankerRepeat',
+    '#builderTankerHold',
+    '#builderBoroEnabled',
+    '#builderBoroStart',
+    '#builderBlackBoxEnabled',
+    '#builderBlackBoxStart',
+    '#builderTornadoEnabled',
+    '#builderTornadoSpeed',
+    '#builderTornadoDirection',
+    '#builderTornadoStartDelay',
+    '#builderTornadoTravelPercent',
+    '#builderTornadoReturnEnabled',
+    '#builderTornadoReturnPercent',
+    '#builderTargetLevelSlot',
+    '#builderEditLevelSelect',
+    '#builderLoadSelectedLevelBtn'
+  ], topSections, 'builderTopLevelSection');
+  const exportSection = wrap('Export And Test', [
+    '.builder-actions'
+  ], topSections, 'builderTopExportSection');
+  topSections.innerHTML = '';
+  topSections.appendChild(createTopColumn(selectedSection, 'builderTopSelectedColumn', 'Layers', false));
+  topSections.appendChild(createTopColumn(levelSection, 'builderTopLevelColumn', 'Level Properties', false));
+  topSections.appendChild(createTopColumn(exportSection, 'builderTopExportColumn', 'Export And Test', false));
+  builderUpdateTopColumnOrder();
+  const selectedSectionContent = topSections.querySelector('.builder-section .section-content');
+  const burnWrap = document.getElementById('builderBurnZonesWrap');
+  if (selectedSectionContent && burnWrap) selectedSectionContent.appendChild(burnWrap.closest('.builder-field') || burnWrap);
+  body.dataset.sectionsReady = '1';
+}
+
+function builderGetLevelSnapshot() {
+  builderReadUiIntoState();
+  return normalizeBuilderLevel(builderState);
+}
+
+function builderLoadFromLevel(levelData) {
+  builderState = levelToBuilderLevel(levelData);
+  builderSelectEntity(null);
+  builderApplyStateToUi();
+  builderPreloadSpritesForState();
+  builderSetStatus(`Loaded "${builderState.name}" into builder.`);
+  builderSaveLastDraft();
+}
+
+function builderOpen(levelData = null) {
+  builderInitCollapsibleSections();
+  builderPopulateLevelSelect();
+  if (levelData) {
+    builderLoadFromLevel(levelData);
+    if (!builderHasTruckPlaced()) builderPlaceTruckForUser(builderState.truckSide === 'right' ? 'right' : 'left');
+    builderApplyStateToUi();
+  } else {
+    builderState = createEmptyBuilderLevel();
+    builderPlaceTruckForUser('left');
+    builderSelectEntity(null);
+    builderApplyStateToUi();
+    builderSetStatus('Fire truck placed on the Left lane. Add props from the left panel, or change Truck Side to Right.');
+  }
+  builderStartTruckSideAttention();
+  builderPreloadSpritesForState();
+  document.body.classList.add('builder-active');
+  gameState = 'builder';
+  isSpraying = false;
+  setTruckDrive(0);
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('dispatchScreen').style.display = 'none';
+  document.getElementById('levelCompleteScreen').style.display = 'none';
+  if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'block';
+  updateLevelSkipHud();
+  setTimeout(() => builderShowInstructionsPrompt(true), 120);
+}
+
+function builderClose() {
+  builderReadUiIntoState();
+  builderSaveLastDraft();
+  builderEndTour(false);
+  builderShowHelpModal(false);
+  builderShowInstructionsPrompt(false);
+  if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'none';
+  document.getElementById('builderReturnFromTestBtn').style.display = 'none';
+  builderTestActive = false;
+  document.body.classList.remove('builder-active');
+  gameState = 'title';
+  document.getElementById('overlay').style.display = 'block';
+  showTitleScreen();
+  builderSetStatus('Build your own level, save and play.');
+}
+
+function builderReturnFromTest() {
+  if (!builderTestActive) return;
+  const dispatch = document.getElementById('dispatchScreen');
+  const complete = document.getElementById('levelCompleteScreen');
+  if (dispatch) dispatch.style.display = 'none';
+  if (complete) {
+    complete.style.display = 'none';
+    complete.classList.remove('show');
+  }
+  document.getElementById('overlay').style.display = 'none';
+  gameState = 'builder';
+  document.body.classList.add('builder-active');
+  if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'block';
+  document.getElementById('builderReturnFromTestBtn').style.display = 'none';
+  builderTestActive = false;
+  builderSetStatus('Returned from quick play. Continue editing.');
+}
+
+function builderGetAssets() {
+  return Object.keys(SPRITE_FILES).map((key) => ({ key, file: SPRITE_FILES[key], isCustom: !!CUSTOM_SPRITE_DATA[key] }));
+}
+
+function getAssetCategory(asset) {
+  if (!asset) return 'misc';
+  if (asset.isCustom) return 'uploaded';
+  const key = String(asset.key || '').toLowerCase();
+  const file = String(asset.file || '').toLowerCase();
+  const text = `${key} ${file}`;
+  if (/(alien|ufo|space)/.test(text)) return 'scifi';
+  if (/(horse|dog|cat|cow|pig|sheep|chicken|goat|animal)/.test(text)) return 'animals';
+  if (/(engine|truck|tanker|sedan|pickup|semi|bus|tractor|mower|bike|vehicle|car_|wrecked)/.test(text)) return 'vehicles';
+  if (/(house|home|school|garage|barn|shed)/.test(text)) return 'buildings';
+  if (/(tree|shrub|bush|flower|plant|cattail|corn|wheat|field|pond)/.test(text)) return 'nature';
+  if (/(fence|bench|picnic|boat|tent|basketball|ball|swing|slide|playground)/.test(text)) return 'props';
+  return 'misc';
+}
+
+function getCategoryLabel(cat) {
+  if (cat === 'vehicles') return 'Vehicles';
+  if (cat === 'animals') return 'Animals';
+  if (cat === 'buildings') return 'Buildings';
+  if (cat === 'nature') return 'Nature';
+  if (cat === 'props') return 'Props';
+  if (cat === 'scifi') return 'Sci-Fi';
+  if (cat === 'uploaded') return 'Uploaded';
+  return 'Misc';
+}
+
+function registerCustomSprite(key, dataUrl, originalName = '') {
+  CUSTOM_SPRITE_DATA[key] = { dataUrl, originalName: originalName || key };
+  SPRITE_FILES[key] = originalName || `${key}.png`;
+  const img = new Image();
+  img.onload = () => { SPRITE_READY[key] = true; };
+  img.src = dataUrl;
+  SPRITES[key] = img;
+}
+
+function builderAddUploadedImage(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const key = `user_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
+    registerCustomSprite(key, String(reader.result || ''), file.name || `${key}.png`);
+    builderRenderAssetList();
+    builderPendingSpriteKey = key;
+    builderSetStatus(`Uploaded ${file.name || 'custom image'}. Tap canvas once to place.`);
+  };
+  reader.readAsDataURL(file);
+}
+
+function builderRenderAssetList() {
+  if (!BUILDER_UI.assetList) return;
+  const query = (BUILDER_UI.assetSearch?.value || '').trim().toLowerCase();
+  const category = String(BUILDER_UI.assetCategory?.value || 'all').toLowerCase();
+  BUILDER_UI.assetList.innerHTML = '';
+  const assets = builderGetAssets()
+    .filter((asset) => !query || asset.key.toLowerCase().includes(query) || asset.file.toLowerCase().includes(query))
+    .map((asset) => ({ ...asset, category: getAssetCategory(asset) }))
+    .filter((asset) => category === 'all' || asset.category === category);
+
+  const order = ['vehicles', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
+  const grouped = new Map();
+  assets.forEach((asset) => {
+    const cat = asset.category || 'misc';
+    if (!grouped.has(cat)) grouped.set(cat, []);
+    grouped.get(cat).push(asset);
+  });
+  order.forEach((cat) => {
+    const list = grouped.get(cat) || [];
+    if (!list.length) return;
+    const section = document.createElement('details');
+    section.className = 'builder-asset-section';
+    section.open = (category === 'all') ? (cat === 'vehicles' || cat === 'animals' || cat === 'buildings' || cat === 'nature') : true;
+    const summary = document.createElement('summary');
+    summary.textContent = `${getCategoryLabel(cat)} (${list.length})`;
+    const items = document.createElement('div');
+    items.className = 'asset-items';
+    section.appendChild(summary);
+    section.appendChild(items);
+    list.forEach((asset) => {
+      const row = document.createElement('div');
+      row.className = 'builder-asset';
+      row.draggable = true;
+      row.dataset.spriteKey = asset.key;
+      const src = asset.isCustom ? (CUSTOM_SPRITE_DATA[asset.key]?.dataUrl || '') : `./images/webp_converted/${asset.file}`;
+      row.innerHTML = `<img src="${src}" alt="${asset.key}"><div class="name">${getAssetDisplayName(asset.key)}</div>`;
+      row.addEventListener('click', () => {
+        builderPendingSpriteKey = asset.key;
+        builderPendingEntityType = null;
+        builderSetStatus(`Selected ${asset.key}. Tap once on canvas to place, then edit.`);
+      });
+      row.addEventListener('dragstart', (event) => {
+        builderPendingSpriteKey = asset.key;
+        builderPendingEntityType = null;
+        event.dataTransfer.setData('text/plain', asset.key);
+      });
+      items.appendChild(row);
+    });
+    BUILDER_UI.assetList.appendChild(section);
+  });
+}
+
+function builderCreateEntity(spriteKey, x, baseY) {
+  return normalizeBuilderEntity({
+    type: 'builderSprite',
+    spriteKey,
+    x: snapValue(x, BUILDER_SNAP_X),
+    baseY: snapValue(baseY, BUILDER_SNAP_Y),
+    scale: 1,
+    lockedPosition: true,
+    burnableOverride: true,
+    burnZonesEnabled: [true, true, true],
+    burnZoneDifficultyTiers: [1, 1, 1],
+    waterExitDirection: 'nearest',
+    waterExitSpeed: 2.2,
+    waterExitBonusPoints: 0
+  });
+}
+
+function builderCreateSpecialEntity(type, x, baseY) {
+  const snappedX = snapValue(x, BUILDER_SNAP_X);
+  if (type === 'pond') {
+    return normalizeBuilderEntity({
+      type: 'pond',
+      x: snappedX,
+      baseY: snapValue(baseY, BUILDER_SNAP_Y),
+      scale: 1,
+      burnableOverride: false,
+      lockedPosition: false
+    });
+  }
+  return null;
+}
+
+function getEntitiesInRenderOrder(entities) {
+  const source = Array.isArray(entities) ? entities : [];
+  const background = [];
+  const foreground = [];
+  source.forEach((ent) => {
+    if (ent?.type === 'pond') background.push(ent);
+    else foreground.push(ent);
+  });
+  return background.concat(foreground);
+}
+
+function builderPlacePendingEntity(x, y) {
+  if (!builderHasTruckPlaced()) {
+    builderSetStatus('Step 1: choose Truck Side (Left/Right) to place the fire truck first.');
+    if (BUILDER_UI.truckSide) BUILDER_UI.truckSide.focus();
+    return;
+  }
+  if (builderPendingSpriteKey) {
+    builderPlacePendingSprite(x, y);
+    return;
+  }
+  if (!builderPendingEntityType) return;
+  const entity = builderCreateSpecialEntity(builderPendingEntityType, x, y);
+  if (!entity) return;
+  builderState.entities.push(entity);
+  builderSelectEntity(entity.id);
+  const label = builderPendingEntityType === 'pond' ? 'lake' : builderPendingEntityType;
+  builderPendingEntityType = null;
+  builderTool = 'select';
+  builderLastPlaceAt = performance.now();
+  builderSetStatus(`Placed ${label}. Select/move mode active.`);
+  builderSaveLastDraft();
+}
+
+function builderPlacePendingSprite(x, y) {
+  const key = builderPendingSpriteKey;
+  if (!key) return;
+  ensureSpritesLoaded([key]);
+  const entity = builderCreateEntity(key, x, y);
+  builderState.entities.push(entity);
+  builderSelectEntity(entity.id);
+  builderPendingSpriteKey = null;
+  builderTool = 'select';
+  builderLastPlaceAt = performance.now();
+  builderSetStatus(`Placed ${key}. Select/move mode active.`);
+  builderSaveLastDraft();
+}
+
+function builderRemoveSelected() {
+  if (!builderSelectedId) return;
+  builderState.entities = builderState.entities.filter((ent) => ent.id !== builderSelectedId);
+  builderSelectEntity(null);
+  builderSetStatus('Removed selected object.');
+  builderSaveLastDraft();
+}
+
+function builderCloneToRuntimeLevel() {
+  const level = builderGetLevelSnapshot();
+  level.dispatchBody = level.dispatchBody || `Dispatch to Kennard Fire: ${level.name} custom level is active.`;
+  level.dispatchClearBody = level.dispatchClearBody || `Dispatch confirms ${level.name} is fully under control.`;
+  level.entities = level.entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
+  return level;
+}
+
+function builderTestLevel() {
+  const runtimeLevel = builderCloneToRuntimeLevel();
+  const testDifficulty = clamp(Number(runtimeLevel.testDifficulty ?? 1), 1, 3);
+  difficulty = testDifficulty;
+  if (builderTestLevelIndex == null) {
+    baseLevels.push(runtimeLevel);
+    builderTestLevelIndex = baseLevels.length - 1;
+  } else {
+    baseLevels[builderTestLevelIndex] = runtimeLevel;
+  }
+  if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'none';
+  builderTestActive = true;
+  document.getElementById('builderReturnFromTestBtn').style.display = 'block';
+  loadLevel(builderTestLevelIndex + 1, { skipDispatch: true });
+  const label = testDifficulty === 1 ? 'Easy' : (testDifficulty === 2 ? 'Medium' : 'Hard');
+  builderSetStatus(`Testing "${runtimeLevel.name}" at ${label} difficulty.`);
+}
+
+function builderPublishToSlot(slot) {
+  const parsed = clamp(Number(slot || 1), 1, BUILDER_SLOT_MAX);
+  const runtimeLevel = builderCloneToRuntimeLevel();
+  baseLevels[parsed - 1] = runtimeLevel;
+  const official = safeJsonParse(localStorage.getItem(BUILDER_OFFICIAL_STORAGE_KEY) || '', {});
+  official[String(parsed)] = runtimeLevel;
+  localStorage.setItem(BUILDER_OFFICIAL_STORAGE_KEY, JSON.stringify(official));
+  builderSetStatus(`Saved to official game slot ${parsed}.`);
+  builderPopulateLevelSelect();
+  if (BUILDER_UI.editLevelSelect) BUILDER_UI.editLevelSelect.value = String(parsed);
+  builderSaveLastDraft();
+}
+
+function builderSaveLocalLevel() {
+  const payload = safeJsonParse(localStorage.getItem(BUILDER_STORAGE_KEY) || '', {});
+  const snapshot = builderCloneToRuntimeLevel();
+  const name = (snapshot.name || 'Custom Builder Level').trim();
+  payload[name] = {
+    savedAt: new Date().toISOString(),
+    level: snapshot
+  };
+  localStorage.setItem(BUILDER_STORAGE_KEY, JSON.stringify(payload));
+  builderSetStatus(`Saved local draft "${name}".`);
+  builderSaveLastDraft();
+}
+
+function builderLoadLocalLevel() {
+  const payload = safeJsonParse(localStorage.getItem(BUILDER_STORAGE_KEY) || '', {});
+  const names = Object.keys(payload);
+  if (!names.length) {
+    alert('No local builder levels saved yet.');
+    return;
+  }
+  const choice = prompt(`Enter level name to load:\n${names.join('\n')}`, names[0]);
+  if (!choice || !payload[choice]) return;
+  builderLoadFromLevel(payload[choice].level);
+}
+
+function builderExportPackage() {
+  const pkg = builderBuildSubmissionPayload();
+  const text = JSON.stringify(pkg, null, 2);
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  const safeName = (pkg.level?.name || 'custom-level').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  anchor.href = url;
+  anchor.download = `${safeName || 'custom-level'}.kvfdlevel.json`;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  builderSetStatus('Packaged level JSON exported.');
+}
+
+function builderSharePackage() {
+  const pkg = builderBuildSubmissionPayload();
+  const text = JSON.stringify(pkg, null, 2);
+  navigator.clipboard?.writeText(text).catch(() => {});
+  alert('Level package copied to clipboard.\nYou can paste this JSON into chat to sync edits.');
+  builderSetStatus('Share package copied to clipboard.');
+}
+
+function builderPrintSummary() {
+  const snapshot = builderCloneToRuntimeLevel();
+  const printWindow = window.open('', '_blank', 'width=800,height=900');
+  if (!printWindow) return;
+  const json = JSON.stringify(snapshot, null, 2).replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+  printWindow.document.write(`<html><head><title>${snapshot.name}</title></head><body><h1>${snapshot.name}</h1><pre>${json}</pre></body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  builderSetStatus('Printed level package summary.');
+}
+
+function builderImportPackageFromText(text) {
+  const parsed = safeJsonParse(text, null);
+  if (!parsed || !parsed.level) {
+    alert('Invalid package file.');
+    return;
+  }
+  if (parsed.customSprites && typeof parsed.customSprites === 'object') {
+    Object.keys(parsed.customSprites).forEach((key) => {
+      const info = parsed.customSprites[key];
+      if (!info?.dataUrl) return;
+      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`);
+    });
+  }
+  builderLoadFromLevel(parsed.level);
+}
+
+function builderCollectRequiredSpriteKeys(level) {
+  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight', 'blackBoxTruckLeft', 'blackBoxTruckRight', 'blackBoxTruck']);
+  const entities = level?.entities || [];
+  entities.forEach((ent) => {
+    if (ent?.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) needed.add(ent.spriteKey);
+    if (ent?.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
+    const catalogSpec = getCatalogSpec(ent?.type);
+    if (catalogSpec?.sprite && SPRITE_FILES[catalogSpec.sprite]) needed.add(catalogSpec.sprite);
+    if (TREE_KIND_BY_TYPE[ent?.type] && SPRITE_FILES[ent.type]) needed.add(ent.type);
+    if (ent?.type === 'tree' || ent?.type === 'treeWithSwing') {
+      const variant = getLegacyTreeVariant(ent.x || 0);
+      if (SPRITE_FILES[variant]) needed.add(variant);
+    }
+    if (ent?.type === 'sedan') {
+      needed.add('sedanRed');
+      needed.add('sedanRed2');
+      needed.add('sedanBlue');
+      needed.add('sedanGreenLeft');
+      needed.add('sedanGreenRight');
+      needed.add('sedanSilverLeft');
+      needed.add('sedanSilverRight');
+      needed.add('sedanBlueLeft');
+    }
+    if (ent?.type === 'ufo') {
+      needed.add('ufo');
+      needed.add('ufoBeam');
+    }
+  });
+  return Array.from(needed).filter((key) => !!SPRITE_FILES[key] || !!CUSTOM_SPRITE_DATA[key]);
+}
+
+function builderBuildSubmissionPayload() {
+  const level = builderCloneToRuntimeLevel();
+  const spriteKeys = builderCollectRequiredSpriteKeys(level);
+  const computedFireBoxes = computeFireSpotsForLevel(1, level.entities || []).map((spot) => ({
+    x: Math.round(spot.x),
+    y: Math.round(spot.y),
+    w: Math.round(spot.w),
+    h: Math.round(spot.h),
+    roof: !!spot.roof,
+    isVehicle: !!spot.isVehicle,
+    isSemi: !!spot.isSemi,
+    isHay: !!spot.isHay,
+    difficultyTier: spot.difficultyTier ?? 1
+  }));
+  const customSprites = {};
+  spriteKeys.forEach((key) => {
+    if (CUSTOM_SPRITE_DATA[key]) {
+      customSprites[key] = {
+        dataUrl: CUSTOM_SPRITE_DATA[key].dataUrl,
+        originalName: CUSTOM_SPRITE_DATA[key].originalName || SPRITE_FILES[key] || `${key}.png`
+      };
+    }
+  });
+  return {
+    app: 'KVFD-Level-Package',
+    appVersion: BUILDER_APP_VERSION,
+    version: BUILDER_PACKAGE_VERSION,
+    exportedAt: new Date().toISOString(),
+    creatorName: level.creatorName || '',
+    spriteKeys,
+    spriteFiles: Object.fromEntries(spriteKeys.map((key) => [key, SPRITE_FILES[key]])),
+    customSprites,
+    fireBoxes: computedFireBoxes,
+    level
+  };
+}
+
+function builderPreloadSpritesForState() {
+  const snapshot = builderCloneToRuntimeLevel();
+  const keys = builderCollectRequiredSpriteKeys(snapshot);
+  if (keys.length) ensureSpritesLoaded(keys);
+}
+
+async function builderSaveOfflineFolder() {
+  if (!window.showDirectoryPicker) {
+    alert('This browser does not support folder save. Use Package + images folder copy manually.');
+    return;
+  }
+  const pkg = builderBuildSubmissionPayload();
+  const safeName = (pkg.level?.name || 'custom-level').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'custom-level';
+  const rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  const folderHandle = await rootHandle.getDirectoryHandle(`KVFD-${safeName}-offline`, { create: true });
+  const gamesHandle = await folderHandle.getDirectoryHandle('games', { create: true });
+  const ffHandle = await gamesHandle.getDirectoryHandle('firefighter-game', { create: true });
+  const imagesHandle = await ffHandle.getDirectoryHandle('images', { create: true });
+  const webpHandle = await imagesHandle.getDirectoryHandle('webp_converted', { create: true });
+  const assetsHandle = await folderHandle.getDirectoryHandle('assets', { create: true });
+  const cssHandle = await assetsHandle.getDirectoryHandle('css', { create: true });
+
+  async function writeText(dir, name, text) {
+    const handle = await dir.getFileHandle(name, { create: true });
+    const writable = await handle.createWritable();
+    await writable.write(text);
+    await writable.close();
+  }
+
+  async function writeBinary(dir, name, bytes) {
+    const handle = await dir.getFileHandle(name, { create: true });
+    const writable = await handle.createWritable();
+    await writable.write(bytes);
+    await writable.close();
+  }
+
+  let htmlText = '';
+  try {
+    const htmlUrl = new URL('./mobile-deluxe-23.html', location.href).href;
+    htmlText = await fetch(htmlUrl).then((r) => r.text());
+  } catch (err) {
+    htmlText = '<!doctype html>\n' + document.documentElement.outerHTML;
+  }
+  await writeText(ffHandle, 'mobile-deluxe-23.html', htmlText);
+
+  let cssText = '';
+  try {
+    const cssUrl = new URL('../../assets/css/site.css?v=20260416', location.href).href;
+    cssText = await fetch(cssUrl).then((r) => r.text());
+  } catch (err) {
+    cssText = 'body{margin:0;font-family:Arial,sans-serif;}';
+  }
+  await writeText(cssHandle, 'site.css', cssText);
+
+  const missingImages = [];
+  for (const key of pkg.spriteKeys) {
+    const file = SPRITE_FILES[key];
+    try {
+      if (pkg.customSprites && pkg.customSprites[key]?.dataUrl) {
+        const response = await fetch(pkg.customSprites[key].dataUrl);
+        const bytes = await response.arrayBuffer();
+        await writeBinary(webpHandle, file, bytes);
+      } else {
+        const imgUrl = new URL(`./images/webp_converted/${file}`, location.href).href;
+        const bytes = await fetch(imgUrl).then((r) => r.arrayBuffer());
+        await writeBinary(webpHandle, file, bytes);
+      }
+    } catch (err) {
+      missingImages.push(file);
+    }
+  }
+
+  await writeText(ffHandle, 'level-package.json', JSON.stringify(pkg, null, 2));
+
+  const levelParam = btoa(unescape(encodeURIComponent(JSON.stringify(pkg))));
+  const launcherHtml = `<!doctype html><html><head><meta charset="utf-8"><title>${pkg.level.name} - Offline Launcher</title></head><body style="font-family:Arial,sans-serif;padding:20px;background:#0d1726;color:#dff0ff"><h1>${pkg.level.name}</h1><p>Offline package ready.</p><p><a href="./games/firefighter-game/mobile-deluxe-23.html#kvfdLevel=${levelParam}" style="color:#9cd5ff">Play This Level Offline</a></p><p>If your browser blocks file access, run a local server in this folder and open the same link.</p></body></html>`;
+  await writeText(folderHandle, 'play-level.html', launcherHtml);
+  await writeText(folderHandle, 'submission-package.json', JSON.stringify(pkg, null, 2));
+  if (missingImages.length) {
+    await writeText(folderHandle, 'missing-images.txt', missingImages.join('\n'));
+  }
+  builderSetStatus(`Offline folder saved: KVFD-${safeName}-offline`);
+}
+
+function builderSaveSubmissionFile() {
+  const pkg = builderBuildSubmissionPayload();
+  const text = JSON.stringify(pkg, null, 2);
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  const safeName = (pkg.level?.name || 'custom-level').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  anchor.href = url;
+  anchor.download = `${safeName || 'custom-level'}.kvfdsubmission.json`;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  builderSetStatus('Submission file saved. Share this with me to rebuild your exact level.');
+}
+
+function builderDrawHelpers() {
+  if (performance.now() - builderLastPreloadAt > 450) {
+    builderPreloadSpritesForState();
+    builderLastPreloadAt = performance.now();
+  }
+  const level = builderGetLevelSnapshot();
+  const oldTime = timeOfDay;
+  timeOfDay = level.timeOfDay;
+  drawBackground();
+  timeOfDay = oldTime;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(126, 164, 208, 0.28)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= canvas.width; x += GRID_CELL_W) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y <= canvas.height; y += GRID_CELL_H) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+  const leftLane = TRUCK_LANES.left;
+  const rightLane = TRUCK_LANES.right;
+  const hasTruck = level.truckPlaced && (level.truckSide === 'left' || level.truckSide === 'right');
+  const drawLaneRect = (lane, stroke, fill = null) => {
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(lane.minX - 12, ROAD_LANE_Y - 16, (lane.maxX - lane.minX) + 64, 34);
+    }
+    ctx.strokeStyle = stroke;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(lane.minX - 12, ROAD_LANE_Y - 16, (lane.maxX - lane.minX) + 64, 34);
+    ctx.setLineDash([]);
+  };
+  if (!hasTruck) {
+    drawLaneRect(leftLane, 'rgba(255, 214, 78, 0.82)', 'rgba(255, 202, 64, 0.14)');
+    drawLaneRect(rightLane, 'rgba(255, 214, 78, 0.82)', 'rgba(255, 202, 64, 0.14)');
+    ctx.fillStyle = '#ffe4a3';
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Select Truck Side (Left/Right) to place fire truck first', canvas.width * 0.5, ROAD_LANE_Y - 24);
+  } else {
+    const lane = level.truckSide === 'right' ? rightLane : leftLane;
+    drawLaneRect(lane, 'rgba(255, 214, 78, 0.88)', 'rgba(255, 210, 82, 0.16)');
+    const oldTruckX = truck.x;
+    const oldFacing = truckFacing;
+    truck.x = clamp(Number(level.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX);
+    truckFacing = level.truckSide === 'right' ? -1 : 1;
+    drawSideFireTruck();
+    truck.x = oldTruckX;
+    truckFacing = oldFacing;
+  }
+  ctx.restore();
+
+  getEntitiesInRenderOrder(level.entities).forEach((ent) => {
+    if (drawCatalogEntity(ent)) return;
+    if (ent.type === 'builderSprite') {
+      drawBuilderSpriteEntity(ent);
+      return;
+    }
+    if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0, ent.variant || '');
+    else if (ent.type === 'pickup') drawPickup(ent.x, ent.yOffset || 0);
+    else if (ent.type === 'semi') drawSemi(ent);
+    else if (ent.type === 'tree' || ent.type === 'treeWithSwing') drawLegacyTree(ent.x, ent.type === 'treeWithSwing');
+    else if (TREE_KIND_BY_TYPE[ent.type]) drawTreeEntity(ent.type, ent.x);
+    else if (ent.type === 'fence') drawFence(ent.x);
+    else if (ent.type === 'pond') drawPond(ent.x, ent.baseY ?? GRASS_Y, ent.scale || 1);
+    else if (ent.type === 'boat') drawBoat(ent.x);
+    else if (ent.type === 'tent') drawTent(ent.x);
+    else if (ent.type === 'catTails') drawCatTails(ent.x);
+    else if (ent.type === 'bikeRed') drawBikeRed(ent.x);
+    else if (ent.type === 'tornado') {
+      const tx = ent.x == null ? 140 : ent.x;
+      const ty = 148;
+      for (let i = 0; i < 8; i++) {
+        const w = 58 - i * 5;
+        const y = ty + i * 36;
+        ctx.fillStyle = i % 2 ? 'rgba(180,185,190,0.60)' : 'rgba(110,116,124,0.62)';
+        ctx.fillRect(tx - w * 0.5, y, w, 6);
+      }
+    }
+  });
+
+  const selected = getBuilderEntityById(builderSelectedId);
+  if (selected) {
+    const box = getEntityBounds(selected);
+    if (box) {
+      ctx.save();
+      ctx.strokeStyle = '#74d9ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(box.x, box.y, box.w, box.h);
+      ctx.fillStyle = '#74d9ff';
+      [[box.x, box.y], [box.x + box.w, box.y], [box.x, box.y + box.h], [box.x + box.w, box.y + box.h]].forEach(([hx, hy]) => {
+        ctx.fillRect(hx - 6, hy - 6, 12, 12);
+      });
+      ctx.restore();
+    }
+  }
+
+  const levelLabel = `${level.name || 'Custom Level'} • ${level.entities.length} objects`;
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  ctx.fillRect(20, 18, 540, 40);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(levelLabel, 30, 45);
+}
+
+function builderPickEntityAt(x, y) {
+  const entities = builderState.entities || [];
+  for (let i = entities.length - 1; i >= 0; i--) {
+    const ent = entities[i];
+    const box = getEntityBounds(ent);
+    if (!box) continue;
+    if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) return ent;
+  }
+  return null;
+}
+
+function builderStartPointer(x, y) {
+  if (performance.now() - builderLastPlaceAt < 140) return;
+  if (builderPendingSpriteKey || builderPendingEntityType) {
+    builderPlacePendingEntity(x, y);
+    return;
+  }
+  const hit = builderPickEntityAt(x, y);
+  if (!hit) {
+    builderSelectEntity(null);
+    return;
+  }
+  builderSelectEntity(hit.id);
+  const box = getEntityBounds(hit);
+  if (!box) return;
+  const corners = [
+    { x: box.x, y: box.y },
+    { x: box.x + box.w, y: box.y },
+    { x: box.x, y: box.y + box.h },
+    { x: box.x + box.w, y: box.y + box.h }
+  ];
+  const nearCorner = corners.some((c) => Math.hypot(c.x - x, c.y - y) < 24);
+  if (nearCorner) {
+    builderPointer = { active: true, mode: 'resize', entityId: hit.id, startScale: hit.scale || 1, startDist: Math.max(8, Math.hypot((x - (box.x + box.w * 0.5)), (y - (box.y + box.h * 0.5)))) };
+    return;
+  }
+  if (builderTool === 'move' || builderTool === 'select') {
+    builderPointer = { active: true, mode: 'move', entityId: hit.id, offsetX: x - (hit.x || 0), offsetY: y - (hit.baseY ?? GRASS_Y) };
+  }
+}
+
+function builderMovePointer(x, y) {
+  if (!builderPointer.active) return;
+  const ent = getBuilderEntityById(builderPointer.entityId);
+  if (!ent) return;
+  if (builderPointer.mode === 'move') {
+    ent.x = clamp(snapValue(x - builderPointer.offsetX, BUILDER_SNAP_X), -200, 1500);
+    ent.baseY = clamp(snapValue(y - builderPointer.offsetY, BUILDER_SNAP_Y), 120, 580);
+  } else if (builderPointer.mode === 'resize') {
+    const box = getEntityBounds(ent);
+    if (!box) return;
+    const cx = box.x + box.w * 0.5;
+    const cy = box.y + box.h * 0.5;
+    const dist = Math.max(8, Math.hypot(x - cx, y - cy));
+    ent.scale = clamp((builderPointer.startScale || 1) * (dist / (builderPointer.startDist || dist)), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  }
+  builderApplyStateToUi();
+}
+
+function builderEndPointer() {
+  if (!builderPointer.active) return;
+  builderPointer.active = false;
+  builderPointer.mode = '';
+  builderSaveLastDraft();
+}
 
 function getMaxLevel() {
   return baseLevels.length || FINAL_LEVEL;
@@ -1526,6 +4316,10 @@ function getMaxLevel() {
 function updateLevelSkipHud() {
   const hud = document.getElementById('levelSelectHud');
   if (!hud) return;
+  if (gameState === 'builder') {
+    hud.style.display = 'none';
+    return;
+  }
   hud.style.display = 'flex';
   const label = document.getElementById('levelSkipLabel');
   const shownLevel = gameState === 'title' ? requestedStartLevel : currentLevel;
@@ -2195,6 +4989,194 @@ baseLevels[22] = {
   ]
 };
 
+const BUILDER_STORAGE_KEY = 'kvfd_deluxe23_builder_levels_v1';
+const BUILDER_OFFICIAL_STORAGE_KEY = 'kvfd_deluxe23_builder_official_v1';
+const BUILDER_LAST_DRAFT_KEY = 'kvfd_deluxe23_builder_last_v1';
+const BUILDER_PACKAGE_VERSION = 1;
+const BUILDER_MIN_SCALE = 0.6;
+const BUILDER_MAX_SCALE = 1.4;
+const BUILDER_SNAP_X = 10;
+const BUILDER_SNAP_Y = 5;
+const BUILDER_SLOT_MAX = 23;
+const BUILDER_APP_VERSION = 'deluxe-23';
+
+function safeJsonParse(raw, fallback) {
+  try { return JSON.parse(raw); } catch (err) { return fallback; }
+}
+
+function deepClone(value) {
+  return safeJsonParse(JSON.stringify(value), null);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function snapValue(value, step) {
+  if (!step || step <= 0) return value;
+  return Math.round(value / step) * step;
+}
+
+function normalizeBuilderEntity(ent, idx = 0) {
+  if (!ent || typeof ent !== 'object') return null;
+  const type = typeof ent.type === 'string' ? ent.type : 'builderSprite';
+  const id = (typeof ent.id === 'string' && ent.id) ? ent.id : `be_${Date.now()}_${idx}_${Math.floor(Math.random() * 100000)}`;
+  const lockedPosition = ent.lockedPosition == null ? !(ent.movableWithWater || ent.fallWithTornado) : !!ent.lockedPosition;
+  if (type === 'builderSprite') {
+    const hasSpriteKey = typeof ent.spriteKey === 'string' && (SPRITE_FILES[ent.spriteKey] || CUSTOM_SPRITE_DATA[ent.spriteKey]);
+    const spriteKey = hasSpriteKey ? ent.spriteKey : 'shedRed';
+    return {
+      id,
+      type: 'builderSprite',
+      spriteKey,
+      x: clamp(Number(ent.x || 640), 0, 1200),
+      baseY: clamp(Number(ent.baseY ?? GRASS_Y), 120, 580),
+      scale: clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE),
+      flipX: !!ent.flipX,
+      flipY: !!ent.flipY,
+      silhouette: !!ent.silhouette,
+      silhouetteStrength: ent.silhouetteStrength == null ? undefined : clamp(Number(ent.silhouetteStrength), 0.05, 1.0),
+      burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : true),
+      filter: typeof ent.filter === 'string' ? ent.filter : '',
+      alpha: ent.alpha == null ? undefined : clamp(Number(ent.alpha), 0.05, 1.0),
+      lockedPosition,
+      movableWithWater: !!ent.movableWithWater,
+      fallWithTornado: !!ent.fallWithTornado,
+      burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
+      burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
+      waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
+      waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
+      waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50)
+    };
+  }
+  const normalized = {
+    ...ent,
+    id,
+    type,
+    x: ent.x == null ? ent.x : clamp(Number(ent.x), -200, 1500),
+    scale: ent.scale == null ? ent.scale : clamp(Number(ent.scale), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE),
+    baseY: ent.baseY == null ? ent.baseY : clamp(Number(ent.baseY), 120, 580),
+    yOffset: ent.yOffset == null ? ent.yOffset : clamp(Number(ent.yOffset), -200, 220),
+    flipX: !!ent.flipX,
+    flipY: !!ent.flipY,
+    silhouette: !!ent.silhouette,
+    silhouetteStrength: ent.silhouetteStrength == null ? undefined : clamp(Number(ent.silhouetteStrength), 0.05, 1.0),
+    burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : undefined),
+    rotationDeg: ent.rotationDeg == null ? undefined : clamp(Number(ent.rotationDeg), -180, 180),
+    lockedPosition,
+    movableWithWater: !!ent.movableWithWater,
+    fallWithTornado: !!ent.fallWithTornado,
+    burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
+    burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
+    waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
+    waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
+    waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50)
+  };
+  return normalized;
+}
+
+function normalizeBuilderLevel(rawLevel) {
+  const level = rawLevel && typeof rawLevel === 'object' ? rawLevel : {};
+  const entities = Array.isArray(level.entities) ? level.entities : [];
+  const normalizedEntities = entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
+  const truckSide = (level.truckSide === 'left' || level.truckSide === 'right') ? level.truckSide : '';
+  const lane = truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
+  const truckPlaced = truckSide ? (level.truckPlaced !== false) : false;
+  return {
+    name: String(level.name || 'Custom Builder Level'),
+    creatorName: String(level.creatorName || ''),
+    testDifficulty: clamp(Number(level.testDifficulty ?? 1), 1, 3),
+    safetyTip: String(level.safetyTip || 'Fire Safety Tip: Keep clear paths for responders and protect exposures early.'),
+    dispatchBody: String(level.dispatchBody || 'Dispatch to Kennard Fire: custom builder level is active.'),
+    dispatchClearBody: String(level.dispatchClearBody || 'Dispatch confirms custom builder level is under control.'),
+    truckSide,
+    truckPlaced,
+    truckPlacementX: clamp(Number(level.truckPlacementX ?? lane.spawnX), -220, 1520),
+    timeOfDay: clamp(Number(level.timeOfDay ?? 0), 0, 2),
+    tankerRightOnly: !!level.tankerRightOnly,
+    tankerSchedule: {
+      firstAt: clamp(Number(level?.tankerSchedule?.firstAt ?? 15000), 3000, 120000),
+      repeat: clamp(Number(level?.tankerSchedule?.repeat ?? 33000), 6000, 180000),
+      hold: clamp(Number(level?.tankerSchedule?.hold ?? 8000), 2000, 30000)
+    },
+    boroSchedule: {
+      enabled: !!level?.boroSchedule?.enabled,
+      firstAt: clamp(Number(level?.boroSchedule?.firstAt ?? 28000), 6000, 180000),
+      repeat: clamp(Number(level?.boroSchedule?.repeat ?? 56000), 12000, 240000),
+      hold: clamp(Number(level?.boroSchedule?.hold ?? 9000), 2000, 40000)
+    },
+    blackBoxPlan: {
+      enabled: level?.blackBoxPlan?.enabled !== false,
+      firstAt: clamp(Number(level?.blackBoxPlan?.firstAt ?? 7200), 1200, 40000),
+      returnDelay: clamp(Number(level?.blackBoxPlan?.returnDelay ?? 3200), 800, 40000),
+      firstDir: Number(level?.blackBoxPlan?.firstDir) < 0 ? -1 : 1
+    },
+    tornadoConfig: {
+      enabled: !!level?.tornadoConfig?.enabled,
+      speed: clamp(Number(level?.tornadoConfig?.speed ?? 0.62), 0.2, 2.5),
+      direction: Number(level?.tornadoConfig?.direction) < 0 ? -1 : 1,
+      startDelayMs: clamp(Number(level?.tornadoConfig?.startDelayMs ?? 0), 0, 120000),
+      travelPercent: clamp(Number(level?.tornadoConfig?.travelPercent ?? 100), 10, 100),
+      returnEnabled: !!level?.tornadoConfig?.returnEnabled,
+      returnPercent: clamp(Number(level?.tornadoConfig?.returnPercent ?? 65), 10, 100)
+    },
+    entities: normalizedEntities
+  };
+}
+
+function levelToBuilderLevel(sourceLevel) {
+  const level = normalizeBuilderLevel(sourceLevel || {});
+  const entities = Array.isArray(sourceLevel?.entities) ? sourceLevel.entities : [];
+  level.entities = entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
+  return level;
+}
+
+function loadBuilderOfficialOverrides() {
+  const payload = safeJsonParse(localStorage.getItem(BUILDER_OFFICIAL_STORAGE_KEY) || '', {});
+  if (!payload || typeof payload !== 'object') return;
+  Object.keys(payload).forEach((slotKey) => {
+    const slot = Number(slotKey);
+    if (!Number.isFinite(slot) || slot < 1 || slot > BUILDER_SLOT_MAX) return;
+    const normalized = normalizeBuilderLevel(payload[slotKey]);
+    baseLevels[slot - 1] = deepClone(normalized);
+  });
+}
+
+loadBuilderOfficialOverrides();
+builderState = normalizeBuilderLevel(safeJsonParse(localStorage.getItem(BUILDER_LAST_DRAFT_KEY) || '', null) || {});
+
+function parseHashLevelPackage() {
+  const hash = String(location.hash || '');
+  if (!hash.includes('kvfdLevel=')) return null;
+  const query = hash.startsWith('#') ? hash.slice(1) : hash;
+  const params = new URLSearchParams(query);
+  const raw = params.get('kvfdLevel');
+  if (!raw) return null;
+  try {
+    const json = decodeURIComponent(escape(atob(raw)));
+    const parsed = safeJsonParse(json, null);
+    if (parsed && parsed.level) return parsed;
+  } catch (err) {
+    return null;
+  }
+  return null;
+}
+
+const hashLevelPackage = parseHashLevelPackage();
+if (hashLevelPackage?.level) {
+  if (hashLevelPackage.customSprites && typeof hashLevelPackage.customSprites === 'object') {
+    Object.keys(hashLevelPackage.customSprites).forEach((key) => {
+      const info = hashLevelPackage.customSprites[key];
+      if (!info?.dataUrl) return;
+      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`);
+    });
+  }
+  const normalizedLevel = normalizeBuilderLevel(hashLevelPackage.level);
+  baseLevels.splice(0, baseLevels.length, normalizedLevel);
+  requestedStartLevel = 1;
+  builderState = levelToBuilderLevel(normalizedLevel);
+}
+
 function isInTimeSelector(x, y) { return y > 8 && y < 82 && x > 950 && x < 1195; }
 function handleTimeSelection(x, y) {
   if (x > 980 && x < 1042) setTimeOfDay(0);
@@ -2323,6 +5305,7 @@ function submitCodeGate() {
 }
 
 function showTitleScreen() {
+  document.getElementById('overlay').style.display = 'block';
   document.getElementById('titleScreen').style.display = 'flex';
   updateLevelSkipHud();
 }
@@ -2347,6 +5330,10 @@ function dismissDispatchScreen(fromAuto = false) {
 function startGame(diff, startLevel = null) {
   difficulty = diff;
   initBlackBoxTruckLevels();
+  builderTestActive = false;
+  document.body.classList.remove('builder-active');
+  document.getElementById('builderReturnFromTestBtn').style.display = 'none';
+  document.getElementById('overlay').style.display = 'none';
   document.getElementById('titleScreen').style.display = 'none';
   const chosen = startLevel == null ? requestedStartLevel : startLevel;
   requestedStartLevel = Math.max(1, Math.min(getMaxLevel(), Math.floor(chosen)));
@@ -2354,6 +5341,14 @@ function startGame(diff, startLevel = null) {
 }
 
 function getTankerSupportSchedule(level, diff) {
+  const levelData = baseLevels[level - 1] || {};
+  if (levelData?.tankerSchedule) {
+    return {
+      firstAt: clamp(Number(levelData.tankerSchedule.firstAt ?? 15000), 3000, 120000),
+      repeat: clamp(Number(levelData.tankerSchedule.repeat ?? 33000), 6000, 180000),
+      hold: clamp(Number(levelData.tankerSchedule.hold ?? 8000), 2000, 30000)
+    };
+  }
   let firstAt = diff === 1 ? 22000 : diff === 2 ? 15000 : 11500;
   let repeat = diff === 1 ? 46000 : diff === 2 ? 33000 : 25000;
   if (level >= 11) {
@@ -2372,6 +5367,14 @@ function getTankerSupportSchedule(level, diff) {
 }
 
 function getBoroTankerSupportSchedule(level, diff) {
+  const levelData = baseLevels[level - 1] || {};
+  if (levelData?.boroSchedule) {
+    return {
+      firstAt: clamp(Number(levelData.boroSchedule.firstAt ?? 28000), 6000, 180000),
+      repeat: clamp(Number(levelData.boroSchedule.repeat ?? 56000), 12000, 240000),
+      hold: clamp(Number(levelData.boroSchedule.hold ?? 9000), 2000, 40000)
+    };
+  }
   // A second tanker is a rare assist on the biggest scenes (boss level / long burns).
   let firstAt = diff === 1 ? 38000 : diff === 2 ? 28000 : 24000;
   let repeat = diff === 1 ? 70000 : diff === 2 ? 56000 : 48000;
@@ -2440,6 +5443,7 @@ function loadLevel(lvl, options = {}) {
   isSpraying = false;
   tornadoTravelX = -180;
   tornadoCompleted = false;
+  initTornadoForLevel(levelData);
   pendingDispatchLevel = skipDispatch ? null : lvl;
   levelElapsedMs = 0;
   lastFrameTime = 0;
@@ -2476,7 +5480,10 @@ function loadLevel(lvl, options = {}) {
   template = selectSpotsForDifficulty(template, difficulty, lvl);
   const burnableBoxesByKey = new Map();
   (levelData.entities || []).forEach((ent, idx) => {
-    if (!ent || !isBurnableType(ent.type)) return;
+    if (!ent) return;
+    const burnable = ent.burnableOverride === true || (ent.burnableOverride !== false && isBurnableType(ent.type)) || (ent.type === 'builderSprite' && ent.burnableOverride !== false);
+    if (!burnable) return;
+    if (!entityHasAnyEnabledBurnZone(ent)) return;
     const box = getEntityBounds(ent);
     if (!box) return;
     burnableBoxesByKey.set(`${ent.type}:${idx}`, box);
@@ -2542,7 +5549,16 @@ function loadLevel(lvl, options = {}) {
     if (lvl === 3) setTimeout(() => showLevel3MoveCue(), 250);
     if (lvl === 6) setTimeout(() => showLevel6TimeCue(), 250);
   }
-  if (blackBoxTruckLevels.has(lvl)) {
+  const customBlackBox = levelData?.blackBoxPlan;
+  if (customBlackBox?.enabled) {
+    blackBoxTruckPlan = {
+      stage: 'waiting',
+      firstAt: clamp(Number(customBlackBox.firstAt ?? 7200), 1200, 40000),
+      returnDelay: clamp(Number(customBlackBox.returnDelay ?? 3200), 800, 40000),
+      firstDir: Number(customBlackBox.firstDir) < 0 ? -1 : 1,
+      returnAt: null
+    };
+  } else if (blackBoxTruckLevels.has(lvl) && customBlackBox?.enabled !== false) {
     // Surprise moment: one round-trip (out and back) at a random time.
     const firstAt = 4500 + Math.random() * 6500;
     const returnDelay = 2200 + Math.random() * 2400;
@@ -2616,6 +5632,7 @@ function playGameAgain() {
   setTimeout(() => {
     screen.style.display = 'none';
     score = 0;
+    document.getElementById('overlay').style.display = 'block';
     document.getElementById('titleScreen').style.display = 'flex';
     gameState = 'title';
     updateLevelSkipHud();
@@ -2636,17 +5653,354 @@ document.getElementById('codeInput').addEventListener('keydown', (event) => {
 });
 hideCodeGate();
 showTitleScreen();
+builderApplyStateToUi();
+builderInitCollapsibleSections();
+builderRenderAssetList();
+
+document.getElementById('openBuilderMenuBtn')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  builderOpen();
+});
+document.getElementById('titleRecruitBtn')?.addEventListener('click', () => startGame(1));
+document.getElementById('titleMemberBtn')?.addEventListener('click', () => startGame(2));
+document.getElementById('titleCaptainBtn')?.addEventListener('click', () => startGame(3));
+document.getElementById('titleBuilderBtn')?.addEventListener('click', () => {
+  builderOpen();
+});
+
+BUILDER_UI.assetSearch?.addEventListener('input', builderRenderAssetList);
+document.getElementById('builderUploadImageBtn')?.addEventListener('click', () => {
+  BUILDER_UI.uploadImageInput?.click();
+});
+BUILDER_UI.uploadImageInput?.addEventListener('change', async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  builderAddUploadedImage(file);
+  event.target.value = '';
+});
+BUILDER_UI.assetCategory?.addEventListener('change', () => builderRenderAssetList());
+BUILDER_UI.captureImageBtn?.addEventListener('click', () => {
+  BUILDER_UI.captureImageInput?.click();
+});
+BUILDER_UI.captureImageInput?.addEventListener('change', async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  builderAddUploadedImage(file);
+  event.target.value = '';
+});
+BUILDER_UI.addLakeBtn?.addEventListener('click', () => {
+  builderPendingEntityType = 'pond';
+  builderPendingSpriteKey = null;
+  builderSetStatus('Lake selected. Tap once on canvas to place.');
+});
+BUILDER_UI.helpBtn?.addEventListener('click', () => builderShowHelpModal(true));
+BUILDER_UI.helpCloseBtn?.addEventListener('click', () => builderShowHelpModal(false));
+BUILDER_UI.helpTourBtn?.addEventListener('click', () => builderStartTour(true));
+BUILDER_UI.instructionsYesBtn?.addEventListener('click', () => builderStartTour(true));
+BUILDER_UI.instructionsNoBtn?.addEventListener('click', () => builderShowInstructionsPrompt(false));
+BUILDER_UI.instructionsModal?.addEventListener('click', (event) => {
+  if (event.target === BUILDER_UI.instructionsModal) builderShowInstructionsPrompt(false);
+});
+BUILDER_UI.helpModal?.addEventListener('click', (event) => {
+  if (event.target === BUILDER_UI.helpModal) builderShowHelpModal(false);
+});
+BUILDER_UI.tourSkipBtn?.addEventListener('click', () => builderEndTour(true));
+BUILDER_UI.tourBackBtn?.addEventListener('click', () => {
+  if (builderTourIndex <= 0) return;
+  builderTourIndex -= 1;
+  builderRenderTourStep(builderTourIndex);
+});
+BUILDER_UI.tourNextBtn?.addEventListener('click', () => {
+  if (builderTourIndex >= BUILDER_TOUR_STEPS.length - 1) {
+    builderEndTour(true);
+    return;
+  }
+  builderTourIndex += 1;
+  builderRenderTourStep(builderTourIndex);
+});
+window.addEventListener('resize', () => {
+  if (builderTourIndex >= 0) builderRenderTourStep(builderTourIndex);
+  builderRecalculateRightPanelWidth();
+});
+BUILDER_UI.name?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.creatorName?.addEventListener('input', () => {
+  builderReadUiIntoState();
+  builderRefreshCreatorNotice();
+});
+BUILDER_UI.testDifficulty?.addEventListener('change', () => {
+  builderReadUiIntoState();
+  const diff = clamp(Number(BUILDER_UI.testDifficulty.value || 1), 1, 3);
+  const label = diff === 1 ? 'Easy' : (diff === 2 ? 'Medium' : 'Hard');
+  builderSetStatus(`Quick Play/Test difficulty set to ${label}.`);
+});
+BUILDER_UI.tip?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.truckSide?.addEventListener('change', () => { builderStopTruckSideAttention(); builderReadUiIntoState(); });
+BUILDER_UI.timeOfDay?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tankerStart?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tankerRepeat?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tankerHold?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.boroEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.boroStart?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.blackBoxEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.blackBoxStart?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoSpeed?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.tornadoDirection?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoStartDelay?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoTravelPercent?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.tornadoReturnEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoReturnPercent?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.objScale?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.scale = clamp(Number(BUILDER_UI.objScale.value || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  if (BUILDER_UI.quickScale) BUILDER_UI.quickScale.value = BUILDER_UI.objScale.value;
+  builderSaveLastDraft();
+});
+BUILDER_UI.quickScale?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.scale = clamp(Number(BUILDER_UI.quickScale.value || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  if (BUILDER_UI.objScale) BUILDER_UI.objScale.value = BUILDER_UI.quickScale.value;
+  builderSaveLastDraft();
+});
+BUILDER_UI.objX?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.x = clamp(Number(BUILDER_UI.objX.value || ent.x || 0), -200, 1500);
+  builderSaveLastDraft();
+});
+BUILDER_UI.objY?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.baseY = clamp(Number(BUILDER_UI.objY.value || ent.baseY || GRASS_Y), 120, 580);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFilter?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.filter = (BUILDER_UI.layerFilter.value || '').trim();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerOpacity?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.alpha = clamp(Number(BUILDER_UI.layerOpacity.value || 1), 0.05, 1);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerBurnable?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.burnableOverride = BUILDER_UI.layerBurnable.value === 'on' ? true : (BUILDER_UI.layerBurnable.value === 'off' ? false : undefined);
+  if (ent.burnableOverride === true) {
+    const state = getSelectedEntityBurnZoneState(ent);
+    if (state.template.length && (!Array.isArray(ent.burnZonesEnabled) || !ent.burnZonesEnabled.length)) {
+      ent.burnZonesEnabled = state.template.map(() => true);
+    }
+    if (state.template.length && (!Array.isArray(ent.burnZoneDifficultyTiers) || !ent.burnZoneDifficultyTiers.length)) {
+      ent.burnZoneDifficultyTiers = state.template.map(() => 1);
+    }
+  }
+  if (ent.burnableOverride === false) {
+    const state = getSelectedEntityBurnZoneState(ent);
+    if (state.template.length) ent.burnZonesEnabled = state.template.map(() => false);
+  }
+  builderRenderBurnZoneEditor(ent);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerSilhouette?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.silhouette = BUILDER_UI.layerSilhouette.value === '1';
+  if (ent.silhouette && ent.silhouetteStrength == null) ent.silhouetteStrength = 0.85;
+  updateSilhouetteStrengthReadout(getEntitySilhouetteAlpha(ent, 0.26));
+  if (BUILDER_UI.layerSilhouetteStrength) BUILDER_UI.layerSilhouetteStrength.disabled = !ent.silhouette;
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerSilhouetteStrength?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.silhouetteStrength = clamp(Number(BUILDER_UI.layerSilhouetteStrength.value || 0.85), 0.05, 1);
+  if (!ent.silhouette) ent.silhouette = true;
+  if (BUILDER_UI.layerSilhouette) BUILDER_UI.layerSilhouette.value = '1';
+  updateSilhouetteStrengthReadout(ent.silhouetteStrength);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFlipX?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flipX = BUILDER_UI.layerFlipX.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFlipY?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flipY = BUILDER_UI.layerFlipY.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerLocked?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.lockedPosition = BUILDER_UI.layerLocked.value !== '0';
+  if (ent.lockedPosition) {
+    ent.movableWithWater = false;
+    ent.fallWithTornado = false;
+  }
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerWaterMove?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  if (ent.lockedPosition !== false) {
+    BUILDER_UI.layerWaterMove.value = '0';
+    builderSetStatus('Unlock position first to allow water movement.');
+    return;
+  }
+  ent.movableWithWater = BUILDER_UI.layerWaterMove.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerTornadoFall?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  if (ent.lockedPosition !== false) {
+    BUILDER_UI.layerTornadoFall.value = '0';
+    builderSetStatus('Unlock position first to allow tornado/collision movement.');
+    return;
+  }
+  ent.fallWithTornado = BUILDER_UI.layerTornadoFall.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.animalExitDirection?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isAnimalEntity(ent)) return;
+  ent.waterExitDirection = BUILDER_UI.animalExitDirection.value === 'left' ? 'left' : (BUILDER_UI.animalExitDirection.value === 'right' ? 'right' : 'nearest');
+  builderSaveLastDraft();
+});
+BUILDER_UI.animalExitSpeed?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isAnimalEntity(ent)) return;
+  ent.waterExitSpeed = clamp(Number(BUILDER_UI.animalExitSpeed.value || 2.2), 0.5, 7);
+  builderSaveLastDraft();
+});
+BUILDER_UI.animalBonusPoints?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isAnimalEntity(ent)) return;
+  ent.waterExitBonusPoints = clamp(Number(BUILDER_UI.animalBonusPoints.value || 0), 0, 50);
+  builderSaveLastDraft();
+});
+
+document.getElementById('builderToolSelectBtn')?.addEventListener('click', () => { builderTool = 'select'; builderSetStatus('Select tool active.'); });
+document.getElementById('builderToolMoveBtn')?.addEventListener('click', () => { builderTool = 'move'; builderSetStatus('Move tool active.'); });
+document.getElementById('builderClearPendingAssetBtn')?.addEventListener('click', () => {
+  builderPendingSpriteKey = null;
+  builderPendingEntityType = null;
+  builderSetStatus('Placement tool cleared. Select or move objects.');
+});
+document.getElementById('builderQuickNudgeLeftBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.x = clamp((ent.x || 0) - 2, -200, 1500); builderApplyStateToUi(); builderSaveLastDraft(); });
+document.getElementById('builderQuickNudgeRightBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.x = clamp((ent.x || 0) + 2, -200, 1500); builderApplyStateToUi(); builderSaveLastDraft(); });
+document.getElementById('builderQuickNudgeUpBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.baseY = clamp((ent.baseY ?? GRASS_Y) - 2, 120, 580); builderApplyStateToUi(); builderSaveLastDraft(); });
+document.getElementById('builderQuickNudgeDownBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.baseY = clamp((ent.baseY ?? GRASS_Y) + 2, 120, 580); builderApplyStateToUi(); builderSaveLastDraft(); });
+document.getElementById('builderLayerTopBtn')?.addEventListener('click', () => builderMoveSelectedLayer('top'));
+document.getElementById('builderLayerUpBtn')?.addEventListener('click', () => builderMoveSelectedLayer('up'));
+document.getElementById('builderLayerDownBtn')?.addEventListener('click', () => builderMoveSelectedLayer('down'));
+document.getElementById('builderLayerBottomBtn')?.addEventListener('click', () => builderMoveSelectedLayer('bottom'));
+document.getElementById('builderLayerDeleteBtn')?.addEventListener('click', () => builderDeleteSelectedLayer());
+document.getElementById('builderFlipXBtn')?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flipX = !ent.flipX;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+document.getElementById('builderFlipYBtn')?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flipY = !ent.flipY;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+document.getElementById('builderSilhouetteBtn')?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.silhouette = !ent.silhouette;
+  if (ent.silhouette && ent.silhouetteStrength == null) ent.silhouetteStrength = 0.85;
+  if (ent.silhouette && !ent.filter) ent.filter = 'brightness(0.24) saturate(0.20) contrast(1.08)';
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+document.getElementById('builderBurnableBtn')?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const current = ent.burnableOverride === false ? false : true;
+  ent.burnableOverride = !current;
+  builderSetStatus(`Burnability set to ${ent.burnableOverride ? 'ON' : 'OFF'}.`);
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+document.getElementById('builderDeleteBtn')?.addEventListener('click', builderRemoveSelected);
+document.getElementById('builderClearBtn')?.addEventListener('click', () => {
+  if (!confirm('Clear all objects from this builder level?')) return;
+  builderState.entities = [];
+  builderSelectEntity(null);
+  builderSaveLastDraft();
+});
+document.getElementById('builderLoadCurrentBtn')?.addEventListener('click', () => {
+  const level = baseLevels[currentLevel - 1] || baseLevels[0];
+  builderLoadFromLevel(level);
+});
+document.getElementById('builderLoadSelectedLevelBtn')?.addEventListener('click', () => {
+  const slot = clamp(Number(BUILDER_UI.editLevelSelect?.value || 1), 1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX));
+  const level = baseLevels[slot - 1] || baseLevels[0];
+  builderLoadFromLevel(level);
+  if (BUILDER_UI.targetSlot) BUILDER_UI.targetSlot.value = String(slot);
+});
+document.getElementById('builderLoadCurrentLevelBtn2')?.addEventListener('click', () => {
+  const level = baseLevels[currentLevel - 1] || baseLevels[0];
+  builderLoadFromLevel(level);
+  if (BUILDER_UI.targetSlot) BUILDER_UI.targetSlot.value = String(clamp(currentLevel, 1, BUILDER_SLOT_MAX));
+});
+document.getElementById('builderNewBtn')?.addEventListener('click', () => {
+  builderState = createEmptyBuilderLevel();
+  builderSelectEntity(null);
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+document.getElementById('builderSaveLocalBtn')?.addEventListener('click', builderSaveLocalLevel);
+document.getElementById('builderLoadLocalBtn')?.addEventListener('click', builderLoadLocalLevel);
+document.getElementById('builderExportBtn')?.addEventListener('click', builderExportPackage);
+document.getElementById('builderExportOfflineBtn')?.addEventListener('click', async () => {
+  try {
+    await builderSaveOfflineFolder();
+  } catch (err) {
+    alert(`Offline save failed: ${err?.message || err}`);
+  }
+});
+document.getElementById('builderShareBtn')?.addEventListener('click', builderSharePackage);
+document.getElementById('builderSaveSubmissionBtn')?.addEventListener('click', builderSaveSubmissionFile);
+document.getElementById('builderPrintBtn')?.addEventListener('click', builderPrintSummary);
+document.getElementById('builderTestBtn')?.addEventListener('click', builderTestLevel);
+document.getElementById('builderQuickPlayBtn')?.addEventListener('click', builderTestLevel);
+document.getElementById('builderPublishBtn')?.addEventListener('click', () => {
+  builderPublishToSlot(Number(BUILDER_UI.targetSlot?.value || 1));
+});
+document.getElementById('builderCloseBtn')?.addEventListener('click', builderClose);
+document.getElementById('builderReturnFromTestBtn')?.addEventListener('click', builderReturnFromTest);
+document.getElementById('builderImportBtn')?.addEventListener('click', () => {
+  document.getElementById('builderImportFileInput')?.click();
+});
+document.getElementById('builderImportFileInput')?.addEventListener('change', async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  builderImportPackageFromText(text);
+  event.target.value = '';
+});
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
-  const isTouch = !!(e.touches && e.touches[0]);
-  const viewport = isTouch && window.visualViewport ? window.visualViewport : null;
-  const viewportOffsetX = viewport ? viewport.offsetLeft : 0;
-  const viewportOffsetY = viewport ? viewport.offsetTop : 0;
   let clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 500);
   let clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 300);
-  clientX += viewportOffsetX;
-  clientY += viewportOffsetY;
   mouseX = (clientX - rect.left) * (1200 / rect.width);
   mouseY = (clientY - rect.top) * (600 / rect.height);
   mouseX = Math.max(80, Math.min(mouseX, 1160));
@@ -2656,6 +6010,10 @@ function getPos(e) {
 function handleStart(e) { 
   e.preventDefault(); 
   getPos(e); 
+  if (gameState === 'builder') {
+    builderStartPointer(mouseX, mouseY);
+    return;
+  }
   if (gameState === 'playing') { 
     if (isInTimeSelector(mouseX, mouseY)) { 
       handleTimeSelection(mouseX, mouseY); 
@@ -2664,8 +6022,21 @@ function handleStart(e) {
     isSpraying = true; 
   }
 }
-function handleMove(e) { e.preventDefault(); getPos(e); }
-function handleEnd(e) { e.preventDefault(); isSpraying = false; }
+function handleMove(e) {
+  e.preventDefault();
+  getPos(e);
+  if (gameState === 'builder') {
+    builderMovePointer(mouseX, mouseY);
+  }
+}
+function handleEnd(e) {
+  e.preventDefault();
+  if (gameState === 'builder') {
+    builderEndPointer();
+    return;
+  }
+  isSpraying = false;
+}
 
 canvas.addEventListener('mousemove', handleMove);
 canvas.addEventListener('mousedown', handleStart);
@@ -2675,8 +6046,23 @@ canvas.addEventListener('touchstart', handleStart, { passive: false });
 canvas.addEventListener('touchmove', handleMove, { passive: false });
 canvas.addEventListener('touchend', handleEnd, { passive: false });
 canvas.addEventListener('touchcancel', handleEnd, { passive: false });
+canvas.addEventListener('dragover', (event) => {
+  if (gameState !== 'builder') return;
+  event.preventDefault();
+});
+canvas.addEventListener('drop', (event) => {
+  if (gameState !== 'builder') return;
+  event.preventDefault();
+  const spriteKey = event.dataTransfer?.getData('text/plain');
+  if (spriteKey) builderPendingSpriteKey = spriteKey;
+  getPos(event);
+  builderPlacePendingEntity(mouseX, mouseY);
+});
 canvas.addEventListener('click', function(e) { 
   getPos(e); 
+  if (gameState === 'builder') {
+    return;
+  }
   if (isInTimeSelector(mouseX, mouseY)) handleTimeSelection(mouseX, mouseY); 
 });
 
@@ -3181,6 +6567,54 @@ function drawPlacementGrid() {
   ctx.restore();
 }
 
+function applyWaterPushToEntities() {
+  if (gameState !== 'playing') return;
+  const levelData = baseLevels[currentLevel - 1];
+  if (!levelData?.entities?.length) return;
+  const moveables = levelData.entities.filter((ent) => ent && ent.movableWithWater && ent.lockedPosition === false);
+  if (!moveables.length) return;
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    if (p.type !== 'water') continue;
+    moveables.forEach((ent) => {
+      const box = getEntityBounds(ent);
+      if (!box) return;
+      if (p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h) {
+        const animal = isAnimalEntity(ent);
+        if (animal) {
+          const configDir = String(ent.waterExitDirection || 'nearest');
+          const dir = configDir === 'left'
+            ? -1
+            : configDir === 'right'
+              ? 1
+              : (((ent.x || 0) + box.w * 0.5) > (canvas.width * 0.5) ? 1 : -1);
+          const speed = clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7);
+          ent._waterExitVX = dir * speed;
+          ent._waterExitActive = true;
+        } else {
+          const delta = Math.max(-1.5, Math.min(1.5, p.vx * 0.35));
+          ent.x = clamp((ent.x || 0) + delta, -220, 1520);
+        }
+        p.life = Math.min(p.life, 6);
+      }
+    });
+  }
+  moveables.forEach((ent) => {
+    if (!ent?._waterExitActive) return;
+    const speed = clamp(Number(ent._waterExitVX || 0), -9, 9);
+    ent.x = clamp((ent.x || 0) + speed, -240, 1560);
+    if ((ent.x < -220 || ent.x > (canvas.width + 220)) && !ent._waterExitAwarded) {
+      const bonus = clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50);
+      if (bonus > 0) {
+        score += bonus;
+        addPointPopup(clamp(ent.x, 24, canvas.width - 24), 96, `+${bonus}`, '#9dfbcf', 72);
+      }
+      ent._waterExitAwarded = true;
+      ent._waterExitActive = false;
+    }
+  });
+}
+
 function drawBackground() {
   let sky1, sky2, sunColor, sunX, sunY, grassColor;
   if (timeOfDay === 0) { sky1 = '#7BC4FF'; sky2 = '#C0E4FF'; sunColor = '#FFDD00'; sunX = 300; sunY = 120; grassColor = '#3D8C40'; }
@@ -3683,17 +7117,18 @@ function drawLevel7BarnDoorOpen() {
 }
 
 function isTornadoPastX(targetX) {
-  return currentLevel === 9 && tornadoTravelX > targetX;
+  if (!tornadoState) return false;
+  if ((tornadoState.initialDirection || 1) > 0) return (tornadoState.maxX || tornadoState.x || -9999) > targetX;
+  return (tornadoState.minX || tornadoState.x || 9999) < targetX;
 }
 
 function shouldDrawFallenTree(ent) {
-  if (currentLevel !== 9) return true;
   if (ent.fallAtX == null) return true;
   return isTornadoPastX(ent.fallAtX);
 }
 
 function drawStormTree(ent) {
-  if (currentLevel === 9 && ent.fallAtX != null && isTornadoPastX(ent.fallAtX)) return;
+  if (ent.fallAtX != null && isTornadoPastX(ent.fallAtX)) return;
   const variant = ent.variant || 'treeOakRealistic';
   const layout = ENTITY_LAYOUT[variant] || ENTITY_LAYOUT.treeOakRealistic;
   const scale = ent.scale || 1;
@@ -3704,6 +7139,13 @@ function drawStormTree(ent) {
   const drawH = layout.h * scale;
   if (drawSpriteFitted(variant, drawX, drawY, drawW, drawH, true)) return;
   drawTreeAsset(variant, ent.x);
+}
+
+function shouldEntityFallWithTornado(ent) {
+  if (ent?.lockedPosition !== false) return false;
+  if (!ent?.fallWithTornado) return false;
+  const threshold = ent.fallAtX ?? ((ent.x || 0) + 40);
+  return isTornadoPastX(threshold);
 }
 
 function drawPlaygroundAsset(ent) {
@@ -4005,19 +7447,25 @@ function drawFence(x) {
   ctx.fillRect(x + 0, 458, 290, 8);
 }
 
-function drawPond(x) {
+function drawPond(x, baseY = GRASS_Y, scale = 1) {
   const layout = ENTITY_LAYOUT.pond;
+  const centerX = x + (layout.w * scale) * 0.5;
+  const centerY = baseY - (layout.h * scale) * 0.20;
+  const outerRX = 130 * scale;
+  const outerRY = 38 * scale;
+  const innerRX = 108 * scale;
+  const innerRY = 30 * scale;
   ctx.fillStyle = '#8ad7ff';
   ctx.beginPath();
-  ctx.ellipse(x + 120, GRASS_Y - 6, 130, 38, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY, outerRX, outerRY, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#5fb9e8';
   ctx.beginPath();
-  ctx.ellipse(x + 120, GRASS_Y - 8, 108, 30, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY - (2 * scale), innerRX, innerRY, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.20)';
   ctx.beginPath();
-  ctx.ellipse(x + 88, GRASS_Y - 18, 36, 10, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(centerX - (32 * scale), centerY - (12 * scale), 36 * scale, 10 * scale, -0.2, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -4302,33 +7750,108 @@ function drawTreeWithSwing(x) {
 }
 
 let tornadoTravelX = -180;
-function drawTornado() {
-  if (currentLevel === 9 && tornadoCompleted) return;
-  tornadoAngle += 0.05;
-  tornadoTravelX += 0.62;
-  if (currentLevel === 9) {
-    if (tornadoTravelX > canvas.width + 180) {
-      tornadoTravelX = canvas.width + 180;
-      tornadoCompleted = true;
-      return;
-    }
-  } else if (tornadoTravelX > canvas.width + 180) {
-    tornadoTravelX = -180;
+function initTornadoForLevel(levelData) {
+  const hasEntity = !!(levelData?.entities || []).some((ent) => ent.type === 'tornado');
+  if (!hasEntity) {
+    tornadoState = null;
+    return;
   }
-  const x = tornadoTravelX;
+  const cfg = levelData?.tornadoConfig || {};
+  const direction = Number(cfg.direction) < 0 ? -1 : 1;
+  const travelPercent = clamp(Number(cfg.travelPercent ?? 100), 10, 100);
+  const returnPercent = clamp(Number(cfg.returnPercent ?? 65), 10, 100);
+  const returnEnabled = !!cfg.returnEnabled;
+  tornadoState = {
+    enabled: cfg.enabled !== false,
+    speed: clamp(Number(cfg.speed ?? 0.62), 0.2, 2.5),
+    direction,
+    initialDirection: direction,
+    startDelayMs: clamp(Number(cfg.startDelayMs ?? 0), 0, 120000),
+    travelPercent,
+    returnEnabled,
+    returnPercent,
+    x: direction > 0 ? -180 : canvas.width + 180,
+    y: 132,
+    phase: 'waiting',
+    scale: 1,
+    hasReturned: false,
+    maxX: -9999,
+    minX: 9999
+  };
+}
+
+function getTornadoProgressPercent(state) {
+  const span = canvas.width + 360;
+  if ((state.initialDirection || 1) > 0) {
+    return clamp(((state.x + 180) / span) * 100, 0, 100);
+  }
+  return clamp((((canvas.width + 180) - state.x) / span) * 100, 0, 100);
+}
+
+function updateTornadoState() {
+  if (!tornadoState || !tornadoState.enabled) return;
+  if (gameState !== 'playing') return;
+  if (levelElapsedMs < tornadoState.startDelayMs) return;
+  if (tornadoState.phase === 'waiting') tornadoState.phase = 'travel';
+  if (tornadoState.phase === 'done') return;
+
+  if (tornadoState.phase === 'travel') {
+    tornadoState.x += tornadoState.speed * tornadoState.direction;
+    tornadoState.maxX = Math.max(tornadoState.maxX, tornadoState.x);
+    tornadoState.minX = Math.min(tornadoState.minX, tornadoState.x);
+    const progress = getTornadoProgressPercent(tornadoState);
+    if (tornadoState.returnEnabled && !tornadoState.hasReturned && progress >= tornadoState.returnPercent) {
+      tornadoState.direction *= -1;
+      tornadoState.hasReturned = true;
+    }
+    if (!tornadoState.returnEnabled && progress >= tornadoState.travelPercent) {
+      if (tornadoState.travelPercent >= 100) {
+        tornadoState.phase = 'done';
+        tornadoCompleted = true;
+      } else {
+        tornadoState.phase = 'dissipate';
+      }
+    }
+    if (tornadoState.returnEnabled && tornadoState.hasReturned) {
+      const returned = (tornadoState.initialDirection > 0)
+        ? (tornadoState.x <= -180)
+        : (tornadoState.x >= canvas.width + 180);
+      if (returned) {
+        tornadoState.phase = 'done';
+        tornadoCompleted = true;
+      }
+    }
+  } else if (tornadoState.phase === 'dissipate') {
+    tornadoState.x += tornadoState.speed * tornadoState.direction * 0.35;
+    tornadoState.scale = Math.max(0, tornadoState.scale - 0.009);
+    if (tornadoState.scale <= 0.01) {
+      tornadoState.phase = 'done';
+      tornadoCompleted = true;
+    }
+  }
+}
+
+function drawTornado() {
+  if (!tornadoState || !tornadoState.enabled || tornadoState.phase === 'done' || tornadoCompleted) return;
+  updateTornadoState();
+  if (tornadoState.phase === 'done') return;
+  tornadoAngle += 0.05;
+  tornadoTravelX = tornadoState.x;
+  const x = tornadoState.x;
+  const scale = tornadoState.scale || 1;
   const topY = 132;
   const groundY = 492;
   const rings = 14;
   for (let ring = 0; ring < rings; ring++) {
     const ringT = ring / (rings - 1);
     const ry = topY + ringT * (groundY - topY);
-    const radius = 52 - ringT * 44; // wide top, narrow ground point
+    const radius = (52 - ringT * 44) * scale; // wide top, narrow ground point
     const dotCount = 10 + Math.floor((1 - ringT) * 8);
     for (let j = 0; j < dotCount; j++) {
       const angle = tornadoAngle * (2.7 - ringT * 0.5) + j * ((Math.PI * 2) / dotCount);
       const wobble = Math.sin(tornadoAngle * 3 + ring * 0.9) * (2 + (1 - ringT) * 4);
-      const px = x + Math.cos(angle) * Math.max(2, radius + wobble);
-      const py = ry + Math.sin(angle) * (3 + (1 - ringT) * 8);
+      const px = x + Math.cos(angle) * Math.max(2, radius + wobble * scale);
+      const py = ry + Math.sin(angle) * (3 + (1 - ringT) * 8) * scale;
       ctx.fillStyle = j % 2 ? 'rgba(176,178,183,0.62)' : 'rgba(104,108,116,0.60)';
       ctx.fillRect(px - 2, py - 2, 4, 4);
     }
@@ -4338,7 +7861,7 @@ function drawTornado() {
   ctx.lineWidth = 2;
   for (let i = 0; i < 8; i++) {
     const y = 170 + i * 38 + Math.sin(tornadoAngle * 1.2 + i) * 7;
-    const len = 28 + i * 4;
+    const len = (28 + i * 4) * scale;
     ctx.beginPath();
     ctx.moveTo(x - len * 0.6, y);
     ctx.quadraticCurveTo(x, y - 6, x + len * 0.5, y + 2);
@@ -4346,7 +7869,7 @@ function drawTornado() {
   }
   ctx.fillStyle = 'rgba(88,84,78,0.50)';
   ctx.beginPath();
-  ctx.ellipse(x, groundY + 2, 32, 7, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, groundY + 2, 32 * scale, 7 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1.0;
 }
@@ -4461,6 +7984,27 @@ function stopTruckDrive() {
 }
 
 window.addEventListener('keydown', (e) => {
+  if (gameState === 'builder') {
+    const ent = getBuilderEntityById(builderSelectedId);
+    const tag = String(document.activeElement?.tagName || '').toLowerCase();
+    const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (!isTyping && builderSelectedId && (e.key === 'Delete' || e.key === 'Backspace')) {
+      e.preventDefault();
+      builderDeleteSelectedLayer();
+      return;
+    }
+    if (ent && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      const step = e.shiftKey ? 8 : 2;
+      if (e.key === 'ArrowLeft') ent.x = clamp((ent.x || 0) - step, -200, 1500);
+      if (e.key === 'ArrowRight') ent.x = clamp((ent.x || 0) + step, -200, 1500);
+      if (e.key === 'ArrowUp') ent.baseY = clamp((ent.baseY ?? GRASS_Y) - step, 120, 580);
+      if (e.key === 'ArrowDown') ent.baseY = clamp((ent.baseY ?? GRASS_Y) + step, 120, 580);
+      builderApplyStateToUi();
+      builderSaveLastDraft();
+    }
+    return;
+  }
   if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
     e.preventDefault();
     if (e.repeat) return;
@@ -4469,6 +8013,7 @@ window.addEventListener('keydown', (e) => {
   }
 }, true);
 window.addEventListener('keyup', (e) => {
+  if (gameState === 'builder') return;
   if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
     e.preventDefault();
     setTruckDrive(0);
@@ -4479,6 +8024,12 @@ function loop() {
   const now = performance.now();
   const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16.67;
   lastFrameTime = now;
+  if (gameState === 'builder') {
+    ctx.clearRect(0, 0, 1200, 600);
+    builderDrawHelpers();
+    requestAnimationFrame(loop);
+    return;
+  }
   truck.x += truckDrive * truck.speed;
   truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
   if (gameState === 'playing' && pendingDispatchLevel === null) {
@@ -4487,7 +8038,7 @@ function loop() {
       startTankerSupport();
     }
     const levelData = baseLevels[currentLevel - 1] || {};
-    const allowBoro = currentLevel === FINAL_LEVEL && !levelData.tankerRightOnly;
+    const allowBoro = (levelData?.boroSchedule?.enabled || (currentLevel === FINAL_LEVEL && !levelData.tankerRightOnly));
     if (allowBoro && !boroTankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextBoroTankerAt) {
       startBoroTankerSupport();
     }
@@ -4505,7 +8056,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
 
   const data = baseLevels[currentLevel-1];
   drawLevel7Horse(true);
-  data.entities.forEach(ent => {
+  getEntitiesInRenderOrder(data.entities).forEach(ent => {
     if (ent.type === 'tornado') drawTornado();
   });
 
@@ -4531,7 +8082,22 @@ if (false && currentLevel === 11) drawPlacementGrid();
   drawTimeSelectorCue();
 
   data.entities.forEach(ent => {
+    if (shouldEntityFallWithTornado(ent) && (ent.type === 'treeOakRealistic' || ent.type === 'treePineRealistic')) {
+      drawFallenTree({
+        x: ent.x || 0,
+        variant: ent.type,
+        scale: Math.max(0.62, (ent.scale || 1) * 0.72),
+        baseY: ent.baseY ?? GRASS_Y,
+        rotationDeg: (tornadoState?.initialDirection || 1) > 0 ? 82 : -82,
+        alpha: 0.92
+      });
+      return;
+    }
     if (drawCatalogEntity(ent)) return;
+    if (ent.type === 'builderSprite') {
+      drawBuilderSpriteEntity(ent);
+      return;
+    }
     if (ent.type === 'shedWindow') drawShedWindow(ent.x);
     if (ent.type === 'smallShed') drawSmallShed(ent.x);
     if (ent.type === 'singleGarage') drawSingleGarage(ent.x);
@@ -4548,11 +8114,20 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0, ent.variant || '');
     if (ent.type === 'pickup') drawPickup(ent.x, ent.yOffset || 0);
     if (ent.type === 'semi') drawSemi(ent);
-    if (ent.type === 'tree') drawTree(ent.x);
-    if (ent.type === 'treeWithSwing') drawTreeWithSwing(ent.x);
-    if (ent.type === 'oakSmall' || ent.type === 'oakMedium' || ent.type === 'oakLarge' || ent.type === 'mapleSmall' || ent.type === 'mapleMedium' || ent.type === 'mapleLarge' || ent.type === 'pineSmall' || ent.type === 'pineMedium') drawTreeEntity(ent.type, ent.x);
+    if (ent.type === 'tree') {
+      if (shouldEntityFallWithTornado(ent)) drawFallenTree({ x: ent.x, variant: getLegacyTreeVariant(ent.x), scale: 0.74, baseY: GRASS_Y, rotationDeg: (tornadoState?.initialDirection || 1) > 0 ? 82 : -82, alpha: 0.92 });
+      else drawTree(ent.x);
+    }
+    if (ent.type === 'treeWithSwing') {
+      if (shouldEntityFallWithTornado(ent)) drawFallenTree({ x: ent.x, variant: getLegacyTreeVariant(ent.x), scale: 0.74, baseY: GRASS_Y, rotationDeg: (tornadoState?.initialDirection || 1) > 0 ? 82 : -82, alpha: 0.92 });
+      else drawTreeWithSwing(ent.x);
+    }
+    if (ent.type === 'oakSmall' || ent.type === 'oakMedium' || ent.type === 'oakLarge' || ent.type === 'mapleSmall' || ent.type === 'mapleMedium' || ent.type === 'mapleLarge' || ent.type === 'pineSmall' || ent.type === 'pineMedium') {
+      if (shouldEntityFallWithTornado(ent)) drawFallenTree({ x: ent.x, variant: ent.type, scale: Math.max(0.64, (ent.scale || 1) * 0.74), baseY: ent.baseY ?? GRASS_Y, rotationDeg: (tornadoState?.initialDirection || 1) > 0 ? 82 : -82, alpha: 0.92 });
+      else drawTreeEntity(ent.type, ent.x);
+    }
     if (ent.type === 'fence') drawFence(ent.x);
-    if (ent.type === 'pond') drawPond(ent.x);
+    if (ent.type === 'pond') drawPond(ent.x, ent.baseY ?? GRASS_Y, ent.scale || 1);
     if (ent.type === 'boat') drawBoat(ent.x);
     if (ent.type === 'tent') drawTent(ent.x);
     if (ent.type === 'catTails') drawCatTails(ent.x);
@@ -4648,6 +8223,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
   });
 
   if (isSpraying) createWaterParticles();
+  applyWaterPushToEntities();
 
   const blackBoxRect = getBlackBoxTruckRect();
   if (blackBoxRect && isSpraying && gameState === 'playing') {
