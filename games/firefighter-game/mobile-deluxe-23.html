@@ -2212,7 +2212,7 @@ function setTruckDrive(value) {
 
 function initBlackBoxTruckLevels() {
   const totalLevels = baseLevels.length;
-  const pool = Array.from({ length: totalLevels }, (_, i) => i + 1).filter((n) => n !== 6 && n !== FINAL_LEVEL);
+  const pool = Array.from({ length: totalLevels }, (_, i) => i + 1).filter((n) => n !== 2 && n !== 6 && n !== FINAL_LEVEL);
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
