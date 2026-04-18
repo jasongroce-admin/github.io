@@ -1662,7 +1662,7 @@ function buildBonusLevels() {
     (n) => ({ name: `Oak Park Response ${n}`, tip: tips[0], entities: [E('oakSmall', 120), E('oakMedium', 330), E('bikeRed', 520), E('pushMower', 780)] }),
     (n) => n === 12 ? pondScene(n) : ({ name: `Maple Lane Fire ${n}`, tip: tips[1], entities: [E('mapleSmall', 110), E('houseNeighborhoodClassic', 350, { scale: 1.25 }), E('mapleMedium', 610), E('pushManualMower', 870)] }),
     (n) => ({ name: `Pine Road Rescue ${n}`, tip: tips[2], entities: [E('pineSmall', 120), E('busUpsideDown', 420), E('pineMedium', 780), E('bikeRed', 980)] }),
-    (n) => ({ name: `Kennard School Front ${n}`, tip: tips[3], entities: [E('kennardSchool', 150), E('oakLarge', 660), E('mapleSmall', 980)] }),
+    (n) => ({ name: `Beige House Front ${n}`, tip: "Keep porch clutter, fences, and dry yard debris clear so crews can reach the home fast.", dispatchBody: 'Dispatch to Kennard Fire: a beige neighborhood home fire with extension into the front yard and porch line.', dispatchClearBody: 'Dispatch confirms the beige home, yard exposure, and porch line are under control.', entities: [E('houseNeighborhoodBeige', 760, { scale: 1.20 }), E('oakLarge', 470), E('fenceWhiteRow', 150), E('bikeRed', 560), E('mapleSmall', 990)] }),
     (n) => ({ name: `Garage Row ${n}`, tip: tips[4], entities: [E('garageSmall', 150), E('houseNeighborhoodBrickGarage', 470, { scale: 1.28 }), E('oakSmall', 790), E('sedan', 980, { yOffset: 10, variant: 'sedanSilverRight' })] }),
     (n) => ({ name: `Barn Lane ${n}`, tip: tips[5], entities: [E('largeRedBarn', 860), E('hayBale', 260), E('tractor', 520), E('pineSmall', 110)] }),
     (n) => ({ name: `Backyard Mix ${n}`, tip: tips[6], entities: [E('houseNeighborhoodCottageAlt', 170, { scale: 1.22 }), E('oakMedium', 470), E('pushMower', 780), E('bikeRed', 980)] }),
@@ -1678,7 +1678,9 @@ function buildBonusLevels() {
     const shift = variant * 30;
     levels.push({
       name: scene.name,
-      safetyTip: tips[i],
+      safetyTip: scene.tip || tips[i],
+      dispatchBody: scene.dispatchBody,
+      dispatchClearBody: scene.dispatchClearBody,
       timeOfDay: i % 3,
       truckSide: i % 4 === 2 ? 'right' : 'left',
       entities: scene.entities.map((ent) => ({
