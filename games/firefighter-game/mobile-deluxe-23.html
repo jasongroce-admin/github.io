@@ -228,7 +228,7 @@ button:hover { filter: brightness(1.2); }
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 18px;
+  bottom: 54px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -240,6 +240,7 @@ button:hover { filter: brightness(1.2); }
   .site-header { display: none; }
   #gameContainer { height: 100dvh; }
   #gameContainer > canvas { transform-origin: center center; }
+  #levelSelectHud { left: 18px; top: 74px; }
 }
 #truckControls .row {
   display: flex;
@@ -289,6 +290,40 @@ button:hover { filter: brightness(1.2); }
   color: #ffe94d;
   text-shadow: 0 2px 8px rgba(0,0,0,0.7);
 }
+
+#levelSelectHud {
+  position: fixed;
+  top: 18px;
+  left: 350px;
+  z-index: 96;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.72);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  pointer-events: auto;
+}
+#levelSelectHud.mobile-float {
+  left: 18px;
+  top: 74px;
+}
+#levelSelectHud label {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+#levelSelectHud select {
+  min-width: 120px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(5,15,25,0.92);
+  color: #fff;
+  font-weight: 700;
+}
 </style>
 </head>
 <body>
@@ -312,6 +347,11 @@ button:hover { filter: brightness(1.2); }
 
 <div id="gameContainer"><canvas id="game" width="1200" height="600"></canvas></div>
 
+<div id="levelSelectHud" aria-label="Level select">
+  <label for="levelSkipSelect" id="levelSkipLabel">Current Level</label>
+  <select id="levelSkipSelect"></select>
+</div>
+
 <div id="codeGate">
   <div>
     <h2>Building in progress</h2>
@@ -334,13 +374,6 @@ button:hover { filter: brightness(1.2); }
       <button class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
       <button class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
     </div>
-  </div>
-  <div id="levelSkipHud" aria-label="Level skip" style="position:fixed; top:104px; left:50%; transform:translateX(-50%); z-index:80; display:none; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:rgba(0,0,0,0.70); box-shadow:0 10px 30px rgba(0,0,0,0.35);">
-    <button id="levelSkipPrev" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">◀</button>
-    <div id="levelSkipLabel" style="min-width:112px; text-align:center; color:#fff; font-weight:800; letter-spacing:0.5px;">Level 1</div>
-    <input id="levelSkipInput" type="number" min="1" value="1" style="width:68px; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.3); background:rgba(5,15,25,0.85); color:#fff; font-weight:700; text-align:center;" />
-    <button id="levelSkipGo" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">GO</button>
-    <button id="levelSkipNext" class="secondary-btn" style="padding:8px 10px; width:auto; min-width:44px;">▶</button>
   </div>
 </div>
 
@@ -1290,7 +1323,10 @@ function getEntityBounds(ent) {
   if (ent.type === 'smallHouse') return getSpriteFitRect('houseSmall', ent.x + ENTITY_LAYOUT.houseSmall.x, groundedY('houseSmall', GRASS_Y, ENTITY_LAYOUT.houseSmall.h), ENTITY_LAYOUT.houseSmall.w, ENTITY_LAYOUT.houseSmall.h, true);
   if (ent.type === 'house') return getSpriteFitRect('houseTall', ent.x + ENTITY_LAYOUT.houseTall.x, groundedY('houseTall', GRASS_Y, ENTITY_LAYOUT.houseTall.h), ENTITY_LAYOUT.houseTall.w, ENTITY_LAYOUT.houseTall.h, true);
   if (ent.type === 'houseTallWhite') return getSpriteFitRect('houseTallWhite', ent.x + ENTITY_LAYOUT.houseTallWhite.x, groundedY('houseTallWhite', GRASS_Y, ENTITY_LAYOUT.houseTallWhite.h), ENTITY_LAYOUT.houseTallWhite.w, ENTITY_LAYOUT.houseTallWhite.h, true);
-  if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h), ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h, true);
+  if (ent.type === 'schoolhouse' || ent.type === 'kennardSchool') {
+    const scale = ent.scale || 1;
+    return getSpriteFitRect('kennardSchool', ent.x + ENTITY_LAYOUT.kennardSchool.x * scale, groundedY('kennardSchool', GRASS_Y, ENTITY_LAYOUT.kennardSchool.h * scale), ENTITY_LAYOUT.kennardSchool.w * scale, ENTITY_LAYOUT.kennardSchool.h * scale, true);
+  }
   if (ent.type === 'sedan') {
     const variant = (ent.variant && SPRITE_FILES[ent.variant])
       ? ent.variant
@@ -1462,24 +1498,25 @@ function getMaxLevel() {
 }
 
 function updateLevelSkipHud() {
-  const hud = document.getElementById('levelSkipHud');
+  const hud = document.getElementById('levelSelectHud');
   if (!hud) return;
   hud.style.display = 'flex';
   const label = document.getElementById('levelSkipLabel');
   const shownLevel = gameState === 'title' ? requestedStartLevel : currentLevel;
-  if (label) label.textContent = (gameState === 'title')
-    ? `Start: ${shownLevel} / ${getMaxLevel()}`
-    : `Level ${shownLevel} / ${getMaxLevel()}`;
-  const prev = document.getElementById('levelSkipPrev');
-  const next = document.getElementById('levelSkipNext');
-  const levelInput = document.getElementById('levelSkipInput');
-  if (levelInput) {
-    levelInput.min = '1';
-    levelInput.max = String(getMaxLevel());
-    levelInput.value = String(shownLevel);
+  if (label) label.textContent = (gameState === 'title') ? 'Start Level' : 'Current Level';
+  const select = document.getElementById('levelSkipSelect');
+  if (select && select.options.length !== getMaxLevel()) {
+    select.innerHTML = '';
+    for (let i = 1; i <= getMaxLevel(); i++) {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = `Level ${i}`;
+      select.appendChild(option);
+    }
   }
-  if (prev) prev.disabled = shownLevel <= 1;
-  if (next) next.disabled = shownLevel >= getMaxLevel();
+  if (select) select.value = String(shownLevel);
+  const oldHud = document.getElementById('levelSkipHud');
+  if (oldHud) oldHud.style.display = 'none';
 }
 
 function jumpToLevel(lvl) {
@@ -1497,6 +1534,8 @@ function jumpToLevel(lvl) {
     return;
   }
   loadLevel(target, { skipDispatch: true });
+  const select = document.getElementById('levelSkipSelect');
+  if (select) select.value = String(target);
 }
 
 ///////// Placement grid sizing. /////////
@@ -1864,12 +1903,10 @@ baseLevels[8] = {
     { type: 'bgTreeOakRealistic', grid: { col: 'D', line: 8.85 }, scale: 0.40, alpha: 0.16, silhouette: true },
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'W', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
 
-    { type: 'kennardSchool', x: 760 },
+    { type: 'kennardSchool', x: 760, scale: 1.14 },
     { type: 'busSchoolLeft', x: 520, stormSwapAtX: 730 },
     { type: 'busUpsideDown', x: 600, hiddenUntilStorm: true, stormSwapAtX: 730, stormSlideX: 38 },
-    { type: 'playgroundSlideTallLeft', x: 360, scale: 0.74 },
-    { type: 'playgroundSlideShortLeft', x: 445, scale: 0.72 },
-    { type: 'playgroundSwingLeft', x: 525, scale: 0.78 },
+
     { type: 'tornado', x: 650 },
     { type: 'stormTree', x: 470, variant: 'treePineRealistic', scale: 0.88, baseY: 486, fallAtX: 520 },
     { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.72, baseY: 484, rotationDeg: -82, alpha: 0.92, fallAtX: 520 },
@@ -2407,8 +2444,14 @@ showTitleScreen();
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
+  const isTouch = !!(e.touches && e.touches[0]);
+  const viewport = isTouch && window.visualViewport ? window.visualViewport : null;
+  const viewportOffsetX = viewport ? viewport.offsetLeft : 0;
+  const viewportOffsetY = viewport ? viewport.offsetTop : 0;
   let clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 500);
   let clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 300);
+  clientX += viewportOffsetX;
+  clientY += viewportOffsetY;
   mouseX = (clientX - rect.left) * (1200 / rect.width);
   mouseY = (clientY - rect.top) * (600 / rect.height);
   mouseX = Math.max(80, Math.min(mouseX, 1160));
@@ -2461,6 +2504,10 @@ document.getElementById('levelSkipInput')?.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return;
   e.preventDefault();
   const val = Number(document.getElementById('levelSkipInput')?.value || requestedStartLevel);
+  jumpToLevel(val);
+});
+document.getElementById('levelSkipSelect')?.addEventListener('change', (e) => {
+  const val = Number(e.target.value || requestedStartLevel);
   jumpToLevel(val);
 });
 
@@ -3308,10 +3355,10 @@ function drawSingleGarage(x) {
   ctx.fillRect(x + 128, 258, 46, 220);
 }
 
-function drawSchoolhouse(x) {
-  if (drawSpriteGroundedFitted('kennardSchool', x + ENTITY_LAYOUT.kennardSchool.x, GRASS_Y, ENTITY_LAYOUT.kennardSchool.w, ENTITY_LAYOUT.kennardSchool.h)) return;
+function drawSchoolhouse(x, scale = 1) {
+  if (drawSpriteGroundedFitted('kennardSchool', x + ENTITY_LAYOUT.kennardSchool.x * scale, GRASS_Y, ENTITY_LAYOUT.kennardSchool.w * scale, ENTITY_LAYOUT.kennardSchool.h * scale)) return;
   // Fallback: draw a tall house if the sprite isn't ready yet.
-  drawTallHouse(x - 40);
+  drawTallHouse(x - 40 * scale);
 }
 
 function drawTallHouse(x) {
@@ -4287,8 +4334,8 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'shedWindow') drawShedWindow(ent.x);
     if (ent.type === 'smallShed') drawSmallShed(ent.x);
     if (ent.type === 'singleGarage') drawSingleGarage(ent.x);
-    if (ent.type === 'schoolhouse') drawSchoolhouse(ent.x);
-    if (ent.type === 'kennardSchool') drawSchoolhouse(ent.x);
+    if (ent.type === 'schoolhouse') drawSchoolhouse(ent.x, ent.scale || 1);
+    if (ent.type === 'kennardSchool') drawSchoolhouse(ent.x, ent.scale || 1);
     if (ent.type === 'house') drawTallHouse(ent.x);
     if (ent.type === 'smallHouse') drawSmallHouse(ent.x, ent.color);
     if (ent.type === 'houseTallWhite') drawTallHouse(ent.x);
@@ -4448,9 +4495,4 @@ loop();
 </script>
 </body>
 </html>
-
-
-
-
-
 
