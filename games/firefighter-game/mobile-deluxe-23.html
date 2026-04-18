@@ -1485,7 +1485,7 @@ let blackBoxTruckState = null;
 let blackBoxTruckPlan = null;
 let ufoRaid = null;
 let ufoPreview = null;
-let requestedStartLevel = 11;
+let requestedStartLevel = 1;
 let hasShownLevel3MoveCue = false;
 let moveCueTimer = null;
 let hasShownLevel6TimeCue = false;
@@ -1830,25 +1830,25 @@ baseLevels[4] = {
 };
 
 baseLevels[5] = {
-  name: 'Driveway House and Garage 6',
-  safetyTip: 'Attack the garage-side fire first, then sweep the house roof line before it runs the full structure.',
-  dispatchBody: 'Dispatch to Kennard Fire: respond to a driveway home fire with extension into the sedan and front yard exposure.',
-  dispatchClearBody: 'Dispatch confirms the driveway house, sedan, and front yard exposure are under control.',
+  name: 'Left Side Home Fire 6',
+  safetyTip: 'Protect the house roof line and yard exposures before the fire reaches the rest of the block.',
+  dispatchBody: 'Dispatch to Kennard Fire: respond to a left-side home fire with fence, tree, and yard exposure.',
+  dispatchClearBody: 'Dispatch confirms the left-side home, fence, tree, and yard exposure are under control.',
   timeOfDay: 1,
   truckSide: 'right',
   entities: [
     { type: 'bgHouseNeighborhoodBrick', grid: { col: 'B', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
-    { type: 'bgTreeOakRealistic', grid: { col: 'G', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
-    { type: 'bgHouseNeighborhoodGray', grid: { col: 'N', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'F', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'J', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
 
-    { type: 'fenceWhiteRow', x: 255, scale: 0.72 },
-    { type: 'fenceWhiteRow', x: 456.6, scale: 0.72 },
+    { type: 'fenceWhiteRow', x: 115, scale: 0.72 },
+    { type: 'fenceWhiteRow', x: 316.6, scale: 0.72 },
 
-    // House and roadside clutter pulled left so the scene reads truck-side and open road to the right.
-    { type: 'houseNeighborhoodBrick', grid: { col: 'M', colOffset: -0.2, line: 10 }, scale: 1.42 },
-    { type: 'sedan', x: 458, yOffset: 22 },
-    { type: 'treeOakRealistic', grid: { col: 'L', colOffset: 0.15, line: 10.4 }, scale: 1.00 },
-    { type: 'shrubCluster', grid: { col: 'K', colOffset: 0.25, line: 10.55 }, scale: 0.76 }
+    // House and roadside clutter stay on the left side of the scene, opposite the truck spawn.
+    { type: 'houseNeighborhoodBeige', grid: { col: 'E', colOffset: -0.15, line: 10 }, scale: 1.42 },
+    { type: 'sedan', x: 345, yOffset: 22, variant: 'sedanSilverLeft' },
+    { type: 'treeOakRealistic', grid: { col: 'D', colOffset: 0.10, line: 10.4 }, scale: 1.00 },
+    { type: 'shrubCluster', grid: { col: 'C', colOffset: 0.25, line: 10.55 }, scale: 0.76 }
   ]
 };
 
