@@ -2460,6 +2460,21 @@ document.getElementById('levelSkipInput')?.addEventListener('keydown', (e) => {
 // Show the tester level-skip controls immediately (title screen too).
 updateLevelSkipHud();
 
+// Optional override for troubleshooting arrow visibility:
+// - Add `?controls=arrows` to force arrows
+// - Add `?controls=joystick` to force joystick
+// - Add `?controls=auto` to clear override
+try {
+  const mode = new URLSearchParams(window.location.search).get('controls');
+  if (mode) {
+    const norm = String(mode).toLowerCase();
+    if (norm === 'arrows' || norm === 'joystick' || norm === 'auto') {
+      localStorage.setItem('controlsMode', norm);
+    }
+  }
+} catch (err) {}
+syncThumbStickVisibility();
+
 class Particle {
   constructor(x, y, vx, vy, color, life, size, type) { 
     this.x = x; this.y = y; this.vx = vx; this.vy = vy; 
@@ -4099,7 +4114,18 @@ function syncThumbStickVisibility() {
   // Some laptops report a coarse pointer because they have touch screens.
   // Prefer showing desktop arrows whenever a fine pointer is available.
   const hasAnyFinePointer = window.matchMedia('(any-pointer: fine)').matches;
-  const mobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches && !hasAnyFinePointer;
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const noHover = window.matchMedia('(hover: none)').matches;
+  const mobileLike = noHover && coarsePointer;
+  // Heuristic: large landscape screens should get arrows even if coarsePointer is true.
+  const desktopSized = Math.max(window.innerWidth, window.innerHeight) >= 900 && Math.min(window.innerWidth, window.innerHeight) >= 500;
+  const stored = (localStorage.getItem('controlsMode') || 'auto').toLowerCase();
+  const forced = stored === 'arrows' ? 'arrows' : stored === 'joystick' ? 'joystick' : 'auto';
+  const mobile = forced === 'joystick'
+    ? true
+    : forced === 'arrows'
+      ? false
+      : (mobileLike && !hasAnyFinePointer && !desktopSized);
   stick.style.display = mobile ? 'block' : 'none';
   controls.style.display = mobile ? 'none' : 'flex';
 }
