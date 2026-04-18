@@ -1837,18 +1837,18 @@ baseLevels[5] = {
   timeOfDay: 1,
   truckSide: 'right',
   entities: [
-    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'F', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
-    { type: 'bgTreeOakRealistic', grid: { col: 'L', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
-    { type: 'bgHouseNeighborhoodGray', grid: { col: 'S', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
+    { type: 'bgHouseNeighborhoodBrick', grid: { col: 'B', line: 8.9 }, scale: 0.58, alpha: 0.20, silhouette: true },
+    { type: 'bgTreeOakRealistic', grid: { col: 'G', line: 8.85 }, scale: 0.42, alpha: 0.17, silhouette: true },
+    { type: 'bgHouseNeighborhoodGray', grid: { col: 'N', line: 8.9 }, scale: 0.60, alpha: 0.20, silhouette: true },
 
-    { type: 'fenceWhiteRow', x: 520, scale: 0.72 },
-    { type: 'fenceWhiteRow', x: 721.6, scale: 0.72 },
+    { type: 'fenceWhiteRow', x: 255, scale: 0.72 },
+    { type: 'fenceWhiteRow', x: 456.6, scale: 0.72 },
 
-    // House shifted left and used as the only garage-bearing structure for this scene.
-    { type: 'houseNeighborhoodBrick', grid: { col: 'Q', colOffset: -0.25, line: 10 }, scale: 1.48 },
-    { type: 'sedan', x: 722, yOffset: 22 },
-    { type: 'treeOakRealistic', grid: { col: 'P', colOffset: 0.15, line: 10.4 }, scale: 1.00 },
-    { type: 'shrubCluster', grid: { col: 'O', colOffset: 0.25, line: 10.55 }, scale: 0.76 }
+    // House and roadside clutter pulled left so the scene reads truck-side and open road to the right.
+    { type: 'houseNeighborhoodBrick', grid: { col: 'M', colOffset: -0.2, line: 10 }, scale: 1.42 },
+    { type: 'sedan', x: 458, yOffset: 22 },
+    { type: 'treeOakRealistic', grid: { col: 'L', colOffset: 0.15, line: 10.4 }, scale: 1.00 },
+    { type: 'shrubCluster', grid: { col: 'K', colOffset: 0.25, line: 10.55 }, scale: 0.76 }
   ]
 };
 
