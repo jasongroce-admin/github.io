@@ -7,10 +7,31 @@
 <link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
 <style>
 html, body { width: 100%; height: 100%; }
+:root {
+  --builder-left-active-width: clamp(330px, 26vw, 420px);
+  --builder-right-active-width: 420px;
+  --builder-center-top-pad: 96px;
+}
 body { margin:0; background:#000; font-family:Arial, sans-serif; overflow:hidden; touch-action: none; }
 body .content { width: 100vw; max-width: none; margin: 0; padding: 0; }
 #gameContainer { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; padding-top: 0 !important; z-index: 1; }
 canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: crisp-edges; }
+body.builder-active #gameContainer {
+  left: var(--builder-left-active-width);
+  right: var(--builder-right-active-width);
+  width: auto;
+  height: 100dvh;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: auto;
+  padding: var(--builder-center-top-pad) 10px 12px;
+}
+body.builder-active #gameContainer > canvas {
+  width: 1200px;
+  height: 600px;
+  max-width: none;
+  max-height: none;
+}
 
 #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 1200; }
 #titleScreen { pointer-events: auto; position: relative; z-index: 1201; }
@@ -338,11 +359,11 @@ button:hover { filter: brightness(1.2); }
   color: #e8f1ff;
   pointer-events: none;
   --builder-left-width: clamp(330px, 26vw, 420px);
-  --builder-right-width: 560px;
+  --builder-right-width: 420px;
 }
 #builderShell {
   display: grid;
-  grid-template-columns: var(--builder-left-width) minmax(0, 1fr) var(--builder-right-width);
+  grid-template-columns: var(--builder-left-width) minmax(460px, 1fr) var(--builder-right-width);
   height: 100dvh;
   width: 100vw;
 }
@@ -362,10 +383,15 @@ button:hover { filter: brightness(1.2); }
   z-index: 2;
   width: auto;
   margin: 0;
-  padding: 4px 8px;
-  font-size: 11px;
-  border-radius: 7px;
-  background: rgba(27, 56, 89, 0.95);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 223, 100, 0.65);
+  color: #fff4c7;
+  background: linear-gradient(180deg, rgba(255, 174, 0, 0.96), rgba(197, 99, 0, 0.96));
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45);
 }
 #builderLeftPanel .left-restore-btn {
   display: none;
@@ -373,10 +399,11 @@ button:hover { filter: brightness(1.2); }
   height: calc(100% - 48px);
   margin: 0;
   border-radius: 9px;
-  border: 1px solid rgba(145, 175, 210, 0.34);
-  background: rgba(8, 15, 26, 0.76);
-  color: #b6d2f0;
-  font-size: 12px;
+  border: 2px solid rgba(255, 223, 100, 0.62);
+  background: linear-gradient(180deg, rgba(33, 67, 104, 0.92), rgba(16, 35, 57, 0.92));
+  color: #ffe28a;
+  font-size: 14px;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   writing-mode: vertical-rl;
@@ -395,6 +422,9 @@ button:hover { filter: brightness(1.2); }
 #builderRightPanel {
   border-right: none;
   border-left: 1px solid rgba(140, 166, 194, 0.28);
+}
+#builderRightPanel .builder-body {
+  overflow-x: auto;
 }
 .builder-head {
   padding: 14px 16px;
@@ -546,14 +576,18 @@ button:hover { filter: brightness(1.2); }
   position: relative;
   background: transparent;
   pointer-events: none;
+  min-width: 0;
 }
 #builderTitleBar {
-  position: absolute;
-  left: 50%;
+  position: sticky;
+  left: 0;
+  right: 0;
   top: 10px;
-  transform: translateX(-50%);
-  min-width: min(900px, calc(100% - 24px));
-  max-width: calc(100% - 24px);
+  transform: none;
+  width: calc(100% - 20px);
+  min-width: 0;
+  max-width: 920px;
+  margin: 0 auto;
   z-index: 10;
   padding: 10px 14px;
   border-radius: 10px;
@@ -570,7 +604,7 @@ button:hover { filter: brightness(1.2); }
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 .builder-title-status {
   font-size: 13px;
@@ -862,24 +896,40 @@ button:hover { filter: brightness(1.2); }
   filter: brightness(1.15);
 }
 .builder-section {
-  border: 1px solid rgba(145, 175, 210, 0.30);
-  border-radius: 9px;
-  margin-bottom: 10px;
-  background: rgba(8, 15, 26, 0.62);
+  border: 2px solid rgba(120, 167, 219, 0.50);
+  border-radius: 11px;
+  margin-bottom: 12px;
+  background: rgba(8, 15, 26, 0.72);
+  box-shadow: 0 0 0 1px rgba(22, 48, 78, 0.52) inset;
 }
 .builder-section > summary {
   cursor: pointer;
   list-style: none;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #b6d2f0;
-  border-bottom: 1px solid rgba(120, 153, 189, 0.32);
-  background: rgba(11, 22, 36, 0.62);
+  color: #e4f2ff;
+  text-align: center;
+  border-bottom: 2px solid rgba(120, 153, 189, 0.46);
+  background: linear-gradient(180deg, rgba(26, 61, 97, 0.78), rgba(15, 34, 56, 0.82));
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55);
+  position: relative;
 }
 .builder-section > summary::-webkit-details-marker { display: none; }
+.builder-section > summary::after {
+  content: '▼';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #ffd75a;
+}
+.builder-section:not([open]) > summary::after {
+  content: '▶';
+}
 .builder-section > .section-content {
   padding: 10px 12px 12px;
 }
@@ -888,6 +938,12 @@ button:hover { filter: brightness(1.2); }
   gap: 12px;
   margin-bottom: 10px;
   align-items: stretch;
+  justify-content: flex-start;
+  padding-right: 14px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-gutter: stable;
 }
 .builder-top-column {
   position: relative;
@@ -910,21 +966,27 @@ button:hover { filter: brightness(1.2); }
   z-index: 2;
   width: auto;
   margin: 0;
-  padding: 4px 8px;
-  font-size: 11px;
-  border-radius: 7px;
-  background: rgba(27, 56, 89, 0.95);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 223, 100, 0.65);
+  color: #fff4c7;
+  background: linear-gradient(180deg, rgba(255, 174, 0, 0.96), rgba(197, 99, 0, 0.96));
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45);
 }
 .builder-top-column .column-restore {
   display: none;
   width: 100%;
   height: 100%;
   margin: 0;
-  border-radius: 9px;
-  border: 1px solid rgba(145, 175, 210, 0.34);
-  background: rgba(8, 15, 26, 0.76);
-  color: #b6d2f0;
-  font-size: 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 223, 100, 0.62);
+  background: linear-gradient(180deg, rgba(33, 67, 104, 0.92), rgba(16, 35, 57, 0.92));
+  color: #ffe28a;
+  font-size: 14px;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   writing-mode: vertical-rl;
@@ -933,7 +995,7 @@ button:hover { filter: brightness(1.2); }
   padding: 10px 6px;
 }
 .builder-top-column.collapsed {
-  flex: 0 0 44px;
+  flex: 0 0 40px;
 }
 .builder-top-column.collapsed .builder-section,
 .builder-top-column.collapsed .column-toggle {
@@ -941,6 +1003,7 @@ button:hover { filter: brightness(1.2); }
 }
 .builder-top-column.collapsed .column-restore {
   display: block;
+  min-width: 40px;
 }
 .builder-section .selected-empty-hint {
   display: none;
@@ -955,10 +1018,11 @@ button:hover { filter: brightness(1.2); }
   display: none;
 }
 .builder-subsection {
-  border: 1px solid rgba(124, 155, 190, 0.36);
-  border-radius: 8px;
+  border: 2px solid rgba(124, 155, 190, 0.50);
+  border-radius: 10px;
   margin: 10px 0;
-  background: rgba(10, 18, 30, 0.68);
+  background: rgba(10, 18, 30, 0.78);
+  box-shadow: 0 0 0 1px rgba(24, 49, 77, 0.52) inset;
 }
 .builder-subsection + .builder-subsection {
   border-top: 1px dashed rgba(131, 168, 209, 0.36);
@@ -966,16 +1030,31 @@ button:hover { filter: brightness(1.2); }
 .builder-subsection > summary {
   cursor: pointer;
   list-style: none;
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #9ec3e8;
-  border-left: 3px solid rgba(92, 175, 240, 0.56);
-  border-bottom: 1px solid rgba(124, 155, 190, 0.30);
-  background: rgba(12, 24, 40, 0.60);
+  color: #d6eaff;
+  text-align: center;
+  border-left: 4px solid rgba(92, 175, 240, 0.76);
+  border-bottom: 2px solid rgba(124, 155, 190, 0.40);
+  background: rgba(14, 30, 49, 0.74);
+  position: relative;
 }
 .builder-subsection > summary::-webkit-details-marker { display: none; }
+.builder-subsection > summary::after {
+  content: '▼';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #ffd75a;
+}
+.builder-subsection:not([open]) > summary::after {
+  content: '▶';
+}
 .builder-subsection > .subsection-content {
   padding: 6px 8px 10px;
 }
@@ -3162,14 +3241,16 @@ function getEntityBounds(ent) {
   if (ent.type === 'catTails') return getSpriteFitRect('catTails', ent.x + ENTITY_LAYOUT.catTails.x, groundedY('catTails', GRASS_Y, ENTITY_LAYOUT.catTails.h), ENTITY_LAYOUT.catTails.w, ENTITY_LAYOUT.catTails.h, true);
   if (ent.type === 'blackBoxTruck') return getSpriteFitRect('blackBoxTruck', ent.x + ENTITY_LAYOUT.blackBoxTruck.x, 412 - ENTITY_LAYOUT.blackBoxTruck.h, ENTITY_LAYOUT.blackBoxTruck.w, ENTITY_LAYOUT.blackBoxTruck.h, true);
   if (ent.type === 'requiredFireTruck') {
-    const side = (builderState?.truckSide === 'right' || baseLevels[currentLevel - 1]?.truckSide === 'right') ? 'right' : 'left';
+    const side = (builderState?.truckSide === 'left' || builderState?.truckSide === 'right')
+      ? builderState.truckSide
+      : (baseLevels[currentLevel - 1]?.truckSide === 'right' ? 'right' : 'left');
     const lane = side === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
     const renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
     const key = side === 'right' ? 'engineLeft' : 'engineRight';
     const layout = ENTITY_LAYOUT.engine;
     const truckX = (gameState === 'builder')
       ? clamp(Number(builderState?.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX)
-      : truck.x;
+      : clamp(Number(truck.x ?? lane.spawnX), lane.minX, lane.maxX);
     return getSpriteFitRect(key, truckX + layout.x * renderScale, getTruckY() - (layout.h * renderScale), layout.w * renderScale, layout.h * renderScale, true);
   }
   if (ent.type === 'ufo') return getSpriteFitRect('ufo', ent.x + ENTITY_LAYOUT.ufo.x, ent.y || 90, ENTITY_LAYOUT.ufo.w, ENTITY_LAYOUT.ufo.h, true);
@@ -3337,6 +3418,7 @@ let builderTestLevelIndex = null;
 let builderLastPlaceAt = 0;
 let builderTestActive = false;
 let builderLastPreloadAt = 0;
+let builderAutoCollapseTimer = null;
 const BUILDER_HISTORY_LIMIT = 120;
 let builderUndoStack = [];
 let builderRedoStack = [];
@@ -3882,9 +3964,15 @@ function builderRecalculateRightPanelWidth() {
   });
   const desired = (openCount * 360) + (collapsedCount * 48) + 18;
   const minW = 150;
-  const maxW = Math.max(420, Math.floor(window.innerWidth * 0.68));
+  const leftPanel = document.getElementById('builderLeftPanel');
+  const leftCollapsed = !!leftPanel?.classList.contains('collapsed');
+  const leftW = leftCollapsed ? 48 : Math.max(280, Math.floor(leftPanel?.getBoundingClientRect().width || 340));
+  const centerMin = 460;
+  const maxBySpace = Math.floor(window.innerWidth - leftW - centerMin);
+  const maxW = Math.max(320, Math.min(Math.floor(window.innerWidth * 0.56), maxBySpace));
   const width = clamp(desired, minW, maxW);
   screen.style.setProperty('--builder-right-width', `${width}px`);
+  document.documentElement.style.setProperty('--builder-right-active-width', `${width}px`);
 }
 
 function builderUpdateTopColumnOrder() {
@@ -4166,7 +4254,10 @@ function builderSetLeftPanelCollapsed(collapsed) {
   const panel = document.getElementById('builderLeftPanel');
   if (!screen || !panel) return;
   panel.classList.toggle('collapsed', !!collapsed);
-  screen.style.setProperty('--builder-left-width', collapsed ? '48px' : 'clamp(330px, 26vw, 420px)');
+  const widthValue = collapsed ? '48px' : 'clamp(330px, 26vw, 420px)';
+  screen.style.setProperty('--builder-left-width', widthValue);
+  document.documentElement.style.setProperty('--builder-left-active-width', widthValue);
+  builderRecalculateRightPanelWidth();
 }
 
 function builderSelectEntity(id) {
@@ -4824,6 +4915,11 @@ function builderLoadFromLevel(levelData) {
 function builderOpen(levelData = null) {
   builderSetLeftPanelCollapsed(false);
   builderInitCollapsibleSections();
+  const selectedCol = document.getElementById('builderTopSelectedColumn');
+  const levelCol = document.getElementById('builderTopLevelColumn');
+  const exportCol = document.getElementById('builderTopExportColumn');
+  [selectedCol, levelCol, exportCol].forEach((col) => col?.classList.remove('collapsed'));
+  builderUpdateTopColumnOrder();
   // Defensive: ensure newly added images are registered even if the page was cached.
   try { registerDiscoveredSpriteFiles(); } catch (err) {}
   try { builderRenderAssetList(); } catch (err) {}
@@ -4855,6 +4951,18 @@ function builderOpen(levelData = null) {
   document.getElementById('levelCompleteScreen').style.display = 'none';
   if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'block';
   updateLevelSkipHud();
+  if (builderAutoCollapseTimer) {
+    clearTimeout(builderAutoCollapseTimer);
+    builderAutoCollapseTimer = null;
+  }
+  builderAutoCollapseTimer = setTimeout(() => {
+    if (gameState !== 'builder') return;
+    selectedCol?.classList.remove('collapsed');
+    levelCol?.classList.add('collapsed');
+    exportCol?.classList.add('collapsed');
+    builderUpdateTopColumnOrder();
+    builderAutoCollapseTimer = null;
+  }, 2000);
   setTimeout(() => builderShowInstructionsPrompt(true), 120);
 }
 
@@ -4865,6 +4973,10 @@ function builderClose() {
   builderEndTour(false);
   builderShowHelpModal(false);
   builderShowInstructionsPrompt(false);
+  if (builderAutoCollapseTimer) {
+    clearTimeout(builderAutoCollapseTimer);
+    builderAutoCollapseTimer = null;
+  }
   if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'none';
   document.getElementById('builderReturnFromTestBtn').style.display = 'none';
   builderTestActive = false;
@@ -5002,7 +5114,7 @@ function builderRenderAssetList() {
     if (!list.length) return;
     const section = document.createElement('details');
     section.className = 'builder-asset-section';
-    section.open = (category === 'all') ? true : true;
+    section.open = category !== 'all' || !!query;
     const summary = document.createElement('summary');
     summary.textContent = `${getCategoryLabel(cat)} (${list.length})`;
     const items = document.createElement('div');
@@ -7291,6 +7403,9 @@ function loadLevel(lvl, options = {}) {
       entityKey: s.entityKey
     };
   });
+  if (lvl === 9) {
+    initLevel9EventState(levelData, fireSpots);
+  }
   // Keep fire anchored to burnable model zones; do not shift spots off art.
   if (lvl === FINAL_LEVEL) initUfoRaid();
   if (lvl === 21) initUfoPreview();
@@ -7839,9 +7954,6 @@ const bindPathNumber = (field, key, min, max, fallback) => {
     ent._pathDone = false;
     builderSaveLastDraft();
   });
-  if (lvl === 9) {
-    initLevel9EventState(levelData, fireSpots);
-  }
 };
 bindPathNumber(BUILDER_UI.layerPathStartX, 'pathStartX', -220, 1520, (ent) => ent.x || 0);
 bindPathNumber(BUILDER_UI.layerPathStartY, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
