@@ -4593,16 +4593,30 @@ function builderReturnFromTest() {
 }
 
 function builderGetAssets() {
-  const seen = new Set();
+  const seenFiles = new Set();
+  const usedKeys = new Set();
   const assets = [];
-  Object.keys(SPRITE_FILES).forEach((key) => {
-    const file = SPRITE_FILES[key];
-    const isCustom = !!CUSTOM_SPRITE_DATA[key];
-    const signature = `${isCustom ? 'custom:' : 'file:'}${String(file || '').toLowerCase()}`;
-    if (!file || seen.has(signature)) return;
-    seen.add(signature);
-    assets.push({ key, file, isCustom });
-  });
+  const addAsset = (key, file, isCustom = false) => {
+    const lower = String(file || '').toLowerCase();
+    if (!lower) return;
+    const signature = `${isCustom ? 'custom:' : 'file:'}${lower}`;
+    if (seenFiles.has(signature)) return;
+    seenFiles.add(signature);
+    let finalKey = String(key || '');
+    if (!finalKey) finalKey = toSpriteKeyFromFilename(file);
+    if (!finalKey) return;
+    let idx = 2;
+    while (usedKeys.has(finalKey)) finalKey = `${String(finalKey)}_${idx++}`;
+    usedKeys.add(finalKey);
+    assets.push({ key: finalKey, file, isCustom: !!isCustom });
+  };
+  Object.keys(SPRITE_FILES).forEach((key) => addAsset(key, SPRITE_FILES[key], !!CUSTOM_SPRITE_DATA[key]));
+  // Always include discovered images directly in the asset library (defensive against cached/partial SPRITE_FILES).
+  try {
+    if (Array.isArray(DISCOVERED_SPRITE_FILENAMES)) {
+      DISCOVERED_SPRITE_FILENAMES.forEach((file) => addAsset(toSpriteKeyFromFilename(file), file, false));
+    }
+  } catch (err) {}
   return assets;
 }
 
@@ -4663,6 +4677,13 @@ function builderRenderAssetList() {
     .filter((asset) => !query || asset.key.toLowerCase().includes(query) || asset.file.toLowerCase().includes(query))
     .map((asset) => ({ ...asset, category: getAssetCategory(asset) }))
     .filter((asset) => category === 'all' || asset.category === category);
+
+  if (BUILDER_UI.assetCountNote) {
+    const total = builderGetAssets().length;
+    let discoveredCount = 0;
+    try { discoveredCount = Array.isArray(DISCOVERED_SPRITE_FILENAMES) ? DISCOVERED_SPRITE_FILENAMES.length : 0; } catch (err) { discoveredCount = 0; }
+    BUILDER_UI.assetCountNote.textContent = `Assets: ${total} (images: ${discoveredCount})`;
+  }
 
   const order = ['vehicles', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
   const grouped = new Map();
