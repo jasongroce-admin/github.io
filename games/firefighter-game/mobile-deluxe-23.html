@@ -338,7 +338,7 @@ button:hover { filter: brightness(1.2); }
   color: #e8f1ff;
   pointer-events: none;
   --builder-left-width: clamp(330px, 26vw, 420px);
-  --builder-right-width: 420px;
+  --builder-right-width: 560px;
 }
 #builderShell {
   display: grid;
@@ -1442,7 +1442,10 @@ button:hover { filter: brightness(1.2); }
         </div>
         <div class="builder-field">
           <label for="builderTornadoStartDelay">Tornado Start Delay (ms)</label>
-          <input id="builderTornadoStartDelay" type="number" min="0" step="250" value="0">
+          <div class="builder-dual-input">
+            <input id="builderTornadoStartDelayRange" type="range" min="0" max="120000" step="250" value="0">
+            <input id="builderTornadoStartDelay" type="number" min="0" max="120000" step="250" value="0">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTornadoTravelPercent">Tornado Travel Percent</label>
@@ -1610,23 +1613,66 @@ button:hover { filter: brightness(1.2); }
           </select>
         </div>
         <div class="builder-field">
+          <label for="builderLayerWaterHitSprite">On Water Hit: Switch Image</label>
+          <select id="builderLayerWaterHitSprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerTornadoHitSprite">On Tornado Hit: Switch Image</label>
+          <select id="builderLayerTornadoHitSprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerHitSpriteScale">Hit Swap Scale</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerHitSpriteScaleRange" type="range" min="0.2" max="4" step="0.01" value="1">
+            <input id="builderLayerHitSpriteScale" type="number" min="0.2" max="4" step="0.01" value="1">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerTornadoMotionMode">Tornado Motion After Hit</label>
+          <select id="builderLayerTornadoMotionMode">
+            <option value="path">Controlled Path</option>
+            <option value="random">Random Fly Away</option>
+            <option value="none">No Movement</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerTornadoRotationMode">Tornado Rotation After Hit</label>
+          <select id="builderLayerTornadoRotationMode">
+            <option value="spin">Spin</option>
+            <option value="keep">Keep Rotation</option>
+            <option value="path">Face Path</option>
+          </select>
+        </div>
+        <div class="builder-field">
           <button id="builderSetTornadoRouteBtn" type="button" class="alt">Set Tornado Throw Path</button>
         </div>
         <div class="builder-field">
           <label for="builderTornadoAffectStartX">Tornado Trigger X</label>
-          <input id="builderTornadoAffectStartX" type="number" min="-220" max="1520" step="1" value="640">
+          <div class="builder-dual-input">
+            <input id="builderTornadoAffectStartXRange" type="range" min="-220" max="1520" step="1" value="640">
+            <input id="builderTornadoAffectStartX" type="number" min="-220" max="1520" step="1" value="640">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTornadoAffectLandX">Landing X</label>
-          <input id="builderTornadoAffectLandX" type="number" min="-220" max="1520" step="1" value="760">
+          <div class="builder-dual-input">
+            <input id="builderTornadoAffectLandXRange" type="range" min="-220" max="1520" step="1" value="760">
+            <input id="builderTornadoAffectLandX" type="number" min="-220" max="1520" step="1" value="760">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTornadoAffectLandY">Landing Base Y</label>
-          <input id="builderTornadoAffectLandY" type="number" min="120" max="580" step="1" value="460">
+          <div class="builder-dual-input">
+            <input id="builderTornadoAffectLandYRange" type="range" min="120" max="580" step="1" value="460">
+            <input id="builderTornadoAffectLandY" type="number" min="120" max="580" step="1" value="460">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTornadoAffectDurationMs">Throw Duration (ms)</label>
-          <input id="builderTornadoAffectDurationMs" type="number" min="200" max="12000" step="50" value="1800">
+          <div class="builder-dual-input">
+            <input id="builderTornadoAffectDurationMsRange" type="range" min="200" max="12000" step="50" value="1800">
+            <input id="builderTornadoAffectDurationMs" type="number" min="200" max="12000" step="50" value="1800">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderAnimalExitDirection">Animal Water Exit Direction</label>
@@ -1643,6 +1689,45 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label for="builderAnimalBonusPoints">Animal Bonus Points</label>
           <input id="builderAnimalBonusPoints" type="number" min="0" max="50" step="1" value="0">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathEnabled">Path Animation</label>
+          <select id="builderLayerPathEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathMode">Path Mode</label>
+          <select id="builderLayerPathMode">
+            <option value="pingpong">Ping-Pong</option>
+            <option value="loop">Loop</option>
+            <option value="once">One Way</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathStartX">Path Start X</label>
+          <input id="builderLayerPathStartX" type="number" min="-220" max="1520" step="1" value="640">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathStartY">Path Start Base Y</label>
+          <input id="builderLayerPathStartY" type="number" min="120" max="580" step="1" value="470">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathEndX">Path End X</label>
+          <input id="builderLayerPathEndX" type="number" min="-220" max="1520" step="1" value="760">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathEndY">Path End Base Y</label>
+          <input id="builderLayerPathEndY" type="number" min="120" max="580" step="1" value="470">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathDurationMs">Path Duration (ms)</label>
+          <input id="builderLayerPathDurationMs" type="number" min="200" max="120000" step="50" value="2400">
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerPathPauseMs">Path Pause (ms)</label>
+          <input id="builderLayerPathPauseMs" type="number" min="0" max="60000" step="50" value="0">
         </div>
 
         <div class="builder-actions">
@@ -1821,7 +1906,7 @@ const SPRITE_CACHE = {};
 const CUSTOM_SPRITE_DATA = {};
 let ACTIVE_SPRITE_KEYS = new Set();
 const SPRITE_FILES = {
-  engineLeft: 'vehicle_engine_680x322.webp',
+  engineLeft: 'vehicle_engine_rightside_680x322.webp',
   engineRight: 'vehicle_engine_680x322.webp',
   sedanRed: 'vehicle_sedan_red.webp',
   sedanRed2: 'vehicle_sedan_red2_459x145.webp',
@@ -1832,9 +1917,9 @@ const SPRITE_FILES = {
   sedanSilverRight: 'vehicle_sedan_silver_1168x377.webp',
   sedanBlueLeft: 'vehicle_sedan_blue_948x412.webp',
   pickupCyber: 'vehicle_cybertruck_1168x784.webp',
-  semiTankLeft: 'vehicle_semi_tank_700x283.webp',
+  semiTankLeft: 'vehicle_semi_tank_rightside_700x283.webp',
   semiTankRight: 'vehicle_semi_tank_700x283.webp',
-  boroTankerLeft: 'vehicle_boro_tanker_685x289.webp',
+  boroTankerLeft: 'vehicle_boro_tanker_rightside_685x289.webp',
   boroTankerRight: 'vehicle_boro_tanker_685x289.webp',
   semiWrecked: 'vehicle_semi_wrecked_792x276.webp',
   hayA: 'nature_haybale_round_single_459x145.webp',
@@ -1859,9 +1944,9 @@ const SPRITE_FILES = {
   boat: 'vehicle_boat.webp',
   cattails: 'nature_cattails_526x593.webp',
   tent: 'prop_tent_784x565.webp',
-  blackBoxTruckLeft: 'vehicle_black_box_truck_1284x634.webp',
-  blackBoxTruckRight: 'vehicle_black_box_truck_1284x634.webp',
-  blackBoxTruck: 'vehicle_black_box_truck_1284x634.webp',
+  blackBoxTruckLeft: 'vehicle_black_box_truck_rightside_1284x635.webp',
+  blackBoxTruckRight: 'vehicle_black_box_truck_1284x635.webp',
+  blackBoxTruck: 'vehicle_black_box_truck_1284x635.webp',
   ufo: 'scifi_ufo_920x416.webp',
   ufoBeam: 'scifi_ufo_beam_910x668.webp',
   oakSmall: 'nature_oak_small_197x153.webp',
@@ -1988,12 +2073,15 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_atv_red_459x145.webp',
   'vehicle_bicycle_front_facing_459x145.webp',
   'vehicle_bike_red_491x390.webp',
-  'vehicle_black_box_truck_1284x634.webp',
+  'vehicle_black_box_truck_1284x635.webp',
+  'vehicle_black_box_truck_rightside_1284x635.webp',
   'vehicle_boat.webp',
   'vehicle_boro_tanker_685x289.webp',
+  'vehicle_boro_tanker_rightside_685x289.webp',
   'vehicle_bus_upside_down_1168x784.webp',
   'vehicle_cybertruck_1168x784.webp',
   'vehicle_engine_680x322.webp',
+  'vehicle_engine_rightside_680x322.webp',
   'vehicle_farm_combine_harvester_red.webp',
   'vehicle_farm_tractor_green.webp',
   'vehicle_golfcart_white_459x145.webp',
@@ -2014,6 +2102,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_sedan_silver_1168x377.webp',
   'vehicle_segway_459x145.webp',
   'vehicle_semi_tank_700x283.webp',
+  'vehicle_semi_tank_rightside_700x283.webp',
   'vehicle_semi_wrecked_792x276.webp',
   'vehicle_semitruck_box_regular_792x276.webp',
   'vehicle_semitruck_box_wrecked_792x276.webp',
@@ -2521,6 +2610,31 @@ function getBuilderSpriteRect(ent) {
   const baseY = Number(ent.baseY ?? GRASS_Y);
   const x = Number(ent.x || 0);
   return { x: x - drawW * 0.5, y: baseY - drawH, w: drawW, h: drawH };
+}
+
+function applyCollisionSpriteSwap(ent, cause = 'water') {
+  if (!ent || (cause !== 'water' && cause !== 'tornado')) return false;
+  const swapKey = String(cause === 'water' ? (ent.onWaterHitSpriteKey || '') : (ent.onTornadoHitSpriteKey || ''));
+  if (!swapKey || (!SPRITE_FILES[swapKey] && !CUSTOM_SPRITE_DATA[swapKey])) return false;
+  if (cause === 'water' && ent._waterCollisionSwapDone) return false;
+  if (cause === 'tornado' && ent._tornadoCollisionSwapDone) return false;
+  if (ent.type === 'builderSprite') {
+    const previousRect = getBuilderSpriteRect(ent);
+    ent.spriteKey = swapKey;
+    if (previousRect && (!Number.isFinite(Number(ent.baseW)) || !Number.isFinite(Number(ent.baseH)))) {
+      ent.baseW = clamp(Number(previousRect.w || 0), 24, 1800);
+      ent.baseH = clamp(Number(previousRect.h || 0), 24, 1200);
+      ent.scale = 1;
+    }
+  } else if (ent.variant != null) {
+    ent.variant = swapKey;
+  } else {
+    return false;
+  }
+  ent.scale = clamp(Number(ent.hitSwapScale ?? ent.scale ?? 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  if (cause === 'water') ent._waterCollisionSwapDone = true;
+  if (cause === 'tornado') ent._tornadoCollisionSwapDone = true;
+  return true;
 }
 
 function drawBuilderSpriteEntity(ent) {
@@ -3225,6 +3339,7 @@ let builderUndoStack = [];
 let builderRedoStack = [];
 let builderHistoryMute = false;
 let builderLastHistorySignature = '';
+let builderClipboardEntity = null;
 
 const BUILDER_UI = {
   screen: document.getElementById('builderScreen'),
@@ -3263,6 +3378,7 @@ const BUILDER_UI = {
   tornadoEnabled: document.getElementById('builderTornadoEnabled'),
   tornadoSpeed: document.getElementById('builderTornadoSpeed'),
   tornadoDirection: document.getElementById('builderTornadoDirection'),
+  tornadoStartDelayRange: document.getElementById('builderTornadoStartDelayRange'),
   tornadoStartDelay: document.getElementById('builderTornadoStartDelay'),
   tornadoTravelPercent: document.getElementById('builderTornadoTravelPercent'),
   tornadoReturnEnabled: document.getElementById('builderTornadoReturnEnabled'),
@@ -3305,11 +3421,29 @@ const BUILDER_UI = {
   layerLocked: document.getElementById('builderLayerLocked'),
   layerWaterMove: document.getElementById('builderLayerWaterMove'),
   layerTornadoFall: document.getElementById('builderLayerTornadoFall'),
+  layerWaterHitSprite: document.getElementById('builderLayerWaterHitSprite'),
+  layerTornadoHitSprite: document.getElementById('builderLayerTornadoHitSprite'),
+  layerHitSpriteScaleRange: document.getElementById('builderLayerHitSpriteScaleRange'),
+  layerHitSpriteScale: document.getElementById('builderLayerHitSpriteScale'),
+  layerTornadoMotionMode: document.getElementById('builderLayerTornadoMotionMode'),
+  layerTornadoRotationMode: document.getElementById('builderLayerTornadoRotationMode'),
   setTornadoRouteBtn: document.getElementById('builderSetTornadoRouteBtn'),
+  tornadoAffectStartXRange: document.getElementById('builderTornadoAffectStartXRange'),
   tornadoAffectStartX: document.getElementById('builderTornadoAffectStartX'),
+  tornadoAffectLandXRange: document.getElementById('builderTornadoAffectLandXRange'),
   tornadoAffectLandX: document.getElementById('builderTornadoAffectLandX'),
+  tornadoAffectLandYRange: document.getElementById('builderTornadoAffectLandYRange'),
   tornadoAffectLandY: document.getElementById('builderTornadoAffectLandY'),
+  tornadoAffectDurationMsRange: document.getElementById('builderTornadoAffectDurationMsRange'),
   tornadoAffectDurationMs: document.getElementById('builderTornadoAffectDurationMs'),
+  layerPathEnabled: document.getElementById('builderLayerPathEnabled'),
+  layerPathMode: document.getElementById('builderLayerPathMode'),
+  layerPathStartX: document.getElementById('builderLayerPathStartX'),
+  layerPathStartY: document.getElementById('builderLayerPathStartY'),
+  layerPathEndX: document.getElementById('builderLayerPathEndX'),
+  layerPathEndY: document.getElementById('builderLayerPathEndY'),
+  layerPathDurationMs: document.getElementById('builderLayerPathDurationMs'),
+  layerPathPauseMs: document.getElementById('builderLayerPathPauseMs'),
   animalExitDirection: document.getElementById('builderAnimalExitDirection'),
   animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
   animalBonusPoints: document.getElementById('builderAnimalBonusPoints'),
@@ -3639,10 +3773,22 @@ function builderSyncPhysicsControlsForSelection(selected) {
   if (BUILDER_UI.layerWaterMove) BUILDER_UI.layerWaterMove.disabled = isLocked;
   if (BUILDER_UI.layerTornadoFall) BUILDER_UI.layerTornadoFall.disabled = isLocked;
   if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectLandXRange) BUILDER_UI.tornadoAffectLandXRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectLandYRange) BUILDER_UI.tornadoAffectLandYRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectDurationMsRange) BUILDER_UI.tornadoAffectDurationMsRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.disabled = isLocked;
+  if (BUILDER_UI.layerPathEnabled) BUILDER_UI.layerPathEnabled.disabled = isLocked;
+  if (BUILDER_UI.layerPathMode) BUILDER_UI.layerPathMode.disabled = isLocked;
+  if (BUILDER_UI.layerPathStartX) BUILDER_UI.layerPathStartX.disabled = isLocked;
+  if (BUILDER_UI.layerPathStartY) BUILDER_UI.layerPathStartY.disabled = isLocked;
+  if (BUILDER_UI.layerPathEndX) BUILDER_UI.layerPathEndX.disabled = isLocked;
+  if (BUILDER_UI.layerPathEndY) BUILDER_UI.layerPathEndY.disabled = isLocked;
+  if (BUILDER_UI.layerPathDurationMs) BUILDER_UI.layerPathDurationMs.disabled = isLocked;
+  if (BUILDER_UI.layerPathPauseMs) BUILDER_UI.layerPathPauseMs.disabled = isLocked;
 }
 
 function builderSetFieldVisibility(inputId, visible) {
@@ -3697,11 +3843,23 @@ function builderSyncLevelOptionVisibility() {
   const selectedForTornado = tornadoOn && !!selected;
   const affectedByTornado = selectedForTornado && (BUILDER_UI.layerTornadoFall?.value === '1');
   builderSetFieldVisibility('builderLayerTornadoFall', selectedForTornado);
+  builderSetFieldVisibility('builderLayerHitSpriteScale', selectedForTornado);
+  builderSetFieldVisibility('builderLayerTornadoMotionMode', affectedByTornado);
+  builderSetFieldVisibility('builderLayerTornadoRotationMode', affectedByTornado);
   builderSetFieldVisibility('builderSetTornadoRouteBtn', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectStartX', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectLandX', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectLandY', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectDurationMs', affectedByTornado);
+  const pathMaster = !!selected && BUILDER_UI.layerPathEnabled?.value === '1';
+  builderSetFieldVisibility('builderLayerPathEnabled', !!selected);
+  builderSetFieldVisibility('builderLayerPathMode', pathMaster);
+  builderSetFieldVisibility('builderLayerPathStartX', pathMaster);
+  builderSetFieldVisibility('builderLayerPathStartY', pathMaster);
+  builderSetFieldVisibility('builderLayerPathEndX', pathMaster);
+  builderSetFieldVisibility('builderLayerPathEndY', pathMaster);
+  builderSetFieldVisibility('builderLayerPathDurationMs', pathMaster);
+  builderSetFieldVisibility('builderLayerPathPauseMs', pathMaster);
 }
 
 function builderRecalculateRightPanelWidth() {
@@ -3719,9 +3877,9 @@ function builderRecalculateRightPanelWidth() {
     if (col.classList.contains('collapsed')) collapsedCount += 1;
     else openCount += 1;
   });
-  const desired = (openCount * 320) + (collapsedCount * 48) + 18;
+  const desired = (openCount * 360) + (collapsedCount * 48) + 18;
   const minW = 150;
-  const maxW = Math.max(320, Math.floor(window.innerWidth * 0.52));
+  const maxW = Math.max(420, Math.floor(window.innerWidth * 0.68));
   const width = clamp(desired, minW, maxW);
   screen.style.setProperty('--builder-right-width', `${width}px`);
 }
@@ -3777,6 +3935,7 @@ function builderApplyStateToUi() {
   BUILDER_UI.tornadoSpeed.value = String(builderState?.tornadoConfig?.speed ?? 0.62);
   BUILDER_UI.tornadoDirection.value = String((builderState?.tornadoConfig?.direction ?? 1) < 0 ? -1 : 1);
   BUILDER_UI.tornadoStartDelay.value = String(builderState?.tornadoConfig?.startDelayMs ?? 0);
+  if (BUILDER_UI.tornadoStartDelayRange) BUILDER_UI.tornadoStartDelayRange.value = String(builderState?.tornadoConfig?.startDelayMs ?? 0);
   BUILDER_UI.tornadoTravelPercent.value = String(builderState?.tornadoConfig?.travelPercent ?? 100);
   BUILDER_UI.tornadoReturnEnabled.value = builderState?.tornadoConfig?.returnEnabled ? '1' : '0';
   BUILDER_UI.tornadoReturnPercent.value = String(builderState?.tornadoConfig?.returnPercent ?? 65);
@@ -3813,11 +3972,29 @@ function builderApplyStateToUi() {
   BUILDER_UI.layerFlipY.value = selected?.flipY ? '1' : '0';
   BUILDER_UI.layerWaterMove.value = selected?.movableWithWater ? '1' : '0';
   BUILDER_UI.layerTornadoFall.value = selected?.fallWithTornado ? '1' : '0';
+  if (BUILDER_UI.layerHitSpriteScale) BUILDER_UI.layerHitSpriteScale.value = String(clamp(Number(selected?.hitSwapScale ?? 1), 0.2, 4));
+  if (BUILDER_UI.layerHitSpriteScaleRange) BUILDER_UI.layerHitSpriteScaleRange.value = String(clamp(Number(selected?.hitSwapScale ?? 1), 0.2, 4));
+  if (BUILDER_UI.layerTornadoMotionMode) BUILDER_UI.layerTornadoMotionMode.value = String(selected?.tornadoMotionMode || 'path');
+  if (BUILDER_UI.layerTornadoRotationMode) BUILDER_UI.layerTornadoRotationMode.value = String(selected?.tornadoRotationMode || 'spin');
+  if (BUILDER_UI.layerPathEnabled) BUILDER_UI.layerPathEnabled.value = selected?.pathEnabled ? '1' : '0';
+  if (BUILDER_UI.layerPathMode) BUILDER_UI.layerPathMode.value = String(selected?.pathMode || 'pingpong');
+  if (BUILDER_UI.layerPathStartX) BUILDER_UI.layerPathStartX.value = String(Math.round(Number(selected?.pathStartX ?? (selected?.x || 0))));
+  if (BUILDER_UI.layerPathStartY) BUILDER_UI.layerPathStartY.value = String(Math.round(Number(selected?.pathStartY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.layerPathEndX) BUILDER_UI.layerPathEndX.value = String(Math.round(Number(selected?.pathEndX ?? ((selected?.x || 0) + 80))));
+  if (BUILDER_UI.layerPathEndY) BUILDER_UI.layerPathEndY.value = String(Math.round(Number(selected?.pathEndY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.layerPathDurationMs) BUILDER_UI.layerPathDurationMs.value = String(clamp(Number(selected?.pathDurationMs ?? 2400), 200, 120000));
+  if (BUILDER_UI.layerPathPauseMs) BUILDER_UI.layerPathPauseMs.value = String(clamp(Number(selected?.pathPauseMs ?? 0), 0, 60000));
   if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
+  if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
   if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
+  if (BUILDER_UI.tornadoAffectLandXRange) BUILDER_UI.tornadoAffectLandXRange.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
   if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.value = String(Math.round(Number(selected?.tornadoAffectLandY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.tornadoAffectLandYRange) BUILDER_UI.tornadoAffectLandYRange.value = String(Math.round(Number(selected?.tornadoAffectLandY ?? (selected?.baseY ?? GRASS_Y))));
   if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.value = String(clamp(Number(selected?.tornadoAffectDurationMs ?? 1800), 200, 12000));
+  if (BUILDER_UI.tornadoAffectDurationMsRange) BUILDER_UI.tornadoAffectDurationMsRange.value = String(clamp(Number(selected?.tornadoAffectDurationMs ?? 1800), 200, 12000));
   if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.textContent = builderTornadoRoutePick.active ? 'Cancel Throw Path Pick' : 'Set Tornado Throw Path';
+  if (BUILDER_UI.tornadoStartDelayRange) BUILDER_UI.tornadoStartDelayRange.value = String(builderState?.tornadoConfig?.startDelayMs ?? 0);
+  builderPopulateCollisionSwapSelectors();
   builderSyncPhysicsControlsForSelection(selected);
   builderSyncLevelOptionVisibility();
   builderSyncAnimalControlsForSelection(selected);
@@ -3851,7 +4028,7 @@ function builderReadUiIntoState() {
   builderState.tornadoConfig.enabled = BUILDER_UI.tornadoEnabled.value === '1';
   builderState.tornadoConfig.speed = clamp(Number(BUILDER_UI.tornadoSpeed.value || 0.62), 0.2, 2.5);
   builderState.tornadoConfig.direction = Number(BUILDER_UI.tornadoDirection.value || 1) < 0 ? -1 : 1;
-  builderState.tornadoConfig.startDelayMs = clamp(Number(BUILDER_UI.tornadoStartDelay.value || 0), 0, 120000);
+  builderState.tornadoConfig.startDelayMs = clamp(Number(BUILDER_UI.tornadoStartDelay?.value || BUILDER_UI.tornadoStartDelayRange?.value || 0), 0, 120000);
   builderState.tornadoConfig.travelPercent = clamp(Number(BUILDER_UI.tornadoTravelPercent.value || 100), 10, 100);
   builderState.tornadoConfig.returnEnabled = BUILDER_UI.tornadoReturnEnabled.value === '1';
   builderState.tornadoConfig.returnPercent = clamp(Number(BUILDER_UI.tornadoReturnPercent.value || 65), 10, 100);
@@ -4016,6 +4193,51 @@ function getAssetDisplayName(key) {
   return key;
 }
 
+function getCollisionSwapOptions() {
+  const assets = builderGetAssets();
+  const seen = new Set();
+  const options = [];
+  assets.forEach((asset) => {
+    const key = String(asset?.key || '');
+    if (!key || seen.has(key)) return;
+    if (!SPRITE_FILES[key] && !CUSTOM_SPRITE_DATA[key]) return;
+    seen.add(key);
+    options.push(key);
+  });
+  options.sort((a, b) => getAssetDisplayName(a).localeCompare(getAssetDisplayName(b)));
+  return options;
+}
+
+function builderPopulateCollisionSwapSelectors() {
+  const fields = [BUILDER_UI.layerWaterHitSprite, BUILDER_UI.layerTornadoHitSprite].filter(Boolean);
+  if (!fields.length) return;
+  const selected = getBuilderEntityById(builderSelectedId);
+  const isSpriteLike = !!selected && (selected.type === 'builderSprite' || !!getLegacySpriteKeyForBuilder(selected));
+  const options = getCollisionSwapOptions();
+  fields.forEach((select) => {
+    const current = String(select.value || '');
+    select.innerHTML = '';
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = 'None';
+    select.appendChild(none);
+    options.forEach((key) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = getAssetDisplayName(key);
+      select.appendChild(opt);
+    });
+    const desired = (select === BUILDER_UI.layerWaterHitSprite)
+      ? String(selected?.onWaterHitSpriteKey || '')
+      : String(selected?.onTornadoHitSpriteKey || '');
+    select.value = options.includes(desired) ? desired : '';
+    if (!select.value && options.includes(current) && !selected) select.value = current;
+    select.disabled = !isSpriteLike;
+  });
+  builderSetFieldVisibility('builderLayerWaterHitSprite', isSpriteLike);
+  builderSetFieldVisibility('builderLayerTornadoHitSprite', isSpriteLike);
+}
+
 function builderRenderLayerList() {
   if (!BUILDER_UI.layerList) return;
   BUILDER_UI.layerList.innerHTML = '';
@@ -4128,6 +4350,41 @@ function builderDuplicateLayer(layerId) {
   builderSetStatus(`Duplicated layer: ${getLayerLabel(source)}.`);
 }
 
+function builderCopySelectedLayer() {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) {
+    builderSetStatus('Select a layer first to copy.');
+    return;
+  }
+  if (ent.type === 'requiredFireTruck') {
+    builderSetStatus('Required fire truck layer cannot be copied.');
+    return;
+  }
+  builderClipboardEntity = deepClone(ent);
+  builderSetStatus(`Copied layer: ${getLayerLabel(ent)}.`);
+}
+
+function builderPasteCopiedLayer() {
+  if (!builderClipboardEntity) {
+    builderSetStatus('Nothing copied yet. Press Ctrl+C on a selected layer first.');
+    return;
+  }
+  const copy = normalizeBuilderEntity({
+    ...deepClone(builderClipboardEntity),
+    id: undefined,
+    x: clamp(Number(builderClipboardEntity.x || 0) + 22, -200, 1500),
+    baseY: clamp(Number(builderClipboardEntity.baseY ?? GRASS_Y) + 6, 120, 580)
+  }, (builderState.entities || []).length + 1);
+  if (!copy || copy.type === 'requiredFireTruck') {
+    builderSetStatus('Cannot paste that layer type.');
+    return;
+  }
+  builderState.entities.push(copy);
+  builderSelectEntity(copy.id);
+  builderSaveLastDraft();
+  builderSetStatus(`Pasted layer: ${getLayerLabel(copy)}.`);
+}
+
 function builderShouldConfirmDeleteLayer() {
   if (BUILDER_UI.layerDeleteNoAsk) {
     return !BUILDER_UI.layerDeleteNoAsk.checked;
@@ -4194,9 +4451,24 @@ function builderResetSelectedDefaults() {
   ent.tornadoAffectLandX = undefined;
   ent.tornadoAffectLandY = undefined;
   ent.tornadoAffectDurationMs = undefined;
+  ent.onWaterHitSpriteKey = undefined;
+  ent.onTornadoHitSpriteKey = undefined;
+  ent.hitSwapScale = 1;
+  ent.tornadoMotionMode = 'path';
+  ent.tornadoRotationMode = 'spin';
+  ent.pathEnabled = false;
+  ent.pathMode = 'pingpong';
+  ent.pathStartX = undefined;
+  ent.pathStartY = undefined;
+  ent.pathEndX = undefined;
+  ent.pathEndY = undefined;
+  ent.pathDurationMs = undefined;
+  ent.pathPauseMs = undefined;
   ent.waterExitDirection = 'nearest';
   ent.waterExitSpeed = 2.2;
   ent.waterExitBonusPoints = 0;
+  ent._waterCollisionSwapDone = false;
+  ent._tornadoCollisionSwapDone = false;
   resetTornadoAffectRuntime(ent);
   builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
   builderApplyStateToUi();
@@ -4296,6 +4568,19 @@ function builderInitCollapsibleSections() {
     '#builderLayerLocked',
     '#builderLayerWaterMove',
     '#builderLayerTornadoFall',
+    '#builderLayerWaterHitSprite',
+    '#builderLayerTornadoHitSprite',
+    '#builderLayerHitSpriteScale',
+    '#builderLayerTornadoMotionMode',
+    '#builderLayerTornadoRotationMode',
+    '#builderLayerPathEnabled',
+    '#builderLayerPathMode',
+    '#builderLayerPathStartX',
+    '#builderLayerPathStartY',
+    '#builderLayerPathEndX',
+    '#builderLayerPathEndY',
+    '#builderLayerPathDurationMs',
+    '#builderLayerPathPauseMs',
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints',
@@ -4324,6 +4609,19 @@ function builderInitCollapsibleSections() {
     '#builderLayerLocked',
     '#builderLayerWaterMove',
     '#builderLayerTornadoFall',
+    '#builderLayerWaterHitSprite',
+    '#builderLayerTornadoHitSprite',
+    '#builderLayerHitSpriteScale',
+    '#builderLayerTornadoMotionMode',
+    '#builderLayerTornadoRotationMode',
+    '#builderLayerPathEnabled',
+    '#builderLayerPathMode',
+    '#builderLayerPathStartX',
+    '#builderLayerPathStartY',
+    '#builderLayerPathEndX',
+    '#builderLayerPathEndY',
+    '#builderLayerPathDurationMs',
+    '#builderLayerPathPauseMs',
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints'
@@ -4608,6 +4906,10 @@ function builderGetAssets() {
     let idx = 2;
     while (usedKeys.has(finalKey)) finalKey = `${String(finalKey)}_${idx++}`;
     usedKeys.add(finalKey);
+    // Ensure menu-selected assets always resolve to a registered sprite key.
+    if (!isCustom && !SPRITE_FILES[finalKey]) {
+      SPRITE_FILES[finalKey] = file;
+    }
     assets.push({ key: finalKey, file, isCustom: !!isCustom });
   };
   Object.keys(SPRITE_FILES).forEach((key) => addAsset(key, SPRITE_FILES[key], !!CUSTOM_SPRITE_DATA[key]));
@@ -4725,6 +5027,7 @@ function builderRenderAssetList() {
     });
     BUILDER_UI.assetList.appendChild(section);
   });
+  builderPopulateCollisionSwapSelectors();
 }
 
 function builderCreateEntity(spriteKey, x, baseY) {
@@ -4967,6 +5270,8 @@ function builderCollectRequiredSpriteKeys(level) {
   entities.forEach((ent) => {
     if (ent?.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) needed.add(ent.spriteKey);
     if (ent?.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
+    if (ent?.onWaterHitSpriteKey && SPRITE_FILES[ent.onWaterHitSpriteKey]) needed.add(ent.onWaterHitSpriteKey);
+    if (ent?.onTornadoHitSpriteKey && SPRITE_FILES[ent.onTornadoHitSpriteKey]) needed.add(ent.onTornadoHitSpriteKey);
     const catalogSpec = getCatalogSpec(ent?.type);
     if (catalogSpec?.sprite && SPRITE_FILES[catalogSpec.sprite]) needed.add(catalogSpec.sprite);
     if (TREE_KIND_BY_TYPE[ent?.type] && SPRITE_FILES[ent.type]) needed.add(ent.type);
@@ -5850,12 +6155,28 @@ baseLevels[8] = {
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'W', line: 8.9 }, scale: 0.58, alpha: 0.18, silhouette: true },
 
     { type: 'kennardSchool', x: 760, scale: 1.14 },
-    { type: 'busSchoolLeft', x: 520, stormSwapAtX: 730 },
-    { type: 'busUpsideDown', x: 600, hiddenUntilStorm: true, stormSwapAtX: 730, stormSlideX: 38 },
+    {
+      type: 'builderSprite',
+      spriteKey: 'busSchoolLeft',
+      x: 600,
+      baseY: 488,
+      scale: 1,
+      lockedPosition: false,
+      movableWithWater: false,
+      fallWithTornado: true,
+      onTornadoHitSpriteKey: 'busUpsideDown',
+      hitSwapScale: 1.45,
+      tornadoMotionMode: 'path',
+      tornadoRotationMode: 'keep',
+      tornadoAffectStartX: 730,
+      tornadoAffectLandX: 600,
+      tornadoAffectLandY: 488,
+      tornadoAffectDurationMs: 900
+    },
 
     { type: 'tornado', x: 650 },
     { type: 'stormTree', x: 470, variant: 'treePineRealistic', scale: 0.88, baseY: 486, fallAtX: 520 },
-    { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.72, baseY: 484, rotationDeg: -82, alpha: 0.92, fallAtX: 520 },
+    { type: 'fallenTree', x: 470, variant: 'treePineRealistic', scale: 0.72, baseY: 484, rotationDeg: 82, alpha: 0.92, fallAtX: 520 },
     { type: 'stormTree', x: 980, variant: 'treeOakRealistic', scale: 1.06, baseY: 488, fallAtX: 940 },
     { type: 'fallenTree', x: 980, variant: 'treeOakRealistic', scale: 0.80, baseY: 486, rotationDeg: 86, alpha: 0.90, fallAtX: 940 }
   ]
@@ -6197,7 +6518,20 @@ function normalizeBuilderEntity(ent, idx = 0) {
       burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
       waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
       waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
-      waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50)
+      waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
+      onWaterHitSpriteKey: (typeof ent.onWaterHitSpriteKey === 'string' && (SPRITE_FILES[ent.onWaterHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onWaterHitSpriteKey])) ? ent.onWaterHitSpriteKey : undefined,
+      onTornadoHitSpriteKey: (typeof ent.onTornadoHitSpriteKey === 'string' && (SPRITE_FILES[ent.onTornadoHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onTornadoHitSpriteKey])) ? ent.onTornadoHitSpriteKey : undefined,
+      hitSwapScale: clamp(Number(ent.hitSwapScale ?? 1), 0.2, 4),
+      tornadoMotionMode: (ent.tornadoMotionMode === 'random' || ent.tornadoMotionMode === 'none') ? ent.tornadoMotionMode : 'path',
+      tornadoRotationMode: (ent.tornadoRotationMode === 'keep' || ent.tornadoRotationMode === 'path') ? ent.tornadoRotationMode : 'spin',
+      pathEnabled: !!ent.pathEnabled,
+      pathMode: (ent.pathMode === 'loop' || ent.pathMode === 'once') ? ent.pathMode : 'pingpong',
+      pathStartX: ent.pathStartX == null ? undefined : clamp(Number(ent.pathStartX), -220, 1520),
+      pathStartY: ent.pathStartY == null ? undefined : clamp(Number(ent.pathStartY), 120, 580),
+      pathEndX: ent.pathEndX == null ? undefined : clamp(Number(ent.pathEndX), -220, 1520),
+      pathEndY: ent.pathEndY == null ? undefined : clamp(Number(ent.pathEndY), 120, 580),
+      pathDurationMs: ent.pathDurationMs == null ? undefined : clamp(Number(ent.pathDurationMs), 200, 120000),
+      pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000)
     };
   }
   const normalized = {
@@ -6227,7 +6561,20 @@ function normalizeBuilderEntity(ent, idx = 0) {
     burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
     waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
     waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
-    waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50)
+    waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
+    onWaterHitSpriteKey: (typeof ent.onWaterHitSpriteKey === 'string' && (SPRITE_FILES[ent.onWaterHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onWaterHitSpriteKey])) ? ent.onWaterHitSpriteKey : undefined,
+    onTornadoHitSpriteKey: (typeof ent.onTornadoHitSpriteKey === 'string' && (SPRITE_FILES[ent.onTornadoHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onTornadoHitSpriteKey])) ? ent.onTornadoHitSpriteKey : undefined,
+    hitSwapScale: clamp(Number(ent.hitSwapScale ?? 1), 0.2, 4),
+    tornadoMotionMode: (ent.tornadoMotionMode === 'random' || ent.tornadoMotionMode === 'none') ? ent.tornadoMotionMode : 'path',
+    tornadoRotationMode: (ent.tornadoRotationMode === 'keep' || ent.tornadoRotationMode === 'path') ? ent.tornadoRotationMode : 'spin',
+    pathEnabled: !!ent.pathEnabled,
+    pathMode: (ent.pathMode === 'loop' || ent.pathMode === 'once') ? ent.pathMode : 'pingpong',
+    pathStartX: ent.pathStartX == null ? undefined : clamp(Number(ent.pathStartX), -220, 1520),
+    pathStartY: ent.pathStartY == null ? undefined : clamp(Number(ent.pathStartY), 120, 580),
+    pathEndX: ent.pathEndX == null ? undefined : clamp(Number(ent.pathEndX), -220, 1520),
+    pathEndY: ent.pathEndY == null ? undefined : clamp(Number(ent.pathEndY), 120, 580),
+    pathDurationMs: ent.pathDurationMs == null ? undefined : clamp(Number(ent.pathDurationMs), 200, 120000),
+    pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000)
   };
   return normalized;
 }
@@ -6376,7 +6723,20 @@ function convertLegacyEntityForBuilder(ent) {
     burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.slice() : undefined,
     waterExitDirection: ent.waterExitDirection,
     waterExitSpeed: ent.waterExitSpeed,
-    waterExitBonusPoints: ent.waterExitBonusPoints
+    waterExitBonusPoints: ent.waterExitBonusPoints,
+    onWaterHitSpriteKey: ent.onWaterHitSpriteKey,
+    onTornadoHitSpriteKey: ent.onTornadoHitSpriteKey,
+    hitSwapScale: ent.hitSwapScale,
+    tornadoMotionMode: ent.tornadoMotionMode,
+    tornadoRotationMode: ent.tornadoRotationMode,
+    pathEnabled: ent.pathEnabled,
+    pathMode: ent.pathMode,
+    pathStartX: ent.pathStartX,
+    pathStartY: ent.pathStartY,
+    pathEndX: ent.pathEndX,
+    pathEndY: ent.pathEndY,
+    pathDurationMs: ent.pathDurationMs,
+    pathPauseMs: ent.pathPauseMs
   };
 }
 
@@ -7028,19 +7388,37 @@ BUILDER_UI.blackBoxStart?.addEventListener('change', () => builderReadUiIntoStat
 BUILDER_UI.tornadoEnabled?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
 BUILDER_UI.tornadoSpeed?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.tornadoDirection?.addEventListener('change', () => builderReadUiIntoState());
-BUILDER_UI.tornadoStartDelay?.addEventListener('change', () => builderReadUiIntoState());
+['input','change'].forEach((evt) => BUILDER_UI.tornadoStartDelay?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoStartDelayRange) BUILDER_UI.tornadoStartDelayRange.value = BUILDER_UI.tornadoStartDelay.value;
+  builderReadUiIntoState();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoStartDelayRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoStartDelay) BUILDER_UI.tornadoStartDelay.value = BUILDER_UI.tornadoStartDelayRange.value;
+  builderReadUiIntoState();
+}));
 BUILDER_UI.tornadoTravelPercent?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.tornadoReturnEnabled?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
 BUILDER_UI.tornadoReturnPercent?.addEventListener('input', () => builderReadUiIntoState());
 function builderApplySelectedTransformFromControls(source = '') {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
-  const scale = clamp(Number(BUILDER_UI.objScale?.value || BUILDER_UI.objScaleNumber?.value || ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
-  const x = clamp(Number(BUILDER_UI.objX?.value || BUILDER_UI.objXRange?.value || ent.x || 0), -220, 1520);
-  const y = clamp(Number(BUILDER_UI.objY?.value || BUILDER_UI.objYRange?.value || ent.baseY || GRASS_Y), 120, 580);
-  const rotate = clamp(Number(BUILDER_UI.objRotate?.value || BUILDER_UI.objRotateRange?.value || 0), -180, 180);
-  const skewX = clamp(Number(BUILDER_UI.objSkewX?.value || BUILDER_UI.objSkewXRange?.value || 0), -45, 45);
-  const skewY = clamp(Number(BUILDER_UI.objSkewY?.value || BUILDER_UI.objSkewYRange?.value || 0), -45, 45);
+  const parseOr = (raw, fallback) => {
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : fallback;
+  };
+  const readPair = (numberEl, rangeEl, fallback, preferRange = false) => {
+    const primary = preferRange ? rangeEl : numberEl;
+    const secondary = preferRange ? numberEl : rangeEl;
+    const primaryNum = parseOr(primary?.value, NaN);
+    if (Number.isFinite(primaryNum)) return primaryNum;
+    return parseOr(secondary?.value, fallback);
+  };
+  const scale = clamp(readPair(BUILDER_UI.objScaleNumber, BUILDER_UI.objScale, ent.scale || 1, source === 'scaleRange'), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  const x = clamp(readPair(BUILDER_UI.objX, BUILDER_UI.objXRange, ent.x || 0, source === 'xRange'), -220, 1520);
+  const y = clamp(readPair(BUILDER_UI.objY, BUILDER_UI.objYRange, ent.baseY || GRASS_Y, source === 'yRange'), 120, 580);
+  const rotate = clamp(readPair(BUILDER_UI.objRotate, BUILDER_UI.objRotateRange, ent.rotationDeg || 0, source === 'rotateRange'), -180, 180);
+  const skewX = clamp(readPair(BUILDER_UI.objSkewX, BUILDER_UI.objSkewXRange, ent.skewXDeg || 0, source === 'skewXRange'), -45, 45);
+  const skewY = clamp(readPair(BUILDER_UI.objSkewY, BUILDER_UI.objSkewYRange, ent.skewYDeg || 0, source === 'skewYRange'), -45, 45);
   ent.scale = scale;
   ent.x = x;
   ent.baseY = y;
@@ -7200,30 +7578,145 @@ BUILDER_UI.setTornadoRouteBtn?.addEventListener('click', () => {
   builderSetStatus('Tornado throw path: click trigger point, then click landing point.');
   builderApplyStateToUi();
 });
-BUILDER_UI.tornadoAffectStartX?.addEventListener('change', () => {
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectStartX?.addEventListener(evt, () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
   ent.tornadoAffectStartX = clamp(Number(BUILDER_UI.tornadoAffectStartX.value || ((ent.x || 0) + 40)), -220, 1520);
+  if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.value = String(ent.tornadoAffectStartX);
   builderSaveLastDraft();
-});
-BUILDER_UI.tornadoAffectLandX?.addEventListener('change', () => {
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectStartXRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.value = BUILDER_UI.tornadoAffectStartXRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectStartX = clamp(Number(BUILDER_UI.tornadoAffectStartXRange.value || ((ent.x || 0) + 40)), -220, 1520);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectLandX?.addEventListener(evt, () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
   ent.tornadoAffectLandX = clamp(Number(BUILDER_UI.tornadoAffectLandX.value || (ent.x || 0)), -220, 1520);
+  if (BUILDER_UI.tornadoAffectLandXRange) BUILDER_UI.tornadoAffectLandXRange.value = String(ent.tornadoAffectLandX);
   builderSaveLastDraft();
-});
-BUILDER_UI.tornadoAffectLandY?.addEventListener('change', () => {
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectLandXRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.value = BUILDER_UI.tornadoAffectLandXRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectLandX = clamp(Number(BUILDER_UI.tornadoAffectLandXRange.value || (ent.x || 0)), -220, 1520);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectLandY?.addEventListener(evt, () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
   ent.tornadoAffectLandY = clamp(Number(BUILDER_UI.tornadoAffectLandY.value || (ent.baseY ?? GRASS_Y)), 120, 580);
+  if (BUILDER_UI.tornadoAffectLandYRange) BUILDER_UI.tornadoAffectLandYRange.value = String(ent.tornadoAffectLandY);
   builderSaveLastDraft();
-});
-BUILDER_UI.tornadoAffectDurationMs?.addEventListener('change', () => {
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectLandYRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.value = BUILDER_UI.tornadoAffectLandYRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectLandY = clamp(Number(BUILDER_UI.tornadoAffectLandYRange.value || (ent.baseY ?? GRASS_Y)), 120, 580);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectDurationMs?.addEventListener(evt, () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
   ent.tornadoAffectDurationMs = clamp(Number(BUILDER_UI.tornadoAffectDurationMs.value || 1800), 200, 12000);
+  if (BUILDER_UI.tornadoAffectDurationMsRange) BUILDER_UI.tornadoAffectDurationMsRange.value = String(ent.tornadoAffectDurationMs);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectDurationMsRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.value = BUILDER_UI.tornadoAffectDurationMsRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectDurationMs = clamp(Number(BUILDER_UI.tornadoAffectDurationMsRange.value || 1800), 200, 12000);
+  builderSaveLastDraft();
+}));
+BUILDER_UI.layerWaterHitSprite?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const next = String(BUILDER_UI.layerWaterHitSprite.value || '');
+  ent.onWaterHitSpriteKey = (next && (SPRITE_FILES[next] || CUSTOM_SPRITE_DATA[next])) ? next : undefined;
+  ent._waterCollisionSwapDone = false;
   builderSaveLastDraft();
 });
+BUILDER_UI.layerTornadoHitSprite?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const next = String(BUILDER_UI.layerTornadoHitSprite.value || '');
+  ent.onTornadoHitSpriteKey = (next && (SPRITE_FILES[next] || CUSTOM_SPRITE_DATA[next])) ? next : undefined;
+  ent._tornadoCollisionSwapDone = false;
+  builderSaveLastDraft();
+});
+['input','change'].forEach((evt) => BUILDER_UI.layerHitSpriteScale?.addEventListener(evt, () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.hitSwapScale = clamp(Number(BUILDER_UI.layerHitSpriteScale.value || BUILDER_UI.layerHitSpriteScaleRange?.value || 1), 0.2, 4);
+  if (BUILDER_UI.layerHitSpriteScaleRange) BUILDER_UI.layerHitSpriteScaleRange.value = String(ent.hitSwapScale);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.layerHitSpriteScaleRange?.addEventListener(evt, () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.hitSwapScale = clamp(Number(BUILDER_UI.layerHitSpriteScaleRange.value || BUILDER_UI.layerHitSpriteScale?.value || 1), 0.2, 4);
+  if (BUILDER_UI.layerHitSpriteScale) BUILDER_UI.layerHitSpriteScale.value = String(ent.hitSwapScale);
+  builderSaveLastDraft();
+}));
+BUILDER_UI.layerTornadoMotionMode?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoMotionMode = (BUILDER_UI.layerTornadoMotionMode.value === 'random' || BUILDER_UI.layerTornadoMotionMode.value === 'none') ? BUILDER_UI.layerTornadoMotionMode.value : 'path';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerTornadoRotationMode?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoRotationMode = (BUILDER_UI.layerTornadoRotationMode.value === 'keep' || BUILDER_UI.layerTornadoRotationMode.value === 'path') ? BUILDER_UI.layerTornadoRotationMode.value : 'spin';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerPathEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  if (ent.lockedPosition !== false && BUILDER_UI.layerPathEnabled.value === '1') {
+    BUILDER_UI.layerPathEnabled.value = '0';
+    builderSetStatus('Unlock position first to enable path animation.');
+    return;
+  }
+  ent.pathEnabled = BUILDER_UI.layerPathEnabled.value === '1';
+  if (ent.pathEnabled) {
+    if (ent.pathStartX == null) ent.pathStartX = clamp(Number(ent.x || 0), -220, 1520);
+    if (ent.pathStartY == null) ent.pathStartY = clamp(Number(ent.baseY ?? GRASS_Y), 120, 580);
+    if (ent.pathEndX == null) ent.pathEndX = clamp(Number(ent.pathStartX) + 80, -220, 1520);
+    if (ent.pathEndY == null) ent.pathEndY = clamp(Number(ent.pathStartY), 120, 580);
+    if (ent.pathDurationMs == null) ent.pathDurationMs = 2400;
+  }
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerPathMode?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.pathMode = (BUILDER_UI.layerPathMode.value === 'loop' || BUILDER_UI.layerPathMode.value === 'once') ? BUILDER_UI.layerPathMode.value : 'pingpong';
+  ent._pathDone = false;
+  builderSaveLastDraft();
+});
+const bindPathNumber = (field, key, min, max, fallback) => {
+  field?.addEventListener('change', () => {
+    const ent = getBuilderEntityById(builderSelectedId);
+    if (!ent) return;
+    ent[key] = clamp(Number(field.value || fallback(ent)), min, max);
+    ent._pathDone = false;
+    builderSaveLastDraft();
+  });
+};
+bindPathNumber(BUILDER_UI.layerPathStartX, 'pathStartX', -220, 1520, (ent) => ent.x || 0);
+bindPathNumber(BUILDER_UI.layerPathStartY, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
+bindPathNumber(BUILDER_UI.layerPathEndX, 'pathEndX', -220, 1520, (ent) => (ent.x || 0) + 80);
+bindPathNumber(BUILDER_UI.layerPathEndY, 'pathEndY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
+bindPathNumber(BUILDER_UI.layerPathDurationMs, 'pathDurationMs', 200, 120000, () => 2400);
+bindPathNumber(BUILDER_UI.layerPathPauseMs, 'pathPauseMs', 0, 60000, () => 0);
 BUILDER_UI.animalExitDirection?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent || !isAnimalEntity(ent)) return;
@@ -7976,35 +8469,46 @@ function applyWaterPushToEntities() {
   if (gameState !== 'playing') return;
   const levelData = baseLevels[currentLevel - 1];
   if (!levelData?.entities?.length) return;
-  const moveables = levelData.entities.filter((ent) => ent && ent.movableWithWater && ent.lockedPosition === false);
-  if (!moveables.length) return;
+  const entities = levelData.entities.filter(Boolean);
+  const moveables = entities.filter((ent) => ent.movableWithWater && ent.lockedPosition === false);
+  const moveableSet = new Set(moveables);
+  const waterReactive = entities.filter((ent) => !!ent.onWaterHitSpriteKey);
+  if (!moveables.length && !waterReactive.length) return;
+  const touched = new Set();
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     if (p.type !== 'water') continue;
-    moveables.forEach((ent) => {
+    entities.forEach((ent) => {
+      const canMove = moveableSet.has(ent);
+      const canSwap = !!ent.onWaterHitSpriteKey;
+      if (!canMove && !canSwap) return;
       const box = getEntityBounds(ent);
       if (!box) return;
       if (p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h) {
-        const animal = isAnimalEntity(ent);
-        if (animal) {
-          const configDir = String(ent.waterExitDirection || 'nearest');
-          const dir = configDir === 'left'
-            ? -1
-            : configDir === 'right'
-              ? 1
-              : (((ent.x || 0) + box.w * 0.5) > (canvas.width * 0.5) ? 1 : -1);
-          const speed = clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7);
-          ent._waterExitVX = dir * speed;
-          ent._waterExitActive = true;
-        } else {
-          const delta = Math.max(-1.5, Math.min(1.5, p.vx * 0.35));
-          ent.x = clamp((ent.x || 0) + delta, -220, 1520);
+        touched.add(ent);
+        if (canSwap) applyCollisionSpriteSwap(ent, 'water');
+        if (canMove) {
+          const animal = isAnimalEntity(ent);
+          if (animal) {
+            const configDir = String(ent.waterExitDirection || 'nearest');
+            const dir = configDir === 'left'
+              ? -1
+              : configDir === 'right'
+                ? 1
+                : (((ent.x || 0) + box.w * 0.5) > (canvas.width * 0.5) ? 1 : -1);
+            const speed = clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7);
+            ent._waterExitVX = dir * speed;
+            ent._waterExitActive = true;
+          } else {
+            const delta = Math.max(-1.5, Math.min(1.5, p.vx * 0.35));
+            ent.x = clamp((ent.x || 0) + delta, -220, 1520);
+          }
         }
         p.life = Math.min(p.life, 6);
       }
     });
   }
-  moveables.forEach((ent) => {
+  touched.forEach((ent) => {
     if (!ent?._waterExitActive) return;
     const speed = clamp(Number(ent._waterExitVX || 0), -9, 9);
     ent.x = clamp((ent.x || 0) + speed, -240, 1560);
@@ -8567,6 +9071,12 @@ function resetTornadoAffectRuntime(ent) {
   ent._tornadoThrowEndY = undefined;
   ent._tornadoThrowStartRot = undefined;
   ent._tornadoThrowEndRot = undefined;
+  ent._tornadoCollisionSwapDone = false;
+  ent._waterCollisionSwapDone = false;
+  ent._pathElapsed = 0;
+  ent._pathDir = 1;
+  ent._pathPauseUntil = 0;
+  ent._pathDone = false;
 }
 
 function updateTornadoAffectedEntities(dt, entities) {
@@ -8574,18 +9084,25 @@ function updateTornadoAffectedEntities(dt, entities) {
   entities.forEach((ent) => {
     if (!ent || ent.type === 'tornado' || ent.type === 'requiredFireTruck') return;
     if (!ent.fallWithTornado || ent.lockedPosition !== false) return;
-    const hasRoute = (ent.tornadoAffectLandX != null || ent.tornadoAffectLandY != null);
-    if (!hasRoute) return;
     const trigger = clamp(Number(ent.tornadoAffectStartX ?? ent.fallAtX ?? ((ent.x || 0) + 40)), -220, 1520);
+    if (isTornadoPastX(trigger)) applyCollisionSpriteSwap(ent, 'tornado');
+    const motionMode = (ent.tornadoMotionMode === 'random' || ent.tornadoMotionMode === 'none') ? ent.tornadoMotionMode : 'path';
+    const rotationMode = (ent.tornadoRotationMode === 'keep' || ent.tornadoRotationMode === 'path') ? ent.tornadoRotationMode : 'spin';
+    const hasRoute = (ent.tornadoAffectLandX != null || ent.tornadoAffectLandY != null);
+    if (!hasRoute && motionMode !== 'random') return;
     if (!ent._tornadoThrowLaunched && isTornadoPastX(trigger)) {
-      const endX = clamp(Number(ent.tornadoAffectLandX ?? (ent.x || 0)), -220, 1520);
-      const endY = clamp(Number(ent.tornadoAffectLandY ?? (ent.baseY ?? GRASS_Y)), 120, 580);
+      const tornadoDir = (tornadoState?.initialDirection || tornadoState?.direction || 1) > 0 ? 1 : -1;
+      const endX = motionMode === 'random'
+        ? clamp((ent.x || 0) + ((260 + Math.random() * 520) * tornadoDir), -260, 1580)
+        : clamp(Number(ent.tornadoAffectLandX ?? (ent.x || 0)), -220, 1520);
+      const endY = motionMode === 'random'
+        ? clamp((ent.baseY ?? GRASS_Y) - (70 + Math.random() * 220), 80, 580)
+        : clamp(Number(ent.tornadoAffectLandY ?? (ent.baseY ?? GRASS_Y)), 120, 580);
       const startX = Number(ent.x || 0);
       const startY = Number(ent.baseY ?? GRASS_Y);
-      const duration = clamp(Number(ent.tornadoAffectDurationMs ?? 1800), 200, 12000);
-      const tornadoDir = (tornadoState?.initialDirection || tornadoState?.direction || 1) > 0 ? 1 : -1;
+      const duration = clamp(Number(ent.tornadoAffectDurationMs ?? (motionMode === 'random' ? 2400 : 1800)), 200, 12000);
       ent._tornadoThrowLaunched = true;
-      ent._tornadoThrowActive = true;
+      ent._tornadoThrowActive = motionMode !== 'none';
       ent._tornadoThrowDone = false;
       ent._tornadoThrowElapsed = 0;
       ent._tornadoThrowDuration = duration;
@@ -8594,7 +9111,17 @@ function updateTornadoAffectedEntities(dt, entities) {
       ent._tornadoThrowEndX = endX;
       ent._tornadoThrowEndY = endY;
       ent._tornadoThrowStartRot = Number(ent.rotationDeg || 0);
-      ent._tornadoThrowEndRot = ent._tornadoThrowStartRot + (tornadoDir * 120);
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const pathAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
+      ent._tornadoThrowEndRot = rotationMode === 'keep'
+        ? ent._tornadoThrowStartRot
+        : rotationMode === 'path'
+          ? pathAngle
+          : (ent._tornadoThrowStartRot + (tornadoDir * 120));
+      if (motionMode === 'none') {
+        ent._tornadoThrowDone = true;
+      }
     }
     if (!ent._tornadoThrowActive) return;
     ent._tornadoThrowElapsed += Math.max(0, dt || 0);
@@ -8614,6 +9141,52 @@ function updateTornadoAffectedEntities(dt, entities) {
       ent._tornadoThrowActive = false;
       ent._tornadoThrowDone = true;
       ent._tornadoThrowElapsed = duration;
+    }
+  });
+}
+
+function updateEntityPathAnimations(dt, entities) {
+  if (!Array.isArray(entities) || !entities.length) return;
+  const stepMs = Math.max(0, Number(dt || 0));
+  entities.forEach((ent) => {
+    if (!ent || !ent.pathEnabled || ent.lockedPosition !== false) return;
+    if (ent._tornadoThrowActive || ent._waterExitActive) return;
+    const sx = clamp(Number(ent.pathStartX ?? ent.x ?? 0), -220, 1520);
+    const sy = clamp(Number(ent.pathStartY ?? ent.baseY ?? GRASS_Y), 120, 580);
+    const ex = clamp(Number(ent.pathEndX ?? ((ent.x || 0) + 80)), -220, 1520);
+    const ey = clamp(Number(ent.pathEndY ?? ent.baseY ?? GRASS_Y), 120, 580);
+    const mode = (ent.pathMode === 'loop' || ent.pathMode === 'once') ? ent.pathMode : 'pingpong';
+    const duration = Math.max(200, Number(ent.pathDurationMs || 2400));
+    const pauseMs = Math.max(0, Number(ent.pathPauseMs || 0));
+    if (ent._pathDir == null) ent._pathDir = 1;
+    if (ent._pathElapsed == null) ent._pathElapsed = 0;
+    if (ent._pathPauseUntil == null) ent._pathPauseUntil = 0;
+    if (ent._pathDone) return;
+    if (ent._pathPauseUntil > 0) {
+      ent._pathPauseUntil -= stepMs;
+      if (ent._pathPauseUntil > 0) return;
+      ent._pathPauseUntil = 0;
+    }
+    ent._pathElapsed += stepMs;
+    let t = clamp(ent._pathElapsed / duration, 0, 1);
+    const ease = (t * t) * (3 - (2 * t));
+    const dir = ent._pathDir > 0 ? 1 : -1;
+    const fromX = dir > 0 ? sx : ex;
+    const fromY = dir > 0 ? sy : ey;
+    const toX = dir > 0 ? ex : sx;
+    const toY = dir > 0 ? ey : sy;
+    ent.x = fromX + ((toX - fromX) * ease);
+    ent.baseY = fromY + ((toY - fromY) * ease);
+    if (t >= 1) {
+      ent._pathElapsed = 0;
+      if (mode === 'once') {
+        ent._pathDone = true;
+      } else if (mode === 'loop') {
+        ent._pathDir = 1;
+      } else {
+        ent._pathDir = dir > 0 ? -1 : 1;
+      }
+      if (pauseMs > 0) ent._pathPauseUntil = pauseMs;
     }
   });
 }
@@ -9454,13 +10027,28 @@ window.addEventListener('keydown', (e) => {
   if (gameState === 'builder') {
     const ent = getBuilderEntityById(builderSelectedId);
     const tag = String(document.activeElement?.tagName || '').toLowerCase();
-    const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select';
-    if (!isTyping && builderSelectedId && (e.key === 'Delete' || e.key === 'Backspace')) {
+    const inputType = String(document.activeElement?.type || '').toLowerCase();
+    const isTextInput = tag === 'textarea' || (tag === 'input' && !['checkbox', 'radio', 'range', 'button'].includes(inputType));
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+      if (!isTextInput) {
+        e.preventDefault();
+        builderCopySelectedLayer();
+      }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'v' || e.key === 'V')) {
+      if (!isTextInput) {
+        e.preventDefault();
+        builderPasteCopiedLayer();
+      }
+      return;
+    }
+    if (!isTextInput && builderSelectedId && (e.key === 'Delete' || e.key === 'Del' || e.key === 'Backspace')) {
       e.preventDefault();
       builderDeleteSelectedLayer();
       return;
     }
-    if (ent && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+    if (!isTextInput && ent && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
       e.preventDefault();
       const step = e.shiftKey ? 8 : 2;
       if (e.key === 'ArrowLeft') ent.x = clamp((ent.x || 0) - step, -200, 1500);
@@ -9527,6 +10115,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'tornado') drawTornado();
   });
   updateTornadoAffectedEntities(dt, data.entities);
+  updateEntityPathAnimations(dt, data.entities);
 
   ctx.fillStyle = 'rgba(0,0,0,0.92)';
   ctx.fillRect(20,18,320,48);
