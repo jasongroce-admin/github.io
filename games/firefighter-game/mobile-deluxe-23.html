@@ -3186,6 +3186,7 @@ let builderPendingEntityType = null;
 let builderTool = 'select';
 let builderPointer = { active: false, mode: '', entityId: null, offsetX: 0, offsetY: 0, startScale: 1, startDist: 1 };
 let builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+let builderTankerHintTimer = null;
 let builderTestLevelIndex = null;
 let builderLastPlaceAt = 0;
 let builderTestActive = false;
@@ -3633,10 +3634,18 @@ function builderSyncLevelOptionVisibility() {
   const tankerSubsection = document.getElementById('builderTankerSubsection');
   const tankerNote = document.getElementById('builderTankerInlineNote');
   if (tankerSubsection) {
-    tankerSubsection.style.display = '';
-    tankerSubsection.classList.toggle('attention-pulse', !tankerSelected);
+    tankerSubsection.style.display = tankerSelected ? '' : 'none';
+    tankerSubsection.classList.remove('attention-pulse');
   }
-  if (tankerNote) tankerNote.style.display = tankerSelected ? 'none' : '';
+  if (tankerNote) tankerNote.style.display = tankerSelected ? '' : 'none';
+  if (tankerSelected && tankerSubsection) {
+    if (builderTankerHintTimer) clearTimeout(builderTankerHintTimer);
+    tankerSubsection.classList.add('attention-pulse');
+    builderTankerHintTimer = setTimeout(() => {
+      try { tankerSubsection.classList.remove('attention-pulse'); } catch (err) {}
+      builderTankerHintTimer = null;
+    }, 2200);
+  }
   builderSetFieldVisibility('builderTankerStart', tankerSelected);
   builderSetFieldVisibility('builderTankerRepeat', tankerSelected);
   builderSetFieldVisibility('builderTankerHold', tankerSelected);
