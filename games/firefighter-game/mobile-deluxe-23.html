@@ -3312,6 +3312,9 @@ let nextBoroTankerAt = 26000;
 let blackBoxTruckLevels = new Set();
 let blackBoxTruckState = null;
 let blackBoxTruckPlan = null;
+let level9EventState = null;
+let playerControlsEnabled = true;
+let truckVisible = true;
 let ufoRaid = null;
 let ufoPreview = null;
 let requestedStartLevel = 1;
@@ -6826,6 +6829,11 @@ function handleTimeSelection(x, y) {
 function setTimeOfDay(mode) { timeOfDay = mode; }
 
 function setTruckDrive(value) {
+  if (!playerControlsEnabled) {
+    truckDrive = 0;
+    updateThumbKnob(0);
+    return;
+  }
   truckDrive = Math.max(-1, Math.min(1, value));
   if (Math.abs(truckDrive) > 0.05) truckFacing = truckDrive > 0 ? 1 : -1;
   updateThumbKnob(truckDrive);
@@ -7054,9 +7062,129 @@ function getOppositeTruckLane(levelData, lvl) {
   return (sum / points.length) >= 600 ? TRUCK_LANES.left : TRUCK_LANES.right;
 }
 
+function cloneFireSpotForActivation(spot) {
+  return {
+    ...spot,
+    health: Number(spot.health || 0),
+    maxHealth: Number(spot.maxHealth || spot.health || 1),
+    outAwarded: false,
+    emitMs: 0
+  };
+}
+
+function activateLevel9FireGroup(group = []) {
+  if (!Array.isArray(group) || !group.length) return;
+  const existing = new Set(fireSpots.map((s) => `${Math.round(s.x)}:${Math.round(s.y)}:${Math.round(s.w)}:${Math.round(s.h)}`));
+  group.forEach((spot) => {
+    const key = `${Math.round(spot.x)}:${Math.round(spot.y)}:${Math.round(spot.w)}:${Math.round(spot.h)}`;
+    if (existing.has(key)) return;
+    fireSpots.push(cloneFireSpotForActivation(spot));
+    existing.add(key);
+  });
+}
+
+function initLevel9EventState(levelData, preparedSpots) {
+  const entities = levelData?.entities || [];
+  const findIndex = (predicate) => entities.findIndex(predicate);
+  const busIdx = findIndex((ent) => ent?.type === 'builderSprite' && String(ent?.spriteKey || '').toLowerCase() === 'busschoolleft');
+  const schoolIdx = findIndex((ent) => ent?.type === 'kennardSchool');
+  const tree2Idx = findIndex((ent) => ent?.type === 'stormTree' && Number(ent?.x || 0) >= 900);
+  const busKey = busIdx >= 0 ? `builderSprite:${busIdx}` : '';
+  const schoolKey = schoolIdx >= 0 ? `kennardSchool:${schoolIdx}` : '';
+  const tree2Key = tree2Idx >= 0 ? `stormTree:${tree2Idx}` : '';
+  const busSpots = preparedSpots.filter((spot) => spot?.entityKey === busKey);
+  const schoolSpots = preparedSpots.filter((spot) => spot?.entityKey === schoolKey);
+  let tree2Spots = preparedSpots.filter((spot) => spot?.entityKey === tree2Key);
+  if (!tree2Spots.length && tree2Idx >= 0) {
+    const box = getEntityBounds(entities[tree2Idx]);
+    if (box) {
+      tree2Spots = [{
+        x: box.x + Math.max(6, box.w * 0.15),
+        y: box.y + Math.max(6, box.h * 0.20),
+        w: Math.max(18, box.w * 0.42),
+        h: Math.max(20, box.h * 0.36),
+        health: 420,
+        maxHealth: 520,
+        isVehicle: false,
+        entityKey: tree2Key
+      }];
+    }
+  }
+  fireSpots = [];
+  playerControlsEnabled = false;
+  truckVisible = false;
+  setTruckDrive(0);
+  isSpraying = false;
+  const lane = TRUCK_LANES.left;
+  truck.x = -260;
+  truck.minX = lane.minX;
+  truck.maxX = lane.maxX;
+  truckFacing = 1;
+  level9EventState = {
+    active: true,
+    phase: 'tornado',
+    busIdx,
+    schoolIgniteX: 808,
+    treeIgniteDelayMs: 1250,
+    schoolIgnitedAt: null,
+    busIgnited: false,
+    schoolIgnited: false,
+    tree2Ignited: false,
+    busSpots,
+    schoolSpots,
+    tree2Spots,
+    truckTargetX: lane.spawnX,
+    truckEntrySpeed: 2.5
+  };
+}
+
+function updateLevel9Event(dt, levelData) {
+  if (!level9EventState?.active || currentLevel !== 9 || gameState !== 'playing') return;
+  const state = level9EventState;
+  const entities = levelData?.entities || [];
+  if (state.phase === 'tornado') {
+    const bus = state.busIdx >= 0 ? entities[state.busIdx] : null;
+    const busHit = !!(bus && (bus._tornadoCollisionSwapDone || String(bus.spriteKey || '').toLowerCase() === 'busupsidedown'));
+    if (busHit && !state.busIgnited) {
+      activateLevel9FireGroup(state.busSpots);
+      state.busIgnited = true;
+    }
+    if (!state.schoolIgnited && isTornadoPastX(state.schoolIgniteX)) {
+      activateLevel9FireGroup(state.schoolSpots);
+      state.schoolIgnited = true;
+      state.schoolIgnitedAt = levelElapsedMs;
+    }
+    if (state.schoolIgnited && !state.tree2Ignited && (levelElapsedMs - (state.schoolIgnitedAt || 0)) >= state.treeIgniteDelayMs) {
+      activateLevel9FireGroup(state.tree2Spots);
+      state.tree2Ignited = true;
+    }
+    if (tornadoCompleted || tornadoState?.phase === 'done') {
+      state.phase = 'truckEntry';
+      truckVisible = true;
+      setTruckDrive(0);
+      truck.x = -260;
+      truckFacing = 1;
+    }
+    return;
+  }
+  if (state.phase === 'truckEntry') {
+    truck.x = Math.min(state.truckTargetX, truck.x + (state.truckEntrySpeed * Math.max(0.2, Number(dt || 16.67) / 16.67)));
+    if (truck.x >= state.truckTargetX - 0.5) {
+      truck.x = state.truckTargetX;
+      state.phase = 'active';
+      state.active = false;
+      playerControlsEnabled = true;
+      truckVisible = true;
+    }
+  }
+}
+
 function loadLevel(lvl, options = {}) {
   const skipDispatch = !!options.skipDispatch;
   currentLevel = lvl;
+  level9EventState = null;
+  playerControlsEnabled = true;
+  truckVisible = true;
   if (lvl !== 3) hasShownLevel3MoveCue = false;
   if (lvl !== 6) {
     hasShownLevel6TimeCue = false;
@@ -7218,6 +7346,7 @@ function loadLevel(lvl, options = {}) {
 
 function checkWin() {
   if (gameState !== 'playing') return;
+  if (currentLevel === 9 && level9EventState?.active) return;
   if (currentLevel === FINAL_LEVEL && ufoRaid) return;
   if (fireSpots.every(s => s.health <= 0)) {
     gameState = 'levelComplete';
@@ -7710,6 +7839,9 @@ const bindPathNumber = (field, key, min, max, fallback) => {
     ent._pathDone = false;
     builderSaveLastDraft();
   });
+  if (lvl === 9) {
+    initLevel9EventState(levelData, fireSpots);
+  }
 };
 bindPathNumber(BUILDER_UI.layerPathStartX, 'pathStartX', -220, 1520, (ent) => ent.x || 0);
 bindPathNumber(BUILDER_UI.layerPathStartY, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
@@ -7916,6 +8048,7 @@ function handleStart(e) {
       handleTimeSelection(mouseX, mouseY); 
       return; 
     } 
+    if (!playerControlsEnabled) return;
     isSpraying = true; 
   }
 }
@@ -8661,6 +8794,7 @@ function drawBackground() {
 }
 
 function drawSideFireTruck() {
+  if (!truckVisible) return;
   const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
   const layout = ENTITY_LAYOUT.engine;
   const truckY = getTruckY();
@@ -10085,8 +10219,12 @@ function loop() {
     requestAnimationFrame(loop);
     return;
   }
-  truck.x += truckDrive * truck.speed;
-  truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
+  if (playerControlsEnabled) {
+    truck.x += truckDrive * truck.speed;
+    truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
+  } else {
+    setTruckDrive(0);
+  }
   if (gameState === 'playing' && pendingDispatchLevel === null) {
     levelElapsedMs += dt;
     if (!tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
@@ -10098,6 +10236,7 @@ function loop() {
       startBoroTankerSupport();
     }
   }
+  updateLevel9Event(dt, baseLevels[currentLevel - 1] || {});
   updateTankerSupport(dt);
   updateBoroTankerSupport(dt);
   updateBlackBoxTruck(dt);
@@ -10231,14 +10370,16 @@ if (false && currentLevel === 11) drawPlacementGrid();
   drawUfoRaid();
   drawLevel7Horse(false);
 
-  const tip = getClampedHoseEnd();
-  ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
-  const truckPoint = getTruckNozzlePoint();
-  ctx.beginPath(); ctx.moveTo(truckPoint.x, truckPoint.y);
-  ctx.quadraticCurveTo(truckPoint.x + (truckFacing > 0 ? 90 : -90), truckPoint.y - 165, tip.x, tip.y); ctx.stroke();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
-  ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+  if (truckVisible) {
+    const tip = getClampedHoseEnd();
+    ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
+    const truckPoint = getTruckNozzlePoint();
+    ctx.beginPath(); ctx.moveTo(truckPoint.x, truckPoint.y);
+    ctx.quadraticCurveTo(truckPoint.x + (truckFacing > 0 ? 90 : -90), truckPoint.y - 165, tip.x, tip.y); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+    ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+  }
 
   const sortedSpots = [...fireSpots].sort((a, b) => a.x - b.x);
   sortedSpots.forEach(spot => {
