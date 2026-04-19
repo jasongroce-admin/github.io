@@ -491,6 +491,29 @@ button:hover { filter: brightness(1.2); }
   padding: 8px 10px;
   font-size: 14px;
 }
+.builder-field input[type="range"] {
+  padding: 0;
+  height: 26px;
+  background: transparent;
+  border: 0;
+  accent-color: #5ac8ff;
+  touch-action: pan-x;
+}
+.builder-field input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(158, 196, 235, 0.28);
+}
+.builder-field input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-top: -6px;
+  background: #a9e6ff;
+  border: 1px solid rgba(26, 60, 92, 0.75);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+}
 .builder-field textarea {
   min-height: 56px;
   resize: vertical;
@@ -3297,6 +3320,7 @@ function createEmptyBuilderLevel() {
     truckSide: 'left',
     truckPlaced: true,
     timeOfDay: 0,
+    blackBoxPlan: { enabled: false, firstAt: 7200, returnDelay: 3200, firstDir: 1 },
     entities: []
   }));
 }
