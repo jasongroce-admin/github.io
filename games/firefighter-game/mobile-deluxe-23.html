@@ -767,9 +767,9 @@ button:hover { filter: brightness(1.2); }
   margin-top: 8px;
 }
 .builder-layer-item.active {
-  border-color: rgba(105, 197, 255, 0.85);
-  box-shadow: inset 0 0 0 1px rgba(105, 197, 255, 0.4);
-  background: rgba(23, 44, 70, 0.96);
+  border-color: rgba(255, 84, 68, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 84, 68, 0.40), 0 0 18px rgba(255, 84, 68, 0.18);
+  background: rgba(70, 24, 24, 0.35);
 }
 .builder-mini-actions {
   display: grid;
@@ -4656,7 +4656,7 @@ function builderRenderAssetList() {
     if (!list.length) return;
     const section = document.createElement('details');
     section.className = 'builder-asset-section';
-    section.open = (category === 'all') ? (cat === 'vehicles' || cat === 'animals' || cat === 'buildings' || cat === 'nature') : true;
+    section.open = (category === 'all') ? true : true;
     const summary = document.createElement('summary');
     summary.textContent = `${getCategoryLabel(cat)} (${list.length})`;
     const items = document.createElement('div');
