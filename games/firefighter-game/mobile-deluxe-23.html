@@ -691,6 +691,11 @@ button:hover { filter: brightness(1.2); }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.builder-asset-count-note {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #9fb6d4;
+}
 .builder-layer-list {
   max-height: none;
   overflow: visible;
@@ -1297,20 +1302,21 @@ button:hover { filter: brightness(1.2); }
           <label for="builderAssetSearch">Search Images</label>
           <input id="builderAssetSearch" type="text" placeholder="Find sprite by name">
         </div>
-        <div class="builder-field">
-          <label for="builderAssetCategory">Category</label>
-          <select id="builderAssetCategory">
-            <option value="all">All</option>
-            <option value="vehicles">Vehicles</option>
-            <option value="animals">Animals</option>
-            <option value="buildings">Buildings</option>
-            <option value="nature">Nature</option>
-            <option value="props">Props</option>
-            <option value="scifi">Sci-Fi</option>
-            <option value="uploaded">Uploaded</option>
-            <option value="misc">Misc</option>
-          </select>
-        </div>
+      <div class="builder-field">
+        <label for="builderAssetCategory">Category</label>
+        <select id="builderAssetCategory">
+          <option value="all">All</option>
+          <option value="vehicles">Vehicles</option>
+          <option value="animals">Animals</option>
+          <option value="buildings">Buildings</option>
+          <option value="nature">Nature</option>
+          <option value="props">Props</option>
+          <option value="scifi">Sci-Fi</option>
+          <option value="uploaded">Uploaded</option>
+          <option value="misc">Misc</option>
+        </select>
+        <div id="builderAssetCountNote" class="builder-asset-count-note">Assets: 0</div>
+      </div>
         <div class="builder-mini-actions" style="margin-bottom:8px;">
           <button id="builderAddLakeBtn" type="button">Add Lake</button>
           <button id="builderClearPendingAssetBtn" type="button">Clear Place Tool</button>
@@ -3263,6 +3269,7 @@ const BUILDER_UI = {
   tornadoReturnPercent: document.getElementById('builderTornadoReturnPercent'),
   assetSearch: document.getElementById('builderAssetSearch'),
   assetCategory: document.getElementById('builderAssetCategory'),
+  assetCountNote: document.getElementById('builderAssetCountNote'),
   assetList: document.getElementById('builderAssetList'),
   addLakeBtn: document.getElementById('builderAddLakeBtn'),
   captureImageBtn: document.getElementById('builderCaptureImageBtn'),
@@ -4516,6 +4523,9 @@ function builderLoadFromLevel(levelData) {
 function builderOpen(levelData = null) {
   builderSetLeftPanelCollapsed(false);
   builderInitCollapsibleSections();
+  // Defensive: ensure newly added images are registered even if the page was cached.
+  try { registerDiscoveredSpriteFiles(); } catch (err) {}
+  try { builderRenderAssetList(); } catch (err) {}
   if (BUILDER_UI.layerDeleteNoAsk) {
     BUILDER_UI.layerDeleteNoAsk.checked = localStorage.getItem(BUILDER_DELETE_CONFIRM_SKIP_KEY) === '1';
   }
