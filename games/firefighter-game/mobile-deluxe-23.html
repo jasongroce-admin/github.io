@@ -1808,16 +1808,16 @@ const SPRITE_FILES = {
   boroTankerLeft: 'vehicle_boro_tanker_685x289.webp',
   boroTankerRight: 'vehicle_boro_tanker_685x289.webp',
   semiWrecked: 'vehicle_semi_wrecked_792x276.webp',
-  hayA: 'nature_hay_a_367x210.webp',
-  hayB: 'nature_hay_b_432x214.webp',
-  houseSmall: 'building_house_small_784x259.webp',
-  houseTall: 'building_house_tall_784x613.webp',
-  houseTallWhite: 'building_house_tall_white_784x1168.webp',
-  houseTallOld: 'building_house_tall_old_784x1168.webp',
+  hayA: 'nature_haybale_round_single_459x145.webp',
+  hayB: 'nature_haybale_round_stack_three_459x145.webp',
+  houseSmall: 'building_house_1flr_784x259.webp',
+  houseTall: 'building_house_2flr_784x613.webp',
+  houseTallWhite: 'building_house_2flwhite_784x1168.webp',
+  houseTallOld: 'building_house_tallold_784x1168.webp',
   kennardSchool: 'building_kennard_school_784x1168.webp',
   shedRed: 'building_shed_red_544x289.webp',
   garage: 'building_garage_652x251.webp',
-  garageSmall: 'building_garage_small_543x237.webp',
+  garageSmall: 'building_garagesmall_543x237.webp',
   barnLarge: 'building_barn_large_514x288.webp',
   farmWindmill: 'prop_farm_windmill_316x684.webp',
   tractor: 'vehicle_tractor_436x238.webp',
@@ -1836,7 +1836,7 @@ const SPRITE_FILES = {
   ufo: 'scifi_ufo_920x416.webp',
   ufoBeam: 'scifi_ufo_beam_910x668.webp',
   oakSmall: 'nature_oak_small_197x153.webp',
-  oakMedium: 'nature_oak_medium_305x246.webp',
+  oakMedium: 'nature_oak_large_305x246.webp',
   oakLarge: 'nature_oak_large_305x246.webp',
   mapleSmall: 'nature_maple_small_117x116.webp',
   mapleMedium: 'nature_maple_medium_180x197.webp',
@@ -1869,26 +1869,31 @@ const SPRITE_FILES = {
 const SPRITE_BASE_PATH = 'images/';
 const SPRITE_FALLBACK_PATH = 'images/';
 const DISCOVERED_SPRITE_FILENAMES = [
-  '_updated_webp_rename_map.csv',
-  '_updated_webp_rename_map_final.csv',
+  'animal_bird_cardinal_flying_459x145.webp',
+  'animal_bluebird_flying_459x145.webp',
+  'animal_bluebird_sitting_459x145.webp',
+  'animal_cardinal_sitting_459x145.webp',
+  'animal_cow_blackwhite_grazing_459x145.webp',
+  'animal_cow_blackwhite_standing_459x145.webp',
   'animal_horse_eating_459x145.webp',
-  'animal_misc_cattails.webp',
+  'animal_robin_sitting_459x145.webp',
   'building_barn_large_514x288.webp',
+  'building_doghouse_red_459x145.webp',
+  'building_doghouse_wood_large_459x145.webp',
+  'building_doghouse_wood_small_459x145.webp',
+  'building_farm_barn_blue_792x276.webp',
   'building_farm_barn_red.webp',
+  'building_farm_barn_rusty_red_792x276.webp',
   'building_garage_652x251.webp',
-  'building_garage_small_543x237.webp',
-  'building_garage1_652x251.webp',
   'building_garagesmall_543x237.webp',
+  'building_home_rundown_brick_boarded_459x145.webp',
+  'building_home_rundown_shack_459x145.webp',
+  'building_home_rundown_trailer_459x145.webp',
+  'building_home_rundown_weathered_wood_459x145.webp',
   'building_house_1flr_784x259.webp',
   'building_house_2flr_784x613.webp',
   'building_house_2flwhite_784x1168.webp',
-  'building_house_norma.webp',
-  'building_house_small_784x259.webp',
-  'building_house_tall_784x613.webp',
-  'building_house_tall_old_784x1168.webp',
-  'building_house_tall_white_784x1168.webp',
   'building_house_tallold_784x1168.webp',
-  'building_kennard_school.webp',
   'building_kennard_school_784x1168.webp',
   'building_normal_house_beige_bay_1168x648.webp',
   'building_normal_house_brick_1168x696.webp',
@@ -1897,38 +1902,33 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'building_normal_house_cottage_alt_1122x676.webp',
   'building_normal_house_gray_1168x662.webp',
   'building_normal_house_white_cottage_1068x596.webp',
-  'building_redbarnlarge_514x288.webp',
   'building_redsmallshed_544x289.webp',
   'building_schoolhouse_1008x535.webp',
   'building_shed_red_544x289.webp',
+  'building_silo_farm_tall_459x145.webp',
+  'building_silo_group_792x276.webp',
+  'building_silo2_tall_459x145.webp',
   'building_vehicle_school_bus_yellow_974x462.webp',
+  'farm_barn_weathered_wood_792x276.webp',
+  'fence_wood_brown_section_459x145.webp',
   'nature_cattails_526x593.webp',
   'nature_farm_corn_field_deep.webp',
   'nature_farm_hay_bales.webp',
-  'nature_hay_367x210.webp',
-  'nature_hay_432x214.webp',
-  'nature_hay_a_367x210.webp',
   'nature_hay_b_432x214.webp',
+  'nature_haybale_round_single_459x145.webp',
+  'nature_haybale_round_stack_three_459x145.webp',
   'nature_maple_large_260x287.webp',
   'nature_maple_medium_180x197.webp',
   'nature_maple_small_117x116.webp',
   'nature_oak_large_305x246.webp',
-  'nature_oak_medium_305x246.webp',
   'nature_oak_small_197x153.webp',
   'nature_pine_medium_208x305.webp',
   'nature_pine_small_140x189.webp',
   'nature_shrub_cluster_826x574.webp',
   'nature_tree_bunch.webp',
   'nature_tree_bunch_large.webp',
-  'nature_tree_maplemed.webp',
-  'nature_tree_maplesm.webp',
   'nature_tree_oak_realistic_784x956.webp',
-  'nature_tree_oaktreelarge.webp',
-  'nature_tree_oaktreesmall.webp',
   'nature_tree_pine_realistic_700x1092.webp',
-  'nature_tree_pinemedium.webp',
-  'nature_tree_pinesmall.webp',
-  'nature_tree_shrub_bunch.webp',
   'nature_tree_shrub_bushy_single.webp',
   'nature_wheat_field.webp',
   'prop_bench_wood_802x472.webp',
@@ -1936,14 +1936,8 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'prop_farm_windmill_316x684.webp',
   'prop_fence_784x1168.webp',
   'prop_fence_white_row_1168x338.webp',
-  'prop_misc_fence.webp',
-  'prop_misc_lawn_pushmanualmower.webp',
   'prop_misc_picnictable.webp',
-  'prop_misc_pushmower.webp',
-  'prop_misc_redbike.webp',
-  'prop_misc_tent.webp',
   'prop_park_bench_metal.webp',
-  'prop_park_bench_wooden.webp',
   'prop_playground_monkey_bars.webp',
   'prop_playground_slide_784x892.webp',
   'prop_playground_slide_short_silver_704x564.webp',
@@ -1954,28 +1948,34 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'scifi_alien_firebasewithufos.webp',
   'scifi_alien_plant.webp',
   'scifi_alien_tree.webp',
+  'scifi_home_modular_ring_792x276.webp',
   'scifi_ufo_920x416.webp',
   'scifi_ufo_beam_910x668.webp',
+  'scifi_ufo_large_cigar_459x145.webp',
+  'scifi_ufo_medium_delta_459x145.webp',
+  'scifi_ufo_mothership_792x276.webp',
+  'scifi_ufo_small_saucer_459x145.webp',
+  'vehicle_atv_blue_459x145.webp',
+  'vehicle_atv_red_459x145.webp',
+  'vehicle_bicycle_front_facing_459x145.webp',
   'vehicle_bike_red_491x390.webp',
-  'vehicle_black_box_truck.webp',
   'vehicle_black_box_truck_1284x634.webp',
-  'vehicle_bluecoopcar_459x154.webp',
   'vehicle_boat.webp',
   'vehicle_boro_tanker_685x289.webp',
-  'vehicle_bus_upside_down.webp',
   'vehicle_bus_upside_down_1168x784.webp',
   'vehicle_cybertruck_1168x784.webp',
   'vehicle_engine_680x322.webp',
   'vehicle_farm_combine_harvester_red.webp',
   'vehicle_farm_tractor_green.webp',
-  'vehicle_fire_engine_kvfd1_680x322.webp',
-  'vehicle_fire_tanker_kvfd_700x283.webp',
+  'vehicle_golfcart_white_459x145.webp',
   'vehicle_mower_876x469.webp',
   'vehicle_push_manual_mower_387x505.webp',
   'vehicle_push_mower_427x476.webp',
-  'vehicle_redcarsports2_459x145.webp',
+  'vehicle_pushmower_gas_red_459x145.webp',
+  'vehicle_pushmower_manual_reel_459x145.webp',
   'vehicle_redsportscar_1168x784.webp',
   'vehicle_school_bus_yellow.webp',
+  'vehicle_scooter_electric_459x145.webp',
   'vehicle_sedan_blue_2.webp',
   'vehicle_sedan_blue_459x154.webp',
   'vehicle_sedan_blue_948x412.webp',
@@ -1983,9 +1983,15 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_sedan_red.webp',
   'vehicle_sedan_red2_459x145.webp',
   'vehicle_sedan_silver_1168x377.webp',
+  'vehicle_segway_459x145.webp',
   'vehicle_semi_tank_700x283.webp',
   'vehicle_semi_wrecked_792x276.webp',
+  'vehicle_semitruck_box_regular_792x276.webp',
+  'vehicle_semitruck_box_wrecked_792x276.webp',
+  'vehicle_semitruck_flatbed_regular_792x276.webp',
+  'vehicle_semitruck_flatbed_wrecked_792x276.webp',
   'vehicle_spacefiretruck.webp',
+  'vehicle_sports_car_yellow_side_left_459x145.webp',
   'vehicle_tractor_436x238.webp',
   'vehicle_ufo.webp',
 ];
@@ -2000,7 +2006,7 @@ function registerDiscoveredSpriteFiles() {
   const usedKeys = new Set(Object.keys(SPRITE_FILES));
   DISCOVERED_SPRITE_FILENAMES.forEach((filename) => {
     const lower = String(filename || '').toLowerCase();
-    if (!lower || existingFiles.has(lower)) return;
+    if (!lower || !/\\.webp$/i.test(lower) || existingFiles.has(lower)) return;
     let key = toSpriteKeyFromFilename(filename);
     if (!key) return;
     let idx = 2;
@@ -8982,23 +8988,20 @@ function drawFallenTree(ent) {
   const centerX = ent.x || 0;
   const rot = ((ent.rotationDeg == null ? -90 : ent.rotationDeg) * Math.PI) / 180;
   const drawW = layout.w * scale;
-  const drawH = layout.h * scale * 0.56; // top half canopy only (fallen look)
+  const drawH = layout.h * scale;
 
   ctx.save();
-  ctx.translate(centerX, baseY - 12);
+  // Pivot at the trunk base so the tree tips and lands on the ground line.
+  ctx.translate(centerX, baseY);
   ctx.rotate(rot);
   ctx.globalAlpha = ent.alpha == null ? 0.95 : ent.alpha;
   if (ready) {
-    ctx.drawImage(
-      sprite,
-      0, 0, sprite.width, Math.floor(sprite.height * 0.56),
-      -drawW * 0.5, -drawH * 0.5, drawW, drawH
-    );
+    ctx.drawImage(sprite, -drawW * 0.5, -drawH, drawW, drawH);
   } else {
     ctx.fillStyle = '#2f7d2f';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, drawW * 0.46, drawH * 0.38, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(-drawW * 0.08, -drawH, drawW * 0.16, drawH * 0.88);
+    ctx.fillStyle = '#438b43';
+    ctx.beginPath(); ctx.ellipse(0, -drawH * 0.62, drawW * 0.42, drawH * 0.38, 0, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
 }
@@ -9678,6 +9681,11 @@ loop();
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
