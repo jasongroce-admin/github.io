@@ -4583,7 +4583,17 @@ function builderReturnFromTest() {
 }
 
 function builderGetAssets() {
-  return Object.keys(SPRITE_FILES).map((key) => ({ key, file: SPRITE_FILES[key], isCustom: !!CUSTOM_SPRITE_DATA[key] }));
+  const seen = new Set();
+  const assets = [];
+  Object.keys(SPRITE_FILES).forEach((key) => {
+    const file = SPRITE_FILES[key];
+    const isCustom = !!CUSTOM_SPRITE_DATA[key];
+    const signature = `${isCustom ? 'custom:' : 'file:'}${String(file || '').toLowerCase()}`;
+    if (!file || seen.has(signature)) return;
+    seen.add(signature);
+    assets.push({ key, file, isCustom });
+  });
+  return assets;
 }
 
 function getAssetCategory(asset) {
@@ -4592,12 +4602,12 @@ function getAssetCategory(asset) {
   const key = String(asset.key || '').toLowerCase();
   const file = String(asset.file || '').toLowerCase();
   const text = `${key} ${file}`;
-  if (/(alien|ufo|space)/.test(text)) return 'scifi';
-  if (/(horse|dog|cat|cow|pig|sheep|chicken|goat|animal)/.test(text)) return 'animals';
-  if (/(engine|truck|tanker|sedan|pickup|semi|bus|tractor|mower|bike|vehicle|car_|wrecked)/.test(text)) return 'vehicles';
-  if (/(house|home|school|garage|barn|shed)/.test(text)) return 'buildings';
-  if (/(tree|shrub|bush|flower|plant|cattail|corn|wheat|field|pond)/.test(text)) return 'nature';
-  if (/(fence|bench|picnic|boat|tent|basketball|ball|swing|slide|playground)/.test(text)) return 'props';
+  if (/(^|\\s)(scifi|alien|ufo|space)\\b/.test(text) || /scifi_/.test(text)) return 'scifi';
+  if (/(horse|dog|cat|cow|pig|sheep|chicken|goat|bird|robin|cardinal|bluebird|animal)/.test(text) || /animal_/.test(text)) return 'animals';
+  if (/(engine|truck|tanker|sedan|pickup|semi|bus|tractor|mower|bike|bicycle|atv|golfcart|scooter|segway|vehicle|car_|wrecked)/.test(text) || /vehicle_/.test(text)) return 'vehicles';
+  if (/(house|home|school|garage|barn|shed|doghouse|silo|schoolhouse)/.test(text) || /building_/.test(text)) return 'buildings';
+  if (/(tree|shrub|bush|flower|plant|cattail|cattails|corn|wheat|field|pond|lake|oak|pine|maple|hay|haybale|crops)/.test(text) || /nature_/.test(text)) return 'nature';
+  if (/(fence|bench|picnic|boat|tent|basketball|ball|swing|slide|playground|windmill|wagon)/.test(text) || /prop_/.test(text)) return 'props';
   return 'misc';
 }
 
@@ -9714,6 +9724,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
