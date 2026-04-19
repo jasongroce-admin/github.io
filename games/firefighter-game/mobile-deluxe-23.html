@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -352,6 +352,46 @@ button:hover { filter: brightness(1.2); }
   overflow: auto;
   pointer-events: auto;
 }
+#builderLeftPanel {
+  position: relative;
+}
+#builderLeftPanel .left-collapse-btn {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 7px;
+  background: rgba(27, 56, 89, 0.95);
+}
+#builderLeftPanel .left-restore-btn {
+  display: none;
+  width: 100%;
+  height: calc(100% - 48px);
+  margin: 0;
+  border-radius: 9px;
+  border: 1px solid rgba(145, 175, 210, 0.34);
+  background: rgba(8, 15, 26, 0.76);
+  color: #b6d2f0;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 10px 6px;
+}
+#builderLeftPanel.collapsed .builder-body,
+#builderLeftPanel.collapsed .builder-head h2,
+#builderLeftPanel.collapsed .left-collapse-btn {
+  display: none;
+}
+#builderLeftPanel.collapsed .left-restore-btn {
+  display: block;
+}
 #builderRightPanel {
   border-right: none;
   border-left: 1px solid rgba(140, 166, 194, 0.28);
@@ -376,6 +416,11 @@ button:hover { filter: brightness(1.2); }
   flex-direction: column;
   gap: 6px;
   margin-bottom: 10px;
+  padding: 8px 10px 10px;
+  border: 1px solid rgba(120, 153, 189, 0.30);
+  border-left: 3px solid rgba(102, 173, 234, 0.55);
+  border-radius: 8px;
+  background: rgba(8, 16, 28, 0.52);
 }
 .builder-field label {
   font-size: 12px;
@@ -470,6 +515,10 @@ button:hover { filter: brightness(1.2); }
 .builder-actions button.warn {
   background: #7f281e;
 }
+.builder-actions.builder-actions-root {
+  display: block;
+  margin-top: 8px;
+}
 #builderCenter {
   position: relative;
   background: transparent;
@@ -487,11 +536,54 @@ button:hover { filter: brightness(1.2); }
   border-radius: 10px;
   background: rgba(8, 16, 26, 0.82);
   border: 1px solid rgba(150, 184, 220, 0.30);
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(120px, 240px);
+  align-items: center;
+  gap: 10px 12px;
+  pointer-events: auto;
+}
+.builder-title-left { min-width: 0; }
+.builder-title-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  pointer-events: auto;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.builder-title-status {
+  font-size: 13px;
+  color: #d0e6ff;
+  line-height: 1.25;
+  text-align: left;
+  min-width: 0;
+}
+.builder-title-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #b6d2f0;
+}
+.builder-title-select {
+  border-radius: 8px;
+  border: 1px solid rgba(168,195,225,0.36);
+  background: rgba(6,14,24,0.92);
+  color: #fff;
+  padding: 7px 9px;
+  font-size: 13px;
+}
+.builder-title-btn {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+.builder-title-level-loader {
+  border-radius: 8px;
+  border: 1px solid rgba(168,195,225,0.36);
+  background: rgba(6,14,24,0.92);
+  color: #fff;
+  padding: 7px 9px;
+  font-size: 13px;
+  max-width: 230px;
 }
 #builderAssetSearch {
   width: 100%;
@@ -587,14 +679,69 @@ button:hover { filter: brightness(1.2); }
   gap: 4px;
 }
 .builder-layer-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   border-radius: 6px;
-  border: 1px solid rgba(168, 195, 225, 0.24);
-  background: rgba(16, 26, 42, 0.9);
-  color: #dceaff;
+  border: 1px solid rgba(168, 195, 225, 0.35);
+  background: rgba(18, 30, 48, 0.96);
+  color: #e8f3ff;
   font-size: 12px;
-  padding: 6px 8px;
+  padding: 7px 8px;
   cursor: pointer;
   text-align: left;
+}
+.builder-field.builder-divider {
+  border-left-color: rgba(255, 214, 94, 0.75);
+  box-shadow: inset 0 0 0 1px rgba(255, 214, 94, 0.18);
+}
+.builder-layer-item.dragging { opacity: 0.55; }
+.builder-layer-item .label-btn {
+  width: 100%;
+  margin: 0;
+  padding: 7px 8px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #f2f8ff;
+  background: rgba(10, 18, 32, 0.78);
+  border: 1px solid rgba(168,195,225,0.34);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.builder-layer-row-actions {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+}
+.builder-layer-row-actions button {
+  width: 100%;
+  min-width: 0;
+  height: 26px;
+  margin: 0;
+  padding: 0 4px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: #eef6ff;
+  border: 1px solid rgba(162, 194, 228, 0.34);
+  background: rgba(30, 55, 84, 0.96);
+}
+.builder-layer-row-actions button.warn {
+  background: rgba(145,48,42,0.92);
+}
+.builder-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #a8c2de;
+  margin-top: 8px;
 }
 .builder-layer-item.active {
   border-color: rgba(105, 197, 255, 0.85);
@@ -614,6 +761,70 @@ button:hover { filter: brightness(1.2); }
   border-radius: 7px;
   font-size: 12px;
   background: #2f4561;
+}
+.builder-dual-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 8px;
+  align-items: center;
+}
+.builder-dual-input input[type="number"] {
+  text-align: right;
+}
+.builder-nudge-pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    ". up ."
+    "left center right"
+    ". down .";
+  gap: 6px;
+  margin-top: 6px;
+}
+.builder-nudge-pad button {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 800;
+  background: #2f4561;
+}
+#builderQuickNudgeUpBtn { grid-area: up; }
+#builderQuickNudgeLeftBtn { grid-area: left; }
+#builderQuickNudgeRightBtn { grid-area: right; }
+#builderQuickNudgeDownBtn { grid-area: down; }
+.builder-nudge-center {
+  grid-area: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  border: 1px solid rgba(168,195,225,0.34);
+  background: rgba(12, 23, 38, 0.9);
+  color: #b9d5f2;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.builder-actions-subsection {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(145, 175, 210, 0.28);
+}
+.builder-actions-subsection:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.builder-actions-subtitle {
+  margin: 0 0 6px;
+  color: #9fc2e6;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 .builder-mini-actions button.builder-danger-btn {
   background: rgba(255, 84, 68, 0.18);
@@ -637,14 +848,16 @@ button:hover { filter: brightness(1.2); }
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #b6d2f0;
+  border-bottom: 1px solid rgba(120, 153, 189, 0.32);
+  background: rgba(11, 22, 36, 0.62);
 }
 .builder-section > summary::-webkit-details-marker { display: none; }
 .builder-section > .section-content {
-  padding: 0 10px 10px;
+  padding: 10px 12px 12px;
 }
 .builder-top-sections {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 10px;
   align-items: stretch;
 }
@@ -653,6 +866,10 @@ button:hover { filter: brightness(1.2); }
   flex: 1 1 0;
   min-width: 0;
   transition: flex-basis 0.2s ease, width 0.2s ease;
+}
+.builder-top-column + .builder-top-column {
+  border-left: 1px solid rgba(122, 159, 198, 0.30);
+  padding-left: 10px;
 }
 .builder-top-column .builder-section {
   margin-bottom: 0;
@@ -706,8 +923,52 @@ button:hover { filter: brightness(1.2); }
   font-size: 12px;
   color: #9cb8d8;
 }
-.builder-section.no-selection-mode .builder-field {
+.builder-section.no-selection-mode .builder-field.requires-selection {
   display: none;
+}
+.builder-subsection {
+  border: 1px solid rgba(124, 155, 190, 0.36);
+  border-radius: 8px;
+  margin: 10px 0;
+  background: rgba(10, 18, 30, 0.68);
+}
+.builder-subsection + .builder-subsection {
+  border-top: 1px dashed rgba(131, 168, 209, 0.36);
+}
+.builder-subsection > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9ec3e8;
+  border-left: 3px solid rgba(92, 175, 240, 0.56);
+  border-bottom: 1px solid rgba(124, 155, 190, 0.30);
+  background: rgba(12, 24, 40, 0.60);
+}
+.builder-subsection > summary::-webkit-details-marker { display: none; }
+.builder-subsection > .subsection-content {
+  padding: 6px 8px 10px;
+}
+.builder-inline-note {
+  margin: 8px 0 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 222, 104, 0.46);
+  background: rgba(255, 219, 92, 0.10);
+  color: #ffe7a3;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.builder-subsection.attention-pulse > summary {
+  border-left-color: rgba(255, 228, 116, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 116, 0.26);
+  animation: builderAttentionPulse 1.15s ease-in-out infinite;
+}
+@keyframes builderAttentionPulse {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(255, 228, 116, 0.22), 0 0 0 rgba(255, 228, 116, 0); }
+  50% { box-shadow: inset 0 0 0 1px rgba(255, 228, 116, 0.58), 0 0 16px rgba(255, 228, 116, 0.22); }
 }
 .builder-section.no-selection-mode .builder-field.builder-layer-field {
   display: flex;
@@ -946,6 +1207,13 @@ button:hover { filter: brightness(1.2); }
   #builderShell {
     grid-template-columns: minmax(300px, 36vw) minmax(0, 1fr) minmax(280px, 34vw);
   }
+  #builderTitleBar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .builder-title-status {
+    text-align: left;
+  }
 }
 @media (max-width: 980px) {
   #builderShell {
@@ -960,6 +1228,9 @@ button:hover { filter: brightness(1.2); }
   #builderAssetList {
     max-height: 190px;
     grid-template-columns: 1fr 1fr;
+  }
+  .builder-title-controls {
+    flex-wrap: wrap;
   }
 }
 </style>
@@ -990,6 +1261,7 @@ button:hover { filter: brightness(1.2); }
   <div id="builderShell">
     <div class="builder-panel" id="builderLeftPanel">
       <div class="builder-head"><h2>Asset Library</h2></div>
+      <button id="builderLeftCollapseBtn" type="button" class="left-collapse-btn">Collapse</button>
       <div class="builder-body">
         <div class="builder-field">
           <label>Upload Image</label>
@@ -1030,20 +1302,28 @@ button:hover { filter: brightness(1.2); }
           Please consider donating to the Kennard Volunteer Fire Department.
         </div>
       </div>
+      <button id="builderLeftRestoreBtn" type="button" class="left-restore-btn">Asset Library</button>
     </div>
 
     <div id="builderCenter">
       <div id="builderTitleBar">
-        <span class="builder-chip">Kennard Volunteer Fire Department Personal Level Creator</span>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <label for="builderTestDifficulty" style="font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:#b6d2f0;">Test Difficulty</label>
-          <select id="builderTestDifficulty" style="border-radius:8px; border:1px solid rgba(168,195,225,0.36); background:rgba(6,14,24,0.92); color:#fff; padding:7px 9px; font-size:13px;">
+        <div class="builder-title-left">
+          <span class="builder-chip">Kennard Volunteer Fire Department Personal Level Creator</span>
+        </div>
+        <div class="builder-title-controls">
+          <label for="builderTestDifficulty" class="builder-title-label">Test Difficulty</label>
+          <select id="builderTestDifficulty" class="builder-title-select">
             <option value="1">Easy</option>
             <option value="2">Medium</option>
             <option value="3">Hard</option>
           </select>
-          <button id="builderHelpBtn" type="button" class="secondary-btn" style="width:auto; margin:0; padding:8px 12px; font-size:13px;">Help</button>
-          <button id="builderQuickPlayBtn" type="button" class="difficulty-btn" style="width:auto; margin:0; padding:8px 14px; font-size:13px;">Quick Play</button>
+          <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">↶ Undo</button>
+          <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">↷ Redo</button>
+          <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
+          <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load game level into editor"></select>
+          <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
+        </div>
+        <div class="builder-title-status">
           <span id="builderStatusText">Build your own level, save and play.</span>
         </div>
       </div>
@@ -1151,26 +1431,57 @@ button:hover { filter: brightness(1.2); }
           <input id="builderTornadoReturnPercent" type="range" min="10" max="100" step="1" value="65">
         </div>
         <div class="builder-field">
-          <label>Selected WebP (Quick)</label>
-          <input id="builderQuickScale" type="range" min="0.6" max="1.4" step="0.01">
-          <div class="builder-mini-actions">
-            <button id="builderQuickNudgeLeftBtn" type="button">Nudge Left</button>
-            <button id="builderQuickNudgeRightBtn" type="button">Nudge Right</button>
-            <button id="builderQuickNudgeUpBtn" type="button">Nudge Up</button>
-            <button id="builderQuickNudgeDownBtn" type="button">Nudge Down</button>
+          <label>Nudge Position</label>
+          <div class="builder-nudge-pad">
+            <button id="builderQuickNudgeUpBtn" type="button" aria-label="Nudge Up">↑</button>
+            <button id="builderQuickNudgeLeftBtn" type="button" aria-label="Nudge Left">←</button>
+            <div class="builder-nudge-center">MOVE</div>
+            <button id="builderQuickNudgeRightBtn" type="button" aria-label="Nudge Right">→</button>
+            <button id="builderQuickNudgeDownBtn" type="button" aria-label="Nudge Down">↓</button>
           </div>
+          <button id="builderResetSelectedDefaultsBtn" type="button" class="alt" style="margin-top:6px; color:#111;">Reset Selected Image Defaults</button>
         </div>
         <div class="builder-field">
           <label for="builderObjScale">Selected Scale</label>
-          <input id="builderObjScale" type="range" min="0.6" max="1.4" step="0.01">
+          <div class="builder-dual-input">
+            <input id="builderObjScale" type="range" min="0.2" max="2.8" step="0.01">
+            <input id="builderObjScaleNumber" type="number" min="0.2" max="2.8" step="0.01">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderObjX">Selected X</label>
-          <input id="builderObjX" type="number" step="1">
+          <div class="builder-dual-input">
+            <input id="builderObjXRange" type="range" min="-220" max="1520" step="1">
+            <input id="builderObjX" type="number" min="-220" max="1520" step="1">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderObjY">Selected Base Y</label>
-          <input id="builderObjY" type="number" step="1">
+          <div class="builder-dual-input">
+            <input id="builderObjYRange" type="range" min="120" max="580" step="1">
+            <input id="builderObjY" type="number" min="120" max="580" step="1">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderObjRotate">Rotation (deg)</label>
+          <div class="builder-dual-input">
+            <input id="builderObjRotateRange" type="range" min="-180" max="180" step="1" value="0">
+            <input id="builderObjRotate" type="number" min="-180" max="180" step="1" value="0">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderObjSkewX">Skew X (deg)</label>
+          <div class="builder-dual-input">
+            <input id="builderObjSkewXRange" type="range" min="-45" max="45" step="1" value="0">
+            <input id="builderObjSkewX" type="number" min="-45" max="45" step="1" value="0">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderObjSkewY">Skew Y (deg)</label>
+          <div class="builder-dual-input">
+            <input id="builderObjSkewYRange" type="range" min="-45" max="45" step="1" value="0">
+            <input id="builderObjSkewY" type="number" min="-45" max="45" step="1" value="0">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTargetLevelSlot">Save as Official Slot</label>
@@ -1194,6 +1505,7 @@ button:hover { filter: brightness(1.2); }
             <button id="builderLayerBottomBtn" type="button">Move To Bottom</button>
             <button id="builderLayerDeleteBtn" type="button" class="builder-danger-btn">Delete Layer</button>
           </div>
+          <label class="builder-checkbox-row"><input id="builderLayerDeleteNoAsk" type="checkbox">Do not ask again when deleting layer</label>
         </div>
         <div class="builder-field">
           <label for="builderLayerFilter">Layer Filter</label>
@@ -1262,11 +1574,30 @@ button:hover { filter: brightness(1.2); }
           </select>
         </div>
         <div class="builder-field">
-          <label for="builderLayerTornadoFall">Tree Falls With Tornado</label>
+          <label for="builderLayerTornadoFall">Affected By Tornado</label>
           <select id="builderLayerTornadoFall">
             <option value="0">Off</option>
             <option value="1">On</option>
           </select>
+        </div>
+        <div class="builder-field">
+          <button id="builderSetTornadoRouteBtn" type="button" class="alt">Set Tornado Throw Path</button>
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoAffectStartX">Tornado Trigger X</label>
+          <input id="builderTornadoAffectStartX" type="number" min="-220" max="1520" step="1" value="640">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoAffectLandX">Landing X</label>
+          <input id="builderTornadoAffectLandX" type="number" min="-220" max="1520" step="1" value="760">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoAffectLandY">Landing Base Y</label>
+          <input id="builderTornadoAffectLandY" type="number" min="120" max="580" step="1" value="460">
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoAffectDurationMs">Throw Duration (ms)</label>
+          <input id="builderTornadoAffectDurationMs" type="number" min="200" max="12000" step="50" value="1800">
         </div>
         <div class="builder-field">
           <label for="builderAnimalExitDirection">Animal Water Exit Direction</label>
@@ -1288,8 +1619,8 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-actions">
           <button id="builderToolSelectBtn" type="button">Select Tool</button>
           <button id="builderToolMoveBtn" type="button" class="alt">Move Tool</button>
-          <button id="builderFlipXBtn" type="button" class="alt">Flip Horizontal</button>
-          <button id="builderFlipYBtn" type="button" class="alt">Flip Vertical</button>
+          <button id="builderFlipXBtn" type="button" class="alt">Mirror Level Horizontal</button>
+          <button id="builderFlipYBtn" type="button" class="alt">Mirror Level Vertical</button>
           <button id="builderSilhouetteBtn" type="button" class="alt">Toggle Silhouette</button>
           <button id="builderBurnableBtn" type="button" class="alt">Toggle Burnable</button>
           <button id="builderDeleteBtn" type="button" class="warn">Delete Selected</button>
@@ -1300,6 +1631,7 @@ button:hover { filter: brightness(1.2); }
           <button id="builderLoadLocalBtn" type="button" class="alt">Load Local</button>
           <button id="builderExportBtn" type="button">Package</button>
           <button id="builderExportOfflineBtn" type="button" class="alt">Save Offline Folder</button>
+          <button id="builderExportFullGameBtn" type="button" class="alt">Save Full Game Offline</button>
           <button id="builderImportBtn" type="button" class="alt">Load Package</button>
           <button id="builderShareBtn" type="button">Share</button>
           <button id="builderSaveSubmissionBtn" type="button" class="alt">Save Submission File</button>
@@ -1346,7 +1678,7 @@ button:hover { filter: brightness(1.2); }
 <div id="builderTourOverlay" class="builder-tour-overlay"></div>
 <div id="builderTourHighlight" class="builder-tour-highlight"></div>
 <div id="builderTourCard" class="builder-tour-card">
-  <div class="arrow">➜</div>
+        <div class="arrow">➜</div>
   <div class="builder-tour-title" id="builderTourTitle"></div>
   <div class="builder-tour-body" id="builderTourBody"></div>
   <div class="builder-tour-actions">
@@ -1420,7 +1752,7 @@ button:hover { filter: brightness(1.2); }
     <div class="dispatch-tag" id="dispatchTag">Dispatch</div>
     <h2 id="dispatchTitle">Stand by for assignment</h2>
     <p id="dispatchBody">Crews are being dispatched. The next scene is loading now.</p>
-    <p class="dispatch-note" id="dispatchNote">Tap "Let's Roll" or wait a moment and we’ll send you in automatically.</p>
+      <p class="dispatch-note" id="dispatchNote">Tap "Let's Roll" or wait a moment and we'll send you in automatically.</p>
     <div class="dispatch-actions">
       <button id="dispatchGoBtn" class="difficulty-btn" onclick="dismissDispatchScreen()">Let's Roll</button>
     </div>
@@ -1460,235 +1792,202 @@ const SPRITE_CACHE = {};
 const CUSTOM_SPRITE_DATA = {};
 let ACTIVE_SPRITE_KEYS = new Set();
 const SPRITE_FILES = {
-  engineLeft: 'fire_engine_kvfd1_LeftFace680x322.webp',
-  engineRight: 'fire_engine_kvfd1_RightFace680x322.webp',
-  sedanRed: 'redsportscar_1168x784.webp',
-  sedanRed2: 'redcarsports2_459x145.webp',
-  sedanBlue: 'bluecoopcar_459x154.webp',
-  sedanGreenLeft: 'Vehicle_Sedan_Green_LeftFacing.webp',
-  sedanGreenRight: 'Vehicle_Sedan_Green_RightFacing.webp',
-  sedanSilverLeft: 'Vehicle_Sedan_Silver_FacingLeft.webp',
-  sedanSilverRight: 'Vehicle_Sedan_Silver_FacingRight.webp',
-  sedanBlueLeft: 'Vehicle_Sedan_Blue_Left.webp',
-  pickupCyber: 'cybertruck_1168x784.webp',
-  semiTankLeft: 'fire_tanker_kvfd_LeftFacing700x283.webp',
-  semiTankRight: 'fire_tanker_kvfd_RightFacing700x283.webp',
-  boroTankerLeft: 'FTBoroLeftFacing.webp',
-  boroTankerRight: 'FTBoroRightFacing.webp',
-  semiWrecked: 'wreckedsemi_792x276.webp',
-  hayA: 'hay_1_367x210.webp',
-  hayB: 'hay_2_432x214.webp',
-  houseSmall: 'house1flr_784x259.webp',
-  houseTall: 'house2flr_784x613.webp',
-  houseTallWhite: 'house2flwhite_784x1168.webp',
-  houseTallOld: 'housetallold_784x1168.webp',
-  kennardSchool: 'kennardschool.webp',
-  shedRed: 'redsmallshed_544x289.webp',
-  garage: 'garage1_652x251.webp',
-  garageSmall: 'garagesmall_543x237.webp',
-  barnLarge: 'RedBarnLarge_514x288.webp',
-  farmWindmill: 'Farm_Windmill.webp',
-  tractor: 'Tractor_436x238.webp',
-  mower: 'lawnmowerrider_876x469.webp',
-  pushMower: 'pushmower.webp',
-  pushManualMower: 'pushmanualmower.webp',
-  bikeRed: 'redbike.webp',
-  busUpsideDown: 'busupsidedown.webp',
-  fence: 'fence.webp',
-  boat: 'boat.webp',
-  cattails: 'cattails.webp',
-  tent: 'tent.webp',
-  blackBoxTruckLeft: 'blackboxtruckleftfacing.webp',
-  blackBoxTruckRight: 'blackboxtruckrightfacing.webp',
-  blackBoxTruck: 'blackboxtruck.webp',
-  ufo: 'ufo.webp',
-  ufoBeam: 'ufowithbeam.webp',
-  oakSmall: 'oaktreesmall.webp',
-  oakMedium: 'oaktreelarge.webp',
-  oakLarge: 'oaktreelarge.webp',
-  mapleSmall: 'Maplesm.webp',
-  mapleMedium: 'maplemed.webp',
-  mapleLarge: 'maplelarge.webp',
-  pineSmall: 'Pinesmall.webp',
-  pineMedium: 'pinemedium.webp',
-  normalHouseGray: 'Normal_House_09_LightGray.webp',
-  normalHouseBeigeBay: 'Normal_House_10_Beige_BayWindow.webp',
-  normalHouseBrick: 'Normal_House_11_BrownBrick.webp',
-  normalHouseWhiteCottage: 'Normal_House_12_White_Cottage.webp',
-  fenceWhiteRow: 'Residential_Fence_White_Row.webp',
-  benchWood: 'Park_Bench_Wooden.webp',
-  shrubCluster: 'Shrub_Bunch_4.webp',
-  treeOakRealistic: 'Tree_Realistic_Oak_Single.webp',
-  treePineRealistic: 'Tree_Realistic_Pine_Single.webp'
-  , normalHouseClassic: 'Normal_House_01.webp'
-  , normalHouseBrickGarage: 'Normal_House_03_Brick_Garage.webp'
-  , normalHouseCottageAlt: 'Normal_House_04_Cottage.webp'
-  , busSchoolLeft: 'Vehicle_School_Bus_YellowleftFacing.webp'
-  , horseEatLeft: 'horse_eating_459x145_Facing left.webp'
-  , horseEatRight: 'horse_eating_459x145_FacingRight.webp'
-  , playgroundSlideRight: 'Playground_Slide_FacingRight.webp'
-  , playgroundSwingRight: 'Playground_Swing_Set_RightFacing.webp'
-  , playgroundSlideLeft: 'Playground_Slide_Facingleft.webp'
-  , playgroundSwingLeft: 'Playground_Swing_Set_LeftFacing.webp'
-  , playgroundSlideTallLeft: 'Playground_Slide_Tall_Silver_Facingleft.webp'
-  , playgroundSlideShortLeft: 'Playground_Slide_Short_Silver_FacingLeft.webp'
+  engineLeft: 'vehicle_engine_680x322.webp',
+  engineRight: 'vehicle_engine_680x322.webp',
+  sedanRed: 'vehicle_sedan_red.webp',
+  sedanRed2: 'vehicle_sedan_red2_459x145.webp',
+  sedanBlue: 'vehicle_sedan_blue_459x154.webp',
+  sedanGreenLeft: 'vehicle_sedan_green_1030x413.webp',
+  sedanGreenRight: 'vehicle_sedan_green_1030x413.webp',
+  sedanSilverLeft: 'vehicle_sedan_silver_1168x377.webp',
+  sedanSilverRight: 'vehicle_sedan_silver_1168x377.webp',
+  sedanBlueLeft: 'vehicle_sedan_blue_948x412.webp',
+  pickupCyber: 'vehicle_cybertruck_1168x784.webp',
+  semiTankLeft: 'vehicle_semi_tank_700x283.webp',
+  semiTankRight: 'vehicle_semi_tank_700x283.webp',
+  boroTankerLeft: 'vehicle_boro_tanker_685x289.webp',
+  boroTankerRight: 'vehicle_boro_tanker_685x289.webp',
+  semiWrecked: 'vehicle_semi_wrecked_792x276.webp',
+  hayA: 'nature_hay_a_367x210.webp',
+  hayB: 'nature_hay_b_432x214.webp',
+  houseSmall: 'building_house_small_784x259.webp',
+  houseTall: 'building_house_tall_784x613.webp',
+  houseTallWhite: 'building_house_tall_white_784x1168.webp',
+  houseTallOld: 'building_house_tall_old_784x1168.webp',
+  kennardSchool: 'building_kennard_school_784x1168.webp',
+  shedRed: 'building_shed_red_544x289.webp',
+  garage: 'building_garage_652x251.webp',
+  garageSmall: 'building_garage_small_543x237.webp',
+  barnLarge: 'building_barn_large_514x288.webp',
+  farmWindmill: 'prop_farm_windmill_316x684.webp',
+  tractor: 'vehicle_tractor_436x238.webp',
+  mower: 'vehicle_mower_876x469.webp',
+  pushMower: 'vehicle_push_mower_427x476.webp',
+  pushManualMower: 'vehicle_push_manual_mower_387x505.webp',
+  bikeRed: 'vehicle_bike_red_491x390.webp',
+  busUpsideDown: 'vehicle_bus_upside_down_1168x784.webp',
+  fence: 'prop_fence_784x1168.webp',
+  boat: 'vehicle_boat.webp',
+  cattails: 'nature_cattails_526x593.webp',
+  tent: 'prop_tent_784x565.webp',
+  blackBoxTruckLeft: 'vehicle_black_box_truck_1284x634.webp',
+  blackBoxTruckRight: 'vehicle_black_box_truck_1284x634.webp',
+  blackBoxTruck: 'vehicle_black_box_truck_1284x634.webp',
+  ufo: 'scifi_ufo_920x416.webp',
+  ufoBeam: 'scifi_ufo_beam_910x668.webp',
+  oakSmall: 'nature_oak_small_197x153.webp',
+  oakMedium: 'nature_oak_medium_305x246.webp',
+  oakLarge: 'nature_oak_large_305x246.webp',
+  mapleSmall: 'nature_maple_small_117x116.webp',
+  mapleMedium: 'nature_maple_medium_180x197.webp',
+  mapleLarge: 'nature_maple_large_260x287.webp',
+  pineSmall: 'nature_pine_small_140x189.webp',
+  pineMedium: 'nature_pine_medium_208x305.webp',
+  normalHouseGray: 'building_normal_house_gray_1168x662.webp',
+  normalHouseBeigeBay: 'building_normal_house_beige_bay_1168x648.webp',
+  normalHouseBrick: 'building_normal_house_brick_1168x696.webp',
+  normalHouseWhiteCottage: 'building_normal_house_white_cottage_1068x596.webp',
+  fenceWhiteRow: 'prop_fence_white_row_1168x338.webp',
+  benchWood: 'prop_bench_wood_802x472.webp',
+  shrubCluster: 'nature_shrub_cluster_826x574.webp',
+  treeOakRealistic: 'nature_tree_oak_realistic_784x956.webp',
+  treePineRealistic: 'nature_tree_pine_realistic_700x1092.webp'
+  , normalHouseClassic: 'building_normal_house_classic_1168x784.webp'
+  , normalHouseBrickGarage: 'building_normal_house_brick_garage_1168x784.webp'
+  , normalHouseCottageAlt: 'building_normal_house_cottage_alt_1122x676.webp'
+  , busSchoolLeft: 'building_vehicle_school_bus_yellow_974x462.webp'
+  , horseEatLeft: 'animal_horse_eating_459x145.webp'
+  , horseEatRight: 'animal_horse_eating_459x145.webp'
+  , playgroundSlideRight: 'prop_playground_slide_784x892.webp'
+  , playgroundSwingRight: 'prop_playground_swing_set_934x532.webp'
+  , playgroundSlideLeft: 'prop_playground_slide_784x892.webp'
+  , playgroundSwingLeft: 'prop_playground_swing_set_934x532.webp'
+  , playgroundSlideTallLeft: 'prop_playground_slide_tall_silver_704x976.webp'
+  , playgroundSlideShortLeft: 'prop_playground_slide_short_silver_704x564.webp'
 };
 
-const SPRITE_BASE_PATH = 'images/webp_converted/';
+const SPRITE_BASE_PATH = 'images/';
 const SPRITE_FALLBACK_PATH = 'images/';
 const DISCOVERED_SPRITE_FILENAMES = [
-  'alien_base_792x276.webp',
-  'alienfirebasewithufos.webp',
-  'aplant1.webp',
-  'ATree1.webp',
-  'atree2.webp',
-  'basketball_459x145.webp',
-  'blackboxtruck.webp',
-  'blackboxtruckleftfacing.webp',
-  'blackboxtruckprop.webp',
-  'blackboxtruckrightfacing.webp',
-  'bluecoopcar_459x154.webp',
-  'boat.webp',
-  'bush_group_3_459x145.webp',
-  'busupsidedown.webp',
-  'car_pickup_blue_side_left_459x145.webp',
-  'car_sedan_red_front_459x145.webp',
-  'car_sedan_red_rear_459x145.webp',
-  'car_suv_silver_34_left_459x145.webp',
-  'cattails.webp',
-  'cybertruck_1168x784.webp',
-  'dog_running_1_459x145.webp',
-  'dog_running_2_459x145.webp',
-  'dog_running_3_459x145.webp',
-  'dog_sitting_459x145.webp',
-  'Farm_Barn_Red.webp',
-  'Farm_Barn_RedFacingRight.webp',
-  'Farm_Combine_Harvester_Red.webp',
-  'Farm_Corn_Field_Deep.webp',
-  'Farm_Hay_Bales.webp',
-  'Farm_Tractor_Green.webp',
-  'Farm_Wagon_Wooden.webp',
-  'Farm_Wheat_Field.webp',
-  'farm_chicken_left_459x145.webp',
-  'farm_chicken_right_459x145.webp',
-  'farm_cow_grazing_left_459x145.webp',
-  'farm_cow_grazing_right_459x145.webp',
-  'farm_cow_standing_left_459x145.webp',
-  'farm_cow_standing_right_459x145.webp',
-  'farm_pig_standing_left_459x145.webp',
-  'farm_pig_standing_right_459x145.webp',
-  'farm_sheep_standing_459x145.webp',
-  'farm_sheep_standing_right_459x145.webp',
-  'fence.webp',
-  'fire_engine_kvfd1_680x322.webp',
-  'fire_engine_kvfd1_LeftFace680x322.webp',
-  'fire_engine_kvfd1_RightFace680x322.webp',
-  'fire_tanker_kvfd_700x283.webp',
-  'fire_tanker_kvfd_LeftFacing700x283.webp',
-  'fire_tanker_kvfd_RightFacing700x283.webp',
-  'flower_patch_459x145.webp',
-  'FTBoroLeftFacing.webp',
-  'FTBoroRightFacing.webp',
-  'garage1_652x251.webp',
-  'garage_brick_onecar_facingleft_459x145.webp',
-  'garage_brick_onecar_facingright_459x145.webp',
-  'garagesmall_543x237.webp',
-  'garage_wood_onecar_facingleft_459x145.webp',
-  'garage_wood_onecar_facingright_459x145.webp',
-  'hay_1_367x210.webp',
-  'hay_2_432x214.webp',
-  'home_brick_ranch_1story_2_Facingleft_459x145.webp',
-  'home_brick_ranch_1story_2_Facingright_459x145.webp',
-  'home_brick_ranch_facingleft_1story_459x145.webp',
-  'home_brick_ranch_facingright_1story_459x145.webp',
-  'home_wood_ranch_1story_2_facingleft_459x145.webp',
-  'home_wood_ranch_1story_2_facingright_459x145.webp',
-  'home_wood_ranch_1story_459x145.webp',
-  'home_wood_ranch_1story_facingright_459x145.webp',
-  'horse_eating_459x145_Facing left.webp',
-  'horse_eating_459x145_FacingRight.webp',
-  'house1flr_784x259.webp',
-  'house2flr_784x613.webp',
-  'house2flr_784x1168.webp',
-  'house2flwhite_784x1168.webp',
-  'housetallold_784x1168.webp',
-  'kennardschool.webp',
-  'lawnmowerrider_876x469.webp',
-  'maplelarge.webp',
-  'maplemed.webp',
-  'Maplesm.webp',
-  'Normal_House_01.webp',
-  'Normal_House_03_Brick_Garage.webp',
-  'Normal_House_04_Cottage.webp',
-  'Normal_House_09_LightGray.webp',
-  'Normal_House_10_Beige_BayWindow.webp',
-  'Normal_House_11_BrownBrick.webp',
-  'Normal_House_12_White_Cottage.webp',
-  'oaktreelarge.webp',
-  'oaktreesmall.webp',
-  'Park_Bench_Metal_Facingleft.webp',
-  'Park_Bench_Metal_FacingRight.webp',
-  'Park_Bench_Wooden.webp',
-  'picnictable.webp',
-  'pinemedium.webp',
-  'Pinesmall.webp',
-  'Playground_Monkey_Bars_FacingLeft.webp',
-  'Playground_Monkey_Bars_Facingright.webp',
-  'Playground_Slide_Facingleft.webp',
-  'Playground_Slide_FacingRight.webp',
-  'Playground_Slide_Short_Silver_FacingLeft.webp',
-  'Playground_Slide_Short_Silver_FacingRight.webp',
-  'Playground_Slide_Tall_Silver_Facingleft.webp',
-  'Playground_Slide_Tall_Silver_FacingRight.webp',
-  'Playground_Swing_Set_LeftFacing.webp',
-  'Playground_Swing_Set_RightFacing.webp',
-  'pond.webp',
-  'pushmanualmower.webp',
-  'pushmower.webp',
-  'redbike.webp',
-  'redsportscar_1168x784.webp',
-  'redcarsports2_459x145.webp',
-  'redsmallshed_544x289.webp',
-  'RedBarnLarge_514x288.webp',
-  'ridingmower_876x469.webp',
-  'schoolhouse_1008x535.webp',
-  'shed_red_small_facingleft_459x145.webp',
-  'shed_red_small_facingright_459x145.webp',
-  'shed_wood_large_facingleft_459x145.webp',
-  'shed_wood_large_facingright_459x145.webp',
-  'Shrub_Bunch_4.webp',
-  'Shrub_Bushy_Single.webp',
-  'shrub_group_1_459x145.webp',
-  'shrub_group_2_459x145.webp',
-  'spacefiretruckleftfacing.webp',
-  'spacefiretruckrghtfacing.webp',
-  'tent.webp',
-  'Tree_Bunch_2_Large.webp',
-  'tree_Bunch_4.webp',
-  'Tree_Realistic_Oak_Single.webp',
-  'Tree_Realistic_Pine_Single.webp',
-  'Tree_Bunch_Realistic_3.webp',
-  'Tractor_436x238.webp',
-  'Tree_Realistic_Oak_Single.webp',
-  'ufo.webp',
-  'ufowithbeam.webp',
-  'Vehicle_School_Bus_YellowleftFacing.webp',
-  'Vehicle_School_Bus_YellowRightFacing.webp',
-  'Vehicle_Sedan_Blue_Left.webp',
-  'Vehicle_Sedan_Blue_Left2.webp',
-  'Vehicle_Sedan_Blue_left3.webp',
-  'Vehicle_Sedan_Green_LeftFacing.webp',
-  'Vehicle_Sedan_Green_RightFacing.webp',
-  'Vehicle_Sedan_Red_LeftFacing.webp',
-  'Vehicle_Sedan_Red_RightFacing.webp',
-  'Vehicle_Sedan_Silver_FacingLeft.webp',
-  'Vehicle_Sedan_Silver_FacingRight.webp',
-  'wrecked_car_pickup_blue_side_left_459x145.webp',
-  'wrecked_car_sedan_red_front_459x145.webp',
-  'wrecked_car_sedan_red_side_left_459x145.webp',
-  'wrecked_car_sedan_red_side_right_459x145.webp',
-  'wrecked_car_suv_silver_34_left_459x145.webp',
-  'wreckedsemi_792x276.webp'
+  '_updated_webp_rename_map.csv',
+  '_updated_webp_rename_map_final.csv',
+  'animal_horse_eating_459x145.webp',
+  'animal_misc_cattails.webp',
+  'building_barn_large_514x288.webp',
+  'building_farm_barn_red.webp',
+  'building_garage_652x251.webp',
+  'building_garage_small_543x237.webp',
+  'building_garage1_652x251.webp',
+  'building_garagesmall_543x237.webp',
+  'building_house_1flr_784x259.webp',
+  'building_house_2flr_784x613.webp',
+  'building_house_2flwhite_784x1168.webp',
+  'building_house_norma.webp',
+  'building_house_small_784x259.webp',
+  'building_house_tall_784x613.webp',
+  'building_house_tall_old_784x1168.webp',
+  'building_house_tall_white_784x1168.webp',
+  'building_house_tallold_784x1168.webp',
+  'building_kennard_school.webp',
+  'building_kennard_school_784x1168.webp',
+  'building_normal_house_beige_bay_1168x648.webp',
+  'building_normal_house_brick_1168x696.webp',
+  'building_normal_house_brick_garage_1168x784.webp',
+  'building_normal_house_classic_1168x784.webp',
+  'building_normal_house_cottage_alt_1122x676.webp',
+  'building_normal_house_gray_1168x662.webp',
+  'building_normal_house_white_cottage_1068x596.webp',
+  'building_redbarnlarge_514x288.webp',
+  'building_redsmallshed_544x289.webp',
+  'building_schoolhouse_1008x535.webp',
+  'building_shed_red_544x289.webp',
+  'building_vehicle_school_bus_yellow_974x462.webp',
+  'nature_cattails_526x593.webp',
+  'nature_farm_corn_field_deep.webp',
+  'nature_farm_hay_bales.webp',
+  'nature_hay_367x210.webp',
+  'nature_hay_432x214.webp',
+  'nature_hay_a_367x210.webp',
+  'nature_hay_b_432x214.webp',
+  'nature_maple_large_260x287.webp',
+  'nature_maple_medium_180x197.webp',
+  'nature_maple_small_117x116.webp',
+  'nature_oak_large_305x246.webp',
+  'nature_oak_medium_305x246.webp',
+  'nature_oak_small_197x153.webp',
+  'nature_pine_medium_208x305.webp',
+  'nature_pine_small_140x189.webp',
+  'nature_shrub_cluster_826x574.webp',
+  'nature_tree_bunch.webp',
+  'nature_tree_bunch_large.webp',
+  'nature_tree_maplemed.webp',
+  'nature_tree_maplesm.webp',
+  'nature_tree_oak_realistic_784x956.webp',
+  'nature_tree_oaktreelarge.webp',
+  'nature_tree_oaktreesmall.webp',
+  'nature_tree_pine_realistic_700x1092.webp',
+  'nature_tree_pinemedium.webp',
+  'nature_tree_pinesmall.webp',
+  'nature_tree_shrub_bunch.webp',
+  'nature_tree_shrub_bushy_single.webp',
+  'nature_wheat_field.webp',
+  'prop_bench_wood_802x472.webp',
+  'prop_farm_wagon_wooden.webp',
+  'prop_farm_windmill_316x684.webp',
+  'prop_fence_784x1168.webp',
+  'prop_fence_white_row_1168x338.webp',
+  'prop_misc_fence.webp',
+  'prop_misc_lawn_pushmanualmower.webp',
+  'prop_misc_picnictable.webp',
+  'prop_misc_pushmower.webp',
+  'prop_misc_redbike.webp',
+  'prop_misc_tent.webp',
+  'prop_park_bench_metal.webp',
+  'prop_park_bench_wooden.webp',
+  'prop_playground_monkey_bars.webp',
+  'prop_playground_slide_784x892.webp',
+  'prop_playground_slide_short_silver_704x564.webp',
+  'prop_playground_slide_tall_silver_704x976.webp',
+  'prop_playground_swing_set_934x532.webp',
+  'prop_tent_784x565.webp',
+  'scifi_alien_base_792x276.webp',
+  'scifi_alien_firebasewithufos.webp',
+  'scifi_alien_plant.webp',
+  'scifi_alien_tree.webp',
+  'scifi_ufo_920x416.webp',
+  'scifi_ufo_beam_910x668.webp',
+  'vehicle_bike_red_491x390.webp',
+  'vehicle_black_box_truck.webp',
+  'vehicle_black_box_truck_1284x634.webp',
+  'vehicle_bluecoopcar_459x154.webp',
+  'vehicle_boat.webp',
+  'vehicle_boro_tanker_685x289.webp',
+  'vehicle_bus_upside_down.webp',
+  'vehicle_bus_upside_down_1168x784.webp',
+  'vehicle_cybertruck_1168x784.webp',
+  'vehicle_engine_680x322.webp',
+  'vehicle_farm_combine_harvester_red.webp',
+  'vehicle_farm_tractor_green.webp',
+  'vehicle_fire_engine_kvfd1_680x322.webp',
+  'vehicle_fire_tanker_kvfd_700x283.webp',
+  'vehicle_mower_876x469.webp',
+  'vehicle_push_manual_mower_387x505.webp',
+  'vehicle_push_mower_427x476.webp',
+  'vehicle_redcarsports2_459x145.webp',
+  'vehicle_redsportscar_1168x784.webp',
+  'vehicle_school_bus_yellow.webp',
+  'vehicle_sedan_blue_2.webp',
+  'vehicle_sedan_blue_459x154.webp',
+  'vehicle_sedan_blue_948x412.webp',
+  'vehicle_sedan_green_1030x413.webp',
+  'vehicle_sedan_red.webp',
+  'vehicle_sedan_red2_459x145.webp',
+  'vehicle_sedan_silver_1168x377.webp',
+  'vehicle_semi_tank_700x283.webp',
+  'vehicle_semi_wrecked_792x276.webp',
+  'vehicle_spacefiretruck.webp',
+  'vehicle_tractor_436x238.webp',
+  'vehicle_ufo.webp',
 ];
 
 function toSpriteKeyFromFilename(filename) {
@@ -2142,11 +2441,16 @@ function drawCatalogEntity(ent) {
   const flipX = !!ent.flipX;
   const flipY = !!ent.flipY;
   const rotationDeg = Number(ent.rotationDeg || 0);
-  if (flipX || flipY || rotationDeg) {
+  const skewXDeg = Number(ent.skewXDeg || 0);
+  const skewYDeg = Number(ent.skewYDeg || 0);
+  if (flipX || flipY || rotationDeg || skewXDeg || skewYDeg) {
     const cx = rect.x + rect.w * 0.5;
     const cy = rect.y + rect.h * 0.5;
     ctx.translate(cx, cy);
     if (rotationDeg) ctx.rotate((rotationDeg * Math.PI) / 180);
+    if (skewXDeg || skewYDeg) {
+      ctx.transform(1, Math.tan((skewYDeg * Math.PI) / 180), Math.tan((skewXDeg * Math.PI) / 180), 1, 0, 0);
+    }
     ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
     ctx.translate(-cx, -cy);
   }
@@ -2171,8 +2475,12 @@ function getBuilderSpriteBaseSize(spriteKey) {
 
 function getBuilderSpriteRect(ent) {
   if (!ent || !ent.spriteKey) return null;
-  const size = getBuilderSpriteBaseSize(ent.spriteKey);
-    const scale = Math.max(0.6, Math.min(1.4, Number(ent.scale || 1)));
+  const rawBaseW = Number(ent.baseW);
+  const rawBaseH = Number(ent.baseH);
+  const size = (Number.isFinite(rawBaseW) && rawBaseW > 0 && Number.isFinite(rawBaseH) && rawBaseH > 0)
+    ? { w: rawBaseW, h: rawBaseH }
+    : getBuilderSpriteBaseSize(ent.spriteKey);
+  const scale = clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
   const drawW = size.w * scale;
   const drawH = size.h * scale;
   const baseY = Number(ent.baseY ?? GRASS_Y);
@@ -2191,11 +2499,16 @@ function drawBuilderSpriteEntity(ent) {
   const flipX = !!ent.flipX;
   const flipY = !!ent.flipY;
   const rotationDeg = Number(ent.rotationDeg || 0);
-  if (flipX || flipY || rotationDeg) {
+  const skewXDeg = Number(ent.skewXDeg || 0);
+  const skewYDeg = Number(ent.skewYDeg || 0);
+  if (flipX || flipY || rotationDeg || skewXDeg || skewYDeg) {
     const cx = rect.x + rect.w * 0.5;
     const cy = rect.y + rect.h * 0.5;
     ctx.translate(cx, cy);
     if (rotationDeg) ctx.rotate((rotationDeg * Math.PI) / 180);
+    if (skewXDeg || skewYDeg) {
+      ctx.transform(1, Math.tan((skewYDeg * Math.PI) / 180), Math.tan((skewXDeg * Math.PI) / 180), 1, 0, 0);
+    }
     ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
     ctx.translate(-cx, -cy);
   }
@@ -2699,6 +3012,17 @@ function getEntityBounds(ent) {
   if (ent.type === 'tent') return getSpriteFitRect('tent', ent.x + ENTITY_LAYOUT.tent.x, groundedY('tent', GRASS_Y, ENTITY_LAYOUT.tent.h), ENTITY_LAYOUT.tent.w, ENTITY_LAYOUT.tent.h, true);
   if (ent.type === 'catTails') return getSpriteFitRect('catTails', ent.x + ENTITY_LAYOUT.catTails.x, groundedY('catTails', GRASS_Y, ENTITY_LAYOUT.catTails.h), ENTITY_LAYOUT.catTails.w, ENTITY_LAYOUT.catTails.h, true);
   if (ent.type === 'blackBoxTruck') return getSpriteFitRect('blackBoxTruck', ent.x + ENTITY_LAYOUT.blackBoxTruck.x, 412 - ENTITY_LAYOUT.blackBoxTruck.h, ENTITY_LAYOUT.blackBoxTruck.w, ENTITY_LAYOUT.blackBoxTruck.h, true);
+  if (ent.type === 'requiredFireTruck') {
+    const side = (builderState?.truckSide === 'right' || baseLevels[currentLevel - 1]?.truckSide === 'right') ? 'right' : 'left';
+    const lane = side === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
+    const renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
+    const key = side === 'right' ? 'engineLeft' : 'engineRight';
+    const layout = ENTITY_LAYOUT.engine;
+    const truckX = (gameState === 'builder')
+      ? clamp(Number(builderState?.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX)
+      : truck.x;
+    return getSpriteFitRect(key, truckX + layout.x * renderScale, getTruckY() - (layout.h * renderScale), layout.w * renderScale, layout.h * renderScale, true);
+  }
   if (ent.type === 'ufo') return getSpriteFitRect('ufo', ent.x + ENTITY_LAYOUT.ufo.x, ent.y || 90, ENTITY_LAYOUT.ufo.w, ENTITY_LAYOUT.ufo.h, true);
   if (ent.type === 'bikeRed') return getSpriteFitRect('bikeRed', ent.x + ENTITY_LAYOUT.bikeRed.x, gy - ENTITY_LAYOUT.bikeRed.h, ENTITY_LAYOUT.bikeRed.w, ENTITY_LAYOUT.bikeRed.h, true);
   if (ent.type === 'pushMower') return getSpriteFitRect('pushMower', ent.x + ENTITY_LAYOUT.pushMower.x, groundedY('pushMower', GRASS_Y, ENTITY_LAYOUT.pushMower.h), ENTITY_LAYOUT.pushMower.w, ENTITY_LAYOUT.pushMower.h, true);
@@ -2713,7 +3037,8 @@ function getTruckDrawRect() {
   const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
   const layout = ENTITY_LAYOUT.engine;
   const truckY = getTruckY();
-  return getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
+  const scale = getTruckRenderScale();
+  return getSpriteFitRect(key, truck.x + layout.x * scale, truckY - (layout.h * scale), layout.w * scale, layout.h * scale, true);
 }
 
 function rectsOverlap(a, b) {
@@ -2854,14 +3179,22 @@ let builderPendingSpriteKey = null;
 let builderPendingEntityType = null;
 let builderTool = 'select';
 let builderPointer = { active: false, mode: '', entityId: null, offsetX: 0, offsetY: 0, startScale: 1, startDist: 1 };
+let builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
 let builderTestLevelIndex = null;
 let builderLastPlaceAt = 0;
 let builderTestActive = false;
 let builderLastPreloadAt = 0;
+const BUILDER_HISTORY_LIMIT = 120;
+let builderUndoStack = [];
+let builderRedoStack = [];
+let builderHistoryMute = false;
+let builderLastHistorySignature = '';
 
 const BUILDER_UI = {
   screen: document.getElementById('builderScreen'),
   status: document.getElementById('builderStatusText'),
+  undoBtn: document.getElementById('builderUndoBtn'),
+  redoBtn: document.getElementById('builderRedoBtn'),
   helpBtn: document.getElementById('builderHelpBtn'),
   helpModal: document.getElementById('builderHelpModal'),
   instructionsModal: document.getElementById('builderInstructionsModal'),
@@ -2880,6 +3213,7 @@ const BUILDER_UI = {
   name: document.getElementById('builderLevelName'),
   creatorName: document.getElementById('builderCreatorName'),
   testDifficulty: document.getElementById('builderTestDifficulty'),
+  topLevelLoader: document.getElementById('builderTopLevelLoader'),
   tip: document.getElementById('builderSafetyTip'),
   truckSide: document.getElementById('builderTruckSide'),
   timeOfDay: document.getElementById('builderTimeOfDay'),
@@ -2902,13 +3236,23 @@ const BUILDER_UI = {
   assetList: document.getElementById('builderAssetList'),
   addLakeBtn: document.getElementById('builderAddLakeBtn'),
   captureImageBtn: document.getElementById('builderCaptureImageBtn'),
-  quickScale: document.getElementById('builderQuickScale'),
+  resetSelectedDefaultsBtn: document.getElementById('builderResetSelectedDefaultsBtn'),
   objScale: document.getElementById('builderObjScale'),
+  objScaleNumber: document.getElementById('builderObjScaleNumber'),
+  objXRange: document.getElementById('builderObjXRange'),
   objX: document.getElementById('builderObjX'),
+  objYRange: document.getElementById('builderObjYRange'),
   objY: document.getElementById('builderObjY'),
+  objRotateRange: document.getElementById('builderObjRotateRange'),
+  objRotate: document.getElementById('builderObjRotate'),
+  objSkewXRange: document.getElementById('builderObjSkewXRange'),
+  objSkewX: document.getElementById('builderObjSkewX'),
+  objSkewYRange: document.getElementById('builderObjSkewYRange'),
+  objSkewY: document.getElementById('builderObjSkewY'),
   targetSlot: document.getElementById('builderTargetLevelSlot'),
   editLevelSelect: document.getElementById('builderEditLevelSelect'),
   layerList: document.getElementById('builderLayerList'),
+  layerDeleteNoAsk: document.getElementById('builderLayerDeleteNoAsk'),
   layerFilter: document.getElementById('builderLayerFilter'),
   layerOpacity: document.getElementById('builderLayerOpacity'),
   layerBurnable: document.getElementById('builderLayerBurnable'),
@@ -2924,6 +3268,11 @@ const BUILDER_UI = {
   layerLocked: document.getElementById('builderLayerLocked'),
   layerWaterMove: document.getElementById('builderLayerWaterMove'),
   layerTornadoFall: document.getElementById('builderLayerTornadoFall'),
+  setTornadoRouteBtn: document.getElementById('builderSetTornadoRouteBtn'),
+  tornadoAffectStartX: document.getElementById('builderTornadoAffectStartX'),
+  tornadoAffectLandX: document.getElementById('builderTornadoAffectLandX'),
+  tornadoAffectLandY: document.getElementById('builderTornadoAffectLandY'),
+  tornadoAffectDurationMs: document.getElementById('builderTornadoAffectDurationMs'),
   animalExitDirection: document.getElementById('builderAnimalExitDirection'),
   animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
   animalBonusPoints: document.getElementById('builderAnimalBonusPoints'),
@@ -2933,7 +3282,7 @@ const BUILDER_UI = {
 };
 
 function createEmptyBuilderLevel() {
-  return normalizeBuilderLevel({
+  return ensureRequiredTruckLayer(normalizeBuilderLevel({
     name: 'Custom Builder Level',
     creatorName: '',
     testDifficulty: 1,
@@ -2942,7 +3291,7 @@ function createEmptyBuilderLevel() {
     truckPlaced: true,
     timeOfDay: 0,
     entities: []
-  });
+  }));
 }
 
 function getBuilderEntityById(id) {
@@ -3068,6 +3417,11 @@ function isAnimalEntity(ent) {
   return /horse|cow|dog|cat|goat|pig|animal/.test(`${type} ${spriteKey}`);
 }
 
+function isAnimalSpriteKey(spriteKey) {
+  const text = String(spriteKey || '').toLowerCase();
+  return /horse|cow|dog|cat|goat|pig|sheep|chicken|animal/.test(text);
+}
+
 function getBurnZoneTemplateForEntity(ent) {
   if (!ent) return [];
   if (ent.type === 'builderSprite') return BUILDER_DEFAULT_BURN_ZONES.map((z) => [...z]);
@@ -3100,12 +3454,12 @@ function getEntityPreviewImageSrc(ent) {
   if (ent.type === 'builderSprite') {
     const key = ent.spriteKey || '';
     if (!key) return '';
-    return CUSTOM_SPRITE_DATA[key]?.dataUrl || `./images/webp_converted/${SPRITE_FILES[key] || ''}`;
+    return CUSTOM_SPRITE_DATA[key]?.dataUrl || `./images/${SPRITE_FILES[key] || ''}`;
   }
   const spec = getCatalogSpec(ent.type);
   const key = spec?.sprite || ent.type;
   if (!key || !SPRITE_FILES[key]) return '';
-  return `./images/webp_converted/${SPRITE_FILES[key]}`;
+  return `./images/${SPRITE_FILES[key]}`;
 }
 
 function builderRefreshCreatorNotice() {
@@ -3121,6 +3475,11 @@ function builderPlaceTruckForUser(side) {
   builderState.truckPlacementX = lane.spawnX;
   const label = builderState.truckSide === 'right' ? 'Right' : 'Left';
   builderSetStatus(`Fire truck placed on the ${label} lane. Add props/models now.`);
+}
+
+function builderClearPendingPlacement() {
+  builderPendingSpriteKey = null;
+  builderPendingEntityType = null;
 }
 
 let builderTruckSideAttentionTimer = null;
@@ -3219,6 +3578,9 @@ function builderRenderBurnZoneEditor(selected) {
 
 function builderSyncAnimalControlsForSelection(selected) {
   const isAnimal = isAnimalEntity(selected);
+  builderSetFieldVisibility('builderAnimalExitDirection', isAnimal);
+  builderSetFieldVisibility('builderAnimalExitSpeed', isAnimal);
+  builderSetFieldVisibility('builderAnimalBonusPoints', isAnimal);
   if (BUILDER_UI.animalExitDirection) {
     BUILDER_UI.animalExitDirection.disabled = !isAnimal;
     BUILDER_UI.animalExitDirection.value = String(selected?.waterExitDirection || 'nearest');
@@ -3238,6 +3600,62 @@ function builderSyncPhysicsControlsForSelection(selected) {
   if (BUILDER_UI.layerLocked) BUILDER_UI.layerLocked.value = isLocked ? '1' : '0';
   if (BUILDER_UI.layerWaterMove) BUILDER_UI.layerWaterMove.disabled = isLocked;
   if (BUILDER_UI.layerTornadoFall) BUILDER_UI.layerTornadoFall.disabled = isLocked;
+  if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.disabled = isLocked;
+}
+
+function builderSetFieldVisibility(inputId, visible) {
+  const field = document.getElementById(inputId)?.closest('.builder-field');
+  if (!field) return;
+  field.style.display = visible ? '' : 'none';
+}
+
+function isBuilderTankerEntity(ent) {
+  if (!ent) return false;
+  const type = String(ent.type || '').toLowerCase();
+  const variant = String(ent.variant || '').toLowerCase();
+  const spriteKey = String(getLegacySpriteKeyForBuilder(ent) || '').toLowerCase();
+  return /semi|tanker/.test(type) || /semi|tanker/.test(variant) || /semi|tanker/.test(spriteKey);
+}
+
+function builderSyncLevelOptionVisibility() {
+  const selected = getBuilderEntityById(builderSelectedId);
+  const tankerSelected = isBuilderTankerEntity(selected);
+  const tankerSubsection = document.getElementById('builderTankerSubsection');
+  const tankerNote = document.getElementById('builderTankerInlineNote');
+  if (tankerSubsection) {
+    tankerSubsection.style.display = '';
+    tankerSubsection.classList.toggle('attention-pulse', !tankerSelected);
+  }
+  if (tankerNote) tankerNote.style.display = tankerSelected ? 'none' : '';
+  builderSetFieldVisibility('builderTankerStart', tankerSelected);
+  builderSetFieldVisibility('builderTankerRepeat', tankerSelected);
+  builderSetFieldVisibility('builderTankerHold', tankerSelected);
+  builderSetFieldVisibility('builderBoroEnabled', tankerSelected);
+  const bonusOn = tankerSelected && BUILDER_UI.boroEnabled?.value === '1';
+  builderSetFieldVisibility('builderBoroStart', bonusOn);
+  const tornadoOn = BUILDER_UI.tornadoEnabled?.value === '1';
+  [
+    'builderTornadoSpeed',
+    'builderTornadoDirection',
+    'builderTornadoStartDelay',
+    'builderTornadoTravelPercent',
+    'builderTornadoReturnEnabled',
+    'builderTornadoReturnPercent'
+  ].forEach((id) => builderSetFieldVisibility(id, tornadoOn));
+  const returnOn = tornadoOn && BUILDER_UI.tornadoReturnEnabled?.value === '1';
+  builderSetFieldVisibility('builderTornadoReturnPercent', returnOn);
+  const selectedForTornado = tornadoOn && !!selected;
+  const affectedByTornado = selectedForTornado && (BUILDER_UI.layerTornadoFall?.value === '1');
+  builderSetFieldVisibility('builderLayerTornadoFall', selectedForTornado);
+  builderSetFieldVisibility('builderSetTornadoRouteBtn', affectedByTornado);
+  builderSetFieldVisibility('builderTornadoAffectStartX', affectedByTornado);
+  builderSetFieldVisibility('builderTornadoAffectLandX', affectedByTornado);
+  builderSetFieldVisibility('builderTornadoAffectLandY', affectedByTornado);
+  builderSetFieldVisibility('builderTornadoAffectDurationMs', affectedByTornado);
 }
 
 function builderRecalculateRightPanelWidth() {
@@ -3275,29 +3693,24 @@ function builderUpdateTopColumnOrder() {
 }
 
 function builderUpdateTopColumnsForSelection(selected) {
-  const selectedCol = document.getElementById('builderTopSelectedColumn');
-  const levelCol = document.getElementById('builderTopLevelColumn');
   const selectedSection = document.getElementById('builderTopSelectedSection');
-  const levelSection = document.getElementById('builderTopLevelSection');
-  if (!selectedCol) return;
+  if (!selectedSection) return;
   const hasSelection = !!selected;
-  if (!selectedSection || !levelSection || !levelCol) return;
-  const attachDetailsToColumn = (details, column) => {
-    if (!details || !column) return;
-    if (details.parentElement === column) return;
-    const beforeNode = column.querySelector('.column-toggle') || column.firstChild;
-    if (beforeNode) column.insertBefore(details, beforeNode);
-    else column.appendChild(details);
-  };
-  attachDetailsToColumn(selectedSection, selectedCol);
-  attachDetailsToColumn(levelSection, levelCol);
   selectedSection.classList.toggle('no-selection-mode', !hasSelection);
-  if (!hasSelection) selectedCol.classList.remove('collapsed');
-  builderUpdateTopColumnOrder();
+  if (!hasSelection) {
+    const col = document.getElementById('builderTopSelectedColumn');
+    if (col) col.classList.remove('collapsed');
+  }
 }
 
 function builderApplyStateToUi() {
   if (!BUILDER_UI.name) return;
+  const rightBody = document.querySelector('#builderRightPanel .builder-body');
+  const selectedContent = document.querySelector('#builderTopSelectedSection .section-content');
+  const levelContent = document.querySelector('#builderTopLevelSection .section-content');
+  const rightScroll = rightBody?.scrollTop ?? 0;
+  const selectedScroll = selectedContent?.scrollTop ?? 0;
+  const levelScroll = levelContent?.scrollTop ?? 0;
   builderApplyAutoSafetyTip();
   BUILDER_UI.name.value = builderState.name || '';
   if (BUILDER_UI.creatorName) BUILDER_UI.creatorName.value = builderState.creatorName || '';
@@ -3322,10 +3735,24 @@ function builderApplyStateToUi() {
   BUILDER_UI.tornadoReturnEnabled.value = builderState?.tornadoConfig?.returnEnabled ? '1' : '0';
   BUILDER_UI.tornadoReturnPercent.value = String(builderState?.tornadoConfig?.returnPercent ?? 65);
   const selected = getBuilderEntityById(builderSelectedId);
-  BUILDER_UI.objScale.value = String(clamp(Number(selected?.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE));
-  BUILDER_UI.quickScale.value = String(clamp(Number(selected?.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE));
-  BUILDER_UI.objX.value = String(Math.round(Number(selected?.x ?? 0)));
-  BUILDER_UI.objY.value = String(Math.round(Number(selected?.baseY ?? GRASS_Y)));
+  const selectedScale = clamp(Number(selected?.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  const selectedX = Math.round(clamp(Number(selected?.x ?? 0), -220, 1520));
+  const selectedY = Math.round(clamp(Number(selected?.baseY ?? GRASS_Y), 120, 580));
+  const selectedRotate = clamp(Number(selected?.rotationDeg || 0), -180, 180);
+  const selectedSkewX = clamp(Number(selected?.skewXDeg || 0), -45, 45);
+  const selectedSkewY = clamp(Number(selected?.skewYDeg || 0), -45, 45);
+  BUILDER_UI.objScale.value = String(selectedScale);
+  if (BUILDER_UI.objScaleNumber) BUILDER_UI.objScaleNumber.value = selectedScale.toFixed(2);
+  BUILDER_UI.objX.value = String(selectedX);
+  if (BUILDER_UI.objXRange) BUILDER_UI.objXRange.value = String(selectedX);
+  BUILDER_UI.objY.value = String(selectedY);
+  if (BUILDER_UI.objYRange) BUILDER_UI.objYRange.value = String(selectedY);
+  if (BUILDER_UI.objRotate) BUILDER_UI.objRotate.value = String(selectedRotate);
+  if (BUILDER_UI.objRotateRange) BUILDER_UI.objRotateRange.value = String(selectedRotate);
+  if (BUILDER_UI.objSkewX) BUILDER_UI.objSkewX.value = String(selectedSkewX);
+  if (BUILDER_UI.objSkewXRange) BUILDER_UI.objSkewXRange.value = String(selectedSkewX);
+  if (BUILDER_UI.objSkewY) BUILDER_UI.objSkewY.value = String(selectedSkewY);
+  if (BUILDER_UI.objSkewYRange) BUILDER_UI.objSkewYRange.value = String(selectedSkewY);
   BUILDER_UI.layerFilter.value = selected?.filter || '';
   BUILDER_UI.layerOpacity.value = String(clamp(Number(selected?.alpha ?? 1), 0.05, 1));
   BUILDER_UI.layerBurnable.value = selected?.burnableOverride === true ? 'on' : (selected?.burnableOverride === false ? 'off' : 'auto');
@@ -3340,12 +3767,22 @@ function builderApplyStateToUi() {
   BUILDER_UI.layerFlipY.value = selected?.flipY ? '1' : '0';
   BUILDER_UI.layerWaterMove.value = selected?.movableWithWater ? '1' : '0';
   BUILDER_UI.layerTornadoFall.value = selected?.fallWithTornado ? '1' : '0';
+  if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
+  if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
+  if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.value = String(Math.round(Number(selected?.tornadoAffectLandY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.value = String(clamp(Number(selected?.tornadoAffectDurationMs ?? 1800), 200, 12000));
+  if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.textContent = builderTornadoRoutePick.active ? 'Cancel Throw Path Pick' : 'Set Tornado Throw Path';
   builderSyncPhysicsControlsForSelection(selected);
+  builderSyncLevelOptionVisibility();
   builderSyncAnimalControlsForSelection(selected);
   builderUpdateTopColumnsForSelection(selected);
   builderRenderBurnZoneEditor(selected);
   builderRefreshCreatorNotice();
   builderRenderLayerList();
+  builderUpdateUndoRedoButtons();
+  if (selectedContent) selectedContent.scrollTop = selectedScroll;
+  if (levelContent) levelContent.scrollTop = levelScroll;
+  if (rightBody) rightBody.scrollTop = rightScroll;
 }
 
 function builderReadUiIntoState() {
@@ -3382,32 +3819,142 @@ function builderReadUiIntoState() {
 
 function builderSaveLastDraft() {
   localStorage.setItem(BUILDER_LAST_DRAFT_KEY, JSON.stringify(builderState));
+  builderPushHistorySnapshot();
+}
+
+function builderHistorySnapshot() {
+  return JSON.stringify({
+    level: normalizeBuilderLevel(builderState),
+    selectedId: builderSelectedId || null
+  });
+}
+
+function builderUpdateUndoRedoButtons() {
+  if (BUILDER_UI.undoBtn) BUILDER_UI.undoBtn.disabled = builderUndoStack.length <= 1;
+  if (BUILDER_UI.redoBtn) BUILDER_UI.redoBtn.disabled = builderRedoStack.length === 0;
+}
+
+function builderPushHistorySnapshot(force = false) {
+  if (builderHistoryMute) return;
+  const signature = builderHistorySnapshot();
+  if (!force && signature === builderLastHistorySignature) {
+    builderUpdateUndoRedoButtons();
+    return;
+  }
+  builderUndoStack.push(signature);
+  if (builderUndoStack.length > BUILDER_HISTORY_LIMIT) {
+    builderUndoStack.splice(0, builderUndoStack.length - BUILDER_HISTORY_LIMIT);
+  }
+  builderLastHistorySignature = signature;
+  if (!force) builderRedoStack = [];
+  builderUpdateUndoRedoButtons();
+}
+
+function builderResetHistory() {
+  builderUndoStack = [];
+  builderRedoStack = [];
+  builderLastHistorySignature = '';
+  builderPushHistorySnapshot(true);
+}
+
+function builderRestoreHistorySnapshot(snapshot) {
+  const parsed = safeJsonParse(snapshot || '', null);
+  if (!parsed || !parsed.level) return false;
+  builderHistoryMute = true;
+  builderState = normalizeBuilderLevel(parsed.level);
+  const nextSelected = String(parsed.selectedId || '');
+  const exists = (builderState.entities || []).some((ent) => ent?.id === nextSelected);
+  builderSelectedId = exists ? nextSelected : null;
+  builderApplyStateToUi();
+  localStorage.setItem(BUILDER_LAST_DRAFT_KEY, JSON.stringify(builderState));
+  builderHistoryMute = false;
+  return true;
+}
+
+function builderUndo() {
+  if (builderUndoStack.length <= 1) return;
+  const current = builderUndoStack.pop();
+  if (current) builderRedoStack.push(current);
+  const previous = builderUndoStack[builderUndoStack.length - 1];
+  if (!previous || !builderRestoreHistorySnapshot(previous)) return;
+  builderLastHistorySignature = previous;
+  builderUpdateUndoRedoButtons();
+  builderSetStatus('Undo applied.');
+}
+
+function builderRedo() {
+  if (!builderRedoStack.length) return;
+  const next = builderRedoStack.pop();
+  if (!next) return;
+  builderUndoStack.push(next);
+  if (builderUndoStack.length > BUILDER_HISTORY_LIMIT) {
+    builderUndoStack.splice(0, builderUndoStack.length - BUILDER_HISTORY_LIMIT);
+  }
+  if (!builderRestoreHistorySnapshot(next)) return;
+  builderLastHistorySignature = next;
+  builderUpdateUndoRedoButtons();
+  builderSetStatus('Redo applied.');
 }
 
 function builderPopulateLevelSelect() {
-  const select = BUILDER_UI.editLevelSelect;
-  if (!select) return;
-  const previous = Number(select.value || 1);
-  select.innerHTML = '';
+  const selects = [BUILDER_UI.editLevelSelect, BUILDER_UI.topLevelLoader].filter(Boolean);
+  if (!selects.length) return;
+  const previous = Number(BUILDER_UI.editLevelSelect?.value || BUILDER_UI.targetSlot?.value || currentLevel || 1);
+  selects.forEach((select) => { select.innerHTML = ''; });
   const max = Math.min(BUILDER_SLOT_MAX, baseLevels.length);
+  selects.forEach((select) => {
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+  placeholder.textContent = select === BUILDER_UI.topLevelLoader ? 'Load Level...' : 'Select Level...';
+    select.appendChild(placeholder);
+  });
   for (let i = 1; i <= max; i++) {
-    const option = document.createElement('option');
     const levelName = baseLevels[i - 1]?.name || `Level ${i}`;
-    option.value = String(i);
-    option.textContent = `Level ${i}: ${levelName}`;
-    select.appendChild(option);
+    selects.forEach((select) => {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = `Level ${i}: ${levelName}`;
+      select.appendChild(option);
+    });
   }
   const desired = clamp(previous || currentLevel || 1, 1, max || 1);
-  select.value = String(desired);
+  if (BUILDER_UI.editLevelSelect) BUILDER_UI.editLevelSelect.value = String(desired);
+  if (BUILDER_UI.topLevelLoader) BUILDER_UI.topLevelLoader.value = '';
+}
+
+function builderLoadLevelBySlot(slot, announce = true) {
+  const parsed = clamp(Number(slot || 1), 1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX));
+  const level = baseLevels[parsed - 1] || baseLevels[0];
+  if (!level) return;
+  builderTool = 'select';
+  builderClearPendingPlacement();
+  builderLoadFromLevel(level);
+  if (BUILDER_UI.editLevelSelect) BUILDER_UI.editLevelSelect.value = String(parsed);
+  if (BUILDER_UI.topLevelLoader) BUILDER_UI.topLevelLoader.value = '';
+  if (BUILDER_UI.targetSlot) BUILDER_UI.targetSlot.value = String(parsed);
+  if (announce) builderSetStatus(`Loaded Level ${parsed}. Ready to edit.`);
+}
+
+function builderSetLeftPanelCollapsed(collapsed) {
+  const screen = document.getElementById('builderScreen');
+  const panel = document.getElementById('builderLeftPanel');
+  if (!screen || !panel) return;
+  panel.classList.toggle('collapsed', !!collapsed);
+  screen.style.setProperty('--builder-left-width', collapsed ? '48px' : 'clamp(330px, 26vw, 420px)');
 }
 
 function builderSelectEntity(id) {
+  if (id) builderClearPendingPlacement();
+  if (builderTornadoRoutePick.active && builderTornadoRoutePick.entityId && builderTornadoRoutePick.entityId !== id) {
+    builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+  }
   builderSelectedId = id || null;
   builderApplyStateToUi();
 }
 
 function getLayerLabel(ent) {
   if (!ent) return 'Unknown';
+  if (ent.type === 'requiredFireTruck') return 'Required Fire Truck';
   if (ent.type === 'builderSprite') return ent.spriteKey || 'builderSprite';
   if (ent.variant) return `${ent.type} (${ent.variant})`;
   return ent.type || 'entity';
@@ -3427,15 +3974,73 @@ function builderRenderLayerList() {
   if (!BUILDER_UI.layerList) return;
   BUILDER_UI.layerList.innerHTML = '';
   const entities = builderState.entities || [];
+  let dragEntityId = null;
+  const moveByEntity = (entityId, mode) => {
+    builderSelectedId = entityId;
+    builderMoveSelectedLayer(mode);
+  };
   for (let i = entities.length - 1; i >= 0; i--) {
     const ent = entities[i];
-    const row = document.createElement('button');
-    row.type = 'button';
+    const row = document.createElement('div');
     row.className = `builder-layer-item${ent.id === builderSelectedId ? ' active' : ''}`;
-    row.textContent = `${entities.length - i}. ${getLayerLabel(ent)}`;
-    row.addEventListener('click', () => builderSelectEntity(ent.id));
+    row.draggable = true;
+    row.dataset.entityId = ent.id;
+    const labelBtn = document.createElement('button');
+    labelBtn.type = 'button';
+    labelBtn.className = 'label-btn';
+    labelBtn.textContent = `${entities.length - i}. ${getLayerLabel(ent)}`;
+    labelBtn.addEventListener('click', () => builderSelectEntity(ent.id));
+    const actions = document.createElement('div');
+    actions.className = 'builder-layer-row-actions';
+    const mk = (text, title, onClick, extraClass = '') => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = text;
+      btn.title = title;
+      if (extraClass) btn.className = extraClass;
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        onClick();
+      });
+      return btn;
+    };
+  actions.appendChild(mk('⤒', 'Move to top', () => moveByEntity(ent.id, 'top')));
+  actions.appendChild(mk('↑', 'Move up', () => moveByEntity(ent.id, 'up')));
+  actions.appendChild(mk('↓', 'Move down', () => moveByEntity(ent.id, 'down')));
+  actions.appendChild(mk('⤓', 'Move to bottom', () => moveByEntity(ent.id, 'bottom')));
+  actions.appendChild(mk('⧉', 'Duplicate layer', () => builderDuplicateLayer(ent.id)));
+  actions.appendChild(mk('✕', 'Delete layer', () => builderDeleteLayerById(ent.id), 'warn'));
+    row.appendChild(labelBtn);
+    row.appendChild(actions);
+    row.addEventListener('dragstart', () => {
+      dragEntityId = ent.id;
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => {
+      dragEntityId = null;
+      row.classList.remove('dragging');
+    });
+    row.addEventListener('dragover', (event) => { event.preventDefault(); });
+    row.addEventListener('drop', (event) => {
+      event.preventDefault();
+      if (!dragEntityId || dragEntityId === ent.id) return;
+      builderMoveLayerToEntity(dragEntityId, ent.id);
+    });
     BUILDER_UI.layerList.appendChild(row);
   }
+}
+
+function builderMoveLayerToEntity(dragEntityId, targetEntityId) {
+  const entities = builderState.entities || [];
+  const from = entities.findIndex((ent) => ent.id === dragEntityId);
+  const to = entities.findIndex((ent) => ent.id === targetEntityId);
+  if (from < 0 || to < 0) return;
+  const [moved] = entities.splice(from, 1);
+  const adjustedTarget = from < to ? to - 1 : to;
+  entities.splice(adjustedTarget, 0, moved);
+  builderState.entities = entities;
+  builderSelectEntity(moved.id);
+  builderSaveLastDraft();
 }
 
 function builderMoveSelectedLayer(mode) {
@@ -3455,11 +4060,45 @@ function builderMoveSelectedLayer(mode) {
   builderSaveLastDraft();
 }
 
-function builderDeleteSelectedLayer() {
-  if (!builderSelectedId) return;
+function builderDuplicateLayer(layerId) {
   const entities = builderState.entities || [];
-  const index = entities.findIndex((ent) => ent.id === builderSelectedId);
+  const index = entities.findIndex((ent) => ent.id === layerId);
   if (index < 0) return;
+  const source = entities[index];
+  if (source?.type === 'requiredFireTruck') {
+    builderSetStatus('Required fire truck layer cannot be duplicated.');
+    return;
+  }
+  const copy = normalizeBuilderEntity({
+    ...deepClone(source),
+    id: undefined,
+    x: clamp(Number(source.x || 0) + 18, -200, 1500),
+    baseY: clamp(Number(source.baseY ?? GRASS_Y), 120, 580)
+  });
+  entities.splice(index + 1, 0, copy);
+  builderState.entities = entities;
+  builderSelectEntity(copy.id);
+  builderSaveLastDraft();
+  builderSetStatus(`Duplicated layer: ${getLayerLabel(source)}.`);
+}
+
+function builderShouldConfirmDeleteLayer() {
+  if (BUILDER_UI.layerDeleteNoAsk) {
+    return !BUILDER_UI.layerDeleteNoAsk.checked;
+  }
+  return localStorage.getItem(BUILDER_DELETE_CONFIRM_SKIP_KEY) !== '1';
+}
+
+function builderDeleteLayerById(layerId) {
+  const entities = builderState.entities || [];
+  const index = entities.findIndex((ent) => ent.id === layerId);
+  if (index < 0) return;
+  if (entities[index]?.type === 'requiredFireTruck') {
+    builderSetStatus('Required fire truck layer cannot be deleted.');
+    return;
+  }
+  const label = getLayerLabel(entities[index]);
+  if (builderShouldConfirmDeleteLayer() && !confirm(`Delete layer "${label}"?`)) return;
   const [removed] = entities.splice(index, 1);
   builderState.entities = entities;
   const next = entities[Math.min(index, entities.length - 1)]?.id || null;
@@ -3467,6 +4106,79 @@ function builderDeleteSelectedLayer() {
   builderApplyStateToUi();
   builderSaveLastDraft();
   builderSetStatus(`Deleted layer: ${getLayerLabel(removed)}.`);
+}
+
+function builderDeleteSelectedLayer() {
+  if (!builderSelectedId) return;
+  builderDeleteLayerById(builderSelectedId);
+}
+
+function builderResetSelectedDefaults() {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) {
+    builderSetStatus('Select a WebP first to reset defaults.');
+    return;
+  }
+  const spriteKey = ent.type === 'builderSprite' ? String(ent.spriteKey || '') : getLegacySpriteKeyForBuilder(ent);
+  const catalogSpec = getCatalogSpec(ent.type);
+  const isAnimal = isAnimalEntity(ent) || isAnimalSpriteKey(spriteKey);
+  const defaultBurnable = ent.type === 'requiredFireTruck'
+    ? false
+    : (isAnimal ? false : (catalogSpec ? !!catalogSpec.burnable : isBurnableType(ent.type)));
+  ent.scale = 1;
+  ent.rotationDeg = 0;
+  ent.skewXDeg = 0;
+  ent.skewYDeg = 0;
+  ent.flipX = false;
+  ent.flipY = false;
+  ent.filter = '';
+  ent.alpha = 1;
+  ent.silhouette = false;
+  ent.silhouetteStrength = undefined;
+  ent.burnableOverride = defaultBurnable;
+  const zoneTemplate = getBurnZoneTemplateForEntity(ent);
+  if (zoneTemplate.length) {
+    ent.burnZonesEnabled = zoneTemplate.map(() => !!defaultBurnable);
+    ent.burnZoneDifficultyTiers = zoneTemplate.map(() => 1);
+  }
+  ent.lockedPosition = true;
+  ent.movableWithWater = false;
+  ent.fallWithTornado = false;
+  ent.tornadoAffectStartX = undefined;
+  ent.tornadoAffectLandX = undefined;
+  ent.tornadoAffectLandY = undefined;
+  ent.tornadoAffectDurationMs = undefined;
+  ent.waterExitDirection = 'nearest';
+  ent.waterExitSpeed = 2.2;
+  ent.waterExitBonusPoints = 0;
+  resetTornadoAffectRuntime(ent);
+  builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+  builderSetStatus(`Reset defaults for "${getLayerLabel(ent)}".`);
+}
+
+function builderMirrorLevel(axis = 'x') {
+  const entities = builderState.entities || [];
+  const centerX = canvas.width * 0.5;
+  const centerY = canvas.height * 0.5;
+  entities.forEach((ent) => {
+    if (!ent) return;
+    if (axis === 'x') {
+      if (typeof ent.x === 'number') ent.x = clamp((centerX * 2) - ent.x, -200, 1500);
+      ent.flipX = !ent.flipX;
+    } else {
+      if (typeof ent.baseY === 'number') ent.baseY = clamp((centerY * 2) - ent.baseY, 120, 580);
+      ent.flipY = !ent.flipY;
+    }
+  });
+  if (axis === 'x') {
+    builderState.truckSide = builderState.truckSide === 'left' ? 'right' : 'left';
+    if (builderState.truckPlacementX != null) builderState.truckPlacementX = clamp((centerX * 2) - builderState.truckPlacementX, -220, 1520);
+  }
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+  builderSetStatus(axis === 'x' ? 'Mirrored level horizontally.' : 'Mirrored level vertically.');
 }
 
 function builderInitCollapsibleSections() {
@@ -3520,30 +4232,59 @@ function builderInitCollapsibleSections() {
   topSections.className = 'builder-top-sections';
   body.appendChild(topSections);
   const selectedSection = wrap('Layers', [
-    '#builderQuickScale',
+    '#builderResetSelectedDefaultsBtn',
     '#builderObjScale',
     '#builderObjX',
     '#builderObjY',
-    '#builderLayerList',
-    '#builderLayerTopBtn',
+    '#builderObjRotate',
+    '#builderObjSkewX',
+    '#builderObjSkewY',
+    '#builderLayerFlipX',
+    '#builderLayerFlipY',
     '#builderLayerFilter',
     '#builderLayerOpacity',
     '#builderLayerBurnable',
     '#builderBurnZoneList',
     '#builderLayerSilhouette',
     '#builderLayerSilhouetteStrength',
+    '#builderLayerLocked',
+    '#builderLayerWaterMove',
+    '#builderLayerTornadoFall',
+    '#builderAnimalExitDirection',
+    '#builderAnimalExitSpeed',
+    '#builderAnimalBonusPoints',
+    '#builderLayerList',
+    '#builderLayerTopBtn'
+  ], topSections, 'builderTopSelectedSection');
+  const selectedContent = selectedSection.querySelector('.section-content');
+  const layerField = selectedSection.querySelector('#builderLayerList')?.closest('.builder-field');
+  if (layerField) layerField.classList.add('builder-layer-field');
+  [
+    '#builderResetSelectedDefaultsBtn',
+    '#builderObjScale',
+    '#builderObjX',
+    '#builderObjY',
+    '#builderObjRotate',
+    '#builderObjSkewX',
+    '#builderObjSkewY',
     '#builderLayerFlipX',
     '#builderLayerFlipY',
+    '#builderLayerFilter',
+    '#builderLayerOpacity',
+    '#builderLayerBurnable',
+    '#builderBurnZoneList',
+    '#builderLayerSilhouette',
+    '#builderLayerSilhouetteStrength',
     '#builderLayerLocked',
     '#builderLayerWaterMove',
     '#builderLayerTornadoFall',
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints'
-  ], topSections, 'builderTopSelectedSection');
-  const selectedContent = selectedSection.querySelector('.section-content');
-  const layerField = selectedSection.querySelector('#builderLayerList')?.closest('.builder-field');
-  if (layerField) layerField.classList.add('builder-layer-field');
+  ].forEach((selector) => {
+    const field = selectedSection.querySelector(selector)?.closest('.builder-field');
+    if (field) field.classList.add('requires-selection');
+  });
   if (selectedContent) {
     const hint = document.createElement('div');
     hint.className = 'selected-empty-hint';
@@ -3564,13 +4305,17 @@ function builderInitCollapsibleSections() {
     '#builderBlackBoxEnabled',
     '#builderBlackBoxStart',
     '#builderTornadoEnabled',
+    '#builderSetTornadoRouteBtn',
+    '#builderTornadoAffectStartX',
+    '#builderTornadoAffectLandX',
+    '#builderTornadoAffectLandY',
+    '#builderTornadoAffectDurationMs',
     '#builderTornadoSpeed',
     '#builderTornadoDirection',
     '#builderTornadoStartDelay',
     '#builderTornadoTravelPercent',
     '#builderTornadoReturnEnabled',
     '#builderTornadoReturnPercent',
-    '#builderTargetLevelSlot',
     '#builderEditLevelSelect',
     '#builderLoadSelectedLevelBtn'
   ], topSections, 'builderTopLevelSection');
@@ -3585,6 +4330,131 @@ function builderInitCollapsibleSections() {
   const selectedSectionContent = topSections.querySelector('.builder-section .section-content');
   const burnWrap = document.getElementById('builderBurnZonesWrap');
   if (selectedSectionContent && burnWrap) selectedSectionContent.appendChild(burnWrap.closest('.builder-field') || burnWrap);
+  const levelContent = levelSection.querySelector('.section-content');
+  const exportContent = exportSection.querySelector('.section-content');
+  const exportActions = exportSection.querySelector('.builder-actions');
+  const fieldById = (id) => levelSection.querySelector(id)?.closest('.builder-field');
+  const moveToSubsection = (title, ids, open = true) => {
+    if (!levelContent) return null;
+    const details = document.createElement('details');
+    details.className = 'builder-subsection';
+    details.open = open;
+    const summary = document.createElement('summary');
+    summary.textContent = title;
+    const inner = document.createElement('div');
+    inner.className = 'subsection-content';
+    details.appendChild(summary);
+    details.appendChild(inner);
+    ids.forEach((id) => {
+      const field = fieldById(id);
+      if (field) inner.appendChild(field);
+    });
+    levelContent.appendChild(details);
+    return details;
+  };
+  const levelMainSub = moveToSubsection('Level Settings', [
+    '#builderLevelName',
+    '#builderCreatorName',
+    '#builderSafetyTip',
+    '#builderTruckSide',
+    '#builderTimeOfDay',
+    '#builderEditLevelSelect',
+    '#builderLoadSelectedLevelBtn'
+  ], true);
+  const loadExistingField = fieldById('#builderEditLevelSelect');
+  if (loadExistingField) loadExistingField.classList.add('builder-divider');
+  const tankerSub = moveToSubsection('Tanker', [
+    '#builderTankerStart',
+    '#builderTankerRepeat',
+    '#builderTankerHold',
+    '#builderBoroEnabled',
+    '#builderBoroStart'
+  ], true);
+  if (tankerSub) {
+    tankerSub.id = 'builderTankerSubsection';
+    const tankerInner = tankerSub.querySelector('.subsection-content');
+    if (tankerInner) {
+      const tankerNote = document.createElement('div');
+      tankerNote.id = 'builderTankerInlineNote';
+      tankerNote.className = 'builder-inline-note';
+      tankerNote.textContent = 'Select a tanker layer to edit tanker timings and bonus tanker schedule.';
+      tankerInner.insertBefore(tankerNote, tankerInner.firstChild);
+    }
+  }
+  const blackBoxSub = moveToSubsection('Black Box Truck', [
+    '#builderBlackBoxEnabled',
+    '#builderBlackBoxStart'
+  ], false);
+  if (blackBoxSub) blackBoxSub.id = 'builderBlackBoxSubsection';
+  const tornadoSub = moveToSubsection('Tornado', [
+    '#builderTornadoEnabled',
+    '#builderSetTornadoRouteBtn',
+    '#builderTornadoAffectStartX',
+    '#builderTornadoAffectLandX',
+    '#builderTornadoAffectLandY',
+    '#builderTornadoAffectDurationMs',
+    '#builderTornadoSpeed',
+    '#builderTornadoDirection',
+    '#builderTornadoStartDelay',
+    '#builderTornadoTravelPercent',
+    '#builderTornadoReturnEnabled',
+    '#builderTornadoReturnPercent'
+  ], false);
+  if (tornadoSub) tornadoSub.id = 'builderTornadoSubsection';
+  const targetSlotField = document.getElementById('builderTargetLevelSlot')?.closest('.builder-field');
+  if (targetSlotField && exportContent) exportContent.insertBefore(targetSlotField, exportContent.firstChild);
+  if (exportActions && exportContent) {
+    exportActions.classList.add('builder-actions-root');
+    const wrapActionSubsection = (title, ids) => {
+      const section = document.createElement('div');
+      section.className = 'builder-actions-subsection';
+      const heading = document.createElement('div');
+      heading.className = 'builder-actions-subtitle';
+      heading.textContent = title;
+      const grid = document.createElement('div');
+      grid.className = 'builder-actions';
+      ids.forEach((id) => {
+        const btn = exportActions.querySelector(`#${id}`);
+        if (btn) grid.appendChild(btn);
+      });
+      if (!grid.children.length) return;
+      section.appendChild(heading);
+      section.appendChild(grid);
+      exportActions.appendChild(section);
+    };
+    wrapActionSubsection('Editing Tools', [
+      'builderToolSelectBtn',
+      'builderToolMoveBtn',
+      'builderFlipXBtn',
+      'builderFlipYBtn',
+      'builderSilhouetteBtn',
+      'builderBurnableBtn',
+      'builderLoadCurrentBtn',
+      'builderNewBtn',
+      'builderTestBtn'
+    ]);
+    wrapActionSubsection('Builder Save / Load', [
+      'builderSaveLocalBtn',
+      'builderLoadLocalBtn',
+      'builderImportBtn'
+    ]);
+    wrapActionSubsection('Offline Player Downloads', [
+      'builderExportBtn',
+      'builderExportOfflineBtn',
+      'builderExportFullGameBtn',
+      'builderPrintBtn'
+    ]);
+    wrapActionSubsection('Share And Submit', [
+      'builderShareBtn',
+      'builderSaveSubmissionBtn',
+      'builderPublishBtn'
+    ]);
+    wrapActionSubsection('Danger Zone', [
+      'builderDeleteBtn',
+      'builderClearBtn',
+      'builderCloseBtn'
+    ]);
+  }
   body.dataset.sectionsReady = '1';
 }
 
@@ -3594,16 +4464,22 @@ function builderGetLevelSnapshot() {
 }
 
 function builderLoadFromLevel(levelData) {
+  builderClearPendingPlacement();
   builderState = levelToBuilderLevel(levelData);
   builderSelectEntity(null);
   builderApplyStateToUi();
+  builderResetHistory();
   builderPreloadSpritesForState();
   builderSetStatus(`Loaded "${builderState.name}" into builder.`);
   builderSaveLastDraft();
 }
 
 function builderOpen(levelData = null) {
+  builderSetLeftPanelCollapsed(false);
   builderInitCollapsibleSections();
+  if (BUILDER_UI.layerDeleteNoAsk) {
+    BUILDER_UI.layerDeleteNoAsk.checked = localStorage.getItem(BUILDER_DELETE_CONFIRM_SKIP_KEY) === '1';
+  }
   builderPopulateLevelSelect();
   if (levelData) {
     builderLoadFromLevel(levelData);
@@ -3614,6 +4490,8 @@ function builderOpen(levelData = null) {
     builderPlaceTruckForUser('left');
     builderSelectEntity(null);
     builderApplyStateToUi();
+    builderResetHistory();
+    builderSaveLastDraft();
     builderSetStatus('Fire truck placed on the Left lane. Add props from the left panel, or change Truck Side to Right.');
   }
   builderStartTruckSideAttention();
@@ -3632,6 +4510,7 @@ function builderOpen(levelData = null) {
 
 function builderClose() {
   builderReadUiIntoState();
+  builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
   builderSaveLastDraft();
   builderEndTour(false);
   builderShowHelpModal(false);
@@ -3750,7 +4629,7 @@ function builderRenderAssetList() {
       row.className = 'builder-asset';
       row.draggable = true;
       row.dataset.spriteKey = asset.key;
-      const src = asset.isCustom ? (CUSTOM_SPRITE_DATA[asset.key]?.dataUrl || '') : `./images/webp_converted/${asset.file}`;
+      const src = asset.isCustom ? (CUSTOM_SPRITE_DATA[asset.key]?.dataUrl || '') : `./images/${asset.file}`;
       row.innerHTML = `<img src="${src}" alt="${asset.key}"><div class="name">${getAssetDisplayName(asset.key)}</div>`;
       row.addEventListener('click', () => {
         builderPendingSpriteKey = asset.key;
@@ -3769,6 +4648,7 @@ function builderRenderAssetList() {
 }
 
 function builderCreateEntity(spriteKey, x, baseY) {
+  const isAnimal = isAnimalSpriteKey(spriteKey);
   return normalizeBuilderEntity({
     type: 'builderSprite',
     spriteKey,
@@ -3776,8 +4656,8 @@ function builderCreateEntity(spriteKey, x, baseY) {
     baseY: snapValue(baseY, BUILDER_SNAP_Y),
     scale: 1,
     lockedPosition: true,
-    burnableOverride: true,
-    burnZonesEnabled: [true, true, true],
+    burnableOverride: isAnimal ? false : true,
+    burnZonesEnabled: isAnimal ? [false, false, false] : [true, true, true],
     burnZoneDifficultyTiers: [1, 1, 1],
     waterExitDirection: 'nearest',
     waterExitSpeed: 2.2,
@@ -3800,15 +4680,41 @@ function builderCreateSpecialEntity(type, x, baseY) {
   return null;
 }
 
+function ensureRequiredTruckLayer(level) {
+  if (!level || typeof level !== 'object') return level;
+  if (level.truckSide !== 'left' && level.truckSide !== 'right') {
+    level.truckSide = 'left';
+  }
+  level.truckPlaced = true;
+  if (!Array.isArray(level.entities)) level.entities = [];
+  const existing = level.entities.find((ent) => ent?.type === 'requiredFireTruck');
+  if (existing) {
+    existing.scale = clamp(Number(existing.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+    existing.burnableOverride = false;
+    existing.lockedPosition = true;
+    return level;
+  }
+  const truckLayer = normalizeBuilderEntity({
+    type: 'requiredFireTruck',
+    scale: 1,
+    burnableOverride: false,
+    lockedPosition: true
+  });
+  level.entities.push(truckLayer);
+  return level;
+}
+
 function getEntitiesInRenderOrder(entities) {
   const source = Array.isArray(entities) ? entities : [];
+  const deepBackground = [];
   const background = [];
   const foreground = [];
   source.forEach((ent) => {
-    if (ent?.type === 'pond') background.push(ent);
+    if (ent?.type === 'blackBoxTruck') deepBackground.push(ent);
+    else if (ent?.type === 'pond') background.push(ent);
     else foreground.push(ent);
   });
-  return background.concat(foreground);
+  return deepBackground.concat(background, foreground);
 }
 
 function builderPlacePendingEntity(x, y) {
@@ -3850,6 +4756,11 @@ function builderPlacePendingSprite(x, y) {
 
 function builderRemoveSelected() {
   if (!builderSelectedId) return;
+  const selected = getBuilderEntityById(builderSelectedId);
+  if (selected?.type === 'requiredFireTruck') {
+    builderSetStatus('Required fire truck layer cannot be removed.');
+    return;
+  }
   builderState.entities = builderState.entities.filter((ent) => ent.id !== builderSelectedId);
   builderSelectEntity(null);
   builderSetStatus('Removed selected object.');
@@ -3931,7 +4842,7 @@ function builderExportPackage() {
   anchor.download = `${safeName || 'custom-level'}.kvfdlevel.json`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
-  builderSetStatus('Packaged level JSON exported.');
+  builderSetStatus('Level-only package exported. Re-upload this file later to continue editing in builder.');
 }
 
 function builderSharePackage() {
@@ -4034,6 +4945,22 @@ function builderBuildSubmissionPayload() {
     spriteFiles: Object.fromEntries(spriteKeys.map((key) => [key, SPRITE_FILES[key]])),
     customSprites,
     fireBoxes: computedFireBoxes,
+    integrationNotes: {
+      goal: 'Use this package to merge the level into official KVFD game slots.',
+      targetSlot: clamp(Number(BUILDER_UI.targetSlot?.value || 1), 1, BUILDER_SLOT_MAX),
+      requiredFiles: [
+        'level (object): merge into baseLevels[targetSlot-1]',
+        'fireBoxes: verify generated fire boxes match intended play',
+        'spriteKeys/spriteFiles: ensure all assets exist in images',
+        'customSprites: import any embedded uploaded sprites before publish'
+      ],
+      validationChecklist: [
+        'Open level in builder and run Quick Play on Easy/Medium/Hard',
+        'Confirm required fire truck layer and lane side',
+        'Confirm all WebP entities render and remain editable',
+        'Confirm burnability settings, especially animals default non-flammable'
+      ]
+    },
     level
   };
 }
@@ -4044,19 +4971,21 @@ function builderPreloadSpritesForState() {
   if (keys.length) ensureSpritesLoaded(keys);
 }
 
-async function builderSaveOfflineFolder() {
+async function builderSaveOfflineFolder(mode = 'withLevel') {
   if (!window.showDirectoryPicker) {
     alert('This browser does not support folder save. Use Package + images folder copy manually.');
     return;
   }
+  const includeLevel = mode !== 'gameOnly';
   const pkg = builderBuildSubmissionPayload();
   const safeName = (pkg.level?.name || 'custom-level').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'custom-level';
   const rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-  const folderHandle = await rootHandle.getDirectoryHandle(`KVFD-${safeName}-offline`, { create: true });
+  const folderSuffix = includeLevel ? `${safeName}-offline` : 'full-game-offline';
+  const folderHandle = await rootHandle.getDirectoryHandle(`KVFD-${folderSuffix}`, { create: true });
   const gamesHandle = await folderHandle.getDirectoryHandle('games', { create: true });
   const ffHandle = await gamesHandle.getDirectoryHandle('firefighter-game', { create: true });
   const imagesHandle = await ffHandle.getDirectoryHandle('images', { create: true });
-  const webpHandle = await imagesHandle.getDirectoryHandle('webp_converted', { create: true });
+  const webpHandle = imagesHandle;
   const assetsHandle = await folderHandle.getDirectoryHandle('assets', { create: true });
   const cssHandle = await assetsHandle.getDirectoryHandle('css', { create: true });
 
@@ -4092,16 +5021,21 @@ async function builderSaveOfflineFolder() {
   }
   await writeText(cssHandle, 'site.css', cssText);
 
+  const offlineSpriteKeys = Array.from(new Set([
+    ...Object.keys(SPRITE_FILES),
+    ...Object.keys(pkg.customSprites || {})
+  ]));
   const missingImages = [];
-  for (const key of pkg.spriteKeys) {
-    const file = SPRITE_FILES[key];
+  for (const key of offlineSpriteKeys) {
+    const file = SPRITE_FILES[key] || pkg.customSprites?.[key]?.originalName || `${key}.webp`;
+    if (!file) continue;
     try {
       if (pkg.customSprites && pkg.customSprites[key]?.dataUrl) {
         const response = await fetch(pkg.customSprites[key].dataUrl);
         const bytes = await response.arrayBuffer();
         await writeBinary(webpHandle, file, bytes);
       } else {
-        const imgUrl = new URL(`./images/webp_converted/${file}`, location.href).href;
+        const imgUrl = new URL(`./images/${file}`, location.href).href;
         const bytes = await fetch(imgUrl).then((r) => r.arrayBuffer());
         await writeBinary(webpHandle, file, bytes);
       }
@@ -4110,16 +5044,58 @@ async function builderSaveOfflineFolder() {
     }
   }
 
-  await writeText(ffHandle, 'level-package.json', JSON.stringify(pkg, null, 2));
+  if (includeLevel) {
+    await writeText(ffHandle, 'level-package.json', JSON.stringify(pkg, null, 2));
+  }
 
-  const levelParam = btoa(unescape(encodeURIComponent(JSON.stringify(pkg))));
-  const launcherHtml = `<!doctype html><html><head><meta charset="utf-8"><title>${pkg.level.name} - Offline Launcher</title></head><body style="font-family:Arial,sans-serif;padding:20px;background:#0d1726;color:#dff0ff"><h1>${pkg.level.name}</h1><p>Offline package ready.</p><p><a href="./games/firefighter-game/mobile-deluxe-23.html#kvfdLevel=${levelParam}" style="color:#9cd5ff">Play This Level Offline</a></p><p>If your browser blocks file access, run a local server in this folder and open the same link.</p></body></html>`;
+  const levelParam = includeLevel ? btoa(unescape(encodeURIComponent(JSON.stringify(pkg)))) : '';
+  const playHref = includeLevel
+    ? `./games/firefighter-game/mobile-deluxe-23.html#kvfdLevel=${levelParam}&kvfdSingle=1`
+    : './games/firefighter-game/mobile-deluxe-23.html';
+  const builderHref = includeLevel
+    ? `./games/firefighter-game/mobile-deluxe-23.html#kvfdLevel=${levelParam}&kvfdBuilder=1`
+    : './games/firefighter-game/mobile-deluxe-23.html#kvfdBuilder=1';
+  const launcherHtml = `<!doctype html><html><head><meta charset="utf-8"><title>${pkg.level.name} - Offline Launcher</title></head><body style="font-family:Arial,sans-serif;padding:20px;background:#0d1726;color:#dff0ff"><h1>${includeLevel ? pkg.level.name : 'KVFD Fire Defender Deluxe Offline'}</h1><p>Offline package ready. This folder includes the game file, level package, and image assets needed for local play.</p><p><a href="${playHref}" style="color:#9cd5ff;font-weight:700">Play Offline</a></p><p><a href="${builderHref}" style="color:#b2e8ff">Open Builder${includeLevel ? ' With This Level' : ''}</a></p><p style="margin-top:14px;padding:10px 12px;border:1px solid rgba(155,205,255,0.4);border-radius:10px;background:rgba(20,34,56,0.7)">Thank you for playing and supporting local firefighters. If you enjoyed this game, please consider donating to your town's Volunteer Fire Department.</p><p>If your browser blocks file access, run a local server in this folder and open the same link.</p></body></html>`;
   await writeText(folderHandle, 'play-level.html', launcherHtml);
-  await writeText(folderHandle, 'submission-package.json', JSON.stringify(pkg, null, 2));
+  const readmeText = `KVFD Offline Level Package
+=================================
+
+Thank you for playing!
+If you enjoyed this game, please consider donating to your town's Volunteer Fire Department.
+
+What is included
+----------------
+- play-level.html (quick launcher page)
+- games/firefighter-game/mobile-deluxe-23.html (the game)
+- games/firefighter-game/level-package.json (your level data, included only in "with level" export)
+- games/firefighter-game/images/* (image assets)
+
+How to start (simple)
+---------------------
+1) Open this folder.
+2) Double-click play-level.html.
+3) Click "Play Offline" (or "Open Builder" from the launcher).
+
+If your browser blocks local file access
+----------------------------------------
+Use a local web server from this folder:
+
+Option A (Python, if installed):
+  py -m http.server 8080
+  Then open: http://localhost:8080/play-level.html
+
+Option B (Node, if installed):
+  npx serve .
+  Then open the URL shown in terminal.
+`;
+  await writeText(folderHandle, 'README.txt', readmeText);
+  if (includeLevel) {
+    await writeText(folderHandle, 'submission-package.json', JSON.stringify(pkg, null, 2));
+  }
   if (missingImages.length) {
     await writeText(folderHandle, 'missing-images.txt', missingImages.join('\n'));
   }
-  builderSetStatus(`Offline folder saved: KVFD-${safeName}-offline`);
+  builderSetStatus(`Offline folder saved: KVFD-${folderSuffix}`);
 }
 
 function builderSaveSubmissionFile() {
@@ -4133,7 +5109,7 @@ function builderSaveSubmissionFile() {
   anchor.download = `${safeName || 'custom-level'}.kvfdsubmission.json`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
-  builderSetStatus('Submission file saved. Share this with me to rebuild your exact level.');
+  builderSetStatus('Submission file saved with merge checklist. Share this to include the level in the real game.');
 }
 
 function builderDrawHelpers() {
@@ -4179,17 +5155,24 @@ function builderDrawHelpers() {
   } else {
     const lane = level.truckSide === 'right' ? rightLane : leftLane;
     drawLaneRect(lane, 'rgba(255, 214, 78, 0.88)', 'rgba(255, 210, 82, 0.16)');
-    const oldTruckX = truck.x;
-    const oldFacing = truckFacing;
-    truck.x = clamp(Number(level.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX);
-    truckFacing = level.truckSide === 'right' ? -1 : 1;
-    drawSideFireTruck();
-    truck.x = oldTruckX;
-    truckFacing = oldFacing;
   }
   ctx.restore();
 
   getEntitiesInRenderOrder(level.entities).forEach((ent) => {
+    if (ent.type === 'requiredFireTruck') {
+      const lane = level.truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
+      const oldTruckX = truck.x;
+      const oldFacing = truckFacing;
+      const oldScale = truck.renderScale || 1;
+      truck.x = clamp(Number(level.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX);
+      truckFacing = level.truckSide === 'right' ? -1 : 1;
+      truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
+      drawSideFireTruck();
+      truck.x = oldTruckX;
+      truckFacing = oldFacing;
+      truck.renderScale = oldScale;
+      return;
+    }
     if (drawCatalogEntity(ent)) return;
     if (ent.type === 'builderSprite') {
       drawBuilderSpriteEntity(ent);
@@ -4232,6 +5215,33 @@ function builderDrawHelpers() {
       });
       ctx.restore();
     }
+    if (selected.fallWithTornado) {
+      const startX = Number(selected.tornadoAffectStartX ?? ((selected.x || 0) + 40));
+      const endX = Number(selected.tornadoAffectLandX ?? (selected.x || 0));
+      const endY = Number(selected.tornadoAffectLandY ?? (selected.baseY ?? GRASS_Y));
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 220, 92, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      ctx.beginPath();
+      ctx.moveTo(startX, 70);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255, 220, 92, 0.95)';
+      ctx.beginPath();
+      ctx.arc(startX, 70, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 150, 92, 0.95)';
+      ctx.beginPath();
+      ctx.arc(endX, endY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = 'bold 11px Arial';
+      ctx.fillStyle = '#fff2bd';
+      ctx.fillText('Trigger', startX + 8, 68);
+      ctx.fillText('Landing', endX + 8, endY - 8);
+      ctx.restore();
+    }
   }
 
   const levelLabel = `${level.name || 'Custom Level'} • ${level.entities.length} objects`;
@@ -4256,11 +5266,39 @@ function builderPickEntityAt(x, y) {
 
 function builderStartPointer(x, y) {
   if (performance.now() - builderLastPlaceAt < 140) return;
-  if (builderPendingSpriteKey || builderPendingEntityType) {
+  if (builderTornadoRoutePick.active) {
+    const ent = getBuilderEntityById(builderTornadoRoutePick.entityId || builderSelectedId);
+    if (!ent) {
+      builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+      builderApplyStateToUi();
+      return;
+    }
+    if (builderTornadoRoutePick.phase <= 0) {
+      ent.tornadoAffectStartX = clamp(Number(x), -220, 1520);
+      builderTornadoRoutePick.phase = 1;
+      builderSetStatus('Tornado throw path: now click landing spot.');
+      builderApplyStateToUi();
+      builderSaveLastDraft();
+      return;
+    }
+    ent.tornadoAffectLandX = clamp(Number(x), -220, 1520);
+    ent.tornadoAffectLandY = clamp(Number(y), 120, 580);
+    if (ent.tornadoAffectDurationMs == null) ent.tornadoAffectDurationMs = 1800;
+    ent.fallWithTornado = true;
+    builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+    builderSetStatus(`Throw path set for ${getLayerLabel(ent)}.`);
+    builderApplyStateToUi();
+    builderSaveLastDraft();
+    return;
+  }
+  const selected = getBuilderEntityById(builderSelectedId);
+  const selectedBox = selected ? getEntityBounds(selected) : null;
+  const inSelected = !!(selectedBox && x >= selectedBox.x && x <= selectedBox.x + selectedBox.w && y >= selectedBox.y && y <= selectedBox.y + selectedBox.h);
+  const hit = inSelected && selected ? selected : builderPickEntityAt(x, y);
+  if (!hit && (builderPendingSpriteKey || builderPendingEntityType)) {
     builderPlacePendingEntity(x, y);
     return;
   }
-  const hit = builderPickEntityAt(x, y);
   if (!hit) {
     builderSelectEntity(null);
     return;
@@ -4279,9 +5317,7 @@ function builderStartPointer(x, y) {
     builderPointer = { active: true, mode: 'resize', entityId: hit.id, startScale: hit.scale || 1, startDist: Math.max(8, Math.hypot((x - (box.x + box.w * 0.5)), (y - (box.y + box.h * 0.5)))) };
     return;
   }
-  if (builderTool === 'move' || builderTool === 'select') {
-    builderPointer = { active: true, mode: 'move', entityId: hit.id, offsetX: x - (hit.x || 0), offsetY: y - (hit.baseY ?? GRASS_Y) };
-  }
+  builderPointer = { active: true, mode: 'move', entityId: hit.id, offsetX: x - (hit.x || 0), offsetY: y - (hit.baseY ?? GRASS_Y) };
 }
 
 function builderMovePointer(x, y) {
@@ -4394,7 +5430,7 @@ const TANKER_EXIT_BUFFER_X = 180;
 const TANKER_FOLLOW_OFFSET_X = 250;
 
 ///////// Firetruck.webp live state. /////////
-const truck = { x: 110, y: FIRETRUCK_LANE_Y, speed: 3.8, minX: 80, maxX: 440 };
+const truck = { x: 110, y: FIRETRUCK_LANE_Y, speed: 3.8, minX: 80, maxX: 440, renderScale: 1 };
 
 function getTruckY() {
   return FIRETRUCK_LANE_Y;
@@ -4403,12 +5439,20 @@ const nozzleAttachX = 112;
 const nozzleAttachY = -45;
 const maxHoseLength = 300;
 
+function getTruckRenderScale() {
+  return clamp(Number(truck.renderScale || 1), 0.7, 1.8);
+}
+
+function getTruckHoseLengthLimit() {
+  return maxHoseLength * getTruckRenderScale();
+}
+
 const safetyTips = [
   "Never play with matches or lighters.", "If your clothes catch fire, stop, drop, and roll.",
   "Have a family escape plan and practice it.", "Check smoke alarms every month.",
   "Keep a fire extinguisher accessible and know how to use it.", "Stay low and crawl under smoke to escape.",
-  "Never hide from fire — get low and go!", "Don't overload electrical outlets.",
-  "Keep flammable items away from heat sources.", "Practice fire safety every day — it could save lives."
+    "Never hide from fire — get low and go!", "Don't overload electrical outlets.",
+    "Keep flammable items away from heat sources.", "Practice fire safety every day — it could save lives."
 ];
 
 const baseLevels = [
@@ -4763,7 +5807,7 @@ baseLevels[10] = {
   timeOfDay: 0,
   truckSide: 'left',
   entities: [
-    // Distant silhouettes sit on the 8.5–9 line and are always black.
+// Distant silhouettes sit on the 8.5–9 line and are always black.
     { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.8 }, scale: 0.62, alpha: 0.18, silhouette: true },
     { type: 'bgTreeOakRealistic', grid: { col: 'Q', line: 8.9 }, scale: 0.54, alpha: 0.17, silhouette: true },
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'O', line: 8.9 }, scale: 0.70, alpha: 0.22, silhouette: true },
@@ -4992,9 +6036,10 @@ baseLevels[22] = {
 const BUILDER_STORAGE_KEY = 'kvfd_deluxe23_builder_levels_v1';
 const BUILDER_OFFICIAL_STORAGE_KEY = 'kvfd_deluxe23_builder_official_v1';
 const BUILDER_LAST_DRAFT_KEY = 'kvfd_deluxe23_builder_last_v1';
+const BUILDER_DELETE_CONFIRM_SKIP_KEY = 'kvfd_builder_delete_noask_v1';
 const BUILDER_PACKAGE_VERSION = 1;
-const BUILDER_MIN_SCALE = 0.6;
-const BUILDER_MAX_SCALE = 1.4;
+const BUILDER_MIN_SCALE = 0.2;
+const BUILDER_MAX_SCALE = 2.8;
 const BUILDER_SNAP_X = 10;
 const BUILDER_SNAP_Y = 5;
 const BUILDER_SLOT_MAX = 23;
@@ -5022,26 +6067,52 @@ function normalizeBuilderEntity(ent, idx = 0) {
   const type = typeof ent.type === 'string' ? ent.type : 'builderSprite';
   const id = (typeof ent.id === 'string' && ent.id) ? ent.id : `be_${Date.now()}_${idx}_${Math.floor(Math.random() * 100000)}`;
   const lockedPosition = ent.lockedPosition == null ? !(ent.movableWithWater || ent.fallWithTornado) : !!ent.lockedPosition;
+  if (type === 'requiredFireTruck') {
+    return {
+      id,
+      type: 'requiredFireTruck',
+      scale: clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE),
+      burnableOverride: false,
+      lockedPosition: true,
+      flipX: false,
+      flipY: false,
+      silhouette: false
+    };
+  }
   if (type === 'builderSprite') {
     const hasSpriteKey = typeof ent.spriteKey === 'string' && (SPRITE_FILES[ent.spriteKey] || CUSTOM_SPRITE_DATA[ent.spriteKey]);
     const spriteKey = hasSpriteKey ? ent.spriteKey : 'shedRed';
+    const defaultBurnable = isAnimalSpriteKey(spriteKey) ? false : true;
+    const parsedBaseW = Number(ent.baseW);
+    const parsedBaseH = Number(ent.baseH);
+    const baseW = Number.isFinite(parsedBaseW) && parsedBaseW > 0 ? clamp(parsedBaseW, 24, 1800) : undefined;
+    const baseH = Number.isFinite(parsedBaseH) && parsedBaseH > 0 ? clamp(parsedBaseH, 24, 1200) : undefined;
     return {
       id,
       type: 'builderSprite',
       spriteKey,
-      x: clamp(Number(ent.x || 640), 0, 1200),
+      x: clamp(Number(ent.x || 640), -200, 1500),
       baseY: clamp(Number(ent.baseY ?? GRASS_Y), 120, 580),
       scale: clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE),
+      baseW,
+      baseH,
+      rotationDeg: ent.rotationDeg == null ? 0 : clamp(Number(ent.rotationDeg), -180, 180),
+      skewXDeg: ent.skewXDeg == null ? 0 : clamp(Number(ent.skewXDeg), -45, 45),
+      skewYDeg: ent.skewYDeg == null ? 0 : clamp(Number(ent.skewYDeg), -45, 45),
       flipX: !!ent.flipX,
       flipY: !!ent.flipY,
       silhouette: !!ent.silhouette,
       silhouetteStrength: ent.silhouetteStrength == null ? undefined : clamp(Number(ent.silhouetteStrength), 0.05, 1.0),
-      burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : true),
+      burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : defaultBurnable),
       filter: typeof ent.filter === 'string' ? ent.filter : '',
       alpha: ent.alpha == null ? undefined : clamp(Number(ent.alpha), 0.05, 1.0),
       lockedPosition,
       movableWithWater: !!ent.movableWithWater,
       fallWithTornado: !!ent.fallWithTornado,
+      tornadoAffectStartX: ent.tornadoAffectStartX == null ? undefined : clamp(Number(ent.tornadoAffectStartX), -220, 1520),
+      tornadoAffectLandX: ent.tornadoAffectLandX == null ? undefined : clamp(Number(ent.tornadoAffectLandX), -220, 1520),
+      tornadoAffectLandY: ent.tornadoAffectLandY == null ? undefined : clamp(Number(ent.tornadoAffectLandY), 120, 580),
+      tornadoAffectDurationMs: ent.tornadoAffectDurationMs == null ? undefined : clamp(Number(ent.tornadoAffectDurationMs), 200, 12000),
       burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
       burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
       waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
@@ -5063,9 +6134,15 @@ function normalizeBuilderEntity(ent, idx = 0) {
     silhouetteStrength: ent.silhouetteStrength == null ? undefined : clamp(Number(ent.silhouetteStrength), 0.05, 1.0),
     burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : undefined),
     rotationDeg: ent.rotationDeg == null ? undefined : clamp(Number(ent.rotationDeg), -180, 180),
+    skewXDeg: ent.skewXDeg == null ? undefined : clamp(Number(ent.skewXDeg), -45, 45),
+    skewYDeg: ent.skewYDeg == null ? undefined : clamp(Number(ent.skewYDeg), -45, 45),
     lockedPosition,
     movableWithWater: !!ent.movableWithWater,
     fallWithTornado: !!ent.fallWithTornado,
+    tornadoAffectStartX: ent.tornadoAffectStartX == null ? undefined : clamp(Number(ent.tornadoAffectStartX), -220, 1520),
+    tornadoAffectLandX: ent.tornadoAffectLandX == null ? undefined : clamp(Number(ent.tornadoAffectLandX), -220, 1520),
+    tornadoAffectLandY: ent.tornadoAffectLandY == null ? undefined : clamp(Number(ent.tornadoAffectLandY), 120, 580),
+    tornadoAffectDurationMs: ent.tornadoAffectDurationMs == null ? undefined : clamp(Number(ent.tornadoAffectDurationMs), 200, 12000),
     burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
     burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
     waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
@@ -5082,7 +6159,7 @@ function normalizeBuilderLevel(rawLevel) {
   const truckSide = (level.truckSide === 'left' || level.truckSide === 'right') ? level.truckSide : '';
   const lane = truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
   const truckPlaced = truckSide ? (level.truckPlaced !== false) : false;
-  return {
+  const normalized = {
     name: String(level.name || 'Custom Builder Level'),
     creatorName: String(level.creatorName || ''),
     testDifficulty: clamp(Number(level.testDifficulty ?? 1), 1, 3),
@@ -5122,13 +6199,115 @@ function normalizeBuilderLevel(rawLevel) {
     },
     entities: normalizedEntities
   };
+  return ensureRequiredTruckLayer(normalized);
+}
+
+const BUILDER_PRESERVE_ENTITY_TYPES = new Set([
+  'builderSprite',
+  'requiredFireTruck',
+  'pond',
+  'tornado',
+  'blackBoxTruck',
+  'ufo'
+]);
+
+function getLegacySpriteKeyForBuilder(ent) {
+  if (!ent || typeof ent !== 'object') return '';
+  if (ent.type === 'builderSprite') return String(ent.spriteKey || '');
+  const type = String(ent.type || '');
+  if (TREE_KIND_BY_TYPE[type]) return type;
+  if (type === 'tree' || type === 'treeWithSwing') return getLegacyTreeVariant(Number(ent.x || 0));
+  if (type === 'shedWindow' || type === 'smallShed') return 'shedRed';
+  if (type === 'singleGarage') return 'garage';
+  if (type === 'miniBarn' || type === 'largeRedBarn') return 'barnLarge';
+  if (type === 'smallHouse') return 'houseSmall';
+  if (type === 'house' || type === 'houseTall') return 'houseTall';
+  if (type === 'houseTallWhite') return 'houseTallWhite';
+  if (type === 'houseTallOld') return 'houseTallOld';
+  if (type === 'schoolhouse' || type === 'kennardSchool') return 'kennardSchool';
+  if (type === 'sedan') return (ent.variant && SPRITE_FILES[ent.variant]) ? ent.variant : 'sedanRed';
+  if (type === 'pickup') return 'pickupCyber';
+  if (type === 'semi') return (ent.variant && SPRITE_FILES[ent.variant]) ? ent.variant : 'semiTankRight';
+  if (type === 'ridingMower') return 'mower';
+  if (type === 'tractor') return 'tractor';
+  if (type === 'pushMower') return 'pushMower';
+  if (type === 'pushManualMower') return 'pushManualMower';
+  if (type === 'bikeRed') return 'bikeRed';
+  if (type === 'busSchoolLeft') return 'busSchoolLeft';
+  if (type === 'busUpsideDown') return 'busUpsideDown';
+  if (type === 'fence') return 'fenceWhiteRow';
+  if (type === 'boat') return 'boat';
+  if (type === 'tent') return 'tent';
+  if (type === 'catTails') return 'cattails';
+  if (type === 'hayBale') return (ent.variant && SPRITE_FILES[ent.variant]) ? ent.variant : 'hayA';
+  if (type === 'stormTree' || type === 'fallenTree') return (ent.variant && SPRITE_FILES[ent.variant]) ? ent.variant : 'treeOakRealistic';
+  return '';
+}
+
+function convertLegacyEntityForBuilder(ent) {
+  if (!ent || typeof ent !== 'object') return ent;
+  const type = String(ent.type || '');
+  if (BUILDER_PRESERVE_ENTITY_TYPES.has(type)) return ent;
+  const catalogSpec = getCatalogSpec(type);
+  const spriteKey = getLegacySpriteKeyForBuilder(ent) || String(catalogSpec?.sprite || '');
+  if (!spriteKey || (!SPRITE_FILES[spriteKey] && !CUSTOM_SPRITE_DATA[spriteKey])) return ent;
+  let x = clamp(Number(ent.x ?? 640), -200, 1500);
+  let baseY = clamp(Number(ent.baseY ?? ent.y ?? (GRASS_Y + Number(ent.yOffset || 0))), 120, 580);
+  let scale = clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  let baseW;
+  let baseH;
+  const legacyBox = getEntityBounds(ent);
+  if (legacyBox) {
+    x = clamp(Number(legacyBox.x + legacyBox.w * 0.5), -200, 1500);
+    baseY = clamp(Number(legacyBox.y + legacyBox.h), 120, 580);
+    baseW = clamp(Number(legacyBox.w || 0), 24, 1800);
+    baseH = clamp(Number(legacyBox.h || 0), 24, 1200);
+    scale = 1;
+  }
+  const burnableDefault = isAnimalSpriteKey(spriteKey) ? false : (catalogSpec ? !!catalogSpec.burnable : isBurnableType(type));
+  const defaultFilter = (typeof ent.filter === 'string' && ent.filter) ? ent.filter : (catalogSpec?.filter || '');
+  return {
+    id: ent.id,
+    type: 'builderSprite',
+    spriteKey,
+    x,
+    baseY,
+    scale,
+    baseW,
+    baseH,
+    rotationDeg: ent.rotationDeg == null ? 0 : clamp(Number(ent.rotationDeg), -180, 180),
+    skewXDeg: ent.skewXDeg == null ? 0 : clamp(Number(ent.skewXDeg), -45, 45),
+    skewYDeg: ent.skewYDeg == null ? 0 : clamp(Number(ent.skewYDeg), -45, 45),
+    flipX: !!ent.flipX,
+    flipY: !!ent.flipY,
+    silhouette: !!ent.silhouette,
+    silhouetteStrength: ent.silhouetteStrength,
+    filter: defaultFilter,
+    alpha: ent.alpha,
+    burnableOverride: ent.burnableOverride === true ? true : (ent.burnableOverride === false ? false : burnableDefault),
+    lockedPosition: ent.lockedPosition == null ? true : !!ent.lockedPosition,
+    movableWithWater: !!ent.movableWithWater,
+    fallWithTornado: !!ent.fallWithTornado,
+    tornadoAffectStartX: ent.tornadoAffectStartX,
+    tornadoAffectLandX: ent.tornadoAffectLandX,
+    tornadoAffectLandY: ent.tornadoAffectLandY,
+    tornadoAffectDurationMs: ent.tornadoAffectDurationMs,
+    burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.slice() : undefined,
+    burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.slice() : undefined,
+    waterExitDirection: ent.waterExitDirection,
+    waterExitSpeed: ent.waterExitSpeed,
+    waterExitBonusPoints: ent.waterExitBonusPoints
+  };
 }
 
 function levelToBuilderLevel(sourceLevel) {
   const level = normalizeBuilderLevel(sourceLevel || {});
   const entities = Array.isArray(sourceLevel?.entities) ? sourceLevel.entities : [];
-  level.entities = entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
-  return level;
+  level.entities = entities
+    .map((ent) => convertLegacyEntityForBuilder(ent))
+    .map((ent, idx) => normalizeBuilderEntity(ent, idx))
+    .filter(Boolean);
+  return ensureRequiredTruckLayer(level);
 }
 
 function loadBuilderOfficialOverrides() {
@@ -5162,6 +6341,23 @@ function parseHashLevelPackage() {
   return null;
 }
 
+function parseHashBuilderLaunchRequested() {
+  const hash = String(location.hash || '');
+  const query = hash.startsWith('#') ? hash.slice(1) : hash;
+  const params = new URLSearchParams(query);
+  return params.get('kvfdBuilder') === '1';
+}
+
+function parseHashSingleLevelMode() {
+  const hash = String(location.hash || '');
+  const query = hash.startsWith('#') ? hash.slice(1) : hash;
+  const params = new URLSearchParams(query);
+  return params.get('kvfdSingle') === '1';
+}
+
+let builderOpenRequestedFromHash = parseHashBuilderLaunchRequested();
+let hashSingleLevelMode = parseHashSingleLevelMode();
+let builderHashInitialLevel = null;
 const hashLevelPackage = parseHashLevelPackage();
 if (hashLevelPackage?.level) {
   if (hashLevelPackage.customSprites && typeof hashLevelPackage.customSprites === 'object') {
@@ -5172,9 +6368,12 @@ if (hashLevelPackage?.level) {
     });
   }
   const normalizedLevel = normalizeBuilderLevel(hashLevelPackage.level);
-  baseLevels.splice(0, baseLevels.length, normalizedLevel);
-  requestedStartLevel = 1;
+  if (hashSingleLevelMode || !builderOpenRequestedFromHash) {
+    baseLevels.splice(0, baseLevels.length, normalizedLevel);
+    requestedStartLevel = 1;
+  }
   builderState = levelToBuilderLevel(normalizedLevel);
+  builderHashInitialLevel = normalizedLevel;
 }
 
 function isInTimeSelector(x, y) { return y > 8 && y < 82 && x > 950 && x < 1195; }
@@ -5247,7 +6446,7 @@ function getLevelDispatchCopy(lvl, phase) {
     tag: 'Dispatch',
     title: `${name}`,
     body: levelData.dispatchBody || `Dispatch to Kennard Fire: responding to ${name}. Crews are en route and the scene is loading now.`,
-    note: 'Tap "Let’s Roll" or wait 2 seconds for automatic deployment.'
+  note: 'Tap "Let\'s Roll" or wait 2 seconds for automatic deployment.'
   };
 }
 
@@ -5430,6 +6629,7 @@ function loadLevel(lvl, options = {}) {
   }
   levelStartScore = score;
   const levelData = baseLevels[lvl - 1];
+  const requiredTruckLayer = (levelData?.entities || []).find((ent) => ent?.type === 'requiredFireTruck');
   const lane = (levelData?.truckSide === 'left')
     ? TRUCK_LANES.left
     : (levelData?.truckSide === 'right')
@@ -5438,12 +6638,14 @@ function loadLevel(lvl, options = {}) {
   truck.x = lane.spawnX;
   truck.minX = lane.minX;
   truck.maxX = lane.maxX;
+  truck.renderScale = clamp(Number(requiredTruckLayer?.scale || 1), 0.7, 1.8);
   truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
   setTruckDrive(0);
   isSpraying = false;
   tornadoTravelX = -180;
   tornadoCompleted = false;
   initTornadoForLevel(levelData);
+  (levelData?.entities || []).forEach((ent) => resetTornadoAffectRuntime(ent));
   pendingDispatchLevel = skipDispatch ? null : lvl;
   levelElapsedMs = 0;
   lastFrameTime = 0;
@@ -5739,43 +6941,58 @@ BUILDER_UI.timeOfDay?.addEventListener('change', () => builderReadUiIntoState())
 BUILDER_UI.tankerStart?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerRepeat?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerHold?.addEventListener('change', () => builderReadUiIntoState());
-BUILDER_UI.boroEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.boroEnabled?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
 BUILDER_UI.boroStart?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.blackBoxEnabled?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.blackBoxStart?.addEventListener('change', () => builderReadUiIntoState());
-BUILDER_UI.tornadoEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoEnabled?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
 BUILDER_UI.tornadoSpeed?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.tornadoDirection?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tornadoStartDelay?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tornadoTravelPercent?.addEventListener('input', () => builderReadUiIntoState());
-BUILDER_UI.tornadoReturnEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.tornadoReturnEnabled?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
 BUILDER_UI.tornadoReturnPercent?.addEventListener('input', () => builderReadUiIntoState());
-BUILDER_UI.objScale?.addEventListener('input', () => {
+function builderApplySelectedTransformFromControls(source = '') {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
-  ent.scale = clamp(Number(BUILDER_UI.objScale.value || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
-  if (BUILDER_UI.quickScale) BUILDER_UI.quickScale.value = BUILDER_UI.objScale.value;
+  const scale = clamp(Number(BUILDER_UI.objScale?.value || BUILDER_UI.objScaleNumber?.value || ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
+  const x = clamp(Number(BUILDER_UI.objX?.value || BUILDER_UI.objXRange?.value || ent.x || 0), -220, 1520);
+  const y = clamp(Number(BUILDER_UI.objY?.value || BUILDER_UI.objYRange?.value || ent.baseY || GRASS_Y), 120, 580);
+  const rotate = clamp(Number(BUILDER_UI.objRotate?.value || BUILDER_UI.objRotateRange?.value || 0), -180, 180);
+  const skewX = clamp(Number(BUILDER_UI.objSkewX?.value || BUILDER_UI.objSkewXRange?.value || 0), -45, 45);
+  const skewY = clamp(Number(BUILDER_UI.objSkewY?.value || BUILDER_UI.objSkewYRange?.value || 0), -45, 45);
+  ent.scale = scale;
+  ent.x = x;
+  ent.baseY = y;
+  ent.rotationDeg = rotate;
+  ent.skewXDeg = skewX;
+  ent.skewYDeg = skewY;
+  if (BUILDER_UI.objScale) BUILDER_UI.objScale.value = String(scale);
+  if (BUILDER_UI.objScaleNumber) BUILDER_UI.objScaleNumber.value = scale.toFixed(2);
+  if (BUILDER_UI.objX) BUILDER_UI.objX.value = String(Math.round(x));
+  if (BUILDER_UI.objXRange) BUILDER_UI.objXRange.value = String(Math.round(x));
+  if (BUILDER_UI.objY) BUILDER_UI.objY.value = String(Math.round(y));
+  if (BUILDER_UI.objYRange) BUILDER_UI.objYRange.value = String(Math.round(y));
+  if (BUILDER_UI.objRotate) BUILDER_UI.objRotate.value = String(Math.round(rotate));
+  if (BUILDER_UI.objRotateRange) BUILDER_UI.objRotateRange.value = String(Math.round(rotate));
+  if (BUILDER_UI.objSkewX) BUILDER_UI.objSkewX.value = String(Math.round(skewX));
+  if (BUILDER_UI.objSkewXRange) BUILDER_UI.objSkewXRange.value = String(Math.round(skewX));
+  if (BUILDER_UI.objSkewY) BUILDER_UI.objSkewY.value = String(Math.round(skewY));
+  if (BUILDER_UI.objSkewYRange) BUILDER_UI.objSkewYRange.value = String(Math.round(skewY));
   builderSaveLastDraft();
-});
-BUILDER_UI.quickScale?.addEventListener('input', () => {
-  const ent = getBuilderEntityById(builderSelectedId);
-  if (!ent) return;
-  ent.scale = clamp(Number(BUILDER_UI.quickScale.value || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
-  if (BUILDER_UI.objScale) BUILDER_UI.objScale.value = BUILDER_UI.quickScale.value;
-  builderSaveLastDraft();
-});
-BUILDER_UI.objX?.addEventListener('change', () => {
-  const ent = getBuilderEntityById(builderSelectedId);
-  if (!ent) return;
-  ent.x = clamp(Number(BUILDER_UI.objX.value || ent.x || 0), -200, 1500);
-  builderSaveLastDraft();
-});
-BUILDER_UI.objY?.addEventListener('change', () => {
-  const ent = getBuilderEntityById(builderSelectedId);
-  if (!ent) return;
-  ent.baseY = clamp(Number(BUILDER_UI.objY.value || ent.baseY || GRASS_Y), 120, 580);
-  builderSaveLastDraft();
-});
+}
+['input','change'].forEach((evt) => BUILDER_UI.objScale?.addEventListener(evt, () => builderApplySelectedTransformFromControls('scaleRange')));
+['input','change'].forEach((evt) => BUILDER_UI.objScaleNumber?.addEventListener(evt, () => builderApplySelectedTransformFromControls('scaleNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objX?.addEventListener(evt, () => builderApplySelectedTransformFromControls('xNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objXRange?.addEventListener(evt, () => builderApplySelectedTransformFromControls('xRange')));
+['input','change'].forEach((evt) => BUILDER_UI.objY?.addEventListener(evt, () => builderApplySelectedTransformFromControls('yNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objYRange?.addEventListener(evt, () => builderApplySelectedTransformFromControls('yRange')));
+['input','change'].forEach((evt) => BUILDER_UI.objRotate?.addEventListener(evt, () => builderApplySelectedTransformFromControls('rotateNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objRotateRange?.addEventListener(evt, () => builderApplySelectedTransformFromControls('rotateRange')));
+['input','change'].forEach((evt) => BUILDER_UI.objSkewX?.addEventListener(evt, () => builderApplySelectedTransformFromControls('skewXNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objSkewXRange?.addEventListener(evt, () => builderApplySelectedTransformFromControls('skewXRange')));
+['input','change'].forEach((evt) => BUILDER_UI.objSkewY?.addEventListener(evt, () => builderApplySelectedTransformFromControls('skewYNumber')));
+['input','change'].forEach((evt) => BUILDER_UI.objSkewYRange?.addEventListener(evt, () => builderApplySelectedTransformFromControls('skewYRange')));
 BUILDER_UI.layerFilter?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -5869,6 +7086,62 @@ BUILDER_UI.layerTornadoFall?.addEventListener('change', () => {
     return;
   }
   ent.fallWithTornado = BUILDER_UI.layerTornadoFall.value === '1';
+  if (ent.fallWithTornado) {
+    if (ent.tornadoAffectStartX == null) ent.tornadoAffectStartX = clamp(Number((ent.x || 0) + 40), -220, 1520);
+    if (ent.tornadoAffectLandX == null) ent.tornadoAffectLandX = clamp(Number(ent.x || 0), -220, 1520);
+    if (ent.tornadoAffectLandY == null) ent.tornadoAffectLandY = clamp(Number(ent.baseY ?? GRASS_Y), 120, 580);
+    if (ent.tornadoAffectDurationMs == null) ent.tornadoAffectDurationMs = 1800;
+  }
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.setTornadoRouteBtn?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  if (builderState?.tornadoConfig?.enabled !== true) {
+    builderSetStatus('Turn Tornado On first in Level Properties.');
+    return;
+  }
+  if (ent.lockedPosition !== false) {
+    builderSetStatus('Unlock the selected object first to allow tornado effects.');
+    return;
+  }
+  if (!ent.fallWithTornado) {
+    ent.fallWithTornado = true;
+    if (BUILDER_UI.layerTornadoFall) BUILDER_UI.layerTornadoFall.value = '1';
+  }
+  if (builderTornadoRoutePick.active) {
+    builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+    builderSetStatus('Tornado throw path pick canceled.');
+    builderApplyStateToUi();
+    return;
+  }
+  builderTornadoRoutePick = { active: true, phase: 0, entityId: ent.id };
+  builderSetStatus('Tornado throw path: click trigger point, then click landing point.');
+  builderApplyStateToUi();
+});
+BUILDER_UI.tornadoAffectStartX?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectStartX = clamp(Number(BUILDER_UI.tornadoAffectStartX.value || ((ent.x || 0) + 40)), -220, 1520);
+  builderSaveLastDraft();
+});
+BUILDER_UI.tornadoAffectLandX?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectLandX = clamp(Number(BUILDER_UI.tornadoAffectLandX.value || (ent.x || 0)), -220, 1520);
+  builderSaveLastDraft();
+});
+BUILDER_UI.tornadoAffectLandY?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectLandY = clamp(Number(BUILDER_UI.tornadoAffectLandY.value || (ent.baseY ?? GRASS_Y)), 120, 580);
+  builderSaveLastDraft();
+});
+BUILDER_UI.tornadoAffectDurationMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectDurationMs = clamp(Number(BUILDER_UI.tornadoAffectDurationMs.value || 1800), 200, 12000);
   builderSaveLastDraft();
 });
 BUILDER_UI.animalExitDirection?.addEventListener('change', () => {
@@ -5893,33 +7166,24 @@ BUILDER_UI.animalBonusPoints?.addEventListener('change', () => {
 document.getElementById('builderToolSelectBtn')?.addEventListener('click', () => { builderTool = 'select'; builderSetStatus('Select tool active.'); });
 document.getElementById('builderToolMoveBtn')?.addEventListener('click', () => { builderTool = 'move'; builderSetStatus('Move tool active.'); });
 document.getElementById('builderClearPendingAssetBtn')?.addEventListener('click', () => {
-  builderPendingSpriteKey = null;
-  builderPendingEntityType = null;
+  builderClearPendingPlacement();
   builderSetStatus('Placement tool cleared. Select or move objects.');
 });
 document.getElementById('builderQuickNudgeLeftBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.x = clamp((ent.x || 0) - 2, -200, 1500); builderApplyStateToUi(); builderSaveLastDraft(); });
 document.getElementById('builderQuickNudgeRightBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.x = clamp((ent.x || 0) + 2, -200, 1500); builderApplyStateToUi(); builderSaveLastDraft(); });
 document.getElementById('builderQuickNudgeUpBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.baseY = clamp((ent.baseY ?? GRASS_Y) - 2, 120, 580); builderApplyStateToUi(); builderSaveLastDraft(); });
 document.getElementById('builderQuickNudgeDownBtn')?.addEventListener('click', () => { const ent = getBuilderEntityById(builderSelectedId); if (!ent) return; ent.baseY = clamp((ent.baseY ?? GRASS_Y) + 2, 120, 580); builderApplyStateToUi(); builderSaveLastDraft(); });
+document.getElementById('builderResetSelectedDefaultsBtn')?.addEventListener('click', builderResetSelectedDefaults);
 document.getElementById('builderLayerTopBtn')?.addEventListener('click', () => builderMoveSelectedLayer('top'));
 document.getElementById('builderLayerUpBtn')?.addEventListener('click', () => builderMoveSelectedLayer('up'));
 document.getElementById('builderLayerDownBtn')?.addEventListener('click', () => builderMoveSelectedLayer('down'));
 document.getElementById('builderLayerBottomBtn')?.addEventListener('click', () => builderMoveSelectedLayer('bottom'));
 document.getElementById('builderLayerDeleteBtn')?.addEventListener('click', () => builderDeleteSelectedLayer());
-document.getElementById('builderFlipXBtn')?.addEventListener('click', () => {
-  const ent = getBuilderEntityById(builderSelectedId);
-  if (!ent) return;
-  ent.flipX = !ent.flipX;
-  builderApplyStateToUi();
-  builderSaveLastDraft();
+BUILDER_UI.layerDeleteNoAsk?.addEventListener('change', () => {
+  localStorage.setItem(BUILDER_DELETE_CONFIRM_SKIP_KEY, BUILDER_UI.layerDeleteNoAsk.checked ? '1' : '0');
 });
-document.getElementById('builderFlipYBtn')?.addEventListener('click', () => {
-  const ent = getBuilderEntityById(builderSelectedId);
-  if (!ent) return;
-  ent.flipY = !ent.flipY;
-  builderApplyStateToUi();
-  builderSaveLastDraft();
-});
+document.getElementById('builderFlipXBtn')?.addEventListener('click', () => builderMirrorLevel('x'));
+document.getElementById('builderFlipYBtn')?.addEventListener('click', () => builderMirrorLevel('y'));
 document.getElementById('builderSilhouetteBtn')?.addEventListener('click', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -5942,6 +7206,7 @@ document.getElementById('builderDeleteBtn')?.addEventListener('click', builderRe
 document.getElementById('builderClearBtn')?.addEventListener('click', () => {
   if (!confirm('Clear all objects from this builder level?')) return;
   builderState.entities = [];
+  ensureRequiredTruckLayer(builderState);
   builderSelectEntity(null);
   builderSaveLastDraft();
 });
@@ -5950,16 +7215,27 @@ document.getElementById('builderLoadCurrentBtn')?.addEventListener('click', () =
   builderLoadFromLevel(level);
 });
 document.getElementById('builderLoadSelectedLevelBtn')?.addEventListener('click', () => {
+  if (!BUILDER_UI.editLevelSelect?.value) return;
   const slot = clamp(Number(BUILDER_UI.editLevelSelect?.value || 1), 1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX));
-  const level = baseLevels[slot - 1] || baseLevels[0];
-  builderLoadFromLevel(level);
-  if (BUILDER_UI.targetSlot) BUILDER_UI.targetSlot.value = String(slot);
+  builderLoadLevelBySlot(slot, true);
+});
+BUILDER_UI.editLevelSelect?.addEventListener('change', () => {
+  if (!BUILDER_UI.editLevelSelect?.value) return;
+  const slot = clamp(Number(BUILDER_UI.editLevelSelect?.value || 1), 1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX));
+  builderLoadLevelBySlot(slot, true);
+});
+BUILDER_UI.topLevelLoader?.addEventListener('change', () => {
+  if (!BUILDER_UI.topLevelLoader?.value) return;
+  const slot = clamp(Number(BUILDER_UI.topLevelLoader?.value || 1), 1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX));
+  builderLoadLevelBySlot(slot, true);
 });
 document.getElementById('builderLoadCurrentLevelBtn2')?.addEventListener('click', () => {
   const level = baseLevels[currentLevel - 1] || baseLevels[0];
   builderLoadFromLevel(level);
   if (BUILDER_UI.targetSlot) BUILDER_UI.targetSlot.value = String(clamp(currentLevel, 1, BUILDER_SLOT_MAX));
 });
+document.getElementById('builderLeftCollapseBtn')?.addEventListener('click', () => builderSetLeftPanelCollapsed(true));
+document.getElementById('builderLeftRestoreBtn')?.addEventListener('click', () => builderSetLeftPanelCollapsed(false));
 document.getElementById('builderNewBtn')?.addEventListener('click', () => {
   builderState = createEmptyBuilderLevel();
   builderSelectEntity(null);
@@ -5971,9 +7247,16 @@ document.getElementById('builderLoadLocalBtn')?.addEventListener('click', builde
 document.getElementById('builderExportBtn')?.addEventListener('click', builderExportPackage);
 document.getElementById('builderExportOfflineBtn')?.addEventListener('click', async () => {
   try {
-    await builderSaveOfflineFolder();
+    await builderSaveOfflineFolder('withLevel');
   } catch (err) {
     alert(`Offline save failed: ${err?.message || err}`);
+  }
+});
+document.getElementById('builderExportFullGameBtn')?.addEventListener('click', async () => {
+  try {
+    await builderSaveOfflineFolder('gameOnly');
+  } catch (err) {
+    alert(`Full game offline save failed: ${err?.message || err}`);
   }
 });
 document.getElementById('builderShareBtn')?.addEventListener('click', builderSharePackage);
@@ -5981,6 +7264,8 @@ document.getElementById('builderSaveSubmissionBtn')?.addEventListener('click', b
 document.getElementById('builderPrintBtn')?.addEventListener('click', builderPrintSummary);
 document.getElementById('builderTestBtn')?.addEventListener('click', builderTestLevel);
 document.getElementById('builderQuickPlayBtn')?.addEventListener('click', builderTestLevel);
+document.getElementById('builderUndoBtn')?.addEventListener('click', builderUndo);
+document.getElementById('builderRedoBtn')?.addEventListener('click', builderRedo);
 document.getElementById('builderPublishBtn')?.addEventListener('click', () => {
   builderPublishToSlot(Number(BUILDER_UI.targetSlot?.value || 1));
 });
@@ -5996,6 +7281,45 @@ document.getElementById('builderImportFileInput')?.addEventListener('change', as
   builderImportPackageFromText(text);
   event.target.value = '';
 });
+document.addEventListener('keydown', (event) => {
+  if (gameState !== 'builder') return;
+  const key = String(event.key || '').toLowerCase();
+  if (!(event.ctrlKey || event.metaKey)) return;
+  if (key === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    builderUndo();
+    return;
+  }
+  if (key === 'y' || (key === 'z' && event.shiftKey)) {
+    event.preventDefault();
+    builderRedo();
+  }
+});
+
+function attachDelayedExportTip(elementId, message) {
+  const node = document.getElementById(elementId);
+  if (!node) return;
+  let timer = null;
+  node.addEventListener('mouseenter', () => {
+    timer = setTimeout(() => builderSetStatus(message), 1200);
+  });
+  node.addEventListener('mouseleave', () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+  });
+}
+
+attachDelayedExportTip('builderSaveLocalBtn', 'Save Local: stores this level in your browser on this computer.');
+attachDelayedExportTip('builderLoadLocalBtn', 'Load Local: loads a level you previously saved in this browser.');
+attachDelayedExportTip('builderExportBtn', 'Package: download just this level so it can be re-uploaded into the builder later.');
+attachDelayedExportTip('builderExportOfflineBtn', 'Save Offline Folder: export the full game + assets + this level, with Play and Builder links.');
+attachDelayedExportTip('builderExportFullGameBtn', 'Save Full Game Offline: export full game + assets without attaching the current custom level.');
+attachDelayedExportTip('builderImportBtn', 'Load Package: import a saved package JSON into the builder.');
+attachDelayedExportTip('builderShareBtn', 'Share: copy package JSON to clipboard for sending.');
+attachDelayedExportTip('builderSaveSubmissionBtn', 'Save Submission File: export merge-ready level data for official game updates.');
+attachDelayedExportTip('builderPrintBtn', 'Print: print a summary of the current level package.');
+attachDelayedExportTip('builderTestBtn', 'Test Level: quick-play this level with your selected test difficulty.');
+attachDelayedExportTip('builderPublishBtn', 'Save To Game Slot: writes this level into the selected official slot on this computer.');
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
@@ -6245,15 +7569,16 @@ function getSpotExtinguishScore(spot) {
 }
 
 function getClampedHoseEnd() {
-  const truckY = getTruckY();
-  const attachX = truck.x + nozzleAttachX * truckFacing;
-  const attachY = truckY + nozzleAttachY;
+  const nozzle = getTruckNozzlePoint();
+  const attachX = nozzle.x;
+  const attachY = nozzle.y;
   const dx = mouseX - attachX;
   const dy = mouseY - attachY;
   const dist = Math.hypot(dx, dy);
-  if (dist <= maxHoseLength || dist === 0) return { x: mouseX, y: mouseY, length: dist };
-  const ratio = maxHoseLength / dist;
-  return { x: attachX + dx * ratio, y: attachY + dy * ratio, length: maxHoseLength };
+  const hoseLimit = getTruckHoseLengthLimit();
+  if (dist <= hoseLimit || dist === 0) return { x: mouseX, y: mouseY, length: dist };
+  const ratio = hoseLimit / dist;
+  return { x: attachX + dx * ratio, y: attachY + dy * ratio, length: hoseLimit };
 }
 
 function createWaterParticles() {
@@ -6266,7 +7591,7 @@ function createWaterParticles() {
   const dx = effectiveTip.x - attachX;
   const dy = effectiveTip.y - attachY;
   const len = Math.hypot(dx, dy) || 1;
-  const stretchFactor = Math.min(tip.length / maxHoseLength, 1);
+  const stretchFactor = Math.min(tip.length / getTruckHoseLengthLimit(), 1);
   const coneSpread = 12 * (1 - stretchFactor * 0.93);
   const hitReduction = impact ? 0.35 : 1;
   const waterSpeed = (6.5 + stretchFactor * 21) * hitReduction;
@@ -6755,31 +8080,32 @@ function drawSideFireTruck() {
   const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
   const layout = ENTITY_LAYOUT.engine;
   const truckY = getTruckY();
+  const scale = getTruckRenderScale();
   if (SPRITE_READY[key]) {
-    const rect = getSpriteFitRect(key, truck.x + layout.x, truckY - layout.h, layout.w, layout.h, true);
+    const rect = getSpriteFitRect(key, truck.x + layout.x * scale, truckY - (layout.h * scale), layout.w * scale, layout.h * scale, true);
     drawSprite(key, rect.x, rect.y, rect.w, rect.h);
     return;
   }
   const flip = truckFacing < 0 ? -1 : 1;
-  const bodyW = 292;
+  const bodyW = 292 * scale;
   ctx.save();
-  ctx.translate(truck.x + (truckFacing < 0 ? bodyW : 0), 0);
-  ctx.scale(flip, 1);
-  ctx.fillStyle = '#E22'; ctx.fillRect(8, truckY - 58, 222, 98);
-  ctx.fillStyle = '#C11'; ctx.fillRect(18, truckY - 90, 82, 44);
-  ctx.fillStyle = '#AACCFF'; ctx.fillRect(28, truckY - 82, 32, 28); ctx.fillRect(66, truckY - 82, 30, 28);
-  ctx.fillStyle = '#FF0'; ctx.fillRect(12, truckY - 22, 210, 16);
+  ctx.translate(truck.x + (truckFacing < 0 ? bodyW : 0), truckY);
+  ctx.scale(flip * scale, scale);
+  ctx.fillStyle = '#E22'; ctx.fillRect(8, -58, 222, 98);
+  ctx.fillStyle = '#C11'; ctx.fillRect(18, -90, 82, 44);
+  ctx.fillStyle = '#AACCFF'; ctx.fillRect(28, -82, 32, 28); ctx.fillRect(66, -82, 30, 28);
+  ctx.fillStyle = '#FF0'; ctx.fillRect(12, -22, 210, 16);
   ctx.fillStyle = '#000'; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'center';
-  ctx.fillText('KENNARD', 152, truckY + 2);
+  ctx.fillText('KENNARD', 152, 2);
   ctx.fillStyle = '#111';
-  ctx.beginPath(); ctx.arc(68, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(164, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(220, truckY + 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(68, 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(164, 42, 30, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(220, 42, 30, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = '#DDD';
-  ctx.beginPath(); ctx.arc(68, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(164, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(220, truckY + 42, 15, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#00F'; ctx.fillRect(25, truckY - 82, 12, 6);
+  ctx.beginPath(); ctx.arc(68, 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(164, 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(220, 42, 15, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00F'; ctx.fillRect(25, -82, 12, 6);
   ctx.restore();
 }
 
@@ -7144,8 +8470,72 @@ function drawStormTree(ent) {
 function shouldEntityFallWithTornado(ent) {
   if (ent?.lockedPosition !== false) return false;
   if (!ent?.fallWithTornado) return false;
+  if (ent?.tornadoAffectLandX != null || ent?.tornadoAffectLandY != null) return false;
   const threshold = ent.fallAtX ?? ((ent.x || 0) + 40);
   return isTornadoPastX(threshold);
+}
+
+function resetTornadoAffectRuntime(ent) {
+  if (!ent) return;
+  ent._tornadoThrowActive = false;
+  ent._tornadoThrowDone = false;
+  ent._tornadoThrowLaunched = false;
+  ent._tornadoThrowElapsed = 0;
+  ent._tornadoThrowStartX = undefined;
+  ent._tornadoThrowStartY = undefined;
+  ent._tornadoThrowEndX = undefined;
+  ent._tornadoThrowEndY = undefined;
+  ent._tornadoThrowStartRot = undefined;
+  ent._tornadoThrowEndRot = undefined;
+}
+
+function updateTornadoAffectedEntities(dt, entities) {
+  if (!Array.isArray(entities) || !entities.length) return;
+  entities.forEach((ent) => {
+    if (!ent || ent.type === 'tornado' || ent.type === 'requiredFireTruck') return;
+    if (!ent.fallWithTornado || ent.lockedPosition !== false) return;
+    const hasRoute = (ent.tornadoAffectLandX != null || ent.tornadoAffectLandY != null);
+    if (!hasRoute) return;
+    const trigger = clamp(Number(ent.tornadoAffectStartX ?? ent.fallAtX ?? ((ent.x || 0) + 40)), -220, 1520);
+    if (!ent._tornadoThrowLaunched && isTornadoPastX(trigger)) {
+      const endX = clamp(Number(ent.tornadoAffectLandX ?? (ent.x || 0)), -220, 1520);
+      const endY = clamp(Number(ent.tornadoAffectLandY ?? (ent.baseY ?? GRASS_Y)), 120, 580);
+      const startX = Number(ent.x || 0);
+      const startY = Number(ent.baseY ?? GRASS_Y);
+      const duration = clamp(Number(ent.tornadoAffectDurationMs ?? 1800), 200, 12000);
+      const tornadoDir = (tornadoState?.initialDirection || tornadoState?.direction || 1) > 0 ? 1 : -1;
+      ent._tornadoThrowLaunched = true;
+      ent._tornadoThrowActive = true;
+      ent._tornadoThrowDone = false;
+      ent._tornadoThrowElapsed = 0;
+      ent._tornadoThrowDuration = duration;
+      ent._tornadoThrowStartX = startX;
+      ent._tornadoThrowStartY = startY;
+      ent._tornadoThrowEndX = endX;
+      ent._tornadoThrowEndY = endY;
+      ent._tornadoThrowStartRot = Number(ent.rotationDeg || 0);
+      ent._tornadoThrowEndRot = ent._tornadoThrowStartRot + (tornadoDir * 120);
+    }
+    if (!ent._tornadoThrowActive) return;
+    ent._tornadoThrowElapsed += Math.max(0, dt || 0);
+    const duration = Math.max(1, Number(ent._tornadoThrowDuration || 1));
+    const t = clamp(ent._tornadoThrowElapsed / duration, 0, 1);
+    const ease = (t * t) * (3 - (2 * t));
+    const sx = Number(ent._tornadoThrowStartX ?? ent.x ?? 0);
+    const sy = Number(ent._tornadoThrowStartY ?? ent.baseY ?? GRASS_Y);
+    const ex = Number(ent._tornadoThrowEndX ?? sx);
+    const ey = Number(ent._tornadoThrowEndY ?? sy);
+    ent.x = sx + ((ex - sx) * ease);
+    ent.baseY = sy + ((ey - sy) * ease);
+    const sr = Number(ent._tornadoThrowStartRot ?? ent.rotationDeg ?? 0);
+    const er = Number(ent._tornadoThrowEndRot ?? sr);
+    ent.rotationDeg = sr + ((er - sr) * ease);
+    if (t >= 1) {
+      ent._tornadoThrowActive = false;
+      ent._tornadoThrowDone = true;
+      ent._tornadoThrowElapsed = duration;
+    }
+  });
 }
 
 function drawPlaygroundAsset(ent) {
@@ -8059,6 +9449,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
     if (ent.type === 'tornado') drawTornado();
   });
+  updateTornadoAffectedEntities(dt, data.entities);
 
   ctx.fillStyle = 'rgba(0,0,0,0.92)';
   ctx.fillRect(20,18,320,48);
@@ -8081,7 +9472,14 @@ if (false && currentLevel === 11) drawPlacementGrid();
   ctx.fillText("Night",1147,43);
   drawTimeSelectorCue();
 
-  data.entities.forEach(ent => {
+  getEntitiesInRenderOrder(data.entities).forEach(ent => {
+    if (ent.type === 'requiredFireTruck') {
+      const oldScale = truck.renderScale || 1;
+      truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
+      drawSideFireTruck();
+      truck.renderScale = oldScale;
+      return;
+    }
     if (shouldEntityFallWithTornado(ent) && (ent.type === 'treeOakRealistic' || ent.type === 'treePineRealistic')) {
       drawFallenTree({
         x: ent.x || 0,
@@ -8155,13 +9553,14 @@ if (false && currentLevel === 11) drawPlacementGrid();
 
   // Solid road lane matched to the firetruck's movement range and level.
   const truckLayout = ENTITY_LAYOUT.engine;
-  const roadStartX = Math.max(0, (truck.minX + truckLayout.x) - 34);
-  const roadEndX = Math.min(1200, (truck.maxX + truckLayout.x + truckLayout.w) + 34);
+  const truckScale = getTruckRenderScale();
+  const roadStartX = Math.max(0, (truck.minX + truckLayout.x * truckScale) - 34);
+  const roadEndX = Math.min(1200, (truck.maxX + (truckLayout.x + truckLayout.w) * truckScale) + 34);
   const roadW = Math.max(80, roadEndX - roadStartX);
   ctx.fillStyle = '#000000';
   ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
 
-  drawSideFireTruck();
+  if (!(data.entities || []).some((ent) => ent?.type === 'requiredFireTruck')) drawSideFireTruck();
   drawUfoPreview();
   drawUfoRaid();
   drawLevel7Horse(false);
@@ -8269,8 +9668,20 @@ if (false && currentLevel === 11) drawPlacementGrid();
   requestAnimationFrame(loop);
 }
 
+if (builderOpenRequestedFromHash) {
+  setTimeout(() => {
+    builderOpen(builderHashInitialLevel || null);
+  }, 40);
+}
+
 loop();
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
