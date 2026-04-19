@@ -1,0 +1,329 @@
+Case 01 — Backyard Break-In
+Answers:
+1. masked thief in black hoodie
+2. crowbar in the thief’s hand
+3. sliding glass door being pried open
+4. red tricycle tipped over
+5. muddy footprints leading to the door
+6. black flashlight on the ground
+7. neighbor’s brown labrador barking
+8. broken glass shards near the door
+10 draft questions:
+1. Was there a masked thief in black hoodie? [Yes]
+2. Was there a crowbar in the thief’s hand? [Yes]
+3. Did you see sliding glass door being pried open? [Yes]
+4. Did you see red tricycle tipped over? [Yes]
+5. Was there a muddy footprints leading to the door? [Yes]
+6. Was there a black flashlight on the ground? [Yes]
+7. Was there a masked thief in silver hoodie? [No]
+8. Did you see sliding glass door being pried closed? [No]
+9. Did you see blue tricycle tipped over? [No]
+10. Was there a silver flashlight on the ground? [No]
+
+Case 02 — Driveway Vehicle Tamper
+Answers:
+1. screwdriver in the burglar’s hand
+2. tampering with the truck ignition
+3. open garage door
+4. silver bicycle with a flat tire
+5. tipped-over recycling bin
+6. work gloves on the hood
+7. broken side mirror on the ground
+8. dog bowl with spilled water
+10 draft questions:
+1. Was there a screwdriver in the burglar’s hand? [Yes]
+2. Did you see tampering with the truck ignition? [Yes]
+3. Was the garage door open? [Yes]
+4. Was there a silver bicycle with a flat tire? [Yes]
+5. Did you see tipped-over recycling bin? [Yes]
+6. Was there a work gloves on the hood? [Yes]
+7. Was the garage door closed? [No]
+8. Was there a black bicycle with a flat tire? [No]
+9. Was there an intact side mirror on the ground? [No]
+10. Was the garage door with tools visible open? [No]
+
+Case 03 — Garage Theft
+Answers:
+1. thief in hoodie and gloves
+2. stealing the lawnmower
+3. power tools being taken
+4. open garage door
+5. blue cooler with the lid open
+6. open toolbox with tools spilled
+7. calendar showing October
+8. scattered nails on the floor
+10 draft questions:
+1. Was there a thief in hoodie and gloves? [Yes]
+2. Did you see stealing the lawnmower? [Yes]
+3. Was there a power tools being taken? [Yes]
+4. Was the garage door open? [Yes]
+5. Was there a blue cooler with the lid open? [Yes]
+6. Was the toolbox with tools spilled open? [Yes]
+7. Was the garage door closed? [No]
+8. Was there a red cooler with the lid open? [No]
+9. Was the toolbox with tools spilled closed? [No]
+10. Was the garage door with tools visible open? [No]
+
+Case 04 — Side Yard Window Break-In
+Answers:
+1. masked intruder in a dark jacket
+2. climbing through a broken first-floor window
+3. wooden ladder leaning against the house
+4. yellow dump truck toy
+5. tipped-over wheelbarrow with spilled dirt
+6. flashlight on the windowsill
+7. neighbor’s dog watching from the fence
+8. broken glass shards on the sill
+10 draft questions:
+1. Was there a masked intruder in a dark jacket? [Yes]
+2. Did you see climbing through a broken first-floor window? [Yes]
+3. Did you see wooden ladder leaning against the house? [Yes]
+4. Was there a yellow dump truck toy? [Yes]
+5. Did you see tipped-over wheelbarrow with spilled dirt? [Yes]
+6. Was there a flashlight on the windowsill? [Yes]
+7. Did you see climbing through a intact first-floor window? [No]
+8. Was there a green dump truck toy? [No]
+9. Was there an intact glass shards on the sill? [No]
+10. Was there a broken glass shards near the door? [No]
+
+Case 05 — Front Porch Package Theft
+Answers:
+1. thief stealing a package
+2. second person forcing the front door
+3. stacked packages on the porch
+4. welcome mat with mud
+5. tipped rocking chair
+6. broken flower pot with soil spilled
+7. basketball on the steps
+8. bugs around the porch light
+10 draft questions:
+1. Did you see thief stealing a package? [Yes]
+2. Did you see second person forcing the front door? [Yes]
+3. Was there a stacked packages on the porch? [Yes]
+4. Was there a welcome mat with mud? [Yes]
+5. Did you see tipped rocking chair? [Yes]
+6. Did you see broken flower pot with soil spilled? [Yes]
+7. Did you see intact flower pot with soil spilled? [No]
+8. Was there a neighbor porch light on? [No]
+9. Did you see thief stealing a bicycle? [No]
+10. Was there a porch light on? [No]
+
+Case 06 — Backyard TV Theft
+Answers:
+1. thief carrying a flat-screen TV
+2. lookout person near the fence
+3. neighbor woman in a bathrobe
+4. children’s swing set
+5. tipped-over kiddie pool
+6. open shed with tools visible
+7. dog watching from the fence
+8. neighbor porch light on
+10 draft questions:
+1. Did you see thief carrying a flat-screen TV? [Yes]
+2. Was there a lookout person near the fence? [Yes]
+3. Was there a neighbor woman in a bathrobe? [Yes]
+4. Were there children’s swing set? [Yes]
+5. Did you see tipped-over kiddie pool? [Yes]
+6. Was the shed with tools visible open? [Yes]
+7. Was the shed with tools visible closed? [No]
+8. Did you see masked thief carrying a flat-screen TV? [No]
+9. Did you see neighbor’s dog watching from the fence? [No]
+10. Was the garage door with tools visible open? [No]
+
+Case 07 — Street Bike Theft
+Answers:
+1. thief stealing a bicycle
+2. mother calling out from the porch
+3. boy playing basketball
+4. girl playing basketball
+5. tipped-over trash bin
+6. muddy tire tracks on the grass
+7. dog on a leash in the yard
+8. tire tracks leading to the street
+10 draft questions:
+1. Did you see thief stealing a bicycle? [Yes]
+2. Did you see mother calling out from the porch? [Yes]
+3. Was there a boy playing basketball? [Yes]
+4. Was there a girl playing basketball? [Yes]
+5. Did you see tipped-over trash bin? [Yes]
+6. Was there a muddy tire tracks on the grass? [Yes]
+7. Did you see tipped-over recycling bin? [No]
+8. Did you see thief stealing a package? [No]
+9. Did you see tipped-over trash cans? [No]
+10. Was there a muddy footprints in the grass? [No]
+
+Case 08 — Trailer Robbery
+Answers:
+1. masked thief carrying a flat-screen TV
+2. adult fleeing toward the street
+3. teenager running toward the neighboring trailer
+4. aggressive German Shepherd barking
+5. open trailer door
+6. tipped-over trash cans
+7. red tricycle on the grass
+8. plastic slide tipped over
+10 draft questions:
+1. Did you see masked thief carrying a flat-screen TV? [Yes]
+2. Did you see adult fleeing toward the street? [Yes]
+3. Did you see teenager running toward the neighboring trailer? [Yes]
+4. Did you see aggressive German Shepherd barking? [Yes]
+5. Was the trailer door open? [Yes]
+6. Did you see tipped-over trash cans? [Yes]
+7. Was the trailer door closed? [No]
+8. Was there a blue tricycle on the grass? [No]
+9. Did you see thief carrying a flat-screen TV? [No]
+10. Was there a masked thief in black hoodie? [No]
+
+Case 09 — Lawn Bicycle Theft
+Answers:
+1. stolen bicycle being taken
+2. children’s bicycles on the lawn
+3. open garage door with tools visible
+4. basketball hoop in the driveway
+5. scattered toys on the grass
+6. neighbor walking a dog across the street
+7. fallen autumn leaves
+8. scattered mail near the mailbox
+10 draft questions:
+1. Was there a stolen bicycle being taken? [Yes]
+2. Were there children’s bicycles on the lawn? [Yes]
+3. Was the garage door with tools visible open? [Yes]
+4. Was there a basketball hoop in the driveway? [Yes]
+5. Were there scattered toys on the grass? [Yes]
+6. Did you see neighbor walking a dog across the street? [Yes]
+7. Was the garage door with tools visible closed? [No]
+8. Was the garage door open? [No]
+9. Was the shed with tools visible open? [No]
+10. Did you see sliding glass door being pried open? [No]
+
+Case 10 — Living Room Safe Theft
+Answers:
+1. open safe in the living room
+2. messy floor around the safe
+3. television mounted on the wall
+4. picture frame knocked askew
+5. lamp still on
+6. window curtains drawn back
+7. shoe print near the rug
+8. drawer pulled open
+10 draft questions:
+1. Was the safe in the living room open? [Yes]
+2. Was there a messy floor around the safe? [Yes]
+3. Was there a television mounted on the wall? [Yes]
+4. Did you see picture frame knocked askew? [Yes]
+5. Was there a lamp still on? [Yes]
+6. Did you see window curtains drawn back? [Yes]
+7. Was the safe in the living room closed? [No]
+8. Did you see drawer pulled closed? [No]
+9. Did you see sliding glass door being pried open? [No]
+10. Was the garage door open? [No]
+
+Case 11 — Backyard Lawnmower Theft
+Answers:
+1. thief pushing the lawnmower
+2. open shed door
+3. garden hose uncoiled on the grass
+4. fallen apples under the tree
+5. dog watching from the fence
+6. tools near the shed
+7. mower being pulled toward the yard gate
+8. muddy footprints in the grass
+10 draft questions:
+1. Did you see thief pushing the lawnmower? [Yes]
+2. Was the shed door open? [Yes]
+3. Was there a garden hose uncoiled on the grass? [Yes]
+4. Were there fallen apples under the tree? [Yes]
+5. Did you see dog watching from the fence? [Yes]
+6. Were there tools near the shed? [Yes]
+7. Was the shed door closed? [No]
+8. Did you see neighbor’s dog watching from the fence? [No]
+9. Did you see sliding glass door being pried open? [No]
+10. Was there a muddy footprints leading to the door? [No]
+
+Case 12 — Driveway Bicycle Theft
+Answers:
+1. thief taking a bicycle
+2. silver bicycle on the driveway
+3. work gloves dropped nearby
+4. broken side mirror
+5. tipped recycling bin
+6. porch light on
+7. garden gnome knocked over
+8. mail in the mailbox
+10 draft questions:
+1. Did you see thief taking a bicycle? [Yes]
+2. Was there a silver bicycle on the driveway? [Yes]
+3. Was there a work gloves dropped nearby? [Yes]
+4. Was there a broken side mirror? [Yes]
+5. Did you see tipped recycling bin? [Yes]
+6. Was there a porch light on? [Yes]
+7. Was there a black bicycle on the driveway? [No]
+8. Was there an intact side mirror? [No]
+9. Was there a broken side mirror on the ground? [No]
+10. Was there a silver bicycle with a flat tire? [No]
+
+Case 13 — Side Yard Shed Theft
+Answers:
+1. open shed door
+2. tools scattered outside the shed
+3. wheelbarrow tipped over
+4. extension cord coiled on the ground
+5. neighbor dog near the fence
+6. shovel on the grass
+7. broken glass by the shed
+8. flashlight on the ground
+10 draft questions:
+1. Was the shed door open? [Yes]
+2. Were there tools scattered outside the shed? [Yes]
+3. Did you see wheelbarrow tipped over? [Yes]
+4. Was there an extension cord coiled on the ground? [Yes]
+5. Was there a neighbor dog near the fence? [Yes]
+6. Was there a shovel on the grass? [Yes]
+7. Was the shed door closed? [No]
+8. Was there an extension cord coiled on the porch? [No]
+9. Was there an intact glass by the shed? [No]
+10. Was there a flashlight on the porch? [No]
+
+Case 14 — Backyard Lawnmower Theft
+Answers:
+1. thief in a hoodie
+2. lawnmower being stolen
+3. muddy footprints leading away
+4. trash can with the lid off
+5. neighbor’s house lit in the background
+6. red pickup truck parked on the street
+7. open upstairs window
+8. bird feeder hanging from the tree
+10 draft questions:
+1. Was there a thief in a hoodie? [Yes]
+2. Was there a lawnmower being stolen? [Yes]
+3. Was there a muddy footprints leading away? [Yes]
+4. Was there a trash can with the lid off? [Yes]
+5. Were there neighbor’s house lit in the background? [Yes]
+6. Was there a red pickup truck parked on the street? [Yes]
+7. Was there a blue pickup truck parked on the street? [No]
+8. Was the upstairs window closed? [No]
+9. Was there a muddy footprints leading to the door? [No]
+10. Was there a masked thief in black hoodie? [No]
+
+Case 15 — Driveway Bicycle Theft
+Answers:
+1. stolen bicycle being taken
+2. driveway with scattered toys
+3. open garage door
+4. basketball hoop in the driveway
+5. muddy boot prints
+6. mailbox with mail sticking out
+7. small american flag on the porch
+8. neighbor walking a dog across the street
+10 draft questions:
+1. Was there a stolen bicycle being taken? [Yes]
+2. Was there a driveway with scattered toys? [Yes]
+3. Was the garage door open? [Yes]
+4. Was there a basketball hoop in the driveway? [Yes]
+5. Was there a muddy boot prints? [Yes]
+6. Was there a mailbox with mail sticking out? [Yes]
+7. Was the garage door closed? [No]
+8. Was the garage door with tools visible open? [No]
+9. Did you see sliding glass door being pried open? [No]
+10. Was there a power tools being taken? [No]

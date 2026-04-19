@@ -1,0 +1,157 @@
+PD Witness Recall - Full Truth Audit (All Levels)
+
+Case 01 — Backyard Break-In
+- Truth facts in level answers: 12
+- Curated questions: YES 4, NO 5
+- Hard conflicts: 0
+- Review flags: 4
+  YES audit:
+  - REVIEW: Was there an American flag on the porch?  <-- no direct true-fact match
+  - REVIEW: Did the person in black have a backpack on?  <-- no direct true-fact match
+  - REVIEW: Was there a trash can in the yard?  <-- no direct true-fact match
+  - REVIEW: Was the hose lying in the yard?  <-- no direct true-fact match
+  NO audit:
+  - OK: Was the upstairs window closed?
+  - OK: Was there a volleyball in the yard?
+  - OK: Were there three blue shirts hanging on the line?
+  - OK: Was there a blue truck in the background?
+  - OK: Was there a silver bike in the yard?
+
+Case 02 — Driveway Vehicle Tamper
+- Truth facts in level answers: 15
+- Curated questions: YES 7, NO 3
+- Hard conflicts: 0
+- Review flags: 7
+  YES audit:
+  - REVIEW: Was there a dollhouse on the ground?  <-- no direct true-fact match
+  - REVIEW: Were there empty cans on the ground?  <-- no direct true-fact match
+  - REVIEW: Was there a rocking chair in the garage?  <-- no direct true-fact match
+  - REVIEW: Was there a plastic jack-o-lantern by the porch?  <-- no direct true-fact match
+  - REVIEW: Was there an American flag in the yard?  <-- no direct true-fact match
+  - REVIEW: Was the trash bin filled with water bottles?  <-- similar to "trash bin filled with water bottles"
+  - REVIEW: Was the porch light turned on?  <-- no direct true-fact match
+  NO audit:
+  - OK: Was there a basketball on the ground?
+  - OK: Was the trash bin filled with cardboard?
+  - OK: Was the truck blue?
+
+Case 03 — Garage Theft
+- Truth facts in level answers: 12
+- Curated questions: YES 4, NO 1
+- Hard conflicts: 0
+- Review flags: 4
+  YES audit:
+  - REVIEW: Was there a dartboard?  <-- no direct true-fact match
+  - REVIEW: Were there fishing poles in the garage?  <-- no direct true-fact match
+  - REVIEW: Were there wrenches hanging on the wall?  <-- no direct true-fact match
+  - REVIEW: Was there a red gas can on the ground?  <-- similar to "red gas can on the ground"
+  NO audit:
+  - OK: Was there a red cooler on the ground?
+
+Case 04 — Side Yard Window Break-In
+- Truth facts in level answers: 12
+- Curated questions: YES 4, NO 3
+- Hard conflicts: 0
+- Review flags: 4
+  YES audit:
+  - REVIEW: Was there a soccer goal in the yard?  <-- no direct true-fact match
+  - REVIEW: Were there muddy boot prints?  <-- no direct true-fact match
+  - REVIEW: Was there a shovel in the yard?  <-- no direct true-fact match
+  - REVIEW: Was there a yellow extension cord?  <-- no direct true-fact match
+  NO audit:
+  - OK: Was the grill red?
+  - OK: Was there a soccer ball in the yard?
+  - OK: Was there a water hose in the yard?
+
+Case 05 — Front Porch Package Theft
+- Truth facts in level answers: 10
+- Curated questions: YES 5, NO 4
+- Hard conflicts: 0
+- Review flags: 5
+  YES audit:
+  - REVIEW: Did you see a thief stealing a package?  <-- no direct true-fact match
+  - REVIEW: Did you see a second person forcing the front door?  <-- similar to "second person forcing the front door"
+  - REVIEW: Was the rocking chair tipped over?  <-- no direct true-fact match
+  - REVIEW: Was there a skeleton hanging on the porch?  <-- no direct true-fact match
+  - REVIEW: Was there a broken flower pot with spilled soil?  <-- similar to "broken flower pot with soil spilled"
+  NO audit:
+  - OK: Were there stacked packages on the porch?
+  - OK: Was there a muddy welcome mat?
+  - OK: Was there a basketball on the steps?
+  - OK: Was the rocking chair upright?
+
+Case 06 — Backyard TV Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 07 — Street Bike Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 08 — Trailer Robbery
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 09 — Lawn Bicycle Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 10 — Living Room Safe Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 11 — Backyard Lawnmower Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 12 — Driveway Bicycle Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 13 — Side Yard Shed Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 14 — Backyard Lawnmower Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Case 15 — Driveway Bicycle Theft
+- Truth facts in level answers: 8
+- Curated questions: YES 0, NO 0
+- Hard conflicts: 0
+- Review flags: 0
+  No curated questions defined for this level.
+
+Summary
+- Total levels audited: 15
+- Total curated questions audited: 40
+- Total hard conflicts: 0
+- Total review flags: 24

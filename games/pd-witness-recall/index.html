@@ -109,9 +109,12 @@
     .questions-panel{width:100%;position:relative;display:grid;gap:.8rem}
     .interrogation-flyup{position:absolute;left:5%;right:5%;top:50%;z-index:9;padding:1rem;border-radius:20px;border:1px solid rgba(134,213,255,.28);background:linear-gradient(180deg,rgba(6,18,28,.94),rgba(4,10,16,.96));box-shadow:0 16px 40px rgba(0,0,0,.5);transform:translateY(22%);opacity:0;pointer-events:none;transition:transform .35s ease,opacity .25s ease}
     .interrogation-flyup.active{transform:translateY(-50%);opacity:1;pointer-events:auto}
-    .desktop-quick-actions{display:grid;grid-template-columns:1fr;gap:.55rem;margin:.7rem auto 0;width:min(100%,360px)}
-    .desktop-quick-actions .btn{padding:.62rem .5rem;font-size:.82rem;width:100%}
-    .desktop-quick-actions #quickNextBtn{grid-column:1;justify-self:center;max-width:320px;width:100%}
+    .level-review{display:grid;gap:.6rem}
+    .level-review h3{margin:0;font-size:1.12rem}
+    .level-review p{margin:0;color:#d9ebfb;line-height:1.35}
+    .level-review .score-line{font-weight:800;color:#ffffff}
+    .level-review-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin-top:.15rem}
+    .level-review-actions .btn{width:100%}
     .report-action-stack{display:grid;gap:.55rem}
     .report-action-stack .btn{width:100%}
     body.scene-focus-active{overflow:hidden;touch-action:none}
@@ -215,7 +218,7 @@
     @keyframes coverPulse{0%,100%{transform:scale(1);opacity:.82}50%{transform:scale(1.015);opacity:1}}
       @media (max-width: 1100px){.mission-layout{grid-template-columns:1fr 1fr}.play-column{grid-column:1 / -1}.status-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.scene-frame{height:min(70vh,760px);min-height:340px}}
       @media (max-width: 820px){.mission-layout{grid-template-columns:1fr}.play-column{grid-column:auto;order:1}.report-column{order:2}.control-column{order:3}.status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.compare-grid{grid-template-columns:1fr}.interrogation-flyup{left:.6rem;right:.6rem}.mobile-controls-toggle{display:block;width:100%;margin-top:.7rem}.controls-collapsible{overflow:hidden;max-height:680px;opacity:1;transition:max-height .25s ease,opacity .2s ease}.controls-collapsible.collapsed{max-height:0;opacity:0;pointer-events:none}}
-      @media (max-width: 640px){.scene-thumb{width:96px;height:62px;right:.75rem;bottom:.75rem}.scene-note{font-size:.82rem}.scene-frame{width:100%;height:min(58vh,520px);min-height:260px;max-height:min(58vh,520px)}.menu-buttons{grid-template-columns:1fr}.menu-buttons .begin-btn{grid-column:auto}.summary-actions{grid-template-columns:1fr}.choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.choice{min-height:4.5rem;font-size:1rem;padding:1rem .75rem}#questionText{font-size:clamp(1.15rem,4.7vw,1.6rem)}.report-actions{grid-template-columns:1fr;gap:.5rem}.report-decision-actions{grid-template-columns:1fr}.desktop-quick-actions{grid-template-columns:1fr;width:min(100%,320px)}.desktop-quick-actions #quickNextBtn{grid-column:1;max-width:none}}
+      @media (max-width: 640px){.scene-thumb{width:96px;height:62px;right:.75rem;bottom:.75rem}.scene-note{font-size:.82rem}.scene-frame{width:100%;height:min(58vh,520px);min-height:260px;max-height:min(58vh,520px)}.menu-buttons{grid-template-columns:1fr}.menu-buttons .begin-btn{grid-column:auto}.summary-actions{grid-template-columns:1fr}.choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.choice{min-height:4.5rem;font-size:1rem;padding:1rem .75rem}#questionText{font-size:clamp(1.15rem,4.7vw,1.6rem)}.report-actions{grid-template-columns:1fr;gap:.5rem}.report-decision-actions{grid-template-columns:1fr}.level-review-actions{grid-template-columns:1fr}}
       @media (min-width: 821px){.desktop-quick-actions .btn{padding:.65rem .5rem;font-size:.85rem}}
   </style>
 </head>
@@ -310,17 +313,25 @@
               <div id="resultView" class="hidden"></div>
             </div>
             <div class="interrogation-flyup" id="interrogationFlyup">
-              <p id="questionText">Tap Begin. The screen will go black, count down, and then show the image.</p>
-              <div class="choices" id="choices"></div>
-              <div class="report-decision hidden" id="reportDecision">
-                <p>You can lock in this score now, or keep answering.</p>
-                <div class="report-decision-actions">
-                  <button class="btn" id="submitReportDecisionBtn" type="button">Submit Report</button>
-                  <button class="btn" id="keepAnsweringDecisionBtn" type="button">Keep Answering</button>
+              <div id="questionFlow">
+                <p id="questionText">Tap Begin. The screen will go black, count down, and then show the image.</p>
+                <div class="choices" id="choices"></div>
+                <div class="report-decision hidden" id="reportDecision">
+                  <p>You can lock in this score now, or keep answering.</p>
+                  <div class="report-decision-actions">
+                    <button class="btn" id="submitReportDecisionBtn" type="button">Submit Report</button>
+                    <button class="btn" id="keepAnsweringDecisionBtn" type="button">Keep Answering</button>
+                  </div>
                 </div>
               </div>
-              <div class="desktop-quick-actions">
-                <button class="btn hidden" id="quickNextBtn" type="button">Next Case</button>
+              <div class="level-review hidden" id="levelReviewPanel">
+                <h3 id="levelReviewTitle">Case Summary Filed</h3>
+                <p class="score-line" id="levelReviewStats">Level score and accuracy appear here.</p>
+                <p id="levelReviewOverall">Overall accuracy appears here.</p>
+                <div class="level-review-actions">
+                  <button class="btn" id="reviewNextBtn" type="button">Next Case</button>
+                  <button class="btn" id="reviewRestartBtn" type="button">Restart Level</button>
+                </div>
               </div>
               <select id="difficulty" class="difficulty-select"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
             </div>
@@ -409,11 +420,11 @@
       'Pause before answering to let the image settle in.'
     ];
     const levels = [
-      {img:'./scenes/scene_01.webp', title:'Case 01 — Backyard Break-In', brief:'You were walking nearby when you noticed suspicious activity behind a quiet house.', answers:['masked thief in black hoodie','crowbar in the thief’s hand','sliding glass door being pried open','red tricycle tipped over','muddy footprints leading to the door','black flashlight on the ground','neighbor’s brown labrador barking','broken glass shards near the door']},
-      {img:'./scenes/scene_02.webp', title:'Case 02 — Driveway Vehicle Tamper', brief:'A neighbor called out after seeing someone messing with a parked truck.', answers:['screwdriver in the burglar’s hand','tampering with the truck ignition','open garage door','silver bicycle with a flat tire','tipped-over recycling bin','work gloves on the hood','broken side mirror on the ground','dog bowl with spilled water']},
-      {img:'./scenes/scene_03.webp', title:'Case 03 — Garage Theft', brief:'A garage door was open and tools were scattered everywhere when you looked over.', answers:['thief in hoodie and gloves','stealing the lawnmower','power tools being taken','open garage door','blue cooler with the lid open','open toolbox with tools spilled','calendar showing October','scattered nails on the floor']},
-      {img:'./scenes/scene_04.webp', title:'Case 04 — Side Yard Window Break-In', brief:'Someone was climbing through a broken window while the yard was left in disarray.', answers:['masked intruder in a dark jacket','climbing through a broken first-floor window','wooden ladder leaning against the house','yellow dump truck toy','tipped-over wheelbarrow with spilled dirt','flashlight on the windowsill','neighbor’s dog watching from the fence','broken glass shards on the sill']},
-      {img:'./scenes/scene_05.webp', title:'Case 05 — Front Porch Package Theft', brief:'A porch dispute turned into a quick grab for packages and a forced door.', answers:['thief stealing a package','second person forcing the front door','stacked packages on the porch','welcome mat with mud','tipped rocking chair','broken flower pot with soil spilled','basketball on the steps','bugs around the porch light']},
+      {img:'./scenes/scene_01.webp', title:'Case 01 — Backyard Break-In', brief:'You were walking nearby when you noticed suspicious activity behind a quiet house.', answers:['masked thief in black hoodie','crowbar in the thief hand','sliding glass door being pried open','red tricycle tipped over','muddy footprints leading to the door','black flashlight on the ground','neighbor brown labrador barking','broken glass shards near the door','american flag on the porch','person in black with a backpack','trash can in the yard','hose lying in the yard']},
+      {img:'./scenes/scene_02.webp', title:'Case 02 — Driveway Vehicle Tamper', brief:'A neighbor called out after seeing someone messing with a parked truck.', answers:['screwdriver in the burglar hand','tampering with the truck ignition','open garage door','silver bicycle with a flat tire','tipped-over recycling bin','work gloves on the hood','broken side mirror on the ground','dog bowl with spilled water','dollhouse on the ground','empty cans on the ground','rocking chair in the garage','plastic jack-o-lantern by the porch','american flag in the yard','trash bin filled with water bottles','porch light turned on']},
+      {img:'./scenes/scene_03.webp', title:'Case 03 — Garage Theft', brief:'A garage door was open and tools were scattered everywhere when you looked over.', answers:['thief in hoodie and gloves','stealing the lawnmower','power tools being taken','open garage door','blue cooler with the lid open','open toolbox with tools spilled','calendar showing October','scattered nails on the floor','dartboard','fishing poles in the garage','wrenches hanging on the wall','red gas can on the ground']},
+      {img:'./scenes/scene_04.webp', title:'Case 04 — Side Yard Window Break-In', brief:'Someone was climbing through a broken window while the yard was left in disarray.', answers:['masked intruder in a dark jacket','climbing through a broken first-floor window','wooden ladder leaning against the house','yellow dump truck toy','tipped-over wheelbarrow with spilled dirt','flashlight on the windowsill','neighbor dog watching from the fence','broken glass shards on the sill','soccer goal in the yard','muddy boot prints','shovel in the yard','yellow extension cord']},
+      {img:'./scenes/scene_05.webp', title:'Case 05 — Front Porch Package Theft', brief:'A porch dispute turned into a quick grab for packages and a forced door.', answers:['thief stealing a package','second person forcing the front door','stacked packages on the porch','welcome mat with mud','tipped rocking chair','broken flower pot with soil spilled','basketball on the steps','bugs around the porch light','skeleton hanging on the porch','broken flower pot with spilled soil']},
       {img:'./scenes/scene_06.webp', title:'Case 06 — Backyard TV Theft', brief:'Two suspects moved fast while a neighbor tried to get a look from the porch.', answers:['thief carrying a flat-screen TV','lookout person near the fence','neighbor woman in a bathrobe','children’s swing set','tipped-over kiddie pool','open shed with tools visible','dog watching from the fence','neighbor porch light on']},
       {img:'./scenes/scene_07.webp', title:'Case 07 — Street Bike Theft', brief:'A bike was taken in front of a home while the family reacted from the porch.', answers:['thief stealing a bicycle','mother calling out from the porch','boy playing basketball','girl playing basketball','tipped-over trash bin','muddy tire tracks on the grass','dog on a leash in the yard','tire tracks leading to the street']},
       {img:'./scenes/scene_08.webp', title:'Case 08 — Trailer Robbery', brief:'A trailer door was open and the yard was crowded with signs of a hurried escape.', answers:['masked thief carrying a flat-screen TV','adult fleeing toward the street','teenager running toward the neighboring trailer','aggressive German Shepherd barking','open trailer door','tipped-over trash cans','red tricycle on the grass','plastic slide tipped over']},
@@ -426,10 +437,82 @@
       {img:'./scenes/scene_15.webp', title:'Case 15 — Driveway Bicycle Theft', brief:'The final scene keeps focus on the driveway, the bike, and the escape path.', answers:['stolen bicycle being taken','driveway with scattered toys','open garage door','basketball hoop in the driveway','muddy boot prints','mailbox with mail sticking out','small american flag on the porch','neighbor walking a dog across the street']}
     ];
     const el = id => document.getElementById(id);
-    const state = { level:0, score:0, answers:0, correct:0, overallAsked:0, overallCorrect:0, levelLog:[], startedOnce:false, reportGateOffered:false, reportGatePassed:false, streak:0, perfectCaseStreak:0, round:'briefing', locked:false, completed:new Set(JSON.parse(localStorage.getItem('witnessRecallDone')||'[]')), played:new Set(JSON.parse(localStorage.getItem('witnessRecallPlayed')||'[]')), levelStars: JSON.parse(localStorage.getItem('witnessRecallStars')||'[]'), levelBestScore: JSON.parse(localStorage.getItem('witnessRecallBestScore')||'[]'), cheatReady:0, cheatUsed:false, cheatCarry:0, deck:[], deckIndex:0, checkpointReady:false, checkpointOffered:false, checkpointPending:false, submitting:false };
+    const state = { level:0, score:0, answers:0, correct:0, overallAsked:0, overallCorrect:0, levelLog:[], startedOnce:false, reportGateOffered:false, reportGatePassed:false, streak:0, perfectCaseStreak:0, round:'briefing', locked:false, completed:new Set(JSON.parse(localStorage.getItem('witnessRecallDone')||'[]')), played:new Set(JSON.parse(localStorage.getItem('witnessRecallPlayed')||'[]')), levelStars: JSON.parse(localStorage.getItem('witnessRecallStars')||'[]'), levelBestScore: JSON.parse(localStorage.getItem('witnessRecallBestScore')||'[]'), cheatReady:0, cheatUsed:false, cheatCarry:0, deck:[], deckIndex:0, checkpointReady:false, checkpointOffered:false, checkpointPending:false, submitting:false, recentQuestions: JSON.parse(localStorage.getItem('witnessRecallRecentQuestions')||'[]') };
     const cfg = { easy:{view:8, answer:18, q:5}, medium:{view:5, answer:14, q:7}, hard:{view:2, answer:10, q:8} };
     const sharedPool = ['mask','gloves','flashlight','trash can','bicycle','dog','window','door','ladder','fence','toolbox','truck','porch light','mailbox','mower','swing set','garage','shed','basketball'];
-    function save(){ localStorage.setItem('witnessRecallDone', JSON.stringify([...state.completed])); localStorage.setItem('witnessRecallPlayed', JSON.stringify([...state.played])); localStorage.setItem('witnessRecallStars', JSON.stringify(state.levelStars)); localStorage.setItem('witnessRecallBestScore', JSON.stringify(state.levelBestScore)); localStorage.setItem('witnessRecallStats', JSON.stringify({score:state.score,correct:state.correct,answers:state.answers,overallAsked:state.overallAsked,overallCorrect:state.overallCorrect,startedOnce:state.startedOnce,streak:state.streak,perfectCaseStreak:state.perfectCaseStreak,cheatReady:state.cheatReady,cheatUsed:state.cheatUsed,cheatCarry:state.cheatCarry})); }
+    const curatedQuestionBank = {
+      0: {
+        no: [
+          'Was the upstairs window closed?',
+          'Was there a volleyball in the yard?',
+          'Were there three blue shirts hanging on the line?',
+          'Was there a blue truck in the background?',
+          'Was there a silver bike in the yard?'
+        ],
+        yes: [
+          'Was there an American flag on the porch?',
+          'Did the person in black have a backpack on?',
+          'Was there a trash can in the yard?',
+          'Was the hose lying in the yard?'
+        ]
+      },
+      1: {
+        no: [
+          'Was there a basketball on the ground?',
+          'Was the trash bin filled with cardboard?',
+          'Was the truck blue?'
+        ],
+        yes: [
+          'Was there a dollhouse on the ground?',
+          'Were there empty cans on the ground?',
+          'Was there a rocking chair in the garage?',
+          'Was there a plastic jack-o-lantern by the porch?',
+          'Was there an American flag in the yard?',
+          'Was the trash bin filled with water bottles?',
+          'Was the porch light turned on?'
+        ]
+      },
+      2: {
+        no: [
+          'Was there a red cooler on the ground?'
+        ],
+        yes: [
+          'Was there a dartboard?',
+          'Were there fishing poles in the garage?',
+          'Were there wrenches hanging on the wall?',
+          'Was there a red gas can on the ground?'
+        ]
+      },
+      3: {
+        no: [
+          'Was the grill red?',
+          'Was there a soccer ball in the yard?',
+          'Was there a water hose in the yard?'
+        ],
+        yes: [
+          'Was there a soccer goal in the yard?',
+          'Were there muddy boot prints?',
+          'Was there a shovel in the yard?',
+          'Was there a yellow extension cord?'
+        ]
+      },
+      4: {
+        no: [
+          'Were there stacked packages on the porch?',
+          'Was there a muddy welcome mat?',
+          'Was there a basketball on the steps?',
+          'Was the rocking chair upright?'
+        ],
+        yes: [
+          'Did you see a thief stealing a package?',
+          'Did you see a second person forcing the front door?',
+          'Was the rocking chair tipped over?',
+          'Was there a skeleton hanging on the porch?',
+          'Was there a broken flower pot with spilled soil?'
+        ]
+      }
+    };
+    function save(){ localStorage.setItem('witnessRecallDone', JSON.stringify([...state.completed])); localStorage.setItem('witnessRecallPlayed', JSON.stringify([...state.played])); localStorage.setItem('witnessRecallStars', JSON.stringify(state.levelStars)); localStorage.setItem('witnessRecallBestScore', JSON.stringify(state.levelBestScore)); localStorage.setItem('witnessRecallRecentQuestions', JSON.stringify(state.recentQuestions.slice(-80))); localStorage.setItem('witnessRecallStats', JSON.stringify({score:state.score,correct:state.correct,answers:state.answers,overallAsked:state.overallAsked,overallCorrect:state.overallCorrect,startedOnce:state.startedOnce,streak:state.streak,perfectCaseStreak:state.perfectCaseStreak,cheatReady:state.cheatReady,cheatUsed:state.cheatUsed,cheatCarry:state.cheatCarry})); }
     function pct(){ return state.overallAsked ? Math.round((state.overallCorrect/state.overallAsked)*100) : 0; }
     function levelPct(){ return state.answers ? Math.round((state.correct/state.answers)*100) : 0; }
     function tip(){ el('safetyTip').textContent = tipBank[Math.floor(Math.random() * tipBank.length)]; }
@@ -441,47 +524,197 @@
       return levels.length - 1;
     }
     function latestSelectableLevel(){ return nextUnplayedLevel(); }
-    function canSelectLevel(index){ return index <= latestSelectableLevel(); }
+    function canSelectLevel(index){ return state.completed.has(index) || index === state.level; }
     function renderMap(){
       const latest = latestSelectableLevel();
       el('map').innerHTML = levels.map((l,i)=>{
         const selectable = canSelectLevel(i);
         const stars = state.levelStars[i] || 0;
         const best = state.levelBestScore[i] || 0;
-        const status = !selectable ? 'Locked' : state.completed.has(i) ? 'Completed' : i === latest ? 'Latest Case' : 'Available';
+        const status = state.completed.has(i) ? 'Completed' : i === state.level ? 'Current Case' : i === latest ? 'Latest Case' : 'Locked';
         return `<button class="${i===state.level?'active':''} ${selectable?'selectable':'locked'}" data-i="${i}" ${selectable ? '' : 'disabled aria-disabled="true"'}><strong>${String(i+1).padStart(2,'0')}. ${l.title}</strong><div>${status}</div><div class="map-stars">Stars: ${starString(stars)}</div><div>Best score: ${best}</div></button>`;
       }).join('');
     }
+    function showQuestionFlow(){
+      el('questionFlow').classList.remove('hidden');
+      el('levelReviewPanel').classList.add('hidden');
+    }
+    function showLevelReview({ levelScore, levelAccuracy, overallAccuracy }){
+      el('questionFlow').classList.add('hidden');
+      el('levelReviewPanel').classList.remove('hidden');
+      el('levelReviewTitle').textContent = levelAccuracy >= 70 ? 'Case Summary Ready' : 'Case Summary Filed';
+      el('levelReviewStats').textContent = `Level ${state.level + 1}: ${state.correct}/${state.answers} correct | Score: ${levelScore} | Accuracy: ${levelAccuracy}%`;
+      el('levelReviewOverall').textContent = `Overall: ${state.overallCorrect}/${state.overallAsked} correct (${overallAccuracy}%).`;
+      const fly = el('interrogationFlyup');
+      fly.classList.remove('active');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>fly.classList.add('active')));
+    }
     function renderHeader(){ el('casesSolved').textContent = state.completed.size; el('accuracyStat').textContent = `${pct()}%`; el('streakStat').textContent = state.perfectCaseStreak; el('badgeStat').textContent = state.perfectCaseStreak >= 3 ? 'Perfect Streak' : pct()>=90 ? 'Eagle Eye' : pct()>=75 ? 'Solid Recall' : 'In Training'; el('progressBar').style.width = `${(state.completed.size/levels.length)*100}%`; el('caseBar').style.width = `${Math.min(100, levelPct())}%`; }
-    function buildDeck(lvl){
-      const count = cfg[el('difficulty').value].q;
-      const shuffled = [...lvl.answers].sort(()=>Math.random()-0.5).slice(0,count);
-      const currentSet = new Set(lvl.answers.map(a => a.toLowerCase()));
-      const distractorPool = [...new Set(levels
-        .flatMap(level => level.answers)
-        .map(a => a.trim())
-        .filter(a => a && !currentSet.has(a.toLowerCase()))
-      )];
-      return shuffled.map((phrase, index) => {
-        const askTrue = Math.random() < 0.5 || distractorPool.length === 0;
-        if (askTrue) {
-          return { q: makeQuestionFromPhrase(phrase, index), a: 'Yes', choices: ['Yes','No'].sort(()=>Math.random()-0.5) };
-        }
-        const distractor = distractorPool[Math.floor(Math.random() * distractorPool.length)];
-        return { q: makeQuestionFromPhrase(distractor, index), a: 'No', choices: ['Yes','No'].sort(()=>Math.random()-0.5) };
+    function randomize(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+    function normalizeFactKey(phrase){
+      return phrase
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, ' ')
+        .replace(/\b(the|a|an)\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    function uniqueByFact(phrases){
+      const seen = new Set();
+      return phrases.filter(phrase => {
+        const key = normalizeFactKey(phrase);
+        if(!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
       });
     }
-      function makeQuestionFromPhrase(phrase, index){
-        const clean = phrase.trim().replace(/\s+/g, ' ');
-        const low = clean.toLowerCase();
-        if (low.startsWith('open ')) return `Was the ${clean.slice(5)} open?`;
-        if (low.startsWith('broken ')) return `Did you see ${clean}?`;
-        if (/(stealing|taking|carrying|pushing|climbing|forcing|tampering|running|fleeing|watching|calling|barking|walking|dragging|pulled|pried|knocked|drawn|spilled|tipped)/i.test(clean)) {
-          return `Did you see ${clean}?`;
+    function makeCounterfactualVariants(phrase, currentSet){
+      const clean = phrase.trim().replace(/\s+/g, ' ');
+      const swap = (text, from, to) => text.replace(new RegExp(`\\b${from}\\b`, 'i'), to);
+      const variants = [];
+      const colorPairs = [
+        ['black','silver'], ['silver','black'], ['red','blue'], ['blue','red'],
+        ['brown','white'], ['white','brown'], ['yellow','green'], ['green','yellow']
+      ];
+      for(const [from, to] of colorPairs){
+        if(new RegExp(`\\b${from}\\b`, 'i').test(clean)){
+          const candidate = swap(clean, from, to);
+          if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
         }
-        if (/^(the|a|an)\b/i.test(clean)) return `Was ${clean[0].toLowerCase()}${clean.slice(1)}?`;
-        return index % 2 === 0 ? `Did you see ${clean}?` : `Was there ${clean}?`;
       }
+      if(/\bopen\b/i.test(clean)){
+        const candidate = clean.replace(/\bopen\b/i, 'closed');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      if(/\bclosed\b/i.test(clean)){
+        const candidate = clean.replace(/\bclosed\b/i, 'open');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      if(/\bbroken\b/i.test(clean)){
+        const candidate = clean.replace(/\bbroken\b/i, 'intact');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      if(/\bon the ground\b/i.test(clean)){
+        const candidate = clean.replace(/\bon the ground\b/i, 'on the porch');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      if(/\bin the yard\b/i.test(clean)){
+        const candidate = clean.replace(/\bin the yard\b/i, 'on the porch');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      if(/\bon the porch\b/i.test(clean)){
+        const candidate = clean.replace(/\bon the porch\b/i, 'in the yard');
+        if(!currentSet.has(normalizeFactKey(candidate))) variants.push(candidate);
+      }
+      return uniqueByFact(variants);
+    }
+    function buildDeck(lvl){
+      const count = cfg[el('difficulty').value].q;
+      const difficulty = el('difficulty').value;
+      const curated = curatedQuestionBank[state.level] || { yes: [], no: [] };
+      const currentAnswers = [...new Set(lvl.answers.map(a => a.trim()).filter(Boolean))];
+      const currentFactSet = new Set(currentAnswers.map(a => normalizeFactKey(a)));
+      const counterfactualPool = uniqueByFact(currentAnswers
+        .flatMap(phrase => makeCounterfactualVariants(phrase, currentFactSet))
+        .filter(Boolean));
+      const easyNoPool = [...counterfactualPool];
+      const mediumNoPool = [...counterfactualPool];
+      const hardNoPool = [...counterfactualPool];
+      const noPhrasePool = difficulty === 'easy' ? easyNoPool : difficulty === 'hard' ? hardNoPool : mediumNoPool;
+      const targetYes = difficulty === 'easy'
+        ? Math.max(3, Math.ceil(count * 0.65))
+        : difficulty === 'hard'
+          ? Math.max(2, Math.floor(count * 0.35))
+          : Math.max(2, Math.ceil(count / 2));
+      const targetNo = Math.max(2, count - targetYes);
+      const yesCandidates = randomize([
+        ...curated.yes.map(q => ({ phrase: q, factKey: `curated:${normalizeFactKey(q)}`, q: q.trim(), a:'Yes' })),
+        ...randomize(currentAnswers).map(phrase => ({
+          phrase,
+          factKey: normalizeFactKey(phrase),
+          q: makeQuestionFromPhrase(phrase),
+          a:'Yes'
+        }))
+      ]);
+      const noCandidates = randomize([
+        ...curated.no
+          .map(q => ({ phrase: q, factKey: normalizeFactKey(q), q: q.trim(), a:'No' }))
+          .filter(card => !currentFactSet.has(card.factKey))
+          .map(card => ({ ...card, factKey: `curated:${card.factKey}` })),
+        ...randomize(noPhrasePool).map(phrase => ({
+        phrase,
+        factKey: normalizeFactKey(phrase),
+        q: makeQuestionFromPhrase(phrase),
+        a:'No'
+      }))
+      ]);
+      const seen = new Set((state.recentQuestions || []).map(q => q.toLowerCase()));
+      const usedFacts = new Set();
+      const usedQuestions = new Set();
+      const pickCards = (pool, needed) => {
+        const unseen = pool.filter(card => !seen.has(card.q.toLowerCase()) && !usedFacts.has(card.factKey));
+        const fallback = pool.filter(card => (seen.has(card.q.toLowerCase()) || usedFacts.has(card.factKey)) === false);
+        const ordered = [...unseen, ...fallback];
+        const picked = [];
+        for(const card of ordered){
+          const qKey = card.q.toLowerCase();
+          if(usedFacts.has(card.factKey) || usedQuestions.has(qKey)) continue;
+          picked.push(card);
+          usedFacts.add(card.factKey);
+          usedQuestions.add(qKey);
+          if(picked.length >= needed) break;
+        }
+        return picked;
+      };
+      let deck = [...pickCards(yesCandidates, targetYes), ...pickCards(noCandidates, targetNo)];
+      if(deck.length < count){
+        const fillPool = randomize([...yesCandidates, ...noCandidates]);
+        for(const card of fillPool){
+          const qKey = card.q.toLowerCase();
+          if(usedFacts.has(card.factKey) || usedQuestions.has(qKey)) continue;
+          deck.push(card);
+          usedFacts.add(card.factKey);
+          usedQuestions.add(qKey);
+          if(deck.length >= count) break;
+        }
+      }
+      deck = randomize(deck).slice(0, count).map(card => ({...card, choices: randomize(['Yes','No']) }));
+      state.recentQuestions = [...(state.recentQuestions || []), ...deck.map(card => card.q)].slice(-80);
+      return deck;
+    }
+    function articleFor(phrase){
+      if(/^(the|a|an)\b/i.test(phrase)) return phrase;
+      return /^[aeiou]/i.test(phrase) ? `an ${phrase}` : `a ${phrase}`;
+    }
+    function isPluralPhrase(phrase){
+      const clean = phrase.trim().toLowerCase();
+      if(!clean) return false;
+      if(/^(footprints|gloves|tools|curtains|nails|packages|tracks|leaves|bugs|shards|toys|apples|cans)\b/.test(clean)) return true;
+      if(/^(scattered|fallen)\b/.test(clean)) return true;
+      const parts = clean.split(' ').filter(Boolean);
+      const first = parts[0] || '';
+      const second = parts[1] || '';
+      if(second.endsWith('s') && !second.endsWith("'s")) return true;
+      return first.endsWith('s') && !first.endsWith("'s");
+    }
+    function makeQuestionFromPhrase(phrase){
+      const clean = phrase.trim().replace(/\s+/g, ' ');
+      const low = clean.toLowerCase();
+      if(!clean) return 'Did you see that detail?';
+      if(low.startsWith('open ')){
+        const obj = clean.slice(5);
+        return `Was the ${obj} open?`;
+      }
+      if(low.startsWith('closed ')){
+        const obj = clean.slice(7);
+        return `Was the ${obj} closed?`;
+      }
+      if(/(stealing|taking|carrying|pushing|climbing|forcing|tampering|running|fleeing|watching|calling|barking|walking|dragging|pulled|pried|knocked|drawn|spilled|tipped|leaning)/i.test(clean)){
+        return `Did you see ${clean}?`;
+      }
+      if(isPluralPhrase(clean)) return `Were there ${clean}?`;
+      return `Was there ${articleFor(clean)}?`;
+    }
     function setScene(){
       const lvl = levels[state.level];
       state.played.add(state.level);
@@ -511,9 +744,9 @@
       el('questionSummaryList').innerHTML = '';
       el('levelSummaryStats').textContent = 'Score and accuracy will appear here.';
       el('compareSection').classList.add('hidden');
+      showQuestionFlow();
       el('interrogationFlyup').classList.remove('active');
       el('reportDecision').classList.add('hidden');
-      setNextCaseButtonsVisible(false);
       el('coverBeginBtn').textContent = state.startedOnce ? 'Start Case' : 'Begin';
       setSceneFocus(false);
     }
@@ -549,6 +782,7 @@
       el('sceneThumb').classList.add('hidden');
       el('interrogationFlyup').classList.remove('active');
       el('reportDecision').classList.add('hidden');
+      showQuestionFlow();
       el('questionText').textContent = 'The screen stays black while the timer counts down.';
       el('reportText').textContent = 'Status: Observing scene now.';
       el('resultView').classList.add('hidden');
@@ -587,7 +821,6 @@
         state.deckIndex++;
         if(state.answers >= 4 && !state.reportGateOffered){
           state.reportGateOffered = true;
-          setNextCaseButtonsVisible(true);
           el('reportDecision').classList.remove('hidden');
           el('reportText').textContent = 'Status: 4 questions answered. Submit now or keep answering.';
           state.locked = false;
@@ -632,13 +865,10 @@
       renderHeader();
       renderMap();
       tip();
-      el('compareSection').classList.remove('hidden');
-      el('questionSummaryList').innerHTML = state.levelLog.map((entry, idx)=>`<div class="question-summary-item">${idx+1}. ${entry.q}</div>`).join('');
-      el('levelSummaryStats').textContent = `Level score: ${levelScore} | Level accuracy: ${levelAccuracy}% | Overall accuracy: ${overallAccuracy}%`;
-      el('reportText').textContent = 'Status: Level complete. Choose Next Case, Restart Case, or Retire.';
-      el('resultView').innerHTML = `<strong>${levelAccuracy >= 70?'Case Summary Ready':'Case Summary Filed'}</strong><p>Level ${state.level + 1}: ${state.correct}/${state.answers} correct.</p><p>Overall: ${state.overallCorrect}/${state.overallAsked} correct (${overallAccuracy}%).</p>`;
-      el('resultView').classList.remove('hidden');
-      el('interrogationFlyup').classList.remove('active');
+      el('compareSection').classList.add('hidden');
+      el('resultView').classList.add('hidden');
+      el('reportText').textContent = 'Status: Level complete. Review score and continue.';
+      showLevelReview({ levelScore, levelAccuracy, overallAccuracy });
       el('reportDecision').classList.add('hidden');
       el('sceneFrame').style.filter='none';
       setSceneFocus(false);
@@ -652,6 +882,7 @@
       state.locked = false;
       el('compareSection').classList.add('hidden');
       el('resultView').classList.add('hidden');
+      showQuestionFlow();
       setScene();
     }
     function hideAgeGate(){ el('ageGate').classList.add('hidden'); }
@@ -668,10 +899,6 @@
       document.querySelectorAll('.intro-difficulty-chip').forEach(btn=>{
         btn.classList.toggle('active', btn.dataset.difficulty === current);
       });
-    }
-    function setNextCaseButtonsVisible(visible){
-      const quickNext = el('quickNextBtn');
-      if(quickNext) quickNext.classList.toggle('hidden', !visible);
     }
     function setSceneFocus(active){
       const isMobileViewport = window.matchMedia('(max-width: 820px)').matches;
@@ -727,6 +954,7 @@
       localStorage.removeItem('witnessRecallPlayed');
       localStorage.removeItem('witnessRecallStars');
       localStorage.removeItem('witnessRecallBestScore');
+      localStorage.removeItem('witnessRecallRecentQuestions');
       localStorage.removeItem('witnessRecallStats');
       state.level = 0;
       state.score = 0;
@@ -742,6 +970,7 @@
       state.played = new Set();
       state.levelStars = [];
       state.levelBestScore = [];
+      state.recentQuestions = [];
       state.cheatReady = 0;
       state.cheatUsed = false;
       state.cheatCarry = 0;
@@ -757,12 +986,10 @@
 
     el('coverBeginBtn').onclick = startCase;
     el('quickRestartBtn').onclick = resetCurrentLevel;
-    el('quickNextBtn').onclick = submitReportNow;
     el('submitReportDecisionBtn').onclick = submitReportNow;
     el('keepAnsweringDecisionBtn').onclick = keepAnsweringFlow;
-    el('nextCaseSummaryBtn').onclick = nextCase;
-    el('restartCaseSummaryBtn').onclick = resetCurrentLevel;
-    el('retireSummaryBtn').onclick = retireProfile;
+    el('reviewNextBtn').onclick = nextCase;
+    el('reviewRestartBtn').onclick = resetCurrentLevel;
 
     el('quickShareBtn').onclick = async ()=>{
       const text = `PD: Witness Recall\nCase: ${levels[state.level].title}\nLevel score: ${state.correct * 10}\nLevel accuracy: ${levelPct()}%\nOverall accuracy: ${pct()}%\nOverall correct: ${state.overallCorrect}/${state.overallAsked}\nCases solved: ${state.completed.size}`;
