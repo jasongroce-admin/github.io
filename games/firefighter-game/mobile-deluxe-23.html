@@ -1281,6 +1281,19 @@ button:hover { filter: brightness(1.2); }
   font-size: 13px;
   line-height: 1.35;
 }
+.builder-help-card h4 {
+  margin: 12px 0 6px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #b7d8ff;
+}
+.builder-help-card p {
+  margin: 4px 0 8px;
+  color: #c5daef;
+  font-size: 13px;
+  line-height: 1.35;
+}
 .builder-help-actions {
   margin-top: 12px;
   display: flex;
@@ -1912,15 +1925,42 @@ button:hover { filter: brightness(1.2); }
 <div id="builderHelpModal" class="builder-help-modal" aria-hidden="true">
   <div class="builder-help-card">
     <h3>Builder Help</h3>
+    <h4>Core Build Flow</h4>
     <ul>
       <li>Set your <strong>Level Name</strong>, then place models from the Asset Library onto the canvas to start building.</li>
       <li>Use the left <strong>Asset Library</strong> to pick or upload images, then click canvas once to place.</li>
       <li>Use <strong>Layers</strong> to move, scale, flip, lock physics, set burnability, and tune burn boxes.</li>
-          <li>The fire truck starts on the <strong>Left</strong>. Change <strong>Truck Side</strong> to Right anytime.</li>
+      <li>The fire truck starts on the <strong>Left</strong>. Change <strong>Truck Side</strong> to Right anytime.</li>
       <li>Burn boxes start on Easy so every burnable object works immediately; raise box tiers to Medium/Hard if wanted.</li>
       <li>Use <strong>Test Difficulty</strong> + <strong>Quick Play</strong> to test easy/medium/hard behavior.</li>
       <li>Use <strong>Events</strong> for tankers, tornado timing, and bonus vehicles. Save/Package from Export and Test.</li>
     </ul>
+    <h4>What Each Export/Test Button Does</h4>
+    <ul>
+      <li><strong>Load Current Level</strong>: loads the currently active game level into builder for editing.</li>
+      <li><strong>New Blank</strong>: starts a fresh blank builder level and keeps your current settings defaults.</li>
+      <li><strong>Save Local</strong>: saves this level to this browser on this computer (local only).</li>
+      <li><strong>Load Local</strong>: reloads one of your browser-saved local builder levels.</li>
+      <li><strong>Package</strong>: downloads a portable level package for later re-import into builder.</li>
+      <li><strong>Load Package</strong>: imports a previously packaged JSON level into builder.</li>
+      <li><strong>Share</strong>: copies level package JSON text to clipboard for sending.</li>
+      <li><strong>Save Submission File</strong>: creates the merge-ready `.kvfdsubmission.json` for source updates.</li>
+      <li><strong>Print</strong>: prints the level summary/integration information.</li>
+      <li><strong>Test Level</strong>: launches quick test play using selected test difficulty.</li>
+      <li><strong>Save To Game Slot</strong>: writes to local browser game slot override on this computer only.</li>
+      <li><strong>Save Offline Folder</strong>: exports game + images + level for local offline player use.</li>
+      <li><strong>Save Full Game Offline</strong>: exports game + images without attaching current custom level.</li>
+    </ul>
+    <h4>Permanent Source Update Workflow (Local Repo → Online)</h4>
+    <p>Use this when you want your builder changes to become real source files and then publish online after testing.</p>
+    <ul>
+      <li>1) Build and test level in builder until it plays correctly.</li>
+      <li>2) Click <strong>Save Submission File</strong> and save the `.kvfdsubmission.json` file.</li>
+      <li>3) Run <strong>Publish KVFD Builder Submission.cmd</strong> from Desktop (or run `apply-builder-submission-and-publish.cmd` in the game folder).</li>
+      <li>4) Select your submission file. The tool updates local source slot data in `mobile-deluxe-23.html` and pushes Main + Stage.</li>
+      <li>5) Refresh the site/game and verify the slot behavior online.</li>
+    </ul>
+    <p><strong>Important:</strong> Save To Game Slot is for fast local testing. Submission + publish script is for permanent repo/source updates.</p>
     <div class="builder-help-actions">
       <button id="builderHelpTourBtn" type="button" class="difficulty-btn">Start Guided Tour</button>
       <button id="builderHelpCloseBtn" type="button" class="secondary-btn">Close</button>
@@ -2221,6 +2261,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_atv_red_459x145.webp',
   'vehicle_bicycle_front_facing_459x145.webp',
   'vehicle_bike_red_491x390.webp',
+  'vehicle_black_box_truck_1284x634.webp',
   'vehicle_black_box_truck_1284x635.webp',
   'vehicle_black_box_truck_rightside_1284x635.webp',
   'vehicle_boat.webp',
@@ -2234,6 +2275,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_farm_tractor_green.webp',
   'vehicle_golfcart_white_459x145.webp',
   'vehicle_mower_876x469.webp',
+  'vehicle_pickup_truck_kvfd.webp',
   'vehicle_push_manual_mower_387x505.webp',
   'vehicle_push_mower_427x476.webp',
   'vehicle_pushmower_gas_red_459x145.webp',
@@ -3517,6 +3559,7 @@ const MUTUAL_AID_BUTTON_RECT = { x: 740, y: 48, w: 180, h: 34 };
 let builderState = null;
 let builderSelectedId = null;
 let builderPendingSpriteKey = null;
+let builderPendingSpriteFile = null;
 let builderPendingEntityType = null;
 let builderTool = 'select';
 let builderPointer = { active: false, mode: '', entityId: null, offsetX: 0, offsetY: 0, startScale: 1, startDist: 1 };
@@ -3862,6 +3905,7 @@ function builderPlaceTruckForUser(side) {
 
 function builderClearPendingPlacement() {
   builderPendingSpriteKey = null;
+  builderPendingSpriteFile = null;
   builderPendingEntityType = null;
 }
 
@@ -5313,17 +5357,21 @@ function builderRenderAssetList() {
       row.className = 'builder-asset';
       row.draggable = true;
       row.dataset.spriteKey = asset.key;
+      row.dataset.spriteFile = asset.file;
       const src = asset.isCustom ? (CUSTOM_SPRITE_DATA[asset.key]?.dataUrl || '') : `./images/${asset.file}`;
       row.innerHTML = `<img src="${src}" alt="${asset.key}"><div class="name">${getAssetDisplayName(asset.key)}</div>`;
       row.addEventListener('click', () => {
         builderPendingSpriteKey = asset.key;
+        builderPendingSpriteFile = asset.file;
         builderPendingEntityType = null;
         builderSetStatus(`Selected ${asset.key}. Tap once on canvas to place, then edit.`);
       });
       row.addEventListener('dragstart', (event) => {
         builderPendingSpriteKey = asset.key;
+        builderPendingSpriteFile = asset.file;
         builderPendingEntityType = null;
         event.dataTransfer.setData('text/plain', asset.key);
+        event.dataTransfer.setData('application/x-kvfd-sprite-file', asset.file);
       });
       items.appendChild(row);
     });
@@ -5332,11 +5380,12 @@ function builderRenderAssetList() {
   builderPopulateCollisionSwapSelectors();
 }
 
-function builderCreateEntity(spriteKey, x, baseY) {
+function builderCreateEntity(spriteKey, x, baseY, spriteFile = '') {
   const isAnimal = isAnimalSpriteKey(spriteKey);
   return normalizeBuilderEntity({
     type: 'builderSprite',
     spriteKey,
+    spriteFile,
     x: snapValue(x, BUILDER_SNAP_X),
     baseY: snapValue(baseY, BUILDER_SNAP_Y),
     scale: 1,
@@ -5428,13 +5477,31 @@ function builderPlacePendingEntity(x, y) {
 }
 
 function builderPlacePendingSprite(x, y) {
-  const key = builderPendingSpriteKey;
+  const pendingKey = String(builderPendingSpriteKey || '').trim();
+  const pendingFile = String(builderPendingSpriteFile || '').trim();
+  if (pendingKey && pendingFile && !SPRITE_FILES[pendingKey]) {
+    SPRITE_FILES[pendingKey] = pendingFile;
+  }
+  let key = resolveSpriteKey(pendingKey);
+  if (!key && pendingKey) {
+    key = pendingKey;
+  }
+  if (!resolveSpriteKey(key) && pendingFile) {
+    const generated = toSpriteKeyFromFilename(pendingFile);
+    if (generated && !SPRITE_FILES[generated]) SPRITE_FILES[generated] = pendingFile;
+    if (generated) key = generated;
+  }
   if (!key) return;
+  if (!resolveSpriteKey(key) && !SPRITE_FILES[key] && !CUSTOM_SPRITE_DATA[key]) {
+    builderSetStatus(`Could not map sprite key "${pendingKey}". Reopen asset list and select again.`);
+    return;
+  }
   ensureSpritesLoaded([key]);
-  const entity = builderCreateEntity(key, x, y);
+  const entity = builderCreateEntity(key, x, y, pendingFile);
   builderState.entities.push(entity);
   builderSelectEntity(entity.id);
   builderPendingSpriteKey = null;
+  builderPendingSpriteFile = null;
   builderTool = 'select';
   builderLastPlaceAt = performance.now();
   builderSetStatus(`Placed ${key}. Select/move mode active.`);
@@ -5648,7 +5715,8 @@ function builderBuildSubmissionPayload() {
         'Confirm required fire truck layer and lane side',
         'Confirm all WebP entities render and remain editable',
         'Confirm burnability settings, especially animals default non-flammable'
-      ]
+      ],
+      autoPublishScript: 'games/firefighter-game/apply-builder-submission-and-publish.cmd'
     },
     level
   };
@@ -5798,7 +5866,7 @@ function builderSaveSubmissionFile() {
   anchor.download = `${safeName || 'custom-level'}.kvfdsubmission.json`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
-  builderSetStatus('Submission file saved with merge checklist. Share this to include the level in the real game.');
+  builderSetStatus('Submission saved. Run apply-builder-submission-and-publish.cmd to apply to source slot and push Main + Stage.');
 }
 
 function builderDrawHelpers() {
@@ -5865,6 +5933,10 @@ function builderDrawHelpers() {
     if (drawCatalogEntity(ent)) return;
     if (ent.type === 'builderSprite') {
       drawBuilderSpriteEntity(ent);
+      return;
+    }
+    if (ent.type === 'playgroundSlideRight' || ent.type === 'playgroundSwingRight' || ent.type === 'playgroundSlideLeft' || ent.type === 'playgroundSwingLeft' || ent.type === 'playgroundSlideTallLeft' || ent.type === 'playgroundSlideShortLeft') {
+      drawPlaygroundAsset(ent);
       return;
     }
     if (ent.type === 'sedan') drawSedan(ent.x, ent.yOffset || 0, ent.variant || '');
@@ -6749,6 +6821,501 @@ const BUILDER_SNAP_X = 10;
 const BUILDER_SNAP_Y = 5;
 const BUILDER_SLOT_MAX = 23;
 const BUILDER_APP_VERSION = 'deluxe-23';
+const BUILDER_SOURCE_OVERRIDES_JSON = `/*KVFD_SOURCE_OVERRIDES_START*/
+{
+    "18":  {
+               "truckEntryDelayMs":  0,
+               "blackBoxPlan":  {
+                                    "firstDir":  1,
+                                    "firstAt":  7200,
+                                    "returnDelay":  3200,
+                                    "enabled":  true
+                                },
+               "name":  "Parkside Shed Rescue 18",
+               "dispatchClearBody":  "Dispatch confirms the park edge shed and cottage exposures are under control.",
+               "creatorName":  "",
+               "tankerSchedule":  {
+                                      "firstAt":  15000,
+                                      "repeat":  33000,
+                                      "hold":  8000
+                                  },
+               "safetyTip":  "Practice fire safety every day â€” it could save lives.",
+               "boroSchedule":  {
+                                    "firstAt":  28000,
+                                    "repeat":  56000,
+                                    "enabled":  false,
+                                    "hold":  9000
+                                },
+               "testDifficulty":  1,
+               "truckPlaced":  true,
+               "truckPlacementX":  110,
+               "timeOfDay":  2,
+               "tankerRightOnly":  false,
+               "dispatchBody":  "Dispatch to Kennard Fire: park edge scene with active fire in a shed and nearby cottage.",
+               "entities":  [
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_0_9391",
+                                    "baseW":  95.2,
+                                    "type":  "builderSprite",
+                                    "x":  210,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "alpha":  0.18,
+                                    "lockedPosition":  true,
+                                    "silhouette":  true,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "brightness(0.22) saturate(0.35) contrast(1.05)",
+                                    "baseY":  445,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  69.44000000000001,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "normalHouseGray"
+                                },
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_1_76840",
+                                    "baseW":  51.92,
+                                    "type":  "builderSprite",
+                                    "x":  630.0000000000001,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "alpha":  0.16,
+                                    "lockedPosition":  true,
+                                    "silhouette":  true,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "brightness(0.18) saturate(0.25) contrast(1.08)",
+                                    "baseY":  442.5,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  63.31061224489796,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "treeOakRealistic"
+                                },
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776649899232_2_12583",
+                                    "type":  "playgroundSwingLeft",
+                                    "x":  450,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "scale":  0.78,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "lockedPosition":  true,
+                                    "movableWithWater":  false,
+                                    "hitSwapScale":  1,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776649899232_3_95920",
+                                    "type":  "playgroundSlideShortLeft",
+                                    "x":  560,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "scale":  0.78,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "lockedPosition":  true,
+                                    "movableWithWater":  false,
+                                    "hitSwapScale":  1,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "scale":  0.61,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_4_40634",
+                                    "baseW":  260,
+                                    "type":  "builderSprite",
+                                    "x":  760,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  460,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  198,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "shedRed"
+                                },
+                                {
+                                    "scale":  0.81,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_7_15642",
+                                    "baseW":  201.6,
+                                    "type":  "builderSprite",
+                                    "x":  750,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  480,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  53.28,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "fenceWhiteRow"
+                                },
+                                {
+                                    "scale":  1.05,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_5_28765",
+                                    "baseW":  354.64,
+                                    "type":  "builderSprite",
+                                    "x":  950,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  505,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  255.44,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "normalHouseCottageAlt"
+                                },
+                                {
+                                    "scale":  1.5,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_6_10203",
+                                    "baseW":  144.76,
+                                    "type":  "builderSprite",
+                                    "x":  1090,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  515,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  225.6,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "treePineRealistic"
+                                },
+                                {
+                                    "lockedPosition":  true,
+                                    "id":  "be_1776649899232_0_84202",
+                                    "type":  "requiredFireTruck",
+                                    "burnableOverride":  false,
+                                    "silhouette":  false,
+                                    "flipX":  false,
+                                    "scale":  1,
+                                    "flipY":  false
+                                }
+                            ],
+               "truckSide":  "left",
+               "tornadoConfig":  {
+                                     "travelPercent":  100,
+                                     "enabled":  false,
+                                     "returnPercent":  65,
+                                     "direction":  1,
+                                     "returnEnabled":  false,
+                                     "startDelayMs":  0,
+                                     "speed":  0.6
+                                 }
+           },
+    "20":  {
+               "truckEntryDelayMs":  0,
+               "blackBoxPlan":  {
+                                    "firstDir":  1,
+                                    "firstAt":  7200,
+                                    "returnDelay":  3200,
+                                    "enabled":  false
+                                },
+               "name":  "Mixed Mayday 20",
+               "creatorName":  "",
+               "truckPlacementX":  110,
+               "safetyTip":  "Keep a fire extinguisher accessible and know how to use it.",
+               "dispatchClearBody":  "Dispatch confirms custom builder level is under control.",
+               "boroSchedule":  {
+                                    "firstAt":  28000,
+                                    "repeat":  56000,
+                                    "hold":  9000,
+                                    "enabled":  false
+                                },
+               "testDifficulty":  1,
+               "truckPlaced":  true,
+               "tankerSchedule":  {
+                                      "firstAt":  15000,
+                                      "repeat":  33000,
+                                      "hold":  8000
+                                  },
+               "timeOfDay":  0,
+               "tankerRightOnly":  false,
+               "dispatchBody":  "Dispatch to Kennard Fire: custom builder level is active.",
+               "entities":  [
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776650165141_0_17335",
+                                    "type":  "garageSmall",
+                                    "x":  320,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "hitSwapScale":  1,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "movableWithWater":  false,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "scale":  1.46,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_2_24262",
+                                    "baseW":  372,
+                                    "type":  "builderSprite",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  930,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  490,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  221.67123287671234,
+                                    "flipX":  false,
+                                    "spriteKey":  "normalHouseBrick",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_1_20330",
+                                    "baseW":  215,
+                                    "type":  "builderSprite",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  760,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  515,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  110,
+                                    "flipX":  false,
+                                    "spriteKey":  "sedanGreenLeft",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "scale":  0.74,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_3_81131",
+                                    "baseW":  190,
+                                    "tornadoMotionMode":  "path",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  560,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "type":  "builderSprite",
+                                    "alpha":  0.65,
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  455,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  320,
+                                    "flipX":  false,
+                                    "spriteKey":  "oakLarge",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "id":  "be_1776650165141_0_48884",
+                                    "type":  "requiredFireTruck",
+                                    "scale":  1,
+                                    "burnableOverride":  false,
+                                    "silhouette":  false,
+                                    "flipX":  false,
+                                    "lockedPosition":  true,
+                                    "flipY":  false
+                                },
+                                {
+                                    "scale":  0.21,
+                                    "burnableOverride":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776653953902_0_29938",
+                                    "tornadoRotationMode":  "spin",
+                                    "tornadoMotionMode":  "path",
+                                    "burnZonesEnabled":  [
+                                                             false,
+                                                             false,
+                                                             false
+                                                         ],
+                                    "x":  600,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "type":  "builderSprite",
+                                    "alpha":  0.65,
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "flipY":  false,
+                                    "pathEnabled":  false,
+                                    "burnZoneDifficultyTiers":  [
+                                                                    1,
+                                                                    1,
+                                                                    1
+                                                                ],
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  460,
+                                    "igniteOnTornadoHit":  false,
+                                    "movableWithWater":  false,
+                                    "flipX":  false,
+                                    "spriteKey":  "img_building_doghouse_wood_large_459x145",
+                                    "waterExitDirection":  "nearest"
+                                }
+                            ],
+               "truckSide":  "left",
+               "tornadoConfig":  {
+                                     "travelPercent":  100,
+                                     "enabled":  false,
+                                     "returnPercent":  65,
+                                     "direction":  1,
+                                     "returnEnabled":  false,
+                                     "startDelayMs":  0,
+                                     "speed":  0.6
+                                 }
+           }
+}
+/*KVFD_SOURCE_OVERRIDES_END*/`;
 
 function safeJsonParse(raw, fallback) {
   try { return JSON.parse(raw); } catch (err) { return fallback; }
@@ -6785,9 +7352,22 @@ function normalizeBuilderEntity(ent, idx = 0) {
     };
   }
   if (type === 'builderSprite') {
-    const resolvedSpriteKey = resolveSpriteKey(ent.spriteKey);
-    const hasSpriteKey = typeof ent.spriteKey === 'string' && !!resolvedSpriteKey;
-    const spriteKey = hasSpriteKey ? resolvedSpriteKey : 'shedRed';
+    let resolvedSpriteKey = resolveSpriteKey(ent.spriteKey);
+    const rawSpriteKey = typeof ent.spriteKey === 'string' ? String(ent.spriteKey || '').trim() : '';
+    const spriteFileHint = typeof ent.spriteFile === 'string' ? String(ent.spriteFile || '').trim() : '';
+    if (!resolvedSpriteKey && rawSpriteKey && spriteFileHint) {
+      SPRITE_FILES[rawSpriteKey] = spriteFileHint;
+      resolvedSpriteKey = resolveSpriteKey(rawSpriteKey);
+    }
+    if (!resolvedSpriteKey && rawSpriteKey && /\.(webp|png|jpg|jpeg)$/i.test(rawSpriteKey)) {
+      const generated = toSpriteKeyFromFilename(rawSpriteKey);
+      if (generated) {
+        SPRITE_FILES[generated] = rawSpriteKey;
+        resolvedSpriteKey = resolveSpriteKey(generated);
+      }
+    }
+    const hasSpriteKey = !!resolvedSpriteKey;
+    const spriteKey = hasSpriteKey ? resolvedSpriteKey : (rawSpriteKey || 'shedRed');
     const defaultBurnable = isAnimalSpriteKey(spriteKey) ? false : true;
     const parsedBaseW = Number(ent.baseW);
     const parsedBaseH = Number(ent.baseH);
@@ -7076,6 +7656,515 @@ function loadBuilderOfficialOverrides() {
   });
 }
 
+function loadBuilderSourceOverrides() {
+  const raw = String(BUILDER_SOURCE_OVERRIDES_JSON || '')
+    .replace('/*KVFD_SOURCE_OVERRIDES_START*/
+{
+    "18":  {
+               "truckEntryDelayMs":  0,
+               "blackBoxPlan":  {
+                                    "firstDir":  1,
+                                    "firstAt":  7200,
+                                    "returnDelay":  3200,
+                                    "enabled":  true
+                                },
+               "name":  "Parkside Shed Rescue 18",
+               "dispatchClearBody":  "Dispatch confirms the park edge shed and cottage exposures are under control.",
+               "creatorName":  "",
+               "tankerSchedule":  {
+                                      "firstAt":  15000,
+                                      "repeat":  33000,
+                                      "hold":  8000
+                                  },
+               "safetyTip":  "Practice fire safety every day â€” it could save lives.",
+               "boroSchedule":  {
+                                    "firstAt":  28000,
+                                    "repeat":  56000,
+                                    "enabled":  false,
+                                    "hold":  9000
+                                },
+               "testDifficulty":  1,
+               "truckPlaced":  true,
+               "truckPlacementX":  110,
+               "timeOfDay":  2,
+               "tankerRightOnly":  false,
+               "dispatchBody":  "Dispatch to Kennard Fire: park edge scene with active fire in a shed and nearby cottage.",
+               "entities":  [
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_0_9391",
+                                    "baseW":  95.2,
+                                    "type":  "builderSprite",
+                                    "x":  210,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "alpha":  0.18,
+                                    "lockedPosition":  true,
+                                    "silhouette":  true,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "brightness(0.22) saturate(0.35) contrast(1.05)",
+                                    "baseY":  445,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  69.44000000000001,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "normalHouseGray"
+                                },
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_1_76840",
+                                    "baseW":  51.92,
+                                    "type":  "builderSprite",
+                                    "x":  630.0000000000001,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "alpha":  0.16,
+                                    "lockedPosition":  true,
+                                    "silhouette":  true,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "brightness(0.18) saturate(0.25) contrast(1.08)",
+                                    "baseY":  442.5,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  63.31061224489796,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "treeOakRealistic"
+                                },
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776649899232_2_12583",
+                                    "type":  "playgroundSwingLeft",
+                                    "x":  450,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "scale":  0.78,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "lockedPosition":  true,
+                                    "movableWithWater":  false,
+                                    "hitSwapScale":  1,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776649899232_3_95920",
+                                    "type":  "playgroundSlideShortLeft",
+                                    "x":  560,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "scale":  0.78,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "lockedPosition":  true,
+                                    "movableWithWater":  false,
+                                    "hitSwapScale":  1,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "scale":  0.61,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_4_40634",
+                                    "baseW":  260,
+                                    "type":  "builderSprite",
+                                    "x":  760,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  460,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  198,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "shedRed"
+                                },
+                                {
+                                    "scale":  0.81,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_7_15642",
+                                    "baseW":  201.6,
+                                    "type":  "builderSprite",
+                                    "x":  750,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  false,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  480,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  53.28,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "fenceWhiteRow"
+                                },
+                                {
+                                    "scale":  1.05,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_5_28765",
+                                    "baseW":  354.64,
+                                    "type":  "builderSprite",
+                                    "x":  950,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  505,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  255.44,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "normalHouseCottageAlt"
+                                },
+                                {
+                                    "scale":  1.5,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776649899232_6_10203",
+                                    "baseW":  144.76,
+                                    "type":  "builderSprite",
+                                    "x":  1090,
+                                    "hitSwapScale":  1,
+                                    "waterExitDirection":  "nearest",
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  515,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  225.6,
+                                    "flipX":  false,
+                                    "movableWithWater":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "spriteKey":  "treePineRealistic"
+                                },
+                                {
+                                    "lockedPosition":  true,
+                                    "id":  "be_1776649899232_0_84202",
+                                    "type":  "requiredFireTruck",
+                                    "burnableOverride":  false,
+                                    "silhouette":  false,
+                                    "flipX":  false,
+                                    "scale":  1,
+                                    "flipY":  false
+                                }
+                            ],
+               "truckSide":  "left",
+               "tornadoConfig":  {
+                                     "travelPercent":  100,
+                                     "enabled":  false,
+                                     "returnPercent":  65,
+                                     "direction":  1,
+                                     "returnEnabled":  false,
+                                     "startDelayMs":  0,
+                                     "speed":  0.6
+                                 }
+           },
+    "20":  {
+               "truckEntryDelayMs":  0,
+               "blackBoxPlan":  {
+                                    "firstDir":  1,
+                                    "firstAt":  7200,
+                                    "returnDelay":  3200,
+                                    "enabled":  false
+                                },
+               "name":  "Mixed Mayday 20",
+               "creatorName":  "",
+               "truckPlacementX":  110,
+               "safetyTip":  "Keep a fire extinguisher accessible and know how to use it.",
+               "dispatchClearBody":  "Dispatch confirms custom builder level is under control.",
+               "boroSchedule":  {
+                                    "firstAt":  28000,
+                                    "repeat":  56000,
+                                    "hold":  9000,
+                                    "enabled":  false
+                                },
+               "testDifficulty":  1,
+               "truckPlaced":  true,
+               "tankerSchedule":  {
+                                      "firstAt":  15000,
+                                      "repeat":  33000,
+                                      "hold":  8000
+                                  },
+               "timeOfDay":  0,
+               "tankerRightOnly":  false,
+               "dispatchBody":  "Dispatch to Kennard Fire: custom builder level is active.",
+               "entities":  [
+                                {
+                                    "flipX":  false,
+                                    "id":  "be_1776650165141_0_17335",
+                                    "type":  "garageSmall",
+                                    "x":  320,
+                                    "flipY":  false,
+                                    "igniteOnTornadoHit":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "tornadoMotionMode":  "path",
+                                    "fireStartDelayMs":  0,
+                                    "waterExitBonusPoints":  0,
+                                    "tornadoRotationMode":  "spin",
+                                    "pathMode":  "pingpong",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "hitSwapScale":  1,
+                                    "pathEnabled":  false,
+                                    "waterExitDirection":  "nearest",
+                                    "movableWithWater":  false,
+                                    "fallWithTornado":  false
+                                },
+                                {
+                                    "scale":  1.46,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_2_24262",
+                                    "baseW":  372,
+                                    "type":  "builderSprite",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  930,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  490,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  221.67123287671234,
+                                    "flipX":  false,
+                                    "spriteKey":  "normalHouseBrick",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "scale":  1,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_1_20330",
+                                    "baseW":  215,
+                                    "type":  "builderSprite",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  760,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "tornadoMotionMode":  "path",
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  515,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  110,
+                                    "flipX":  false,
+                                    "spriteKey":  "sedanGreenLeft",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "scale":  0.74,
+                                    "flipY":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "tornadoRotationMode":  "spin",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776650165141_3_81131",
+                                    "baseW":  190,
+                                    "tornadoMotionMode":  "path",
+                                    "waterExitSpeed":  2.2,
+                                    "x":  560,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "burnableOverride":  true,
+                                    "type":  "builderSprite",
+                                    "alpha":  0.65,
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "pathEnabled":  false,
+                                    "movableWithWater":  false,
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  455,
+                                    "igniteOnTornadoHit":  false,
+                                    "baseH":  320,
+                                    "flipX":  false,
+                                    "spriteKey":  "oakLarge",
+                                    "waterExitDirection":  "nearest"
+                                },
+                                {
+                                    "id":  "be_1776650165141_0_48884",
+                                    "type":  "requiredFireTruck",
+                                    "scale":  1,
+                                    "burnableOverride":  false,
+                                    "silhouette":  false,
+                                    "flipX":  false,
+                                    "lockedPosition":  true,
+                                    "flipY":  false
+                                },
+                                {
+                                    "scale":  0.21,
+                                    "burnableOverride":  false,
+                                    "waterExitBonusPoints":  0,
+                                    "pathMode":  "pingpong",
+                                    "skewYDeg":  0,
+                                    "rotationDeg":  0,
+                                    "id":  "be_1776653953902_0_29938",
+                                    "tornadoRotationMode":  "spin",
+                                    "tornadoMotionMode":  "path",
+                                    "burnZonesEnabled":  [
+                                                             false,
+                                                             false,
+                                                             false
+                                                         ],
+                                    "x":  600,
+                                    "hitSwapScale":  1,
+                                    "fireStartDelayMs":  0,
+                                    "fallWithTornado":  false,
+                                    "waterExitSpeed":  2.2,
+                                    "type":  "builderSprite",
+                                    "alpha":  0.65,
+                                    "lockedPosition":  true,
+                                    "silhouette":  false,
+                                    "flipY":  false,
+                                    "pathEnabled":  false,
+                                    "burnZoneDifficultyTiers":  [
+                                                                    1,
+                                                                    1,
+                                                                    1
+                                                                ],
+                                    "skewXDeg":  0,
+                                    "filter":  "",
+                                    "baseY":  460,
+                                    "igniteOnTornadoHit":  false,
+                                    "movableWithWater":  false,
+                                    "flipX":  false,
+                                    "spriteKey":  "img_building_doghouse_wood_large_459x145",
+                                    "waterExitDirection":  "nearest"
+                                }
+                            ],
+               "truckSide":  "left",
+               "tornadoConfig":  {
+                                     "travelPercent":  100,
+                                     "enabled":  false,
+                                     "returnPercent":  65,
+                                     "direction":  1,
+                                     "returnEnabled":  false,
+                                     "startDelayMs":  0,
+                                     "speed":  0.6
+                                 }
+           }
+}
+/*KVFD_SOURCE_OVERRIDES_END*/', '')
+    .trim();
+  const payload = safeJsonParse(raw || '{}', {});
+  if (!payload || typeof payload !== 'object') return;
+  Object.keys(payload).forEach((slotKey) => {
+    const slot = Number(slotKey);
+    if (!Number.isFinite(slot) || slot < 1 || slot > BUILDER_SLOT_MAX) return;
+    const normalized = normalizeBuilderLevel(payload[slotKey]);
+    baseLevels[slot - 1] = deepClone(normalized);
+  });
+}
+
+loadBuilderSourceOverrides();
 loadBuilderOfficialOverrides();
 builderState = normalizeBuilderLevel(safeJsonParse(localStorage.getItem(BUILDER_LAST_DRAFT_KEY) || '', null) || {});
 
@@ -7852,6 +8941,7 @@ BUILDER_UI.captureImageInput?.addEventListener('change', async (event) => {
 BUILDER_UI.addLakeBtn?.addEventListener('click', () => {
   builderPendingEntityType = 'pond';
   builderPendingSpriteKey = null;
+  builderPendingSpriteFile = null;
   builderSetStatus('Lake selected. Tap once on canvas to place.');
 });
 BUILDER_UI.helpBtn?.addEventListener('click', () => builderShowHelpModal(true));
@@ -8477,10 +9567,16 @@ attachDelayedExportTip('builderExportOfflineBtn', 'Save Offline Folder: export t
 attachDelayedExportTip('builderExportFullGameBtn', 'Save Full Game Offline: export full game + assets without attaching the current custom level.');
 attachDelayedExportTip('builderImportBtn', 'Load Package: import a saved package JSON into the builder.');
 attachDelayedExportTip('builderShareBtn', 'Share: copy package JSON to clipboard for sending.');
-attachDelayedExportTip('builderSaveSubmissionBtn', 'Save Submission File: export merge-ready level data for official game updates.');
+attachDelayedExportTip('builderSaveSubmissionBtn', 'Save Submission File: export level data, then run apply-builder-submission-and-publish.cmd for one-click source update + push.');
 attachDelayedExportTip('builderPrintBtn', 'Print: print a summary of the current level package.');
 attachDelayedExportTip('builderTestBtn', 'Test Level: quick-play this level with your selected test difficulty.');
-attachDelayedExportTip('builderPublishBtn', 'Save To Game Slot: writes this level into the selected official slot on this computer.');
+attachDelayedExportTip('builderPublishBtn', 'Save To Game Slot: writes this level into browser-local slot override on this computer (not source file update).');
+attachDelayedExportTip('builderTestDifficulty', 'Test Difficulty: choose Easy, Medium, or Hard for Quick Play/Test Level behavior.');
+attachDelayedExportTip('builderUndoBtn', 'Undo: revert your last builder edit.');
+attachDelayedExportTip('builderRedoBtn', 'Redo: re-apply the edit you just undid.');
+attachDelayedExportTip('builderHelpBtn', 'Help: open detailed instructions and the source-update workflow steps.');
+attachDelayedExportTip('builderTopLevelLoader', 'Load Level: load an existing game slot into builder for editing.');
+attachDelayedExportTip('builderQuickPlayBtn', 'Quick Play: immediately play this builder level with current test difficulty.');
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
@@ -8544,7 +9640,9 @@ canvas.addEventListener('drop', (event) => {
   if (gameState !== 'builder') return;
   event.preventDefault();
   const spriteKey = event.dataTransfer?.getData('text/plain');
+  const spriteFile = event.dataTransfer?.getData('application/x-kvfd-sprite-file');
   if (spriteKey) builderPendingSpriteKey = spriteKey;
+  if (spriteFile) builderPendingSpriteFile = spriteFile;
   getPos(event);
   builderPlacePendingEntity(mouseX, mouseY);
 });
@@ -11056,3 +12154,5 @@ loop();
 </script>
 </body>
 </html>
+
+
