@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -926,7 +926,7 @@ button:hover { filter: brightness(1.2); }
 }
 .builder-section > summary::-webkit-details-marker { display: none; }
 .builder-section > summary::after {
-  content: '▼';
+  content: '\25BC';
   position: absolute;
   right: 12px;
   top: 50%;
@@ -935,7 +935,7 @@ button:hover { filter: brightness(1.2); }
   color: #ffd75a;
 }
 .builder-section:not([open]) > summary::after {
-  content: '▶';
+  content: '\25B6';
 }
 .builder-section > .section-content {
   padding: 10px 12px 12px;
@@ -1061,7 +1061,7 @@ button:hover { filter: brightness(1.2); }
 }
 .builder-subsection > summary::-webkit-details-marker { display: none; }
 .builder-subsection > summary::after {
-  content: '▼';
+  content: '\25BC';
   position: absolute;
   right: 10px;
   top: 50%;
@@ -1070,7 +1070,7 @@ button:hover { filter: brightness(1.2); }
   color: #ffd75a;
 }
 .builder-subsection:not([open]) > summary::after {
-  content: '▶';
+  content: '\25B6';
 }
 .builder-subsection > .subsection-content {
   padding: 6px 8px 10px;
@@ -1459,8 +1459,8 @@ button:hover { filter: brightness(1.2); }
               <option value="2">Medium</option>
               <option value="3">Hard</option>
             </select>
-            <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">↶ Undo</button>
-            <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">↷ Redo</button>
+            <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">&#8630; Undo</button>
+            <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">&#8631; Redo</button>
             <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
             <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load game level into editor"></select>
             <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
@@ -1492,6 +1492,13 @@ button:hover { filter: brightness(1.2); }
           </select>
         </div>
         <div class="builder-field">
+          <label for="builderFireTruckTheme">Fire Truck Type</label>
+          <select id="builderFireTruckTheme">
+            <option value="standard">Standard</option>
+            <option value="scifi">Sci-Fi</option>
+          </select>
+        </div>
+        <div class="builder-field">
           <label for="builderTruckEntryDelay">Truck Entrance Delay (ms)</label>
           <div class="builder-dual-input">
             <input id="builderTruckEntryDelayRange" type="range" min="0" max="120000" step="250" value="0">
@@ -1504,6 +1511,12 @@ button:hover { filter: brightness(1.2); }
             <option value="0">Day</option>
             <option value="1">Dusk</option>
             <option value="2">Night</option>
+            <option value="3">Autumn</option>
+            <option value="4">Winter</option>
+            <option value="5">Spring</option>
+            <option value="6">Alien Plains</option>
+            <option value="7">Alien Storm</option>
+            <option value="8">Alien Night</option>
           </select>
         </div>
         <div class="builder-field">
@@ -1583,11 +1596,11 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label>Nudge Position</label>
           <div class="builder-nudge-pad">
-            <button id="builderQuickNudgeUpBtn" type="button" aria-label="Nudge Up">↑</button>
-            <button id="builderQuickNudgeLeftBtn" type="button" aria-label="Nudge Left">←</button>
+            <button id="builderQuickNudgeUpBtn" type="button" aria-label="Nudge Up">&#8593;</button>
+            <button id="builderQuickNudgeLeftBtn" type="button" aria-label="Nudge Left">&#8592;</button>
             <div class="builder-nudge-center">MOVE</div>
-            <button id="builderQuickNudgeRightBtn" type="button" aria-label="Nudge Right">→</button>
-            <button id="builderQuickNudgeDownBtn" type="button" aria-label="Nudge Down">↓</button>
+            <button id="builderQuickNudgeRightBtn" type="button" aria-label="Nudge Right">&#8594;</button>
+            <button id="builderQuickNudgeDownBtn" type="button" aria-label="Nudge Down">&#8595;</button>
           </div>
           <button id="builderResetSelectedDefaultsBtn" type="button" class="alt" style="margin-top:6px; color:#111;">Reset Selected Image Defaults</button>
         </div>
@@ -1951,7 +1964,7 @@ button:hover { filter: brightness(1.2); }
       <li><strong>Save Offline Folder</strong>: exports game + images + level for local offline player use.</li>
       <li><strong>Save Full Game Offline</strong>: exports game + images without attaching current custom level.</li>
     </ul>
-    <h4>Permanent Source Update Workflow (Local Repo → Online)</h4>
+    <h4>Permanent Source Update Workflow (Local Repo -&gt; Online)</h4>
     <p>Use this when you want your builder changes to become real source files and then publish online after testing.</p>
     <ul>
       <li>1) Build and test level in builder until it plays correctly.</li>
@@ -1980,7 +1993,7 @@ button:hover { filter: brightness(1.2); }
 <div id="builderTourOverlay" class="builder-tour-overlay"></div>
 <div id="builderTourHighlight" class="builder-tour-highlight"></div>
 <div id="builderTourCard" class="builder-tour-card">
-        <div class="arrow">➜</div>
+        <div class="arrow">&#10132;</div>
   <div class="builder-tour-title" id="builderTourTitle"></div>
   <div class="builder-tour-body" id="builderTourBody"></div>
   <div class="builder-tour-actions">
@@ -2135,6 +2148,8 @@ const SPRITE_FILES = {
   blackBoxTruckLeft: 'vehicle_black_box_truck_rightside_1284x635.webp',
   blackBoxTruckRight: 'vehicle_black_box_truck_1284x635.webp',
   blackBoxTruck: 'vehicle_black_box_truck_1284x635.webp',
+  spaceEngineLeft: 'vehicle_spacefiretruck_rightside.webp',
+  spaceEngineRight: 'vehicle_spacefiretruck.webp',
   ufo: 'scifi_ufo_920x416.webp',
   ufoBeam: 'scifi_ufo_beam_910x668.webp',
   oakSmall: 'nature_oak_small_197x153.webp',
@@ -2177,6 +2192,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'animal_cardinal_sitting_459x145.webp',
   'animal_cow_blackwhite_grazing_459x145.webp',
   'animal_cow_blackwhite_standing_459x145.webp',
+  'animal_dog_siting.webp',
   'animal_horse_eating_459x145.webp',
   'animal_robin_sitting_459x145.webp',
   'building_barn_large_514x288.webp',
@@ -2299,6 +2315,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_semitruck_flatbed_regular_792x276.webp',
   'vehicle_semitruck_flatbed_wrecked_792x276.webp',
   'vehicle_spacefiretruck.webp',
+  'vehicle_spacefiretruck_rightside.webp',
   'vehicle_sports_car_yellow_side_left_459x145.webp',
   'vehicle_tractor_436x238.webp',
   'vehicle_ufo.webp',
@@ -2633,7 +2650,7 @@ function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
 }
 
 function preloadLevelSprites(lvl) {
-  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight']);
+  const needed = new Set(['engineLeft', 'engineRight', 'spaceEngineLeft', 'spaceEngineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight']);
   if (lvl === 7) {
     needed.add('horseEatLeft');
     needed.add('horseEatRight');
@@ -3388,7 +3405,7 @@ function getEntityBounds(ent) {
       : (baseLevels[currentLevel - 1]?.truckSide === 'right' ? 'right' : 'left');
     const lane = side === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
     const renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
-    const key = side === 'right' ? 'engineLeft' : 'engineRight';
+    const key = getEngineSpriteKeyForTruckSide(side, builderState || {});
     const layout = ENTITY_LAYOUT.engine;
     const truckX = (gameState === 'builder')
       ? clamp(Number(builderState?.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX)
@@ -3406,7 +3423,7 @@ function getEntityBounds(ent) {
 }
 
 function getTruckDrawRect() {
-  const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
+  const key = getEngineSpriteKeyForTruckFacing(truckFacing);
   const layout = ENTITY_LAYOUT.engine;
   const truckY = getTruckY();
   const scale = getTruckRenderScale();
@@ -3513,6 +3530,8 @@ let score = 0;
 let levelStartScore = 0;
 let mouseX = 500, mouseY = 300;
 let isSpraying = false;
+let isLaserFiring = false;
+let lastLaserPulseAt = 0;
 let gameState = 'title';
 let currentLevel = 1;
 let difficulty = 2;
@@ -3604,6 +3623,7 @@ const BUILDER_UI = {
   topLevelLoader: document.getElementById('builderTopLevelLoader'),
   tip: document.getElementById('builderSafetyTip'),
   truckSide: document.getElementById('builderTruckSide'),
+  fireTruckTheme: document.getElementById('builderFireTruckTheme'),
   truckEntryDelayRange: document.getElementById('builderTruckEntryDelayRange'),
   truckEntryDelay: document.getElementById('builderTruckEntryDelay'),
   timeOfDay: document.getElementById('builderTimeOfDay'),
@@ -3711,6 +3731,7 @@ function createEmptyBuilderLevel() {
     testDifficulty: 1,
     safetyTip: 'Use the builder tools to set fire behavior and test your custom scene.',
     truckSide: 'left',
+    fireTruckTheme: 'standard',
     truckPlaced: true,
     truckEntryDelayMs: 0,
     timeOfDay: 0,
@@ -3927,7 +3948,7 @@ function builderStartTruckSideAttention() {
   field.classList.add('truck-attn');
   const arrow = document.createElement('div');
   arrow.className = 'builder-attn-arrow';
-  arrow.innerHTML = '<span class="arrow">➜</span><span>Change truck side here</span>';
+  arrow.innerHTML = '<span class="arrow">&#10132;</span><span>Change truck side here</span>';
   field.appendChild(arrow);
   builderTruckSideAttentionTimer = setTimeout(() => builderStopTruckSideAttention(), 10000);
 }
@@ -4211,11 +4232,12 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.testDifficulty) BUILDER_UI.testDifficulty.value = String(clamp(Number(builderState.testDifficulty ?? 1), 1, 3));
   BUILDER_UI.tip.value = builderState.safetyTip || '';
   BUILDER_UI.truckSide.value = (builderState.truckSide === 'right') ? 'right' : 'left';
+  if (BUILDER_UI.fireTruckTheme) BUILDER_UI.fireTruckTheme.value = builderState.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
   if (BUILDER_UI.truckEntryDelay) BUILDER_UI.truckEntryDelay.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
   if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
   const truckField = BUILDER_UI.truckSide?.closest('.builder-field');
   if (truckField) truckField.classList.toggle('required', !builderHasTruckPlaced());
-  BUILDER_UI.timeOfDay.value = String(builderState.timeOfDay ?? 0);
+  BUILDER_UI.timeOfDay.value = String(clamp(Number(builderState.timeOfDay ?? 0), 0, 8));
   BUILDER_UI.tankerStart.value = String(builderState?.tankerSchedule?.firstAt ?? 15000);
   BUILDER_UI.tankerRepeat.value = String(builderState?.tankerSchedule?.repeat ?? 33000);
   BUILDER_UI.tankerHold.value = String(builderState?.tankerSchedule?.hold ?? 8000);
@@ -4320,8 +4342,9 @@ function builderReadUiIntoState() {
   const selectedSide = BUILDER_UI.truckSide.value === 'right' ? 'right' : 'left';
   if (builderState.truckSide !== selectedSide || !builderState.truckPlaced) builderPlaceTruckForUser(selectedSide);
   builderState.truckSide = selectedSide;
+  builderState.fireTruckTheme = BUILDER_UI.fireTruckTheme?.value === 'scifi' ? 'scifi' : 'standard';
   builderState.truckEntryDelayMs = clamp(Number(BUILDER_UI.truckEntryDelay?.value || BUILDER_UI.truckEntryDelayRange?.value || 0), 0, 120000);
-  builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 2);
+  builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 8);
   builderState.tankerSchedule.firstAt = clamp(Number(BUILDER_UI.tankerStart.value || 15000), 3000, 120000);
   builderState.tankerSchedule.repeat = clamp(Number(BUILDER_UI.tankerRepeat.value || 33000), 6000, 180000);
   builderState.tankerSchedule.hold = clamp(Number(BUILDER_UI.tankerHold.value || 8000), 2000, 30000);
@@ -4579,12 +4602,12 @@ function builderRenderLayerList() {
       });
       return btn;
     };
-  actions.appendChild(mk('⤒', 'Move to top', () => moveByEntity(ent.id, 'top')));
-  actions.appendChild(mk('↑', 'Move up', () => moveByEntity(ent.id, 'up')));
-  actions.appendChild(mk('↓', 'Move down', () => moveByEntity(ent.id, 'down')));
-  actions.appendChild(mk('⤓', 'Move to bottom', () => moveByEntity(ent.id, 'bottom')));
-  actions.appendChild(mk('⧉', 'Duplicate layer', () => builderDuplicateLayer(ent.id)));
-  actions.appendChild(mk('✕', 'Delete layer', () => builderDeleteLayerById(ent.id), 'warn'));
+  actions.appendChild(mk(String.fromCharCode(10514), 'Move to top', () => moveByEntity(ent.id, 'top')));
+  actions.appendChild(mk(String.fromCharCode(8593), 'Move up', () => moveByEntity(ent.id, 'up')));
+  actions.appendChild(mk(String.fromCharCode(8595), 'Move down', () => moveByEntity(ent.id, 'down')));
+  actions.appendChild(mk(String.fromCharCode(10515), 'Move to bottom', () => moveByEntity(ent.id, 'bottom')));
+  actions.appendChild(mk('Copy', 'Duplicate layer', () => builderDuplicateLayer(ent.id)));
+  actions.appendChild(mk('Del', 'Delete layer', () => builderDeleteLayerById(ent.id), 'warn'));
     row.appendChild(labelBtn);
     row.appendChild(actions);
     row.addEventListener('dragstart', () => {
@@ -4957,6 +4980,7 @@ function builderInitCollapsibleSections() {
     '#builderCreatorName',
     '#builderSafetyTip',
     '#builderTruckSide',
+    '#builderFireTruckTheme',
     '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderTankerStart',
@@ -5022,6 +5046,7 @@ function builderInitCollapsibleSections() {
     '#builderCreatorName',
     '#builderSafetyTip',
     '#builderTruckSide',
+    '#builderFireTruckTheme',
     '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderEditLevelSelect',
@@ -5421,6 +5446,7 @@ function ensureRequiredTruckLayer(level) {
   if (level.truckSide !== 'left' && level.truckSide !== 'right') {
     level.truckSide = 'left';
   }
+  if (level.fireTruckTheme !== 'scifi') level.fireTruckTheme = 'standard';
   level.truckPlaced = true;
   if (!Array.isArray(level.entities)) level.entities = [];
   const existing = level.entities.find((ent) => ent?.type === 'requiredFireTruck');
@@ -5636,7 +5662,7 @@ function builderImportPackageFromText(text) {
 }
 
 function builderCollectRequiredSpriteKeys(level) {
-  const needed = new Set(['engineLeft', 'engineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight', 'blackBoxTruckLeft', 'blackBoxTruckRight', 'blackBoxTruck']);
+  const needed = new Set(['engineLeft', 'engineRight', 'spaceEngineLeft', 'spaceEngineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight', 'blackBoxTruckLeft', 'blackBoxTruckRight', 'blackBoxTruck']);
   const entities = level?.entities || [];
   entities.forEach((ent) => {
     if (ent?.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) needed.add(ent.spriteKey);
@@ -7816,6 +7842,7 @@ function normalizeBuilderLevel(rawLevel) {
   const entities = Array.isArray(level.entities) ? level.entities : [];
   const normalizedEntities = entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
   const truckSide = (level.truckSide === 'left' || level.truckSide === 'right') ? level.truckSide : '';
+  const fireTruckTheme = level.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
   const lane = truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
   const truckPlaced = truckSide ? (level.truckPlaced !== false) : false;
   const normalized = {
@@ -7826,10 +7853,11 @@ function normalizeBuilderLevel(rawLevel) {
     dispatchBody: String(level.dispatchBody || 'Dispatch to Kennard Fire: custom builder level is active.'),
     dispatchClearBody: String(level.dispatchClearBody || 'Dispatch confirms custom builder level is under control.'),
     truckSide,
+    fireTruckTheme,
     truckPlaced,
     truckPlacementX: clamp(Number(level.truckPlacementX ?? lane.spawnX), -220, 1520),
     truckEntryDelayMs: clamp(Number(level.truckEntryDelayMs ?? 0), 0, 120000),
-    timeOfDay: clamp(Number(level.timeOfDay ?? 0), 0, 2),
+    timeOfDay: clamp(Number(level.timeOfDay ?? 0), 0, 8),
     tankerRightOnly: !!level.tankerRightOnly,
     tankerSchedule: {
       firstAt: clamp(Number(level?.tankerSchedule?.firstAt ?? 15000), 3000, 120000),
@@ -7999,842 +8027,8 @@ function loadBuilderOfficialOverrides() {
 
 function loadBuilderSourceOverrides() {
   const raw = String(BUILDER_SOURCE_OVERRIDES_JSON || '')
-    .replace('/*KVFD_SOURCE_OVERRIDES_START*/
-{
-    "18":  {
-               "truckEntryDelayMs":  0,
-               "blackBoxPlan":  {
-                                    "firstDir":  1,
-                                    "firstAt":  7200,
-                                    "returnDelay":  3200,
-                                    "enabled":  true
-                                },
-               "name":  "Parkside Shed Rescue 18",
-               "dispatchClearBody":  "Dispatch confirms the park edge shed and cottage exposures are under control.",
-               "creatorName":  "",
-               "tankerSchedule":  {
-                                      "firstAt":  15000,
-                                      "repeat":  33000,
-                                      "hold":  8000
-                                  },
-               "safetyTip":  "Practice fire safety every day â€” it could save lives.",
-               "boroSchedule":  {
-                                    "firstAt":  28000,
-                                    "repeat":  56000,
-                                    "hold":  9000,
-                                    "enabled":  false
-                                },
-               "testDifficulty":  1,
-               "truckPlaced":  true,
-               "truckPlacementX":  110,
-               "timeOfDay":  2,
-               "tankerRightOnly":  false,
-               "dispatchBody":  "Dispatch to Kennard Fire: park edge scene with active fire in a shed and nearby cottage.",
-               "entities":  [
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_0_9391",
-                                    "baseW":  95.2,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  210,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "alpha":  0.18,
-                                    "lockedPosition":  true,
-                                    "silhouette":  true,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "brightness(0.22) saturate(0.35) contrast(1.05)",
-                                    "baseY":  445,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  69.44000000000001,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "normalHouseGray"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_1_76840",
-                                    "baseW":  51.92,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  630.0000000000001,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "alpha":  0.16,
-                                    "lockedPosition":  true,
-                                    "silhouette":  true,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "brightness(0.18) saturate(0.25) contrast(1.08)",
-                                    "baseY":  442.5,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  63.31061224489796,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "treeOakRealistic"
-                                },
-                                {
-                                    "flipX":  false,
-                                    "id":  "be_1776649899232_2_12583",
-                                    "type":  "playgroundSwingLeft",
-                                    "x":  450,
-                                    "flipY":  false,
-                                    "igniteOnTornadoHit":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "tornadoMotionMode":  "path",
-                                    "fireStartDelayMs":  0,
-                                    "waterExitBonusPoints":  0,
-                                    "tornadoRotationMode":  "spin",
-                                    "pathMode":  "pingpong",
-                                    "scale":  0.78,
-                                    "silhouette":  false,
-                                    "hitSwapScale":  1,
-                                    "pathEnabled":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "movableWithWater":  false,
-                                    "lockedPosition":  true,
-                                    "fallWithTornado":  false
-                                },
-                                {
-                                    "flipX":  false,
-                                    "id":  "be_1776649899232_3_95920",
-                                    "type":  "playgroundSlideShortLeft",
-                                    "x":  560,
-                                    "flipY":  false,
-                                    "igniteOnTornadoHit":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "tornadoMotionMode":  "path",
-                                    "fireStartDelayMs":  0,
-                                    "waterExitBonusPoints":  0,
-                                    "tornadoRotationMode":  "spin",
-                                    "pathMode":  "pingpong",
-                                    "scale":  0.78,
-                                    "silhouette":  false,
-                                    "hitSwapScale":  1,
-                                    "pathEnabled":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "movableWithWater":  false,
-                                    "lockedPosition":  true,
-                                    "fallWithTornado":  false
-                                },
-                                {
-                                    "scale":  0.61,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_4_40634",
-                                    "baseW":  260,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  760,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  460,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  198,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "shedRed"
-                                },
-                                {
-                                    "scale":  0.81,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_7_15642",
-                                    "baseW":  201.6,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  750,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  480,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  53.28,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "fenceWhiteRow"
-                                },
-                                {
-                                    "scale":  1.05,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_5_28765",
-                                    "baseW":  354.64,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  950,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  505,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  255.44,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "normalHouseCottageAlt"
-                                },
-                                {
-                                    "scale":  1.5,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776649899232_6_10203",
-                                    "baseW":  144.76,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  1090,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  515,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  225.6,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "spriteKey":  "treePineRealistic"
-                                },
-                                {
-                                    "id":  "be_1776649899232_0_84202",
-                                    "type":  "requiredFireTruck",
-                                    "scale":  1,
-                                    "burnableOverride":  false,
-                                    "silhouette":  false,
-                                    "flipX":  false,
-                                    "lockedPosition":  true,
-                                    "flipY":  false
-                                }
-                            ],
-               "truckSide":  "left",
-               "tornadoConfig":  {
-                                     "travelPercent":  100,
-                                     "enabled":  false,
-                                     "returnPercent":  65,
-                                     "direction":  1,
-                                     "returnEnabled":  false,
-                                     "startDelayMs":  0,
-                                     "speed":  0.6
-                                 }
-           },
-    "20":  {
-               "truckEntryDelayMs":  0,
-               "blackBoxPlan":  {
-                                    "firstDir":  1,
-                                    "firstAt":  7200,
-                                    "returnDelay":  3200,
-                                    "enabled":  false
-                                },
-               "name":  "Mixed Mayday 20",
-               "dispatchClearBody":  "Dispatch confirms custom builder level is under control.",
-               "creatorName":  "",
-               "tankerSchedule":  {
-                                      "firstAt":  15000,
-                                      "repeat":  33000,
-                                      "hold":  8000
-                                  },
-               "safetyTip":  "Keep a fire extinguisher accessible and know how to use it.",
-               "boroSchedule":  {
-                                    "firstAt":  28000,
-                                    "repeat":  56000,
-                                    "enabled":  false,
-                                    "hold":  9000
-                                },
-               "testDifficulty":  1,
-               "truckPlaced":  true,
-               "truckPlacementX":  110,
-               "timeOfDay":  0,
-               "tankerRightOnly":  false,
-               "dispatchBody":  "Dispatch to Kennard Fire: custom builder level is active.",
-               "entities":  [
-                                {
-                                    "flipX":  false,
-                                    "id":  "be_1776650165141_0_17335",
-                                    "type":  "garageSmall",
-                                    "x":  320,
-                                    "flipY":  false,
-                                    "igniteOnTornadoHit":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "tornadoMotionMode":  "path",
-                                    "fireStartDelayMs":  0,
-                                    "waterExitBonusPoints":  0,
-                                    "tornadoRotationMode":  "spin",
-                                    "pathMode":  "pingpong",
-                                    "silhouette":  false,
-                                    "hitSwapScale":  1,
-                                    "pathEnabled":  false,
-                                    "waterExitDirection":  "nearest",
-                                    "movableWithWater":  false,
-                                    "lockedPosition":  true,
-                                    "fallWithTornado":  false
-                                },
-                                {
-                                    "scale":  1.46,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650165141_2_24262",
-                                    "baseW":  372,
-                                    "type":  "builderSprite",
-                                    "x":  930,
-                                    "hitSwapScale":  1,
-                                    "waterExitDirection":  "nearest",
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  490,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  221.67123287671234,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "spriteKey":  "normalHouseBrick"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650165141_1_20330",
-                                    "baseW":  215,
-                                    "type":  "builderSprite",
-                                    "x":  760,
-                                    "hitSwapScale":  1,
-                                    "waterExitDirection":  "nearest",
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  515,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  110,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "spriteKey":  "sedanGreenLeft"
-                                },
-                                {
-                                    "scale":  0.74,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650165141_3_81131",
-                                    "baseW":  190,
-                                    "type":  "builderSprite",
-                                    "x":  560,
-                                    "hitSwapScale":  1,
-                                    "waterExitDirection":  "nearest",
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "alpha":  0.65,
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  455,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  320,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "spriteKey":  "oakLarge"
-                                },
-                                {
-                                    "lockedPosition":  true,
-                                    "id":  "be_1776650165141_0_48884",
-                                    "type":  "requiredFireTruck",
-                                    "burnableOverride":  false,
-                                    "silhouette":  false,
-                                    "flipX":  false,
-                                    "scale":  1,
-                                    "flipY":  false
-                                },
-                                {
-                                    "scale":  0.21,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776653953902_0_29938",
-                                    "tornadoRotationMode":  "spin",
-                                    "type":  "builderSprite",
-                                    "burnZonesEnabled":  [
-                                                             false,
-                                                             false,
-                                                             false
-                                                         ],
-                                    "x":  600,
-                                    "hitSwapScale":  1,
-                                    "waterExitDirection":  "nearest",
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "alpha":  0.65,
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "burnZoneDifficultyTiers":  [
-                                                                    1,
-                                                                    1,
-                                                                    1
-                                                                ],
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  460,
-                                    "igniteOnTornadoHit":  false,
-                                    "flipX":  false,
-                                    "movableWithWater":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "spriteKey":  "img_building_doghouse_wood_large_459x145"
-                                }
-                            ],
-               "truckSide":  "left",
-               "tornadoConfig":  {
-                                     "travelPercent":  100,
-                                     "enabled":  false,
-                                     "returnPercent":  65,
-                                     "direction":  1,
-                                     "returnEnabled":  false,
-                                     "startDelayMs":  0,
-                                     "speed":  0.6
-                                 }
-           },
-    "19":  {
-               "truckEntryDelayMs":  0,
-               "blackBoxPlan":  {
-                                    "firstDir":  1,
-                                    "firstAt":  7200,
-                                    "returnDelay":  3200,
-                                    "enabled":  false
-                                },
-               "name":  "Twin Home Block 19",
-               "creatorName":  "",
-               "truckPlacementX":  110,
-               "safetyTip":  "Keep flammable items away from heat sources.",
-               "dispatchClearBody":  "Dispatch confirms both homes and front-yard exposures are under control.",
-               "boroSchedule":  {
-                                    "firstAt":  28000,
-                                    "repeat":  56000,
-                                    "hold":  9000,
-                                    "enabled":  false
-                                },
-               "testDifficulty":  1,
-               "truckPlaced":  true,
-               "tankerSchedule":  {
-                                      "firstAt":  15000,
-                                      "repeat":  33000,
-                                      "hold":  8000
-                                  },
-               "timeOfDay":  0,
-               "tankerRightOnly":  false,
-               "dispatchBody":  "Dispatch to Kennard Fire: two-home fire with bike and shrub exposures in front.",
-               "entities":  [
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_6_90576",
-                                    "baseW":  184.11550295857987,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  570,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  480,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  53.28,
-                                    "flipX":  false,
-                                    "spriteKey":  "fenceWhiteRow",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650079386_9_73257",
-                                    "baseW":  184.11550295857987,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  940,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  480,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  53.28,
-                                    "flipX":  false,
-                                    "spriteKey":  "fenceWhiteRow",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_0_21031",
-                                    "baseW":  95.11999999999999,
-                                    "tornadoMotionMode":  "path",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  270,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "type":  "builderSprite",
-                                    "alpha":  0.18,
-                                    "lockedPosition":  true,
-                                    "silhouette":  true,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "brightness(0.22) saturate(0.35) contrast(1.05)",
-                                    "baseY":  445,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  68.44,
-                                    "flipX":  false,
-                                    "spriteKey":  "normalHouseBrick",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_1_89698",
-                                    "baseW":  51.92,
-                                    "tornadoMotionMode":  "path",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  690.0000000000001,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "type":  "builderSprite",
-                                    "alpha":  0.16,
-                                    "lockedPosition":  true,
-                                    "silhouette":  true,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "brightness(0.18) saturate(0.25) contrast(1.08)",
-                                    "baseY":  442.5,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  63.31061224489796,
-                                    "flipX":  false,
-                                    "spriteKey":  "treeOakRealistic",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  0.2,
-                                    "burnableOverride":  true,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650114869_0_343",
-                                    "tornadoRotationMode":  "spin",
-                                    "type":  "builderSprite",
-                                    "burnZonesEnabled":  [
-                                                             true,
-                                                             true,
-                                                             true
-                                                         ],
-                                    "x":  840,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "waterExitSpeed":  2.2,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "flipY":  false,
-                                    "pathEnabled":  false,
-                                    "burnZoneDifficultyTiers":  [
-                                                                    1,
-                                                                    1,
-                                                                    1
-                                                                ],
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  530,
-                                    "igniteOnTornadoHit":  false,
-                                    "movableWithWater":  false,
-                                    "flipX":  false,
-                                    "spriteKey":  "shedRed",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1.28,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_2_16725",
-                                    "baseW":  360,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  730,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  495,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  204.04109589041096,
-                                    "flipX":  false,
-                                    "spriteKey":  "normalHouseGray",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1.2,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_3_52473",
-                                    "baseW":  396.8,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  1094,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  true,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  488,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  282.71999999999997,
-                                    "flipX":  false,
-                                    "spriteKey":  "normalHouseBeigeBay",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  1,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_5_9669",
-                                    "baseW":  110,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  890,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  540,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  60,
-                                    "flipX":  false,
-                                    "spriteKey":  "bikeRed",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "scale":  0.77,
-                                    "flipY":  false,
-                                    "waterExitBonusPoints":  0,
-                                    "pathMode":  "pingpong",
-                                    "tornadoRotationMode":  "spin",
-                                    "skewYDeg":  0,
-                                    "rotationDeg":  0,
-                                    "id":  "be_1776650034743_4_26530",
-                                    "baseW":  110.4,
-                                    "type":  "builderSprite",
-                                    "waterExitSpeed":  2.2,
-                                    "x":  950,
-                                    "hitSwapScale":  1,
-                                    "fireStartDelayMs":  0,
-                                    "fallWithTornado":  false,
-                                    "burnableOverride":  false,
-                                    "tornadoMotionMode":  "path",
-                                    "lockedPosition":  true,
-                                    "silhouette":  false,
-                                    "pathEnabled":  false,
-                                    "movableWithWater":  false,
-                                    "skewXDeg":  0,
-                                    "filter":  "",
-                                    "baseY":  505,
-                                    "igniteOnTornadoHit":  false,
-                                    "baseH":  59.2,
-                                    "flipX":  false,
-                                    "spriteKey":  "shrubCluster",
-                                    "waterExitDirection":  "nearest"
-                                },
-                                {
-                                    "id":  "be_1776650034743_0_65537",
-                                    "type":  "requiredFireTruck",
-                                    "scale":  1,
-                                    "burnableOverride":  false,
-                                    "silhouette":  false,
-                                    "flipX":  false,
-                                    "lockedPosition":  true,
-                                    "flipY":  false
-                                }
-                            ],
-               "truckSide":  "left",
-               "tornadoConfig":  {
-                                     "travelPercent":  100,
-                                     "enabled":  false,
-                                     "returnPercent":  65,
-                                     "direction":  1,
-                                     "returnEnabled":  false,
-                                     "startDelayMs":  0,
-                                     "speed":  0.6
-                                 }
-           }
-}
-/*KVFD_SOURCE_OVERRIDES_END*/', '')
+    .replace('/*KVFD_SOURCE_OVERRIDES_START*/', '')
+    .replace('/*KVFD_SOURCE_OVERRIDES_END*/', '')
     .trim();
   const payload = safeJsonParse(raw || '{}', {});
   if (!payload || typeof payload !== 'object') return;
@@ -8909,7 +8103,25 @@ function handleTimeSelection(x, y) {
   else if (x > 1116 && x < 1178) setTimeOfDay(2);
 }
 
-function setTimeOfDay(mode) { timeOfDay = mode; }
+function setTimeOfDay(mode) { timeOfDay = clamp(Number(mode || 0), 0, 8); }
+
+function getLevelFireTruckTheme(levelData) {
+  return levelData?.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
+}
+
+function getEngineSpriteKeyForTruckFacing(facing, levelData = null) {
+  const theme = getLevelFireTruckTheme(levelData || baseLevels[currentLevel - 1] || {});
+  if (theme === 'scifi') return facing < 0 ? 'spaceEngineLeft' : 'spaceEngineRight';
+  return facing < 0 ? 'engineLeft' : 'engineRight';
+}
+
+function getEngineSpriteKeyForTruckSide(side, levelData = null) {
+  return getEngineSpriteKeyForTruckFacing(side === 'right' ? -1 : 1, levelData);
+}
+
+function isScifiTruckActive(levelData = null) {
+  return getLevelFireTruckTheme(levelData || baseLevels[currentLevel - 1] || {}) === 'scifi';
+}
 
 function setTruckDrive(value) {
   if (!playerControlsEnabled) {
@@ -9220,6 +8432,7 @@ function initLevel9EventState(levelData, preparedSpots) {
   truckVisible = false;
   setTruckDrive(0);
   isSpraying = false;
+  isLaserFiring = false;
   const lane = TRUCK_LANES.left;
   truck.x = -260;
   truck.minX = lane.minX;
@@ -9668,6 +8881,7 @@ BUILDER_UI.testDifficulty?.addEventListener('change', () => {
 });
 BUILDER_UI.tip?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.truckSide?.addEventListener('change', () => { builderStopTruckSideAttention(); builderReadUiIntoState(); });
+BUILDER_UI.fireTruckTheme?.addEventListener('change', () => builderReadUiIntoState());
 ['input','change'].forEach((evt) => BUILDER_UI.truckEntryDelay?.addEventListener(evt, () => {
   if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = BUILDER_UI.truckEntryDelay.value;
   builderReadUiIntoState();
@@ -10555,10 +9769,83 @@ function createWaterParticles() {
       particles.push(new Particle(
         startX + vx * progress * 0.6, startY + vy * progress * 0.6,
         vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
-        Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF', (impact ? 12 : 32) + Math.random() * 10, 2.8 + Math.random() * 1.6, 'water'
+        isScifiTruckActive() ? (Math.random() > 0.5 ? '#99ff7a' : '#35d86a') : (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF'),
+        (impact ? 12 : 32) + Math.random() * 10, 2.8 + Math.random() * 1.6, 'water'
       ));
     }
   }
+}
+
+function isAlienDamageTarget(ent) {
+  if (!ent || ent._laserDestroyed) return false;
+  if (ent.type === 'ufo') return true;
+  const key = String(ent.spriteKey || ent.variant || ent.type || '').toLowerCase();
+  return /(alien|scifi|ufo)/.test(key);
+}
+
+function pulseScifiLaser(dt, levelData) {
+  if (!isLaserFiring || gameState !== 'playing' || !truckVisible || !isScifiTruckActive(levelData)) return;
+  const truckPoint = getTruckNozzlePoint();
+  const tip = getClampedHoseEnd();
+  const dirXRaw = tip.x - truckPoint.x;
+  const dirYRaw = tip.y - truckPoint.y;
+  const dirLen = Math.hypot(dirXRaw, dirYRaw) || 1;
+  const dirX = dirXRaw / dirLen;
+  const dirY = dirYRaw / dirLen;
+  const beamStartX = tip.x;
+  const beamStartY = tip.y;
+  const beamLength = 520;
+  const beamEndX = beamStartX + (dirX * beamLength);
+  const beamEndY = beamStartY + (dirY * beamLength);
+  const nowMs = performance.now();
+
+  const beamWidth = 3.2 + Math.sin(nowMs * 0.045) * 1.6;
+  ctx.save();
+  ctx.strokeStyle = '#4bb8ff';
+  ctx.shadowColor = '#67c6ff';
+  ctx.shadowBlur = 18;
+  ctx.lineWidth = beamWidth;
+  ctx.beginPath();
+  ctx.moveTo(beamStartX, beamStartY);
+  ctx.lineTo(beamEndX, beamEndY);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(210,239,255,0.97)';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(beamStartX, beamStartY);
+  ctx.lineTo(beamEndX, beamEndY);
+  ctx.stroke();
+  ctx.restore();
+
+  if (nowMs - lastLaserPulseAt < 75) return;
+  lastLaserPulseAt = nowMs;
+
+  fireSpots.forEach((spot) => {
+    if (!spot) return;
+    const hit = segmentRectHit(beamStartX, beamStartY, beamEndX, beamEndY, spot, 3);
+    if (!hit) return;
+    const restartBoost = Math.max(12, (spot.maxHealth || 220) * 0.08);
+    spot.health = Math.min(spot.maxHealth || 600, Math.max(spot.health || 0, restartBoost) + restartBoost);
+    spot.active = true;
+    spot.outAwarded = false;
+    spot.emitMs = 0;
+    createFireParticles(hit.x, hit.y, 2.4, 0.8, { roof: !!spot.roof, big: false });
+  });
+
+  const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
+  entities.forEach((ent) => {
+    if (!isAlienDamageTarget(ent)) return;
+    const rect = getEntityBounds(ent);
+    if (!rect) return;
+    const hit = segmentRectHit(beamStartX, beamStartY, beamEndX, beamEndY, rect, 2);
+    if (!hit) return;
+    ent._laserHealth = Number.isFinite(ent._laserHealth) ? ent._laserHealth : 100;
+    ent._laserHealth -= Math.max(4, (dt || 16.67) * 0.18);
+    if (ent._laserHealth <= 0) {
+      ent._laserDestroyed = true;
+      addPointPopup(rect.x + rect.w * 0.5, rect.y + rect.h * 0.4, 'TARGET DOWN', '#7ffff0', 70);
+    }
+  });
 }
 
 function segmentRectHit(aX, aY, bX, bY, rect, pad = 2) {
@@ -10977,23 +10264,54 @@ function applyWaterPushToEntities() {
 }
 
 function drawBackground() {
-  let sky1, sky2, sunColor, sunX, sunY, grassColor;
-  if (timeOfDay === 0) { sky1 = '#7BC4FF'; sky2 = '#C0E4FF'; sunColor = '#FFDD00'; sunX = 300; sunY = 120; grassColor = '#3D8C40'; }
-  else if (timeOfDay === 1) { sky1 = '#FF8800'; sky2 = '#FFBB66'; sunColor = '#FFAA00'; sunX = 900; sunY = 140; grassColor = '#2A6B2F'; }
-  else { sky1 = '#112244'; sky2 = '#223366'; sunColor = '#EEEEEE'; sunX = 600; sunY = 130; grassColor = '#1F4A22'; }
+  const mode = clamp(Number(timeOfDay || 0), 0, 8);
+  const presets = {
+    0: { sky1: '#7BC4FF', sky2: '#C0E4FF', sunColor: '#FFDD00', sunX: 300, sunY: 120, grassColor: '#3D8C40', fieldTop: '#73b85f', fieldBottom: '#244f22', cloud: 'rgba(255,255,255,0.32)', star: false, alien: false },
+    1: { sky1: '#FF8800', sky2: '#FFBB66', sunColor: '#FFAA00', sunX: 900, sunY: 140, grassColor: '#2A6B2F', fieldTop: '#4d8f43', fieldBottom: '#1f4520', cloud: 'rgba(255,230,190,0.18)', star: false, alien: false },
+    2: { sky1: '#112244', sky2: '#223366', sunColor: '#EEEEEE', sunX: 600, sunY: 130, grassColor: '#1F4A22', fieldTop: '#264f2a', fieldBottom: '#102916', cloud: 'rgba(255,255,255,0)', star: true, alien: false },
+    3: { sky1: '#ffcc8a', sky2: '#ffdcb2', sunColor: '#ff9d2f', sunX: 330, sunY: 112, grassColor: '#7a5a2d', fieldTop: '#a67a3d', fieldBottom: '#52310f', cloud: 'rgba(255,235,214,0.24)', star: false, alien: false },
+    4: { sky1: '#c9e8ff', sky2: '#eff8ff', sunColor: '#f9fcff', sunX: 260, sunY: 110, grassColor: '#6f8e88', fieldTop: '#b9d2d7', fieldBottom: '#2e4a49', cloud: 'rgba(255,255,255,0.34)', star: false, alien: false },
+    5: { sky1: '#8fe0c0', sky2: '#d2f5df', sunColor: '#ffe968', sunX: 360, sunY: 108, grassColor: '#3b9f58', fieldTop: '#7ecb7c', fieldBottom: '#206034', cloud: 'rgba(245,255,245,0.25)', star: false, alien: false },
+    6: { sky1: '#8b6cff', sky2: '#2f1f6e', sunColor: '#7effef', sunX: 920, sunY: 100, grassColor: '#446a2c', fieldTop: '#6a8d45', fieldBottom: '#1d3112', cloud: 'rgba(183,141,255,0.24)', star: false, alien: true },
+    7: { sky1: '#3b235e', sky2: '#130b2b', sunColor: '#7c3cff', sunX: 820, sunY: 92, grassColor: '#395027', fieldTop: '#536f39', fieldBottom: '#17250d', cloud: 'rgba(146,110,199,0.18)', star: true, alien: true },
+    8: { sky1: '#04060f', sky2: '#161333', sunColor: '#9cf3ff', sunX: 680, sunY: 116, grassColor: '#27402a', fieldTop: '#365a38', fieldBottom: '#0f1f12', cloud: 'rgba(152,244,255,0.10)', star: true, alien: true }
+  };
+  const theme = presets[mode] || presets[0];
+  const sky1 = theme.sky1;
+  const sky2 = theme.sky2;
+  const sunColor = theme.sunColor;
+  const sunX = theme.sunX;
+  const sunY = theme.sunY;
+  const grassColor = theme.grassColor;
+
   const grad = ctx.createLinearGradient(0, 0, 0, 520);
   grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
   ctx.fillStyle = sunColor; ctx.beginPath(); ctx.arc(sunX, sunY, 45, 0, Math.PI*2); ctx.fill();
+  if (theme.alien) {
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    ctx.fillStyle = 'rgba(0,255,190,0.22)';
+    ctx.beginPath();
+    ctx.ellipse(sunX + 160, sunY - 34, 34, 12, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(sunX + 160, sunY - 34, 34, 12, -0.15, 0, Math.PI);
+    ctx.strokeStyle = 'rgba(200,255,245,0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   const fieldGrad = ctx.createLinearGradient(0, 430, 0, 600);
-  fieldGrad.addColorStop(0, timeOfDay === 0 ? '#73b85f' : timeOfDay === 1 ? '#4d8f43' : '#264f2a');
+  fieldGrad.addColorStop(0, theme.fieldTop);
   fieldGrad.addColorStop(0.45, grassColor);
-  fieldGrad.addColorStop(1, timeOfDay === 0 ? '#244f22' : timeOfDay === 1 ? '#1f4520' : '#102916');
+  fieldGrad.addColorStop(1, theme.fieldBottom);
   ctx.fillStyle = fieldGrad;
   ctx.fillRect(0, 430, 1200, 170);
 
   const horizonGrad = ctx.createLinearGradient(0, 360, 0, 470);
-  horizonGrad.addColorStop(0, timeOfDay === 0 ? 'rgba(115,184,95,0.30)' : timeOfDay === 1 ? 'rgba(77,143,67,0.25)' : 'rgba(38,79,42,0.22)');
+  horizonGrad.addColorStop(0, theme.alien ? 'rgba(104,255,179,0.20)' : (mode === 0 ? 'rgba(115,184,95,0.30)' : mode === 1 ? 'rgba(77,143,67,0.25)' : 'rgba(38,79,42,0.22)'));
   horizonGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = horizonGrad;
   ctx.beginPath();
@@ -11008,8 +10326,8 @@ function drawBackground() {
   ctx.fill();
 
   const cloudShift = (levelElapsedMs * 0.018) % 340;
-  if (timeOfDay !== 2) {
-    ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.32)' : 'rgba(255,230,190,0.18)';
+  if (!theme.star || theme.alien) {
+    ctx.fillStyle = theme.cloud;
     const clouds = [
       { x: 110 - cloudShift, y: 95, s: 1.0 },
       { x: 430 - cloudShift * 0.72, y: 150, s: 0.82 },
@@ -11031,7 +10349,7 @@ function drawBackground() {
     { x: 790, y: 462, w: 360, h: 38 },
     { x: 1030, y: 474, w: 250, h: 28 }
   ];
-  ctx.fillStyle = timeOfDay === 0 ? 'rgba(90,145,74,0.9)' : timeOfDay === 1 ? 'rgba(59,107,51,0.88)' : 'rgba(39,78,41,0.88)';
+  ctx.fillStyle = theme.alien ? 'rgba(72,130,65,0.9)' : (mode === 0 ? 'rgba(90,145,74,0.9)' : mode === 1 ? 'rgba(59,107,51,0.88)' : 'rgba(39,78,41,0.88)');
   berms.forEach(berm => {
     ctx.beginPath();
     ctx.ellipse(berm.x + berm.w / 2, berm.y, berm.w / 2, berm.h, 0, Math.PI, Math.PI * 2);
@@ -11052,7 +10370,7 @@ function drawBackground() {
     ];
     backgroundTrees.forEach((tree) => {
       ctx.globalAlpha = 0.18;
-      ctx.fillStyle = timeOfDay === 0 ? '#2f6d2d' : timeOfDay === 1 ? '#295e28' : '#102513';
+      ctx.fillStyle = theme.alien ? '#2e5f3a' : (mode === 0 ? '#2f6d2d' : mode === 1 ? '#295e28' : '#102513');
       ctx.beginPath();
       if (tree.k === 'pine') {
         ctx.moveTo(tree.x + tree.w / 2, tree.y - tree.h);
@@ -11069,7 +10387,7 @@ function drawBackground() {
     });
   }
 
-  ctx.fillStyle = timeOfDay === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)';
+  ctx.fillStyle = theme.alien ? 'rgba(130,255,213,0.05)' : (mode === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)');
   for (let i = 0; i < 10; i++) {
     const stripeX = i * 130 + ((i % 2) * 18);
     ctx.beginPath();
@@ -11081,7 +10399,7 @@ function drawBackground() {
     ctx.fill();
   }
 
-  ctx.strokeStyle = timeOfDay === 0 ? '#2c6b2e' : timeOfDay === 1 ? '#295628' : '#173619';
+  ctx.strokeStyle = theme.alien ? '#2a5e35' : (mode === 0 ? '#2c6b2e' : mode === 1 ? '#295628' : '#173619');
   ctx.lineWidth = 2;
   for (let x = 20; x < 1200; x += 28) {
     const baseY = 484 + ((x / 28) % 3);
@@ -11095,7 +10413,7 @@ function drawBackground() {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = timeOfDay === 0 ? 'rgba(36,74,31,0.5)' : 'rgba(18,41,20,0.45)';
+  ctx.strokeStyle = theme.alien ? 'rgba(38,80,42,0.5)' : (mode === 0 ? 'rgba(36,74,31,0.5)' : 'rgba(18,41,20,0.45)');
   ctx.lineWidth = 1.5;
   for (let x = 0; x < 1200; x += 48) {
     ctx.beginPath();
@@ -11103,18 +10421,25 @@ function drawBackground() {
     ctx.lineTo(x + 18, 600);
     ctx.stroke();
   }
-  if (timeOfDay === 2) {
+  if (theme.star) {
     ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.8;
     const twinkle = Math.sin(levelElapsedMs / 650) * 0.35 + 0.65;
     ctx.globalAlpha = 0.5 + twinkle * 0.35;
     ctx.fillRect(200,80,3,3); ctx.fillRect(450,50,2,2); ctx.fillRect(720,110,3,3); ctx.fillRect(950,70,2,2); ctx.fillRect(1100,40,3,3);
+    if (theme.alien) {
+      ctx.fillStyle = '#8cffd7';
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(140, 64, 2, 2);
+      ctx.fillRect(534, 84, 2, 2);
+      ctx.fillRect(988, 120, 2, 2);
+    }
     ctx.globalAlpha = 1;
   }
 }
 
 function drawSideFireTruck() {
   if (!truckVisible) return;
-  const key = truckFacing < 0 ? 'engineLeft' : 'engineRight';
+  const key = getEngineSpriteKeyForTruckFacing(truckFacing);
   const layout = ENTITY_LAYOUT.engine;
   const truckY = getTruckY();
   const scale = getTruckRenderScale();
@@ -12535,12 +11860,20 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') setTruckDrive(-1);
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(1);
   }
+  if ((e.key === 'e' || e.key === 'E') && isScifiTruckActive() && gameState === 'playing') {
+    e.preventDefault();
+    isLaserFiring = true;
+    isSpraying = false;
+  }
 }, true);
 window.addEventListener('keyup', (e) => {
   if (gameState === 'builder') return;
   if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
     e.preventDefault();
     setTruckDrive(0);
+  }
+  if (e.key === 'e' || e.key === 'E') {
+    isLaserFiring = false;
   }
 }, true);
 
@@ -12614,6 +11947,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
   drawTimeSelectorCue();
 
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
+    if (ent?._laserDestroyed) return;
     if (ent.type === 'requiredFireTruck') {
       const oldScale = truck.renderScale || 1;
       truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
@@ -12708,13 +12042,15 @@ if (false && currentLevel === 11) drawPlacementGrid();
 
   if (truckVisible) {
     const tip = getClampedHoseEnd();
-    ctx.strokeStyle = '#333333'; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = '#111';
+    const scifiTruck = isScifiTruckActive(data);
+    ctx.strokeStyle = scifiTruck ? '#2a8f57' : '#333333';
+    ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = scifiTruck ? '#1f5a40' : '#111';
     const truckPoint = getTruckNozzlePoint();
     ctx.beginPath(); ctx.moveTo(truckPoint.x, truckPoint.y);
     ctx.quadraticCurveTo(truckPoint.x + (truckFacing > 0 ? 90 : -90), truckPoint.y - 165, tip.x, tip.y); ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
-    ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+    ctx.fillStyle = scifiTruck ? '#27ad68' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+    ctx.fillStyle = scifiTruck ? '#8dffd1' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
   }
 
   const sortedSpots = [...fireSpots].sort((a, b) => a.x - b.x);
@@ -12773,11 +12109,15 @@ if (false && currentLevel === 11) drawPlacementGrid();
     }
   });
 
+  if (isLaserFiring && isScifiTruckActive(data)) {
+    isSpraying = false;
+  }
   if (isSpraying) {
     useWater(Math.max(0, dt) * getWaterDrainPerMs());
     if (canSprayWaterNow()) createWaterParticles();
     else isSpraying = false;
   }
+  pulseScifiLaser(dt, data);
   applyWaterPushToEntities();
 
   const blackBoxRect = getBlackBoxTruckRect();
