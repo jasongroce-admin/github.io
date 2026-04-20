@@ -426,6 +426,17 @@ button:hover { filter: brightness(1.2); }
 #builderRightPanel .builder-body {
   overflow-x: auto;
 }
+.builder-head-status {
+  margin-top: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(126, 168, 214, 0.42);
+  background: rgba(8, 22, 38, 0.65);
+  color: #d8ebff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
 .builder-head {
   padding: 14px 16px;
   border-bottom: 1px solid rgba(140, 166, 194, 0.28);
@@ -579,22 +590,18 @@ button:hover { filter: brightness(1.2); }
   min-width: 0;
 }
 #builderTitleBar {
-  position: sticky;
-  left: 0;
-  right: 0;
-  top: 10px;
-  transform: none;
-  width: calc(100% - 20px);
+  position: relative;
+  width: 100%;
   min-width: 0;
-  max-width: 920px;
-  margin: 0 auto;
-  z-index: 10;
-  padding: 10px 14px;
+  max-width: none;
+  margin: 10px 0 0;
+  z-index: 2;
+  padding: 10px 12px;
   border-radius: 10px;
   background: rgba(8, 16, 26, 0.82);
   border: 1px solid rgba(150, 184, 220, 0.30);
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto minmax(120px, 240px);
+  grid-template-columns: minmax(200px, 1fr) auto minmax(120px, 220px);
   align-items: center;
   gap: 10px 12px;
   pointer-events: auto;
@@ -955,6 +962,15 @@ button:hover { filter: brightness(1.2); }
   border-left: 1px solid rgba(122, 159, 198, 0.30);
   padding-left: 10px;
 }
+#builderTopSelectedColumn .builder-section > summary {
+  background: linear-gradient(180deg, rgba(24, 69, 112, 0.84), rgba(13, 39, 64, 0.86));
+}
+#builderTopLevelColumn .builder-section > summary {
+  background: linear-gradient(180deg, rgba(32, 94, 85, 0.84), rgba(14, 54, 49, 0.86));
+}
+#builderTopExportColumn .builder-section > summary {
+  background: linear-gradient(180deg, rgba(78, 52, 116, 0.84), rgba(42, 28, 70, 0.86));
+}
 .builder-top-column .builder-section {
   margin-bottom: 0;
   height: 100%;
@@ -996,6 +1012,7 @@ button:hover { filter: brightness(1.2); }
 }
 .builder-top-column.collapsed {
   flex: 0 0 40px;
+  min-width: 40px;
 }
 .builder-top-column.collapsed .builder-section,
 .builder-top-column.collapsed .column-toggle {
@@ -1413,32 +1430,34 @@ button:hover { filter: brightness(1.2); }
       <button id="builderLeftRestoreBtn" type="button" class="left-restore-btn">Asset Library</button>
     </div>
 
-    <div id="builderCenter">
-      <div id="builderTitleBar">
-        <div class="builder-title-left">
-          <span class="builder-chip">Kennard Volunteer Fire Department Personal Level Creator</span>
-        </div>
-        <div class="builder-title-controls">
-          <label for="builderTestDifficulty" class="builder-title-label">Test Difficulty</label>
-          <select id="builderTestDifficulty" class="builder-title-select">
-            <option value="1">Easy</option>
-            <option value="2">Medium</option>
-            <option value="3">Hard</option>
-          </select>
-          <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">↶ Undo</button>
-          <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">↷ Redo</button>
-          <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
-          <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load game level into editor"></select>
-          <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
-        </div>
-        <div class="builder-title-status">
-          <span id="builderStatusText">Build your own level, save and play.</span>
-        </div>
-      </div>
-    </div>
+    <div id="builderCenter"></div>
 
     <div class="builder-panel" id="builderRightPanel">
-      <div class="builder-head"><h2>Builder Tools</h2></div>
+      <div class="builder-head">
+        <h2>Builder Tools</h2>
+        <div id="builderTitleBar">
+          <div class="builder-title-left">
+            <span class="builder-chip">Kennard Volunteer Fire Department Personal Level Creator</span>
+          </div>
+          <div class="builder-title-controls">
+            <label for="builderTestDifficulty" class="builder-title-label">Test Difficulty</label>
+            <select id="builderTestDifficulty" class="builder-title-select">
+              <option value="1">Easy</option>
+              <option value="2">Medium</option>
+              <option value="3">Hard</option>
+            </select>
+            <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">↶ Undo</button>
+            <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">↷ Redo</button>
+            <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
+            <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load game level into editor"></select>
+            <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
+          </div>
+          <div class="builder-title-status">
+            <span id="builderStatusText">Build your own level, save and play.</span>
+          </div>
+        </div>
+        <div class="builder-head-status" id="builderStatusTextRight">Build your own level, save and play.</div>
+      </div>
       <div class="builder-body">
         <div class="builder-field">
           <label for="builderLevelName">Level Name</label>
@@ -1458,6 +1477,13 @@ button:hover { filter: brightness(1.2); }
             <option value="left">Left</option>
             <option value="right">Right</option>
           </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderTruckEntryDelay">Truck Entrance Delay (ms)</label>
+          <div class="builder-dual-input">
+            <input id="builderTruckEntryDelayRange" type="range" min="0" max="120000" step="250" value="0">
+            <input id="builderTruckEntryDelay" type="number" min="0" max="120000" step="250" value="0">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTimeOfDay">Background</label>
@@ -1635,6 +1661,20 @@ button:hover { filter: brightness(1.2); }
           </select>
         </div>
         <div class="builder-field">
+          <label for="builderLayerFireStartDelay">Fire Start Delay (ms)</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerFireStartDelayRange" type="range" min="0" max="120000" step="250" value="0">
+            <input id="builderLayerFireStartDelay" type="number" min="0" max="120000" step="250" value="0">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderLayerIgniteOnTornado">Ignite Fire On Tornado Hit</label>
+          <select id="builderLayerIgniteOnTornado">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
           <label>Burn Zones (Per Object)</label>
           <div id="builderBurnZonesWrap" class="builder-burn-wrap">
             <div class="builder-burn-preview">
@@ -1709,7 +1749,7 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label for="builderLayerTornadoMotionMode">Tornado Motion After Hit</label>
           <select id="builderLayerTornadoMotionMode">
-            <option value="path">Controlled Path</option>
+            <option value="path">Follow Set Start/End Positions</option>
             <option value="random">Random Fly Away</option>
             <option value="none">No Movement</option>
           </select>
@@ -1717,37 +1757,48 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label for="builderLayerTornadoRotationMode">Tornado Rotation After Hit</label>
           <select id="builderLayerTornadoRotationMode">
-            <option value="spin">Spin</option>
-            <option value="keep">Keep Rotation</option>
-            <option value="path">Face Path</option>
+            <option value="spin">Spin To End</option>
+            <option value="keep">Keep Current Rotation</option>
+            <option value="path">Face Movement Direction</option>
           </select>
         </div>
         <div class="builder-field">
-          <button id="builderSetTornadoRouteBtn" type="button" class="alt">Set Tornado Throw Path</button>
+          <button id="builderSetTornadoRouteBtn" type="button" class="alt">Pick Start/End On Canvas</button>
+          <div class="builder-mini-actions" style="margin-top:8px;">
+            <button id="builderSetTornadoStartFromSelectedBtn" type="button" class="alt">Set Start Position From Current</button>
+            <button id="builderSetTornadoEndFromSelectedBtn" type="button" class="alt">Set End Position From Current</button>
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderTornadoAffectStartX">Tornado Trigger X</label>
+          <label for="builderTornadoAffectStartX">Tornado Trigger Position Horizontal</label>
           <div class="builder-dual-input">
             <input id="builderTornadoAffectStartXRange" type="range" min="-220" max="1520" step="1" value="640">
             <input id="builderTornadoAffectStartX" type="number" min="-220" max="1520" step="1" value="640">
           </div>
         </div>
         <div class="builder-field">
-          <label for="builderTornadoAffectLandX">Landing X</label>
+          <label for="builderTornadoAffectLandX">End Position Horizontal</label>
           <div class="builder-dual-input">
             <input id="builderTornadoAffectLandXRange" type="range" min="-220" max="1520" step="1" value="760">
             <input id="builderTornadoAffectLandX" type="number" min="-220" max="1520" step="1" value="760">
           </div>
         </div>
         <div class="builder-field">
-          <label for="builderTornadoAffectLandY">Landing Base Y</label>
+          <label for="builderTornadoAffectLandY">End Position Vertical</label>
           <div class="builder-dual-input">
             <input id="builderTornadoAffectLandYRange" type="range" min="120" max="580" step="1" value="460">
             <input id="builderTornadoAffectLandY" type="number" min="120" max="580" step="1" value="460">
           </div>
         </div>
         <div class="builder-field">
-          <label for="builderTornadoAffectDurationMs">Throw Duration (ms)</label>
+          <label for="builderTornadoAffectEndRotate">End Rotation (deg)</label>
+          <div class="builder-dual-input">
+            <input id="builderTornadoAffectEndRotateRange" type="range" min="-360" max="360" step="1" value="0">
+            <input id="builderTornadoAffectEndRotate" type="number" min="-360" max="360" step="1" value="0">
+          </div>
+        </div>
+        <div class="builder-field">
+          <label for="builderTornadoAffectDurationMs">Travel Time (ms)</label>
           <div class="builder-dual-input">
             <input id="builderTornadoAffectDurationMsRange" type="range" min="200" max="12000" step="50" value="1800">
             <input id="builderTornadoAffectDurationMs" type="number" min="200" max="12000" step="50" value="1800">
@@ -1770,14 +1821,14 @@ button:hover { filter: brightness(1.2); }
           <input id="builderAnimalBonusPoints" type="number" min="0" max="50" step="1" value="0">
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathEnabled">Path Animation</label>
+          <label for="builderLayerPathEnabled">Enable Moving Path</label>
           <select id="builderLayerPathEnabled">
             <option value="0">Off</option>
             <option value="1">On</option>
           </select>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathMode">Path Mode</label>
+          <label for="builderLayerPathMode">Movement Pattern</label>
           <select id="builderLayerPathMode">
             <option value="pingpong">Ping-Pong</option>
             <option value="loop">Loop</option>
@@ -1785,28 +1836,46 @@ button:hover { filter: brightness(1.2); }
           </select>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathStartX">Path Start X</label>
-          <input id="builderLayerPathStartX" type="number" min="-220" max="1520" step="1" value="640">
+          <label for="builderLayerPathStartX">Start Position Horizontal</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathStartXRange" type="range" min="-220" max="1520" step="1" value="640">
+            <input id="builderLayerPathStartX" type="number" min="-220" max="1520" step="1" value="640">
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathStartY">Path Start Base Y</label>
-          <input id="builderLayerPathStartY" type="number" min="120" max="580" step="1" value="470">
+          <label for="builderLayerPathStartY">Start Position Vertical</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathStartYRange" type="range" min="120" max="580" step="1" value="470">
+            <input id="builderLayerPathStartY" type="number" min="120" max="580" step="1" value="470">
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathEndX">Path End X</label>
-          <input id="builderLayerPathEndX" type="number" min="-220" max="1520" step="1" value="760">
+          <label for="builderLayerPathEndX">End Position Horizontal</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathEndXRange" type="range" min="-220" max="1520" step="1" value="760">
+            <input id="builderLayerPathEndX" type="number" min="-220" max="1520" step="1" value="760">
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathEndY">Path End Base Y</label>
-          <input id="builderLayerPathEndY" type="number" min="120" max="580" step="1" value="470">
+          <label for="builderLayerPathEndY">End Position Vertical</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathEndYRange" type="range" min="120" max="580" step="1" value="470">
+            <input id="builderLayerPathEndY" type="number" min="120" max="580" step="1" value="470">
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathDurationMs">Path Duration (ms)</label>
-          <input id="builderLayerPathDurationMs" type="number" min="200" max="120000" step="50" value="2400">
+          <label for="builderLayerPathDurationMs">Travel Time (ms)</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathDurationMsRange" type="range" min="200" max="120000" step="50" value="2400">
+            <input id="builderLayerPathDurationMs" type="number" min="200" max="120000" step="50" value="2400">
+          </div>
         </div>
         <div class="builder-field">
-          <label for="builderLayerPathPauseMs">Path Pause (ms)</label>
-          <input id="builderLayerPathPauseMs" type="number" min="0" max="60000" step="50" value="0">
+          <label for="builderLayerPathPauseMs">Pause At End (ms)</label>
+          <div class="builder-dual-input">
+            <input id="builderLayerPathPauseMsRange" type="range" min="0" max="60000" step="50" value="0">
+            <input id="builderLayerPathPauseMs" type="number" min="0" max="60000" step="50" value="0">
+          </div>
         </div>
 
         <div class="builder-actions">
@@ -2193,6 +2262,34 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_ufo.webp',
 ];
 
+function normalizeSpriteToken(value) {
+  return String(value || '').toLowerCase().replace(/\.[^/.]+$/, '').replace(/[^a-z0-9]+/g, '');
+}
+
+function resolveSpriteKey(rawKey) {
+  const key = String(rawKey || '').trim();
+  if (!key) return '';
+  if (SPRITE_FILES[key] || CUSTOM_SPRITE_DATA[key]) return key;
+  const lower = key.toLowerCase();
+  const normalized = normalizeSpriteToken(key);
+  const entries = Object.keys(SPRITE_FILES);
+  for (let i = 0; i < entries.length; i++) {
+    const candidate = entries[i];
+    if (!candidate) continue;
+    if (candidate.toLowerCase() === lower) return candidate;
+    const candidateToken = normalizeSpriteToken(candidate);
+    if (candidateToken === normalized || candidateToken.includes(normalized) || normalized.includes(candidateToken)) return candidate;
+    const file = SPRITE_FILES[candidate];
+    if (file) {
+      const fileToken = normalizeSpriteToken(file);
+      if (file.toLowerCase() === lower || fileToken === normalized || fileToken.includes(normalized) || normalized.includes(fileToken)) return candidate;
+    }
+  }
+  const discoveredKey = toSpriteKeyFromFilename(key);
+  if (discoveredKey && (SPRITE_FILES[discoveredKey] || CUSTOM_SPRITE_DATA[discoveredKey])) return discoveredKey;
+  return '';
+}
+
 function toSpriteKeyFromFilename(filename) {
   const base = String(filename || '').replace(/\.[^/.]+$/,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();
   return base ? `img_${base}` : '';
@@ -2216,14 +2313,16 @@ function registerDiscoveredSpriteFiles() {
 registerDiscoveredSpriteFiles();
 
 function loadSprite(key) {
-  if (SPRITES[key]) return;
-  const filename = SPRITE_FILES[key];
-  const custom = CUSTOM_SPRITE_DATA[key];
+  const resolved = resolveSpriteKey(key);
+  if (!resolved || SPRITES[resolved]) return;
+  const filename = SPRITE_FILES[resolved];
+  const custom = CUSTOM_SPRITE_DATA[resolved];
   if (!filename && !custom) return;
   const img = new Image();
-  img.onload = () => { SPRITE_READY[key] = true; };
+  img.onload = () => { SPRITE_READY[resolved] = true; };
+  img.onerror = () => { SPRITE_READY[resolved] = false; };
   img.src = custom?.dataUrl || `${SPRITE_BASE_PATH}${filename}`;
-  SPRITES[key] = img;
+  SPRITES[resolved] = img;
 }
 
 function ensureSpritesLoaded(keys) {
@@ -2719,7 +2818,8 @@ function applyCollisionSpriteSwap(ent, cause = 'water') {
 function drawBuilderSpriteEntity(ent) {
   const rect = getBuilderSpriteRect(ent);
   if (!rect) return;
-  const key = ent.spriteKey;
+  const key = resolveSpriteKey(ent.spriteKey);
+  if (key && ent.spriteKey !== key) ent.spriteKey = key;
   const sprite = SPRITES[key];
   ctx.save();
   if (ent.filter) ctx.filter = ent.filter;
@@ -2748,7 +2848,7 @@ function drawBuilderSpriteEntity(ent) {
   if (sprite && (SPRITE_READY[key] || (sprite.complete && sprite.naturalWidth > 0))) {
     drawSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true);
   } else {
-    ensureSpritesLoaded([key]);
+    if (key) ensureSpritesLoaded([key]);
     ctx.strokeStyle = 'rgba(130, 190, 255, 0.75)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([5, 4]);
@@ -2757,7 +2857,7 @@ function drawBuilderSpriteEntity(ent) {
     ctx.fillStyle = '#dbe9ff';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Loading...', rect.x + rect.w * 0.5, rect.y + rect.h * 0.52);
+    ctx.fillText(key ? 'Loading...' : 'Missing image', rect.x + rect.w * 0.5, rect.y + rect.h * 0.52);
   }
   ctx.restore();
 }
@@ -3394,6 +3494,7 @@ let blackBoxTruckLevels = new Set();
 let blackBoxTruckState = null;
 let blackBoxTruckPlan = null;
 let level9EventState = null;
+let truckEntryState = null;
 let playerControlsEnabled = true;
 let truckVisible = true;
 let ufoRaid = null;
@@ -3406,6 +3507,13 @@ let timeCueUntilMs = 0;
 let levelHorseEvent = null;
 let tornadoCompleted = false;
 let tornadoState = null;
+let pendingTornadoFireSpotsByKey = new Map();
+let waterCapacity = 100;
+let waterCurrent = 100;
+let mutualAidLevelsWithoutUse = 0;
+let mutualAidUsedThisLevel = false;
+const MUTUAL_AID_REQUIRED_CLEAR_LEVELS = 3;
+const MUTUAL_AID_BUTTON_RECT = { x: 740, y: 48, w: 180, h: 34 };
 let builderState = null;
 let builderSelectedId = null;
 let builderPendingSpriteKey = null;
@@ -3429,6 +3537,7 @@ let builderClipboardEntity = null;
 const BUILDER_UI = {
   screen: document.getElementById('builderScreen'),
   status: document.getElementById('builderStatusText'),
+  statusRight: document.getElementById('builderStatusTextRight'),
   undoBtn: document.getElementById('builderUndoBtn'),
   redoBtn: document.getElementById('builderRedoBtn'),
   helpBtn: document.getElementById('builderHelpBtn'),
@@ -3452,6 +3561,8 @@ const BUILDER_UI = {
   topLevelLoader: document.getElementById('builderTopLevelLoader'),
   tip: document.getElementById('builderSafetyTip'),
   truckSide: document.getElementById('builderTruckSide'),
+  truckEntryDelayRange: document.getElementById('builderTruckEntryDelayRange'),
+  truckEntryDelay: document.getElementById('builderTruckEntryDelay'),
   timeOfDay: document.getElementById('builderTimeOfDay'),
   tankerStart: document.getElementById('builderTankerStart'),
   tankerRepeat: document.getElementById('builderTankerRepeat'),
@@ -3494,6 +3605,9 @@ const BUILDER_UI = {
   layerFilter: document.getElementById('builderLayerFilter'),
   layerOpacity: document.getElementById('builderLayerOpacity'),
   layerBurnable: document.getElementById('builderLayerBurnable'),
+  layerFireStartDelayRange: document.getElementById('builderLayerFireStartDelayRange'),
+  layerFireStartDelay: document.getElementById('builderLayerFireStartDelay'),
+  layerIgniteOnTornado: document.getElementById('builderLayerIgniteOnTornado'),
   burnPreviewImage: document.getElementById('builderBurnPreviewImage'),
   burnPreviewOverlay: document.getElementById('builderBurnPreviewOverlay'),
   burnZoneList: document.getElementById('builderBurnZoneList'),
@@ -3513,21 +3627,31 @@ const BUILDER_UI = {
   layerTornadoMotionMode: document.getElementById('builderLayerTornadoMotionMode'),
   layerTornadoRotationMode: document.getElementById('builderLayerTornadoRotationMode'),
   setTornadoRouteBtn: document.getElementById('builderSetTornadoRouteBtn'),
+  setTornadoStartFromSelectedBtn: document.getElementById('builderSetTornadoStartFromSelectedBtn'),
+  setTornadoEndFromSelectedBtn: document.getElementById('builderSetTornadoEndFromSelectedBtn'),
   tornadoAffectStartXRange: document.getElementById('builderTornadoAffectStartXRange'),
   tornadoAffectStartX: document.getElementById('builderTornadoAffectStartX'),
   tornadoAffectLandXRange: document.getElementById('builderTornadoAffectLandXRange'),
   tornadoAffectLandX: document.getElementById('builderTornadoAffectLandX'),
   tornadoAffectLandYRange: document.getElementById('builderTornadoAffectLandYRange'),
   tornadoAffectLandY: document.getElementById('builderTornadoAffectLandY'),
+  tornadoAffectEndRotateRange: document.getElementById('builderTornadoAffectEndRotateRange'),
+  tornadoAffectEndRotate: document.getElementById('builderTornadoAffectEndRotate'),
   tornadoAffectDurationMsRange: document.getElementById('builderTornadoAffectDurationMsRange'),
   tornadoAffectDurationMs: document.getElementById('builderTornadoAffectDurationMs'),
   layerPathEnabled: document.getElementById('builderLayerPathEnabled'),
   layerPathMode: document.getElementById('builderLayerPathMode'),
+  layerPathStartXRange: document.getElementById('builderLayerPathStartXRange'),
   layerPathStartX: document.getElementById('builderLayerPathStartX'),
+  layerPathStartYRange: document.getElementById('builderLayerPathStartYRange'),
   layerPathStartY: document.getElementById('builderLayerPathStartY'),
+  layerPathEndXRange: document.getElementById('builderLayerPathEndXRange'),
   layerPathEndX: document.getElementById('builderLayerPathEndX'),
+  layerPathEndYRange: document.getElementById('builderLayerPathEndYRange'),
   layerPathEndY: document.getElementById('builderLayerPathEndY'),
+  layerPathDurationMsRange: document.getElementById('builderLayerPathDurationMsRange'),
   layerPathDurationMs: document.getElementById('builderLayerPathDurationMs'),
+  layerPathPauseMsRange: document.getElementById('builderLayerPathPauseMsRange'),
   layerPathPauseMs: document.getElementById('builderLayerPathPauseMs'),
   animalExitDirection: document.getElementById('builderAnimalExitDirection'),
   animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
@@ -3545,6 +3669,7 @@ function createEmptyBuilderLevel() {
     safetyTip: 'Use the builder tools to set fire behavior and test your custom scene.',
     truckSide: 'left',
     truckPlaced: true,
+    truckEntryDelayMs: 0,
     timeOfDay: 0,
     blackBoxPlan: { enabled: false, firstAt: 7200, returnDelay: 3200, firstDir: 1 },
     entities: []
@@ -3557,6 +3682,7 @@ function getBuilderEntityById(id) {
 
 function builderSetStatus(message) {
   if (BUILDER_UI.status) BUILDER_UI.status.textContent = message;
+  if (BUILDER_UI.statusRight) BUILDER_UI.statusRight.textContent = message;
 }
 
 const BUILDER_TOUR_SEEN_KEY = 'KVFD_BUILDER_TOUR_SEEN_V1';
@@ -3709,7 +3835,7 @@ function entityHasAnyEnabledBurnZone(ent) {
 function getEntityPreviewImageSrc(ent) {
   if (!ent) return '';
   if (ent.type === 'builderSprite') {
-    const key = ent.spriteKey || '';
+    const key = resolveSpriteKey(ent.spriteKey) || '';
     if (!key) return '';
     return CUSTOM_SPRITE_DATA[key]?.dataUrl || `./images/${SPRITE_FILES[key] || ''}`;
   }
@@ -3858,21 +3984,31 @@ function builderSyncPhysicsControlsForSelection(selected) {
   if (BUILDER_UI.layerWaterMove) BUILDER_UI.layerWaterMove.disabled = isLocked;
   if (BUILDER_UI.layerTornadoFall) BUILDER_UI.layerTornadoFall.disabled = isLocked;
   if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.disabled = isLocked;
+  if (BUILDER_UI.setTornadoStartFromSelectedBtn) BUILDER_UI.setTornadoStartFromSelectedBtn.disabled = isLocked;
+  if (BUILDER_UI.setTornadoEndFromSelectedBtn) BUILDER_UI.setTornadoEndFromSelectedBtn.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandXRange) BUILDER_UI.tornadoAffectLandXRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandYRange) BUILDER_UI.tornadoAffectLandYRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectEndRotateRange) BUILDER_UI.tornadoAffectEndRotateRange.disabled = isLocked;
+  if (BUILDER_UI.tornadoAffectEndRotate) BUILDER_UI.tornadoAffectEndRotate.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectDurationMsRange) BUILDER_UI.tornadoAffectDurationMsRange.disabled = isLocked;
   if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.disabled = isLocked;
   if (BUILDER_UI.layerPathEnabled) BUILDER_UI.layerPathEnabled.disabled = isLocked;
   if (BUILDER_UI.layerPathMode) BUILDER_UI.layerPathMode.disabled = isLocked;
+  if (BUILDER_UI.layerPathStartXRange) BUILDER_UI.layerPathStartXRange.disabled = isLocked;
   if (BUILDER_UI.layerPathStartX) BUILDER_UI.layerPathStartX.disabled = isLocked;
+  if (BUILDER_UI.layerPathStartYRange) BUILDER_UI.layerPathStartYRange.disabled = isLocked;
   if (BUILDER_UI.layerPathStartY) BUILDER_UI.layerPathStartY.disabled = isLocked;
+  if (BUILDER_UI.layerPathEndXRange) BUILDER_UI.layerPathEndXRange.disabled = isLocked;
   if (BUILDER_UI.layerPathEndX) BUILDER_UI.layerPathEndX.disabled = isLocked;
+  if (BUILDER_UI.layerPathEndYRange) BUILDER_UI.layerPathEndYRange.disabled = isLocked;
   if (BUILDER_UI.layerPathEndY) BUILDER_UI.layerPathEndY.disabled = isLocked;
+  if (BUILDER_UI.layerPathDurationMsRange) BUILDER_UI.layerPathDurationMsRange.disabled = isLocked;
   if (BUILDER_UI.layerPathDurationMs) BUILDER_UI.layerPathDurationMs.disabled = isLocked;
+  if (BUILDER_UI.layerPathPauseMsRange) BUILDER_UI.layerPathPauseMsRange.disabled = isLocked;
   if (BUILDER_UI.layerPathPauseMs) BUILDER_UI.layerPathPauseMs.disabled = isLocked;
 }
 
@@ -3932,9 +4068,12 @@ function builderSyncLevelOptionVisibility() {
   builderSetFieldVisibility('builderLayerTornadoMotionMode', affectedByTornado);
   builderSetFieldVisibility('builderLayerTornadoRotationMode', affectedByTornado);
   builderSetFieldVisibility('builderSetTornadoRouteBtn', affectedByTornado);
+  builderSetFieldVisibility('builderSetTornadoStartFromSelectedBtn', affectedByTornado);
+  builderSetFieldVisibility('builderSetTornadoEndFromSelectedBtn', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectStartX', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectLandX', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectLandY', affectedByTornado);
+  builderSetFieldVisibility('builderTornadoAffectEndRotate', affectedByTornado);
   builderSetFieldVisibility('builderTornadoAffectDurationMs', affectedByTornado);
   const pathMaster = !!selected && BUILDER_UI.layerPathEnabled?.value === '1';
   builderSetFieldVisibility('builderLayerPathEnabled', !!selected);
@@ -3950,6 +4089,7 @@ function builderSyncLevelOptionVisibility() {
 function builderRecalculateRightPanelWidth() {
   const screen = document.getElementById('builderScreen');
   if (!screen) return;
+  const topSections = document.querySelector('#builderRightPanel .builder-top-sections');
   const cols = [
     document.getElementById('builderTopSelectedColumn'),
     document.getElementById('builderTopLevelColumn'),
@@ -3962,8 +4102,18 @@ function builderRecalculateRightPanelWidth() {
     if (col.classList.contains('collapsed')) collapsedCount += 1;
     else openCount += 1;
   });
-  const desired = (openCount * 360) + (collapsedCount * 48) + 18;
-  const minW = 150;
+  const colGap = 12;
+  const colCollapsedWidth = 40;
+  const colOpenTarget = 360;
+  const contentPadding = 14;
+  const bodyPadding = 28;
+  const desired = (openCount * colOpenTarget)
+    + (collapsedCount * colCollapsedWidth)
+    + (Math.max(0, cols.length - 1) * colGap)
+    + contentPadding
+    + bodyPadding
+    + 8;
+  const minW = 180;
   const leftPanel = document.getElementById('builderLeftPanel');
   const leftCollapsed = !!leftPanel?.classList.contains('collapsed');
   const leftW = leftCollapsed ? 48 : Math.max(280, Math.floor(leftPanel?.getBoundingClientRect().width || 340));
@@ -3973,6 +4123,11 @@ function builderRecalculateRightPanelWidth() {
   const width = clamp(desired, minW, maxW);
   screen.style.setProperty('--builder-right-width', `${width}px`);
   document.documentElement.style.setProperty('--builder-right-active-width', `${width}px`);
+  if (topSections) {
+    const maxScroll = Math.max(0, topSections.scrollWidth - topSections.clientWidth);
+    if (openCount === 0) topSections.scrollLeft = 0;
+    else topSections.scrollLeft = Math.min(topSections.scrollLeft, maxScroll);
+  }
 }
 
 function builderUpdateTopColumnOrder() {
@@ -4012,6 +4167,8 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.testDifficulty) BUILDER_UI.testDifficulty.value = String(clamp(Number(builderState.testDifficulty ?? 1), 1, 3));
   BUILDER_UI.tip.value = builderState.safetyTip || '';
   BUILDER_UI.truckSide.value = (builderState.truckSide === 'right') ? 'right' : 'left';
+  if (BUILDER_UI.truckEntryDelay) BUILDER_UI.truckEntryDelay.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
+  if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
   const truckField = BUILDER_UI.truckSide?.closest('.builder-field');
   if (truckField) truckField.classList.toggle('required', !builderHasTruckPlaced());
   BUILDER_UI.timeOfDay.value = String(builderState.timeOfDay ?? 0);
@@ -4052,6 +4209,9 @@ function builderApplyStateToUi() {
   BUILDER_UI.layerFilter.value = selected?.filter || '';
   BUILDER_UI.layerOpacity.value = String(clamp(Number(selected?.alpha ?? 1), 0.05, 1));
   BUILDER_UI.layerBurnable.value = selected?.burnableOverride === true ? 'on' : (selected?.burnableOverride === false ? 'off' : 'auto');
+  if (BUILDER_UI.layerFireStartDelay) BUILDER_UI.layerFireStartDelay.value = String(clamp(Number(selected?.fireStartDelayMs ?? 0), 0, 120000));
+  if (BUILDER_UI.layerFireStartDelayRange) BUILDER_UI.layerFireStartDelayRange.value = String(clamp(Number(selected?.fireStartDelayMs ?? 0), 0, 120000));
+  if (BUILDER_UI.layerIgniteOnTornado) BUILDER_UI.layerIgniteOnTornado.value = selected?.igniteOnTornadoHit ? '1' : '0';
   BUILDER_UI.layerSilhouette.value = selected?.silhouette ? '1' : '0';
   if (BUILDER_UI.layerSilhouetteStrength) {
     const silhouetteAlpha = getEntitySilhouetteAlpha(selected, 0.26);
@@ -4070,17 +4230,25 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.layerPathEnabled) BUILDER_UI.layerPathEnabled.value = selected?.pathEnabled ? '1' : '0';
   if (BUILDER_UI.layerPathMode) BUILDER_UI.layerPathMode.value = String(selected?.pathMode || 'pingpong');
   if (BUILDER_UI.layerPathStartX) BUILDER_UI.layerPathStartX.value = String(Math.round(Number(selected?.pathStartX ?? (selected?.x || 0))));
+  if (BUILDER_UI.layerPathStartXRange) BUILDER_UI.layerPathStartXRange.value = String(Math.round(Number(selected?.pathStartX ?? (selected?.x || 0))));
   if (BUILDER_UI.layerPathStartY) BUILDER_UI.layerPathStartY.value = String(Math.round(Number(selected?.pathStartY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.layerPathStartYRange) BUILDER_UI.layerPathStartYRange.value = String(Math.round(Number(selected?.pathStartY ?? (selected?.baseY ?? GRASS_Y))));
   if (BUILDER_UI.layerPathEndX) BUILDER_UI.layerPathEndX.value = String(Math.round(Number(selected?.pathEndX ?? ((selected?.x || 0) + 80))));
+  if (BUILDER_UI.layerPathEndXRange) BUILDER_UI.layerPathEndXRange.value = String(Math.round(Number(selected?.pathEndX ?? ((selected?.x || 0) + 80))));
   if (BUILDER_UI.layerPathEndY) BUILDER_UI.layerPathEndY.value = String(Math.round(Number(selected?.pathEndY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.layerPathEndYRange) BUILDER_UI.layerPathEndYRange.value = String(Math.round(Number(selected?.pathEndY ?? (selected?.baseY ?? GRASS_Y))));
   if (BUILDER_UI.layerPathDurationMs) BUILDER_UI.layerPathDurationMs.value = String(clamp(Number(selected?.pathDurationMs ?? 2400), 200, 120000));
+  if (BUILDER_UI.layerPathDurationMsRange) BUILDER_UI.layerPathDurationMsRange.value = String(clamp(Number(selected?.pathDurationMs ?? 2400), 200, 120000));
   if (BUILDER_UI.layerPathPauseMs) BUILDER_UI.layerPathPauseMs.value = String(clamp(Number(selected?.pathPauseMs ?? 0), 0, 60000));
+  if (BUILDER_UI.layerPathPauseMsRange) BUILDER_UI.layerPathPauseMsRange.value = String(clamp(Number(selected?.pathPauseMs ?? 0), 0, 60000));
   if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
   if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
   if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
   if (BUILDER_UI.tornadoAffectLandXRange) BUILDER_UI.tornadoAffectLandXRange.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
   if (BUILDER_UI.tornadoAffectLandY) BUILDER_UI.tornadoAffectLandY.value = String(Math.round(Number(selected?.tornadoAffectLandY ?? (selected?.baseY ?? GRASS_Y))));
   if (BUILDER_UI.tornadoAffectLandYRange) BUILDER_UI.tornadoAffectLandYRange.value = String(Math.round(Number(selected?.tornadoAffectLandY ?? (selected?.baseY ?? GRASS_Y))));
+  if (BUILDER_UI.tornadoAffectEndRotate) BUILDER_UI.tornadoAffectEndRotate.value = String(clamp(Number(selected?.tornadoAffectEndRotate ?? (selected?.rotationDeg ?? 0)), -360, 360));
+  if (BUILDER_UI.tornadoAffectEndRotateRange) BUILDER_UI.tornadoAffectEndRotateRange.value = String(clamp(Number(selected?.tornadoAffectEndRotate ?? (selected?.rotationDeg ?? 0)), -360, 360));
   if (BUILDER_UI.tornadoAffectDurationMs) BUILDER_UI.tornadoAffectDurationMs.value = String(clamp(Number(selected?.tornadoAffectDurationMs ?? 1800), 200, 12000));
   if (BUILDER_UI.tornadoAffectDurationMsRange) BUILDER_UI.tornadoAffectDurationMsRange.value = String(clamp(Number(selected?.tornadoAffectDurationMs ?? 1800), 200, 12000));
   if (BUILDER_UI.setTornadoRouteBtn) BUILDER_UI.setTornadoRouteBtn.textContent = builderTornadoRoutePick.active ? 'Cancel Throw Path Pick' : 'Set Tornado Throw Path';
@@ -4108,6 +4276,7 @@ function builderReadUiIntoState() {
   const selectedSide = BUILDER_UI.truckSide.value === 'right' ? 'right' : 'left';
   if (builderState.truckSide !== selectedSide || !builderState.truckPlaced) builderPlaceTruckForUser(selectedSide);
   builderState.truckSide = selectedSide;
+  builderState.truckEntryDelayMs = clamp(Number(BUILDER_UI.truckEntryDelay?.value || BUILDER_UI.truckEntryDelayRange?.value || 0), 0, 120000);
   builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 2);
   builderState.tankerSchedule.firstAt = clamp(Number(BUILDER_UI.tankerStart.value || 15000), 3000, 120000);
   builderState.tankerSchedule.repeat = clamp(Number(BUILDER_UI.tankerRepeat.value || 33000), 6000, 180000);
@@ -4533,6 +4702,8 @@ function builderResetSelectedDefaults() {
   ent.silhouette = false;
   ent.silhouetteStrength = undefined;
   ent.burnableOverride = defaultBurnable;
+  ent.fireStartDelayMs = 0;
+  ent.igniteOnTornadoHit = false;
   const zoneTemplate = getBurnZoneTemplateForEntity(ent);
   if (zoneTemplate.length) {
     ent.burnZonesEnabled = zoneTemplate.map(() => !!defaultBurnable);
@@ -4544,6 +4715,7 @@ function builderResetSelectedDefaults() {
   ent.tornadoAffectStartX = undefined;
   ent.tornadoAffectLandX = undefined;
   ent.tornadoAffectLandY = undefined;
+  ent.tornadoAffectEndRotate = undefined;
   ent.tornadoAffectDurationMs = undefined;
   ent.onWaterHitSpriteKey = undefined;
   ent.onTornadoHitSpriteKey = undefined;
@@ -4656,6 +4828,8 @@ function builderInitCollapsibleSections() {
     '#builderLayerFilter',
     '#builderLayerOpacity',
     '#builderLayerBurnable',
+    '#builderLayerFireStartDelay',
+    '#builderLayerIgniteOnTornado',
     '#builderBurnZoneList',
     '#builderLayerSilhouette',
     '#builderLayerSilhouetteStrength',
@@ -4667,6 +4841,9 @@ function builderInitCollapsibleSections() {
     '#builderLayerHitSpriteScale',
     '#builderLayerTornadoMotionMode',
     '#builderLayerTornadoRotationMode',
+    '#builderSetTornadoStartFromSelectedBtn',
+    '#builderSetTornadoEndFromSelectedBtn',
+    '#builderTornadoAffectEndRotate',
     '#builderLayerPathEnabled',
     '#builderLayerPathMode',
     '#builderLayerPathStartX',
@@ -4697,6 +4874,8 @@ function builderInitCollapsibleSections() {
     '#builderLayerFilter',
     '#builderLayerOpacity',
     '#builderLayerBurnable',
+    '#builderLayerFireStartDelay',
+    '#builderLayerIgniteOnTornado',
     '#builderBurnZoneList',
     '#builderLayerSilhouette',
     '#builderLayerSilhouetteStrength',
@@ -4734,6 +4913,7 @@ function builderInitCollapsibleSections() {
     '#builderCreatorName',
     '#builderSafetyTip',
     '#builderTruckSide',
+    '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderTankerStart',
     '#builderTankerRepeat',
@@ -4744,9 +4924,12 @@ function builderInitCollapsibleSections() {
     '#builderBlackBoxStart',
     '#builderTornadoEnabled',
     '#builderSetTornadoRouteBtn',
+    '#builderSetTornadoStartFromSelectedBtn',
+    '#builderSetTornadoEndFromSelectedBtn',
     '#builderTornadoAffectStartX',
     '#builderTornadoAffectLandX',
     '#builderTornadoAffectLandY',
+    '#builderTornadoAffectEndRotate',
     '#builderTornadoAffectDurationMs',
     '#builderTornadoSpeed',
     '#builderTornadoDirection',
@@ -4795,6 +4978,7 @@ function builderInitCollapsibleSections() {
     '#builderCreatorName',
     '#builderSafetyTip',
     '#builderTruckSide',
+    '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderEditLevelSelect',
     '#builderLoadSelectedLevelBtn'
@@ -4827,9 +5011,12 @@ function builderInitCollapsibleSections() {
   const tornadoSub = moveToSubsection('Tornado', [
     '#builderTornadoEnabled',
     '#builderSetTornadoRouteBtn',
+    '#builderSetTornadoStartFromSelectedBtn',
+    '#builderSetTornadoEndFromSelectedBtn',
     '#builderTornadoAffectStartX',
     '#builderTornadoAffectLandX',
     '#builderTornadoAffectLandY',
+    '#builderTornadoAffectEndRotate',
     '#builderTornadoAffectDurationMs',
     '#builderTornadoSpeed',
     '#builderTornadoDirection',
@@ -5157,6 +5344,8 @@ function builderCreateEntity(spriteKey, x, baseY) {
     burnableOverride: isAnimal ? false : true,
     burnZonesEnabled: isAnimal ? [false, false, false] : [true, true, true],
     burnZoneDifficultyTiers: [1, 1, 1],
+    fireStartDelayMs: 0,
+    igniteOnTornadoHit: false,
     waterExitDirection: 'nearest',
     waterExitSpeed: 2.2,
     waterExitBonusPoints: 0
@@ -6596,8 +6785,9 @@ function normalizeBuilderEntity(ent, idx = 0) {
     };
   }
   if (type === 'builderSprite') {
-    const hasSpriteKey = typeof ent.spriteKey === 'string' && (SPRITE_FILES[ent.spriteKey] || CUSTOM_SPRITE_DATA[ent.spriteKey]);
-    const spriteKey = hasSpriteKey ? ent.spriteKey : 'shedRed';
+    const resolvedSpriteKey = resolveSpriteKey(ent.spriteKey);
+    const hasSpriteKey = typeof ent.spriteKey === 'string' && !!resolvedSpriteKey;
+    const spriteKey = hasSpriteKey ? resolvedSpriteKey : 'shedRed';
     const defaultBurnable = isAnimalSpriteKey(spriteKey) ? false : true;
     const parsedBaseW = Number(ent.baseW);
     const parsedBaseH = Number(ent.baseH);
@@ -6628,9 +6818,12 @@ function normalizeBuilderEntity(ent, idx = 0) {
       tornadoAffectStartX: ent.tornadoAffectStartX == null ? undefined : clamp(Number(ent.tornadoAffectStartX), -220, 1520),
       tornadoAffectLandX: ent.tornadoAffectLandX == null ? undefined : clamp(Number(ent.tornadoAffectLandX), -220, 1520),
       tornadoAffectLandY: ent.tornadoAffectLandY == null ? undefined : clamp(Number(ent.tornadoAffectLandY), 120, 580),
+      tornadoAffectEndRotate: ent.tornadoAffectEndRotate == null ? undefined : clamp(Number(ent.tornadoAffectEndRotate), -360, 360),
       tornadoAffectDurationMs: ent.tornadoAffectDurationMs == null ? undefined : clamp(Number(ent.tornadoAffectDurationMs), 200, 12000),
       burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
       burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
+      fireStartDelayMs: clamp(Number(ent.fireStartDelayMs ?? 0), 0, 120000),
+      igniteOnTornadoHit: !!ent.igniteOnTornadoHit,
       waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
       waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
       waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
@@ -6671,9 +6864,12 @@ function normalizeBuilderEntity(ent, idx = 0) {
     tornadoAffectStartX: ent.tornadoAffectStartX == null ? undefined : clamp(Number(ent.tornadoAffectStartX), -220, 1520),
     tornadoAffectLandX: ent.tornadoAffectLandX == null ? undefined : clamp(Number(ent.tornadoAffectLandX), -220, 1520),
     tornadoAffectLandY: ent.tornadoAffectLandY == null ? undefined : clamp(Number(ent.tornadoAffectLandY), 120, 580),
+    tornadoAffectEndRotate: ent.tornadoAffectEndRotate == null ? undefined : clamp(Number(ent.tornadoAffectEndRotate), -360, 360),
     tornadoAffectDurationMs: ent.tornadoAffectDurationMs == null ? undefined : clamp(Number(ent.tornadoAffectDurationMs), 200, 12000),
     burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.map((v) => v !== false) : undefined,
     burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.map((v) => clamp(Number(v || 1), 1, 3)) : undefined,
+    fireStartDelayMs: clamp(Number(ent.fireStartDelayMs ?? 0), 0, 120000),
+    igniteOnTornadoHit: !!ent.igniteOnTornadoHit,
     waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
     waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
     waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
@@ -6711,6 +6907,7 @@ function normalizeBuilderLevel(rawLevel) {
     truckSide,
     truckPlaced,
     truckPlacementX: clamp(Number(level.truckPlacementX ?? lane.spawnX), -220, 1520),
+    truckEntryDelayMs: clamp(Number(level.truckEntryDelayMs ?? 0), 0, 120000),
     timeOfDay: clamp(Number(level.timeOfDay ?? 0), 0, 2),
     tankerRightOnly: !!level.tankerRightOnly,
     tankerSchedule: {
@@ -6833,9 +7030,12 @@ function convertLegacyEntityForBuilder(ent) {
     tornadoAffectStartX: ent.tornadoAffectStartX,
     tornadoAffectLandX: ent.tornadoAffectLandX,
     tornadoAffectLandY: ent.tornadoAffectLandY,
+    tornadoAffectEndRotate: ent.tornadoAffectEndRotate,
     tornadoAffectDurationMs: ent.tornadoAffectDurationMs,
     burnZonesEnabled: Array.isArray(ent.burnZonesEnabled) ? ent.burnZonesEnabled.slice() : undefined,
     burnZoneDifficultyTiers: Array.isArray(ent.burnZoneDifficultyTiers) ? ent.burnZoneDifficultyTiers.slice() : undefined,
+    fireStartDelayMs: ent.fireStartDelayMs,
+    igniteOnTornadoHit: !!ent.igniteOnTornadoHit,
     waterExitDirection: ent.waterExitDirection,
     waterExitSpeed: ent.waterExitSpeed,
     waterExitBonusPoints: ent.waterExitBonusPoints,
@@ -7088,6 +7288,8 @@ function dismissDispatchScreen(fromAuto = false) {
 
 function startGame(diff, startLevel = null) {
   difficulty = diff;
+  mutualAidLevelsWithoutUse = 0;
+  mutualAidUsedThisLevel = false;
   initBlackBoxTruckLevels();
   builderTestActive = false;
   document.body.classList.remove('builder-active');
@@ -7175,12 +7377,15 @@ function getOppositeTruckLane(levelData, lvl) {
 }
 
 function cloneFireSpotForActivation(spot) {
+  const igniteAtMs = Math.max(0, Number(spot.igniteAtMs || 0));
   return {
     ...spot,
     health: Number(spot.health || 0),
     maxHealth: Number(spot.maxHealth || spot.health || 1),
     outAwarded: false,
-    emitMs: 0
+    emitMs: 0,
+    igniteAtMs,
+    active: igniteAtMs <= 0
   };
 }
 
@@ -7193,6 +7398,22 @@ function activateLevel9FireGroup(group = []) {
     fireSpots.push(cloneFireSpotForActivation(spot));
     existing.add(key);
   });
+}
+
+function hasPendingTornadoFireSpots() {
+  if (!(pendingTornadoFireSpotsByKey instanceof Map)) return false;
+  for (const spots of pendingTornadoFireSpotsByKey.values()) {
+    if (Array.isArray(spots) && spots.length) return true;
+  }
+  return false;
+}
+
+function igniteTornadoFireGroupByEntityKey(entityKey) {
+  if (!entityKey || !(pendingTornadoFireSpotsByKey instanceof Map)) return;
+  const group = pendingTornadoFireSpotsByKey.get(entityKey);
+  if (!Array.isArray(group) || !group.length) return;
+  activateLevel9FireGroup(group.map((spot) => ({ ...spot, igniteAtMs: 0, active: true })));
+  pendingTornadoFireSpotsByKey.delete(entityKey);
 }
 
 function initLevel9EventState(levelData, preparedSpots) {
@@ -7223,6 +7444,7 @@ function initLevel9EventState(levelData, preparedSpots) {
     }
   }
   fireSpots = [];
+  pendingTornadoFireSpotsByKey = new Map();
   playerControlsEnabled = false;
   truckVisible = false;
   setTruckDrive(0);
@@ -7291,10 +7513,26 @@ function updateLevel9Event(dt, levelData) {
   }
 }
 
+function updateTruckEntry(dt) {
+  if (!truckEntryState?.active || gameState !== 'playing' || pendingDispatchLevel !== null) return;
+  truckEntryState.elapsedMs += Math.max(0, Number(dt || 0));
+  if (truckEntryState.elapsedMs < truckEntryState.delayMs) return;
+  truckVisible = true;
+  const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
+  truck.x = Math.min(truckEntryState.targetX, truck.x + (truckEntryState.entrySpeed * step));
+  if (truck.x >= truckEntryState.targetX - 0.5) {
+    truck.x = truckEntryState.targetX;
+    truckEntryState.active = false;
+    playerControlsEnabled = true;
+    truckVisible = true;
+  }
+}
+
 function loadLevel(lvl, options = {}) {
   const skipDispatch = !!options.skipDispatch;
   currentLevel = lvl;
   level9EventState = null;
+  truckEntryState = null;
   playerControlsEnabled = true;
   truckVisible = true;
   if (lvl !== 3) hasShownLevel3MoveCue = false;
@@ -7308,6 +7546,8 @@ function loadLevel(lvl, options = {}) {
     moveCueTimer = null;
   }
   levelStartScore = score;
+  mutualAidUsedThisLevel = false;
+  resetWaterForLevel();
   const levelData = baseLevels[lvl - 1];
   const requiredTruckLayer = (levelData?.entities || []).find((ent) => ent?.type === 'requiredFireTruck');
   const lane = (levelData?.truckSide === 'left')
@@ -7320,6 +7560,21 @@ function loadLevel(lvl, options = {}) {
   truck.maxX = lane.maxX;
   truck.renderScale = clamp(Number(requiredTruckLayer?.scale || 1), 0.7, 1.8);
   truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
+  const configuredTruckEntryDelayMs = clamp(Number(levelData?.truckEntryDelayMs ?? 0), 0, 120000);
+  if (configuredTruckEntryDelayMs > 0 && lvl !== 9) {
+    playerControlsEnabled = false;
+    truckVisible = false;
+    truck.x = -260;
+    setTruckDrive(0);
+    isSpraying = false;
+    truckEntryState = {
+      active: true,
+      elapsedMs: 0,
+      delayMs: configuredTruckEntryDelayMs,
+      targetX: lane.spawnX,
+      entrySpeed: 2.7
+    };
+  }
   setTruckDrive(0);
   isSpraying = false;
   tornadoTravelX = -180;
@@ -7361,8 +7616,14 @@ function loadLevel(lvl, options = {}) {
   let template = computeFireSpotsForLevel(lvl, levelData.entities);
   template = selectSpotsForDifficulty(template, difficulty, lvl);
   const burnableBoxesByKey = new Map();
+  const fireBehaviorByKey = new Map();
+  pendingTornadoFireSpotsByKey = new Map();
   (levelData.entities || []).forEach((ent, idx) => {
     if (!ent) return;
+    fireBehaviorByKey.set(`${ent.type}:${idx}`, {
+      fireStartDelayMs: clamp(Number(ent.fireStartDelayMs ?? 0), 0, 120000),
+      igniteOnTornadoHit: !!ent.igniteOnTornadoHit
+    });
     const burnable = ent.burnableOverride === true || (ent.burnableOverride !== false && isBurnableType(ent.type)) || (ent.type === 'builderSprite' && ent.burnableOverride !== false);
     if (!burnable) return;
     if (!entityHasAnyEnabledBurnZone(ent)) return;
@@ -7392,7 +7653,10 @@ function loadLevel(lvl, options = {}) {
     let mult = 1.0;
     if (difficulty === 2) mult = 1.85;
     if (difficulty === 3) mult = 2.75;
-    return { 
+    const behavior = s.entityKey ? fireBehaviorByKey.get(s.entityKey) : null;
+    const fireStartDelayMs = clamp(Number(behavior?.fireStartDelayMs ?? 0), 0, 120000);
+    const igniteOnTornadoHit = !!behavior?.igniteOnTornadoHit;
+    const mappedSpot = { 
       ...s, 
       health: Math.floor(s.health * mult), 
       maxHealth: Math.floor(s.maxHealth * mult), 
@@ -7400,9 +7664,17 @@ function loadLevel(lvl, options = {}) {
       isHay: !!s.isHay,
       isVehicle: !!s.isVehicle,
       isSemi: !!s.isSemi,
-      entityKey: s.entityKey
+      entityKey: s.entityKey,
+      igniteAtMs: fireStartDelayMs,
+      active: fireStartDelayMs <= 0
     };
-  });
+    if (igniteOnTornadoHit && s.entityKey) {
+      if (!pendingTornadoFireSpotsByKey.has(s.entityKey)) pendingTornadoFireSpotsByKey.set(s.entityKey, []);
+      pendingTornadoFireSpotsByKey.get(s.entityKey).push({ ...mappedSpot, active: false });
+      return null;
+    }
+    return mappedSpot;
+  }).filter(Boolean);
   if (lvl === 9) {
     initLevel9EventState(levelData, fireSpots);
   }
@@ -7463,6 +7735,7 @@ function checkWin() {
   if (gameState !== 'playing') return;
   if (currentLevel === 9 && level9EventState?.active) return;
   if (currentLevel === FINAL_LEVEL && ufoRaid) return;
+  if (hasPendingTornadoFireSpots()) return;
   if (fireSpots.every(s => s.health <= 0)) {
     gameState = 'levelComplete';
     const isFinal = currentLevel === FINAL_LEVEL;
@@ -7496,6 +7769,8 @@ function nextLevel() {
   setTimeout(() => {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
+    if (mutualAidUsedThisLevel) mutualAidLevelsWithoutUse = 0;
+    else mutualAidLevelsWithoutUse += 1;
     if (currentLevel < baseLevels.length) loadLevel(currentLevel + 1);
     else { alert(`You completed all ${baseLevels.length} levels! Congratulations!`); location.reload(); }
   }, 500);
@@ -7621,6 +7896,14 @@ BUILDER_UI.testDifficulty?.addEventListener('change', () => {
 });
 BUILDER_UI.tip?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.truckSide?.addEventListener('change', () => { builderStopTruckSideAttention(); builderReadUiIntoState(); });
+['input','change'].forEach((evt) => BUILDER_UI.truckEntryDelay?.addEventListener(evt, () => {
+  if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = BUILDER_UI.truckEntryDelay.value;
+  builderReadUiIntoState();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.truckEntryDelayRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.truckEntryDelay) BUILDER_UI.truckEntryDelay.value = BUILDER_UI.truckEntryDelayRange.value;
+  builderReadUiIntoState();
+}));
 BUILDER_UI.timeOfDay?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerStart?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerRepeat?.addEventListener('change', () => builderReadUiIntoState());
@@ -7727,6 +8010,28 @@ BUILDER_UI.layerBurnable?.addEventListener('change', () => {
   builderRenderBurnZoneEditor(ent);
   builderSaveLastDraft();
 });
+['input','change'].forEach((evt) => BUILDER_UI.layerFireStartDelay?.addEventListener(evt, () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const delay = clamp(Number(BUILDER_UI.layerFireStartDelay.value || 0), 0, 120000);
+  ent.fireStartDelayMs = delay;
+  if (BUILDER_UI.layerFireStartDelayRange) BUILDER_UI.layerFireStartDelayRange.value = String(delay);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.layerFireStartDelayRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.layerFireStartDelay) BUILDER_UI.layerFireStartDelay.value = BUILDER_UI.layerFireStartDelayRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const delay = clamp(Number(BUILDER_UI.layerFireStartDelayRange.value || 0), 0, 120000);
+  ent.fireStartDelayMs = delay;
+  builderSaveLastDraft();
+}));
+BUILDER_UI.layerIgniteOnTornado?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.igniteOnTornadoHit = BUILDER_UI.layerIgniteOnTornado.value === '1';
+  builderSaveLastDraft();
+});
 BUILDER_UI.layerSilhouette?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -7822,6 +8127,24 @@ BUILDER_UI.setTornadoRouteBtn?.addEventListener('click', () => {
   builderSetStatus('Tornado throw path: click trigger point, then click landing point.');
   builderApplyStateToUi();
 });
+BUILDER_UI.setTornadoStartFromSelectedBtn?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectStartX = clamp(Number(ent.x || 0), -220, 1520);
+  builderSetStatus('Tornado start position set from current object location.');
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.setTornadoEndFromSelectedBtn?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectLandX = clamp(Number(ent.x || 0), -220, 1520);
+  ent.tornadoAffectLandY = clamp(Number(ent.baseY ?? GRASS_Y), 120, 580);
+  ent.tornadoAffectEndRotate = clamp(Number(ent.rotationDeg || 0), -360, 360);
+  builderSetStatus('Tornado end position and end rotation set from current object location.');
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
 ['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectStartX?.addEventListener(evt, () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -7862,6 +8185,20 @@ BUILDER_UI.setTornadoRouteBtn?.addEventListener('click', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
   ent.tornadoAffectLandY = clamp(Number(BUILDER_UI.tornadoAffectLandYRange.value || (ent.baseY ?? GRASS_Y)), 120, 580);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectEndRotate?.addEventListener(evt, () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectEndRotate = clamp(Number(BUILDER_UI.tornadoAffectEndRotate.value || 0), -360, 360);
+  if (BUILDER_UI.tornadoAffectEndRotateRange) BUILDER_UI.tornadoAffectEndRotateRange.value = String(ent.tornadoAffectEndRotate);
+  builderSaveLastDraft();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectEndRotateRange?.addEventListener(evt, () => {
+  if (BUILDER_UI.tornadoAffectEndRotate) BUILDER_UI.tornadoAffectEndRotate.value = BUILDER_UI.tornadoAffectEndRotateRange.value;
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.tornadoAffectEndRotate = clamp(Number(BUILDER_UI.tornadoAffectEndRotateRange.value || 0), -360, 360);
   builderSaveLastDraft();
 }));
 ['input','change'].forEach((evt) => BUILDER_UI.tornadoAffectDurationMs?.addEventListener(evt, () => {
@@ -7946,21 +8283,28 @@ BUILDER_UI.layerPathMode?.addEventListener('change', () => {
   ent._pathDone = false;
   builderSaveLastDraft();
 });
-const bindPathNumber = (field, key, min, max, fallback) => {
-  field?.addEventListener('change', () => {
+const bindPathNumber = (field, key, min, max, fallback, mirrorField = null) => {
+  ['input','change'].forEach((evt) => field?.addEventListener(evt, () => {
     const ent = getBuilderEntityById(builderSelectedId);
     if (!ent) return;
     ent[key] = clamp(Number(field.value || fallback(ent)), min, max);
+    if (mirrorField) mirrorField.value = String(ent[key]);
     ent._pathDone = false;
     builderSaveLastDraft();
-  });
+  }));
 };
-bindPathNumber(BUILDER_UI.layerPathStartX, 'pathStartX', -220, 1520, (ent) => ent.x || 0);
-bindPathNumber(BUILDER_UI.layerPathStartY, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
-bindPathNumber(BUILDER_UI.layerPathEndX, 'pathEndX', -220, 1520, (ent) => (ent.x || 0) + 80);
-bindPathNumber(BUILDER_UI.layerPathEndY, 'pathEndY', 120, 580, (ent) => ent.baseY ?? GRASS_Y);
-bindPathNumber(BUILDER_UI.layerPathDurationMs, 'pathDurationMs', 200, 120000, () => 2400);
-bindPathNumber(BUILDER_UI.layerPathPauseMs, 'pathPauseMs', 0, 60000, () => 0);
+bindPathNumber(BUILDER_UI.layerPathStartX, 'pathStartX', -220, 1520, (ent) => ent.x || 0, BUILDER_UI.layerPathStartXRange);
+bindPathNumber(BUILDER_UI.layerPathStartXRange, 'pathStartX', -220, 1520, (ent) => ent.x || 0, BUILDER_UI.layerPathStartX);
+bindPathNumber(BUILDER_UI.layerPathStartY, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y, BUILDER_UI.layerPathStartYRange);
+bindPathNumber(BUILDER_UI.layerPathStartYRange, 'pathStartY', 120, 580, (ent) => ent.baseY ?? GRASS_Y, BUILDER_UI.layerPathStartY);
+bindPathNumber(BUILDER_UI.layerPathEndX, 'pathEndX', -220, 1520, (ent) => (ent.x || 0) + 80, BUILDER_UI.layerPathEndXRange);
+bindPathNumber(BUILDER_UI.layerPathEndXRange, 'pathEndX', -220, 1520, (ent) => (ent.x || 0) + 80, BUILDER_UI.layerPathEndX);
+bindPathNumber(BUILDER_UI.layerPathEndY, 'pathEndY', 120, 580, (ent) => ent.baseY ?? GRASS_Y, BUILDER_UI.layerPathEndYRange);
+bindPathNumber(BUILDER_UI.layerPathEndYRange, 'pathEndY', 120, 580, (ent) => ent.baseY ?? GRASS_Y, BUILDER_UI.layerPathEndY);
+bindPathNumber(BUILDER_UI.layerPathDurationMs, 'pathDurationMs', 200, 120000, () => 2400, BUILDER_UI.layerPathDurationMsRange);
+bindPathNumber(BUILDER_UI.layerPathDurationMsRange, 'pathDurationMs', 200, 120000, () => 2400, BUILDER_UI.layerPathDurationMs);
+bindPathNumber(BUILDER_UI.layerPathPauseMs, 'pathPauseMs', 0, 60000, () => 0, BUILDER_UI.layerPathPauseMsRange);
+bindPathNumber(BUILDER_UI.layerPathPauseMsRange, 'pathPauseMs', 0, 60000, () => 0, BUILDER_UI.layerPathPauseMs);
 BUILDER_UI.animalExitDirection?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent || !isAnimalEntity(ent)) return;
@@ -8156,11 +8500,15 @@ function handleStart(e) {
     return;
   }
   if (gameState === 'playing') { 
+    if (isPointInRect(mouseX, mouseY, MUTUAL_AID_BUTTON_RECT)) {
+      if (triggerMutualAidRefill()) return;
+    }
     if (isInTimeSelector(mouseX, mouseY)) { 
       handleTimeSelection(mouseX, mouseY); 
       return; 
     } 
     if (!playerControlsEnabled) return;
+    if (!canSprayWaterNow()) return;
     isSpraying = true; 
   }
 }
@@ -8542,6 +8890,7 @@ function updateTankerSupport(dt) {
     tankerSupport.facing = -1;
     tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
     tankerSupport.x += (tankerSupport.targetX - tankerSupport.x) * Math.min(0.18, 0.06 * step);
+    addWater(Math.max(0, dt) * 0.0125);
     if (levelElapsedMs >= tankerSupport.holdUntil) {
       tankerSupport.state = 'depart';
     }
@@ -8612,6 +8961,7 @@ function updateBoroTankerSupport(dt) {
     boroTankerSupport.facing = 1;
     boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
     boroTankerSupport.x += (boroTankerSupport.targetX - boroTankerSupport.x) * Math.min(0.18, 0.06 * step);
+    addWater(Math.max(0, dt) * 0.019);
     if (levelElapsedMs >= boroTankerSupport.holdUntil) {
       boroTankerSupport.state = 'depart';
     }
@@ -8666,7 +9016,84 @@ function drawTotalFireGauge() {
   ctx.fillText('TOTAL FIRE', gaugeX + gaugeWidth/2, gaugeY - 6);
 }
 
-function drawWaterGauge() {}
+function getWaterDrainPerMs() {
+  if (difficulty <= 1) return 0;
+  return difficulty === 2 ? 0.0038 : 0.0052;
+}
+
+function resetWaterForLevel() {
+  waterCapacity = 100;
+  waterCurrent = waterCapacity;
+}
+
+function addWater(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  waterCurrent = clamp(waterCurrent + amount, 0, waterCapacity);
+}
+
+function useWater(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  if (difficulty <= 1) return;
+  waterCurrent = clamp(waterCurrent - amount, 0, waterCapacity);
+  if (waterCurrent <= 0.01) {
+    waterCurrent = 0;
+    isSpraying = false;
+  }
+}
+
+function canSprayWaterNow() {
+  if (difficulty <= 1) return true;
+  return waterCurrent > 0.2;
+}
+
+function drawWaterGauge() {
+  const gaugeX = 480; const gaugeY = 76; const gaugeWidth = 240; const gaugeHeight = 14;
+  const percent = waterCapacity > 0 ? clamp(waterCurrent / waterCapacity, 0, 1) : 0;
+  ctx.fillStyle = '#1a2433'; ctx.fillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  const grad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeWidth, gaugeY);
+  grad.addColorStop(0, '#39a8ff'); grad.addColorStop(1, '#9ff4ff');
+  ctx.fillStyle = grad; ctx.fillRect(gaugeX, gaugeY, gaugeWidth * percent, gaugeHeight);
+  ctx.strokeStyle = '#e8f6ff'; ctx.lineWidth = 2; ctx.strokeRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
+  ctx.fillStyle = '#dff6ff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
+  const modeLabel = difficulty <= 1 ? 'WATER UNLIMITED (EASY)' : `WATER ${Math.round(percent * 100)}%`;
+  ctx.fillText(modeLabel, gaugeX + gaugeWidth / 2, gaugeY - 4);
+}
+
+function hasMutualAidAvailable() {
+  return mutualAidLevelsWithoutUse >= MUTUAL_AID_REQUIRED_CLEAR_LEVELS;
+}
+
+function isPointInRect(x, y, rect) {
+  return !!rect && x >= rect.x && x <= (rect.x + rect.w) && y >= rect.y && y <= (rect.y + rect.h);
+}
+
+function drawMutualAidButton() {
+  if (gameState !== 'playing' || difficulty <= 1 || !hasMutualAidAvailable()) return;
+  const rect = MUTUAL_AID_BUTTON_RECT;
+  ctx.save();
+  const pulse = 0.88 + Math.sin(levelElapsedMs / 260) * 0.12;
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle = '#b91616';
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = '#ffd9d9';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.fillStyle = '#fff4f4';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('MUTUAL AID REFILL', rect.x + rect.w / 2, rect.y + 22);
+  ctx.restore();
+}
+
+function triggerMutualAidRefill() {
+  if (gameState !== 'playing' || difficulty <= 1 || !hasMutualAidAvailable()) return false;
+  if (boroTankerSupport) return false;
+  startBoroTankerSupport();
+  mutualAidUsedThisLevel = true;
+  mutualAidLevelsWithoutUse = 0;
+  return true;
+}
 
 function drawPlacementGrid() {
   const cols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -9315,6 +9742,7 @@ function resetTornadoAffectRuntime(ent) {
   ent._tornadoThrowStartY = undefined;
   ent._tornadoThrowEndX = undefined;
   ent._tornadoThrowEndY = undefined;
+  ent._tornadoArcHeight = undefined;
   ent._tornadoThrowStartRot = undefined;
   ent._tornadoThrowEndRot = undefined;
   ent._tornadoCollisionSwapDone = false;
@@ -9323,20 +9751,28 @@ function resetTornadoAffectRuntime(ent) {
   ent._pathDir = 1;
   ent._pathPauseUntil = 0;
   ent._pathDone = false;
+  ent._tornadoIgniteDone = false;
 }
 
 function updateTornadoAffectedEntities(dt, entities) {
   if (!Array.isArray(entities) || !entities.length) return;
-  entities.forEach((ent) => {
+  entities.forEach((ent, idx) => {
     if (!ent || ent.type === 'tornado' || ent.type === 'requiredFireTruck') return;
-    if (!ent.fallWithTornado || ent.lockedPosition !== false) return;
     const trigger = clamp(Number(ent.tornadoAffectStartX ?? ent.fallAtX ?? ((ent.x || 0) + 40)), -220, 1520);
-    if (isTornadoPastX(trigger)) applyCollisionSpriteSwap(ent, 'tornado');
+    const tornadoPassed = isTornadoPastX(trigger);
+    if (tornadoPassed) {
+      applyCollisionSpriteSwap(ent, 'tornado');
+      if (ent.igniteOnTornadoHit && !ent._tornadoIgniteDone) {
+        igniteTornadoFireGroupByEntityKey(`${ent.type}:${idx}`);
+        ent._tornadoIgniteDone = true;
+      }
+    }
+    if (!ent.fallWithTornado || ent.lockedPosition !== false) return;
     const motionMode = (ent.tornadoMotionMode === 'random' || ent.tornadoMotionMode === 'none') ? ent.tornadoMotionMode : 'path';
     const rotationMode = (ent.tornadoRotationMode === 'keep' || ent.tornadoRotationMode === 'path') ? ent.tornadoRotationMode : 'spin';
     const hasRoute = (ent.tornadoAffectLandX != null || ent.tornadoAffectLandY != null);
     if (!hasRoute && motionMode !== 'random') return;
-    if (!ent._tornadoThrowLaunched && isTornadoPastX(trigger)) {
+    if (!ent._tornadoThrowLaunched && tornadoPassed) {
       const tornadoDir = (tornadoState?.initialDirection || tornadoState?.direction || 1) > 0 ? 1 : -1;
       const endX = motionMode === 'random'
         ? clamp((ent.x || 0) + ((260 + Math.random() * 520) * tornadoDir), -260, 1580)
@@ -9359,12 +9795,17 @@ function updateTornadoAffectedEntities(dt, entities) {
       ent._tornadoThrowStartRot = Number(ent.rotationDeg || 0);
       const dx = endX - startX;
       const dy = endY - startY;
+      ent._tornadoArcHeight = motionMode === 'none' ? 0 : clamp((Math.hypot(dx, dy) * 0.16) + (motionMode === 'random' ? 74 : 42), 18, 220);
       const pathAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
-      ent._tornadoThrowEndRot = rotationMode === 'keep'
-        ? ent._tornadoThrowStartRot
-        : rotationMode === 'path'
-          ? pathAngle
-          : (ent._tornadoThrowStartRot + (tornadoDir * 120));
+      const hasConfiguredEndRotation = Number.isFinite(Number(ent.tornadoAffectEndRotate));
+      const configuredEndRotation = hasConfiguredEndRotation ? clamp(Number(ent.tornadoAffectEndRotate), -360, 360) : null;
+      ent._tornadoThrowEndRot = configuredEndRotation != null
+        ? configuredEndRotation
+        : rotationMode === 'keep'
+          ? ent._tornadoThrowStartRot
+          : rotationMode === 'path'
+            ? pathAngle
+            : (ent._tornadoThrowStartRot + (tornadoDir * 120));
       if (motionMode === 'none') {
         ent._tornadoThrowDone = true;
       }
@@ -9378,8 +9819,9 @@ function updateTornadoAffectedEntities(dt, entities) {
     const sy = Number(ent._tornadoThrowStartY ?? ent.baseY ?? GRASS_Y);
     const ex = Number(ent._tornadoThrowEndX ?? sx);
     const ey = Number(ent._tornadoThrowEndY ?? sy);
+    const arcLift = Math.sin(Math.PI * t) * Number(ent._tornadoArcHeight || 0);
     ent.x = sx + ((ex - sx) * ease);
-    ent.baseY = sy + ((ey - sy) * ease);
+    ent.baseY = (sy + ((ey - sy) * ease)) - arcLift;
     const sr = Number(ent._tornadoThrowStartRot ?? ent.rotationDeg ?? 0);
     const er = Number(ent._tornadoThrowEndRot ?? sr);
     ent.rotationDeg = sr + ((er - sr) * ease);
@@ -9387,6 +9829,7 @@ function updateTornadoAffectedEntities(dt, entities) {
       ent._tornadoThrowActive = false;
       ent._tornadoThrowDone = true;
       ent._tornadoThrowElapsed = duration;
+      ent.baseY = ey;
     }
   });
 }
@@ -10349,6 +10792,7 @@ function loop() {
     }
   }
   updateLevel9Event(dt, baseLevels[currentLevel - 1] || {});
+  updateTruckEntry(dt);
   updateTankerSupport(dt);
   updateBoroTankerSupport(dt);
   updateBlackBoxTruck(dt);
@@ -10495,6 +10939,15 @@ if (false && currentLevel === 11) drawPlacementGrid();
 
   const sortedSpots = [...fireSpots].sort((a, b) => a.x - b.x);
   sortedSpots.forEach(spot => {
+    if (!spot.active) {
+      const igniteAt = Math.max(0, Number(spot.igniteAtMs || 0));
+      if (levelElapsedMs >= igniteAt) {
+        spot.active = true;
+        spot.emitMs = 0;
+      } else {
+        return;
+      }
+    }
     if (spot.health <= 0) return;
     const regrowthChance = difficulty === 1 ? 0.015 : 0.022;
     if (Math.random() < regrowthChance) spot.health = Math.min(spot.health + (spot.growthRate || 4.2), spot.maxHealth);
@@ -10540,7 +10993,11 @@ if (false && currentLevel === 11) drawPlacementGrid();
     }
   });
 
-  if (isSpraying) createWaterParticles();
+  if (isSpraying) {
+    useWater(Math.max(0, dt) * getWaterDrainPerMs());
+    if (canSprayWaterNow()) createWaterParticles();
+    else isSpraying = false;
+  }
   applyWaterPushToEntities();
 
   const blackBoxRect = getBlackBoxTruckRect();
@@ -10577,6 +11034,8 @@ if (false && currentLevel === 11) drawPlacementGrid();
   drawTankerConnection();
 
   drawTotalFireGauge();
+  drawWaterGauge();
+  drawMutualAidButton();
 
   ctx.fillStyle = '#FF0';
   ctx.font = 'bold 22px Arial';
@@ -10597,16 +11056,3 @@ loop();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
