@@ -49,12 +49,18 @@ function Convert-ObjectToHashtable($obj) {
 
 function Update-SourceOverridesInHtml([string]$htmlPath, [int]$slot, $levelObj) {
   $raw = Get-Content -LiteralPath $htmlPath -Raw
-  $pattern = "(?s)/\*KVFD_SOURCE_OVERRIDES_START\*/(.*?)/\*KVFD_SOURCE_OVERRIDES_END\*/"
-  $match = [regex]::Match($raw, $pattern)
+  $patternPrimary = '(?s)(const\s+BUILDER_SOURCE_OVERRIDES_JSON\s*=\s*`/\*KVFD_SOURCE_OVERRIDES_START\*/\r?\n)(.*?)(\r?\n/\*KVFD_SOURCE_OVERRIDES_END\*/`;)'
+  $patternFallback = '(?s)(/\*KVFD_SOURCE_OVERRIDES_START\*/\r?\n)(.*?)(\r?\n/\*KVFD_SOURCE_OVERRIDES_END\*/)'
+  $match = [regex]::Match($raw, $patternPrimary)
+  $usedPattern = $patternPrimary
+  if (-not $match.Success) {
+    $match = [regex]::Match($raw, $patternFallback)
+    $usedPattern = $patternFallback
+  }
   if (-not $match.Success) {
     throw "Could not find source override markers in $htmlPath"
   }
-  $currentJson = ($match.Groups[1].Value).Trim()
+  $currentJson = ($match.Groups[2].Value).Trim()
   if ([string]::IsNullOrWhiteSpace($currentJson)) { $currentJson = "{}" }
   $parsed = $currentJson | ConvertFrom-Json
   $overrides = @{}
@@ -65,8 +71,15 @@ function Update-SourceOverridesInHtml([string]$htmlPath, [int]$slot, $levelObj) 
   }
   $overrides[[string]$slot] = Convert-ObjectToHashtable $levelObj
   $updatedJson = ($overrides | ConvertTo-Json -Depth 100)
-  $replacement = "/*KVFD_SOURCE_OVERRIDES_START*/`r`n$updatedJson`r`n/*KVFD_SOURCE_OVERRIDES_END*/"
-  $updated = [regex]::Replace($raw, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $replacement }, 1)
+  $updated = [regex]::Replace(
+    $raw,
+    $usedPattern,
+    [System.Text.RegularExpressions.MatchEvaluator]{
+      param($m)
+      return "$($m.Groups[1].Value)$updatedJson$($m.Groups[3].Value)"
+    },
+    1
+  )
   Set-Content -LiteralPath $htmlPath -Value $updated -Encoding UTF8
 }
 
@@ -80,7 +93,7 @@ function Git-Run([string]$repo, [string[]]$gitArgs) {
 function Sync-MainBranch([string]$repo) {
   Git-Run -repo $repo -gitArgs @("fetch", "origin", "main")
   Git-Run -repo $repo -gitArgs @("checkout", "main")
-  Git-Run -repo $repo -gitArgs @("pull", "--rebase", "origin", "main")
+  Git-Run -repo $repo -gitArgs @("pull", "--rebase", "--autostash", "origin", "main")
 }
 
 function Push-WithRetry([string]$repo) {

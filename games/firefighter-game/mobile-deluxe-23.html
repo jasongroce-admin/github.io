@@ -1969,9 +1969,9 @@ button:hover { filter: brightness(1.2); }
     <ul>
       <li>1) Build and test level in builder until it plays correctly.</li>
       <li>2) Click <strong>Save Submission File</strong> and save the `.kvfdsubmission.json` file.</li>
-      <li>3) Run <strong>apply-builder-submission-local-qa.cmd</strong> from the game folder for local apply + test + Commit/Undo buttons.</li>
+          <li>3) Run <strong>tools\\apply-builder-submission-local-qa.cmd</strong> for local apply + test + Commit/Undo buttons.</li>
       <li>4) Select your submission file. The tool updates local source slot data in `mobile-deluxe-23.html`, waits for testing, then commits if approved.</li>
-      <li>5) Optional fast path: run `apply-builder-submission-and-publish.cmd` for direct one-step apply + push.</li>
+          <li>5) Optional fast path: run <strong>tools\\apply-builder-submission-and-publish.cmd</strong> for direct one-step apply + push.</li>
       <li>6) Refresh the site/game and verify the slot behavior online.</li>
     </ul>
     <p><strong>Important:</strong> Save To Game Slot is for fast local testing. Submission + local QA script is the safe permanent update path.</p>
@@ -5743,8 +5743,8 @@ function builderBuildSubmissionPayload() {
         'Confirm all WebP entities render and remain editable',
         'Confirm burnability settings, especially animals default non-flammable'
       ],
-      localQaScript: 'games/firefighter-game/apply-builder-submission-local-qa.cmd',
-      autoPublishScript: 'games/firefighter-game/apply-builder-submission-and-publish.cmd'
+      localQaScript: 'games/firefighter-game/tools/apply-builder-submission-local-qa.cmd',
+      autoPublishScript: 'games/firefighter-game/tools/apply-builder-submission-and-publish.cmd'
     },
     level
   };
@@ -5894,7 +5894,7 @@ function builderSaveSubmissionFile() {
   anchor.download = `${safeName || 'custom-level'}.kvfdsubmission.json`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
-  builderSetStatus('Submission saved. Run apply-builder-submission-local-qa.cmd for local apply + test + Commit/Undo.');
+        builderSetStatus('Submission saved. Run tools\\\\apply-builder-submission-local-qa.cmd for local apply + test + Commit/Undo.');
 }
 
 function builderDrawHelpers() {
@@ -11411,7 +11411,7 @@ attachDelayedExportTip('builderExportOfflineBtn', 'Save Offline Folder: export t
 attachDelayedExportTip('builderExportFullGameBtn', 'Save Full Game Offline: export full game + assets without attaching the current custom level.');
 attachDelayedExportTip('builderImportBtn', 'Load Package: import a saved package JSON into the builder.');
 attachDelayedExportTip('builderShareBtn', 'Share: copy package JSON to clipboard for sending.');
-attachDelayedExportTip('builderSaveSubmissionBtn', 'Save Submission File: export level data, then run apply-builder-submission-local-qa.cmd for local apply + test + Commit/Undo.');
+      attachDelayedExportTip('builderSaveSubmissionBtn', 'Save Submission File: export level data, then run tools\\\\apply-builder-submission-local-qa.cmd for local apply + test + Commit/Undo.');
 attachDelayedExportTip('builderPrintBtn', 'Print: print a summary of the current level package.');
 attachDelayedExportTip('builderTestBtn', 'Test Level: quick-play this level with your selected test difficulty.');
 attachDelayedExportTip('builderPublishBtn', 'Save To Game Slot: writes this level into browser-local slot override on this computer (not source file update).');
