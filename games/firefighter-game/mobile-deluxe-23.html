@@ -1459,8 +1459,8 @@ button:hover { filter: brightness(1.2); }
               <option value="2">Medium</option>
               <option value="3">Hard</option>
             </select>
-            <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">&#8630; Undo</button>
-            <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">&#8631; Redo</button>
+            <button id="builderUndoBtn" type="button" class="secondary-btn builder-title-btn" title="Undo">Undo</button>
+            <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">Redo</button>
             <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
             <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load game level into editor"></select>
             <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
@@ -3572,6 +3572,7 @@ let tornadoState = null;
 let pendingTornadoFireSpotsByKey = new Map();
 let waterCapacity = 100;
 let waterCurrent = 100;
+let currentDifficultyTuning = null;
 let mutualAidLevelsWithoutUse = 0;
 let mutualAidUsedThisLevel = false;
 const MUTUAL_AID_REQUIRED_CLEAR_LEVELS = 3;
@@ -3821,7 +3822,7 @@ function builderRenderTourStep(index) {
     BUILDER_UI.tourHighlight.style.width = `${Math.max(24, rect.width + 12)}px`;
     BUILDER_UI.tourHighlight.style.height = `${Math.max(24, rect.height + 12)}px`;
   }
-  if (BUILDER_UI.tourTitle) BUILDER_UI.tourTitle.textContent = `${index + 1}/${BUILDER_TOUR_STEPS.length} â€¢ ${step.title}`;
+  if (BUILDER_UI.tourTitle) BUILDER_UI.tourTitle.textContent = `${index + 1}/${BUILDER_TOUR_STEPS.length} - ${step.title}`;
   if (BUILDER_UI.tourBody) BUILDER_UI.tourBody.textContent = step.body;
   if (BUILDER_UI.tourCard) {
     BUILDER_UI.tourCard.style.display = 'block';
@@ -4603,10 +4604,10 @@ function builderRenderLayerList() {
       });
       return btn;
     };
-  actions.appendChild(mk(String.fromCharCode(10514), 'Move to top', () => moveByEntity(ent.id, 'top')));
-  actions.appendChild(mk(String.fromCharCode(8593), 'Move up', () => moveByEntity(ent.id, 'up')));
-  actions.appendChild(mk(String.fromCharCode(8595), 'Move down', () => moveByEntity(ent.id, 'down')));
-  actions.appendChild(mk(String.fromCharCode(10515), 'Move to bottom', () => moveByEntity(ent.id, 'bottom')));
+  actions.appendChild(mk('Top', 'Move to top', () => moveByEntity(ent.id, 'top')));
+  actions.appendChild(mk('Up', 'Move up', () => moveByEntity(ent.id, 'up')));
+  actions.appendChild(mk('Down', 'Move down', () => moveByEntity(ent.id, 'down')));
+  actions.appendChild(mk('Bottom', 'Move to bottom', () => moveByEntity(ent.id, 'bottom')));
   actions.appendChild(mk('Copy', 'Duplicate layer', () => builderDuplicateLayer(ent.id)));
   actions.appendChild(mk('Del', 'Delete layer', () => builderDeleteLayerById(ent.id), 'warn'));
     row.appendChild(labelBtn);
@@ -6033,7 +6034,7 @@ function builderDrawHelpers() {
     }
   }
 
-  const levelLabel = `${level.name || 'Custom Level'} â€¢ ${level.entities.length} objects`;
+  const levelLabel = `${level.name || 'Custom Level'} - ${level.entities.length} objects`;
   ctx.fillStyle = 'rgba(0,0,0,0.72)';
   ctx.fillRect(20, 18, 540, 40);
   ctx.fillStyle = '#fff';
@@ -6240,8 +6241,8 @@ const safetyTips = [
   "Never play with matches or lighters.", "If your clothes catch fire, stop, drop, and roll.",
   "Have a family escape plan and practice it.", "Check smoke alarms every month.",
   "Keep a fire extinguisher accessible and know how to use it.", "Stay low and crawl under smoke to escape.",
-    "Never hide from fire â€” get low and go!", "Don't overload electrical outlets.",
-    "Keep flammable items away from heat sources.", "Practice fire safety every day â€” it could save lives."
+    "Never hide from fire - get low and go!", "Don't overload electrical outlets.",
+    "Keep flammable items away from heat sources.", "Practice fire safety every day - it could save lives."
 ];
 
 const baseLevels = [
@@ -6348,9 +6349,9 @@ function buildBonusLevels() {
 baseLevels.push(...buildBonusLevels());
 
 // Deluxe-23 rules:
-// - Keep the original Deluxe content for Levels 1â€“22.
+// - Keep the original Deluxe content for Levels 1-22.
 // - Move the original Level 30 (UFO) to become the final Level 23.
-// - Remove original Levels 23â€“29 entirely.
+// - Remove original Levels 23-29 entirely.
 const FINAL_LEVEL = 23;
 const ORIGINAL_BOSS_LEVEL = 30;
 const bossLevel = baseLevels[ORIGINAL_BOSS_LEVEL - 1] ? { ...baseLevels[ORIGINAL_BOSS_LEVEL - 1] } : null;
@@ -6612,7 +6613,7 @@ baseLevels[10] = {
   timeOfDay: 0,
   truckSide: 'left',
   entities: [
-// Distant silhouettes sit on the 8.5â€“9 line and are always black.
+// Distant silhouettes sit on the 8.5-9 line and are always black.
     { type: 'bgTreeOakRealistic', grid: { col: 'K', line: 8.8 }, scale: 0.62, alpha: 0.18, silhouette: true },
     { type: 'bgTreeOakRealistic', grid: { col: 'Q', line: 8.9 }, scale: 0.54, alpha: 0.17, silhouette: true },
     { type: 'bgHouseNeighborhoodGray', grid: { col: 'O', line: 8.9 }, scale: 0.70, alpha: 0.22, silhouette: true },
@@ -7503,7 +7504,7 @@ const BUILDER_SOURCE_OVERRIDES_JSON = `/*KVFD_SOURCE_OVERRIDES_START*/
                                       "hold":  8000
                                   },
                "fireTruckTheme":  "standard",
-               "safetyTip":  "Practice fire safety every day Ã¢â‚¬â€ it could save lives.",
+               "safetyTip":  "Practice fire safety every day - it could save lives.",
                "boroSchedule":  {
                                     "firstAt":  28000,
                                     "repeat":  56000,
@@ -8697,7 +8698,7 @@ const BUILDER_SOURCE_OVERRIDES_JSON = `/*KVFD_SOURCE_OVERRIDES_START*/
                "name":  "Right Home and Mower 22",
                "creatorName":  "",
                "truckPlacementX":  110,
-               "safetyTip":  "Never hide from fire Ã¢â‚¬â€ get low and go!",
+               "safetyTip":  "Never hide from fire - get low and go!",
                "dispatchClearBody":  "Dispatch confirms the right-side home and mower-side yard exposure are under control.",
                "boroSchedule":  {
                                     "firstAt":  28000,
@@ -12773,7 +12774,106 @@ function initBlackBoxTruckLevels() {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  blackBoxTruckLevels = new Set([6, ...pool.slice(0, 2)].sort((a, b) => a - b));
+  const extraCount = difficulty >= 3 ? 3 : 2; // Hard: 4 total appearances, Easy/Med: 3 total appearances.
+  blackBoxTruckLevels = new Set([6, ...pool.slice(0, extraCount)].sort((a, b) => a - b));
+}
+
+function getDifficultyTuning(diff, level, spotCount = 0) {
+  const lvl = clamp(Number(level || 1), 1, Math.max(1, baseLevels.length || 23));
+  const count = Math.max(0, Number(spotCount || 0));
+  const complexity = clamp(((lvl - 1) / 22) + ((count - 4) / 10), 0, 2.2);
+  const rangeTier = lvl <= 7 ? 1 : (lvl <= 15 ? 2 : 3);
+  const isEasy = diff <= 1;
+  const isHard = diff >= 3;
+  const rangeHealthBoost = rangeTier === 1 ? 0.92 : (rangeTier === 2 ? 1.00 : 1.12);
+  const rangeGrowthBoost = rangeTier === 1 ? 0.90 : (rangeTier === 2 ? 1.00 : 1.14);
+  const rangeRegrowthBoost = rangeTier === 1 ? 0.92 : (rangeTier === 2 ? 1.00 : 1.18);
+  const rangeDamageCut = rangeTier === 1 ? 1.05 : (rangeTier === 2 ? 1.00 : 0.90);
+  const waterCapacity = isEasy
+    ? 100
+    : isHard
+      ? clamp(Math.round((96 - (lvl * 1.0)) - (rangeTier === 3 ? 6 : 0)), 64, 94)
+      : clamp(Math.round((108 - (lvl * 0.8)) - (rangeTier === 3 ? 4 : 0)), 78, 106);
+  const waterDrainPerMs = isEasy
+    ? 0
+    : isHard
+      ? clamp((0.0048 + (lvl * 0.00003)) * (rangeTier === 3 ? 1.10 : 1.0), 0.0048, 0.0074)
+      : clamp((0.0035 + (lvl * 0.00002)) * (rangeTier === 3 ? 1.08 : 1.0), 0.0035, 0.0055);
+  const healthMult = isEasy
+    ? clamp((1.18 + (lvl * 0.012) + (complexity * 0.08)) * rangeHealthBoost, 1.16, 2.05)
+    : isHard
+      ? clamp((2.45 + (lvl * 0.030) + (complexity * 0.26)) * rangeHealthBoost, 2.65, 4.85)
+      : clamp((1.72 + (lvl * 0.019) + (complexity * 0.15)) * rangeHealthBoost, 1.85, 3.35);
+  const growthMult = isEasy
+    ? clamp((0.98 + (lvl * 0.006)) * rangeGrowthBoost, 0.90, 1.32)
+    : isHard
+      ? clamp((1.46 + (lvl * 0.015)) * rangeGrowthBoost, 1.45, 2.45)
+      : clamp((1.18 + (lvl * 0.010)) * rangeGrowthBoost, 1.18, 1.95);
+  const regrowthChance = isEasy
+    ? clamp((0.014 + (lvl * 0.00023)) * rangeRegrowthBoost, 0.012, 0.024)
+    : isHard
+      ? clamp((0.030 + (lvl * 0.00045)) * rangeRegrowthBoost, 0.030, 0.050)
+      : clamp((0.022 + (lvl * 0.00035)) * rangeRegrowthBoost, 0.022, 0.038);
+  const damageMult = isEasy
+    ? clamp((1.00 - (lvl * 0.0022)) * rangeDamageCut, 0.86, 1.06)
+    : isHard
+      ? clamp((0.84 - (lvl * 0.0050)) * rangeDamageCut, 0.56, 0.86)
+      : clamp((0.93 - (lvl * 0.0034)) * rangeDamageCut, 0.72, 0.95);
+  return { waterCapacity, waterDrainPerMs, healthMult, growthMult, regrowthChance, damageMult };
+}
+
+function getHealthBudgetCap(diff, level, spotCount = 0) {
+  const lvl = clamp(Number(level || 1), 1, Math.max(1, baseLevels.length || 23));
+  const count = Math.max(0, Number(spotCount || 0));
+  const rangeTier = lvl <= 7 ? 1 : (lvl <= 15 ? 2 : 3);
+  const rangeAdd = rangeTier === 1 ? 0 : (rangeTier === 2 ? 1200 : 3600);
+  if (diff <= 1) return Math.round(7800 + (lvl * 320) + (count * 110) + rangeAdd);
+  if (diff >= 3) return Math.round(15800 + (lvl * 920) + (count * 260) + (rangeAdd * 1.6));
+  return Math.round(11200 + (lvl * 560) + (count * 180) + (rangeAdd * 1.2));
+}
+
+function getSpotZoneResistance(spot) {
+  const sourceType = String(spot?.sourceType || '').toLowerCase();
+  const isVehicleLike = !!spot?.isVehicle || !!spot?.isSemi || /(sedan|pickup|semi|truck|tractor|mower|bus|vehicle|engine|tanker)/.test(sourceType);
+  const isHomeLike = /(house|home|cottage|school)/.test(sourceType);
+  const isShedLike = /(shed|garage|barn)/.test(sourceType);
+  const isRoof = !!spot?.roof;
+  let resistance = 1;
+  if (isHomeLike) resistance *= 1.55;
+  else if (isShedLike) resistance *= 1.24;
+  else if (isVehicleLike) resistance *= 1.18;
+  if (isRoof) resistance *= 1.52;
+  const relativeY = clamp(Number(spot?.relativeYInOwner ?? 0.5), 0, 1);
+  if (isVehicleLike && isRoof) resistance *= 1.22; // car roofs tougher than most vehicle zones
+  if (isVehicleLike && !isRoof) {
+    // Lower vehicle zones (wheel area) are easier to knock down.
+    if (relativeY >= 0.62 || (spot?.h || 0) <= 32) resistance *= 0.74;
+    else resistance *= 0.94;
+  }
+  return clamp(resistance, 0.62, 3.6);
+}
+
+function getWaterMathTargets(diff) {
+  if (diff <= 1) return { healthPerWaterUnit: 220, requiredFillEvents: 0 };
+  if (diff >= 3) return { healthPerWaterUnit: 128, requiredFillEvents: 2 };
+  return { healthPerWaterUnit: 160, requiredFillEvents: 1 };
+}
+
+function computeWaterBudgetCap(levelData, lvl, diff, tuning, spotCount = 0) {
+  if (diff <= 1) return Number.POSITIVE_INFINITY;
+  const tankerTiming = getTankerSupportSchedule(lvl, diff);
+  const boroTiming = getBoroTankerSupportSchedule(lvl, diff);
+  const allowBoro = !!(levelData?.boroSchedule?.enabled || (lvl === FINAL_LEVEL && !levelData?.tankerRightOnly));
+  const regularRefillPerVisit = Math.min(tuning.waterCapacity, tankerTiming.hold * 0.0125);
+  const boroRefillPerVisit = Math.min(tuning.waterCapacity, boroTiming.hold * 0.019);
+  const targets = getWaterMathTargets(diff);
+  const requiredFillEvents = targets.requiredFillEvents;
+  let availableWater = tuning.waterCapacity + (regularRefillPerVisit * requiredFillEvents);
+  if (allowBoro) availableWater += boroRefillPerVisit * (diff >= 3 ? 1 : 0.5);
+  // If player keeps waste under 20%, assume 80% effective delivery.
+  const effectiveWater = availableWater * 0.80;
+  const complexityBoost = 1 + clamp((spotCount - 5) * 0.03, 0, 0.22);
+  return Math.round(effectiveWater * targets.healthPerWaterUnit * complexityBoost);
 }
 
 function initUfoRaid() {
@@ -12925,20 +13025,28 @@ function getTankerSupportSchedule(level, diff) {
       hold: clamp(Number(levelData.tankerSchedule.hold ?? 8000), 2000, 30000)
     };
   }
-  let firstAt = diff === 1 ? 22000 : diff === 2 ? 15000 : 11500;
-  let repeat = diff === 1 ? 46000 : diff === 2 ? 33000 : 25000;
+  const rangeTier = level <= 7 ? 1 : (level <= 15 ? 2 : 3);
+  let firstAt = diff === 1 ? 26000 : diff === 2 ? 16500 : 14500;
+  let repeat = diff === 1 ? 52000 : diff === 2 ? 33000 : 27000;
+  if (rangeTier === 1) {
+    firstAt += diff >= 2 ? 1200 : 0;
+    repeat += diff >= 2 ? 2200 : 0;
+  } else if (rangeTier === 3) {
+    firstAt -= diff >= 2 ? 1400 : 600;
+    repeat -= diff >= 2 ? 2600 : 1200;
+  }
   if (level >= 11) {
-    firstAt -= 1800;
-    repeat -= 2800;
+    firstAt -= 1600;
+    repeat -= 2400;
   }
   if (level >= 21) {
-    firstAt -= 1500;
+    firstAt -= 1400;
     repeat -= 2200;
   }
   return {
-    firstAt: Math.max(9000, firstAt),
-    repeat: Math.max(16000, repeat),
-    hold: diff === 1 ? 6500 : diff === 2 ? 8000 : 9000
+    firstAt: Math.max(10000, firstAt),
+    repeat: Math.max(17000, repeat),
+    hold: diff === 1 ? 7000 : diff === 2 ? 8600 : 8000
   };
 }
 
@@ -12952,15 +13060,20 @@ function getBoroTankerSupportSchedule(level, diff) {
     };
   }
   // A second tanker is a rare assist on the biggest scenes (boss level / long burns).
-  let firstAt = diff === 1 ? 38000 : diff === 2 ? 28000 : 24000;
-  let repeat = diff === 1 ? 70000 : diff === 2 ? 56000 : 48000;
+  const rangeTier = level <= 7 ? 1 : (level <= 15 ? 2 : 3);
+  let firstAt = diff === 1 ? 42000 : diff === 2 ? 32000 : 28000;
+  let repeat = diff === 1 ? 76000 : diff === 2 ? 60000 : 52000;
+  if (rangeTier === 3) {
+    firstAt -= diff >= 2 ? 2200 : 1000;
+    repeat -= diff >= 2 ? 3200 : 1600;
+  }
   if (level >= 21) {
     firstAt -= 4500;
     repeat -= 6500;
   }
   return {
-    firstAt: Math.max(16000, firstAt),
-    repeat: Math.max(28000, repeat),
+    firstAt: Math.max(19000, firstAt),
+    repeat: Math.max(30000, repeat),
     hold: diff === 1 ? 7500 : diff === 2 ? 9000 : 10500
   };
 }
@@ -13163,6 +13276,7 @@ function loadLevel(lvl, options = {}) {
   }
   levelStartScore = score;
   mutualAidUsedThisLevel = false;
+  currentDifficultyTuning = getDifficultyTuning(difficulty, lvl, 0);
   resetWaterForLevel();
   const levelData = baseLevels[lvl - 1];
   const requiredTruckLayer = (levelData?.entities || []).find((ent) => ent?.type === 'requiredFireTruck');
@@ -13233,9 +13347,11 @@ function loadLevel(lvl, options = {}) {
   template = selectSpotsForDifficulty(template, difficulty, lvl);
   const burnableBoxesByKey = new Map();
   const fireBehaviorByKey = new Map();
+  const entityTypeByKey = new Map();
   pendingTornadoFireSpotsByKey = new Map();
   (levelData.entities || []).forEach((ent, idx) => {
     if (!ent) return;
+    entityTypeByKey.set(`${ent.type}:${idx}`, ent.type);
     fireBehaviorByKey.set(`${ent.type}:${idx}`, {
       fireStartDelayMs: clamp(Number(ent.fireStartDelayMs ?? 0), 0, 120000),
       igniteOnTornadoHit: !!ent.igniteOnTornadoHit
@@ -13265,22 +13381,34 @@ function loadLevel(lvl, options = {}) {
     (spot.y + spot.h) <= canvas.height
   ));
   const oppositeSideTemplate = keepSpotsOppositeTruckSide(onScreenTemplate.length ? onScreenTemplate : filteredTemplate, levelData.truckSide || 'left');
+  currentDifficultyTuning = getDifficultyTuning(difficulty, lvl, oppositeSideTemplate.length);
+  if (difficulty > 1) {
+    // Guarantee that Medium/Hard cannot be cleared off a single tank alone.
+    // This keeps refill tanker mechanics meaningful.
+    currentDifficultyTuning.waterCapacity = Math.min(currentDifficultyTuning.waterCapacity, difficulty >= 3 ? 88 : 98);
+  }
   fireSpots = oppositeSideTemplate.map(s => {
-    let mult = 1.0;
-    if (difficulty === 2) mult = 1.85;
-    if (difficulty === 3) mult = 2.75;
     const behavior = s.entityKey ? fireBehaviorByKey.get(s.entityKey) : null;
+    const ownerBox = s.entityKey ? burnableBoxesByKey.get(s.entityKey) : null;
+    const relativeYInOwner = ownerBox
+      ? clamp((Number(s.y || 0) + Number(s.h || 0) * 0.5 - ownerBox.y) / Math.max(1, ownerBox.h), 0, 1)
+      : 0.5;
+    const sourceType = s.entityKey ? (entityTypeByKey.get(s.entityKey) || '') : '';
+    const zoneResistance = getSpotZoneResistance({ ...s, sourceType, relativeYInOwner });
     const fireStartDelayMs = clamp(Number(behavior?.fireStartDelayMs ?? 0), 0, 120000);
     const igniteOnTornadoHit = !!behavior?.igniteOnTornadoHit;
     const mappedSpot = { 
       ...s, 
-      health: Math.floor(s.health * mult), 
-      maxHealth: Math.floor(s.maxHealth * mult), 
-      growthRate: s.growthRate ?? (s.roof ? 2.0 : (s.isSemi ? 2.2 : (s.isHay ? 2.6 : 2.3))),
+      health: Math.floor(s.health * currentDifficultyTuning.healthMult * zoneResistance), 
+      maxHealth: Math.floor(s.maxHealth * currentDifficultyTuning.healthMult * zoneResistance), 
+      growthRate: (s.growthRate ?? (s.roof ? 2.0 : (s.isSemi ? 2.2 : (s.isHay ? 2.6 : 2.3)))) * currentDifficultyTuning.growthMult * (0.90 + zoneResistance * 0.17),
       isHay: !!s.isHay,
       isVehicle: !!s.isVehicle,
       isSemi: !!s.isSemi,
       entityKey: s.entityKey,
+      sourceType,
+      relativeYInOwner,
+      zoneResistance,
       igniteAtMs: fireStartDelayMs,
       active: fireStartDelayMs <= 0
     };
@@ -13291,6 +13419,36 @@ function loadLevel(lvl, options = {}) {
     }
     return mappedSpot;
   }).filter(Boolean);
+  // Keep every level mathematically beatable by capping total active fire health budget.
+  const totalMaxHealth = fireSpots.reduce((sum, spot) => sum + Math.max(1, Number(spot.maxHealth || 1)), 0);
+  const capFromProgression = getHealthBudgetCap(difficulty, lvl, fireSpots.length);
+  const capFromWaterBudget = computeWaterBudgetCap(levelData, lvl, difficulty, currentDifficultyTuning, fireSpots.length);
+  const healthCap = Math.max(2400, Math.min(capFromProgression, capFromWaterBudget));
+  if (totalMaxHealth > healthCap && totalMaxHealth > 0) {
+    const ratio = healthCap / totalMaxHealth;
+    fireSpots = fireSpots.map((spot) => {
+      const nextMax = Math.max(80, Math.round((spot.maxHealth || 100) * ratio));
+      const nextHealth = Math.max(10, Math.min(nextMax, Math.round((spot.health || nextMax) * ratio)));
+      return { ...spot, maxHealth: nextMax, health: nextHealth };
+    });
+  }
+  if (difficulty > 1 && fireSpots.length) {
+    const targets = getWaterMathTargets(difficulty);
+    const minNeedsRefillHealth = Math.round(
+      currentDifficultyTuning.waterCapacity * targets.healthPerWaterUnit * (difficulty >= 3 ? 1.35 : 1.18)
+    );
+    const nextTotal = fireSpots.reduce((sum, spot) => sum + Math.max(1, Number(spot.maxHealth || 1)), 0);
+    if (nextTotal < minNeedsRefillHealth) {
+      const maxAllowed = Math.max(minNeedsRefillHealth, healthCap);
+      const desiredTotal = Math.min(maxAllowed, minNeedsRefillHealth);
+      const ratioUp = desiredTotal / Math.max(1, nextTotal);
+      fireSpots = fireSpots.map((spot) => {
+        const nextMax = Math.max(80, Math.round((spot.maxHealth || 100) * ratioUp));
+        const nextHealth = Math.max(10, Math.min(nextMax, Math.round((spot.health || nextMax) * ratioUp)));
+        return { ...spot, maxHealth: nextMax, health: nextHealth };
+      });
+    }
+  }
   if (lvl === 9) {
     initLevel9EventState(levelData, fireSpots);
   }
@@ -13323,7 +13481,7 @@ function loadLevel(lvl, options = {}) {
     if (lvl === 6) setTimeout(() => showLevel6TimeCue(), 250);
   }
   const customBlackBox = levelData?.blackBoxPlan;
-  if (customBlackBox?.enabled) {
+  if (customBlackBox?.enabled && (customBlackBox?.alwaysShow === true || blackBoxTruckLevels.has(lvl))) {
     blackBoxTruckPlan = {
       stage: 'waiting',
       firstAt: clamp(Number(customBlackBox.firstAt ?? 7200), 1200, 40000),
@@ -14717,11 +14875,13 @@ function drawTotalFireGauge() {
 
 function getWaterDrainPerMs() {
   if (difficulty <= 1) return 0;
-  return difficulty === 2 ? 0.0038 : 0.0052;
+  const tuned = currentDifficultyTuning || getDifficultyTuning(difficulty, currentLevel, fireSpots.length);
+  return clamp(Number(tuned.waterDrainPerMs || 0), 0, 0.01);
 }
 
 function resetWaterForLevel() {
-  waterCapacity = 100;
+  const tuned = currentDifficultyTuning || getDifficultyTuning(difficulty, currentLevel, fireSpots.length);
+  waterCapacity = clamp(Number(tuned.waterCapacity || 100), 60, 120);
   waterCurrent = waterCapacity;
 }
 
@@ -16697,7 +16857,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
       }
     }
     if (spot.health <= 0) return;
-    const regrowthChance = difficulty === 1 ? 0.015 : 0.022;
+    const regrowthChance = clamp(Number(currentDifficultyTuning?.regrowthChance ?? (difficulty === 1 ? 0.015 : 0.022)), 0.008, 0.04);
     if (Math.random() < regrowthChance) spot.health = Math.min(spot.health + (spot.growthRate || 4.2), spot.maxHealth);
     const healthPercent = spot.health / spot.maxHealth;
     const area = Math.max(1, spot.w * spot.h);
@@ -16722,10 +16882,13 @@ if (false && currentLevel === 11) drawPlacementGrid();
     for (let i = particles.length-1; i >= 0; i--) {
       const p = particles[i];
       if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
-        let damage = difficulty === 1 ? 0.11 : difficulty === 2 ? 0.08 : 0.06;
-        if (spot.isHay) damage = difficulty === 1 ? 0.032 : 0.022;
-        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05);
-        else if (spot.isVehicle) damage = difficulty === 1 ? 0.055 : 0.04;
+        const damageMult = clamp(Number(currentDifficultyTuning?.damageMult ?? 1), 0.72, 1.12);
+        const resistance = clamp(Number(spot.zoneResistance || 1), 0.62, 3.6);
+        let damage = (difficulty === 1 ? 0.10 : difficulty === 2 ? 0.068 : 0.050) * damageMult;
+        if (spot.isHay) damage = (difficulty === 1 ? 0.032 : 0.022) * damageMult;
+        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05) * damageMult;
+        else if (spot.isVehicle) damage = (difficulty === 1 ? 0.055 : 0.04) * damageMult;
+        damage /= resistance;
         if (!level9FireLock) spot.health -= damage;
         p.life = 8;
       }
