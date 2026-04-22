@@ -220,11 +220,23 @@ function Get-DefaultCategory([string]$path) {
   return 'misc'
 }
 
+function Test-BaseNameHasDimensions([string]$baseName) {
+  return [regex]::IsMatch([string]$baseName, '(?:^|[_-])\d{2,5}x\d{2,5}(?:$|[_-])', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+}
+
 function Get-DefaultOutputFileName([string]$path, [int]$width, [int]$height) {
   $ext = [IO.Path]::GetExtension([string]$path)
   if ($null -eq $ext) { $ext = '.webp' }
   $ext = $ext.ToLowerInvariant()
   $category = ConvertTo-Slug (Get-DefaultCategory -path $path)
+  $sourceBase = [IO.Path]::GetFileNameWithoutExtension([string]$path)
+  if (Test-BaseNameHasDimensions -baseName $sourceBase) {
+    $sourceBase = [regex]::Replace([string]$sourceBase, '^(animal|vehicle|building|nature|prop|scifi|misc|animals|vehicles|buildings|props)_', '')
+    $titleWithSize = ConvertTo-Slug($sourceBase)
+    if (-not [string]::IsNullOrWhiteSpace($titleWithSize)) {
+      return "${category}_${titleWithSize}${ext}"
+    }
+  }
   $title = ConvertTo-Slug (To-TitleFromFile -path $path)
   return "${category}_${title}_${width}x${height}${ext}"
 }
