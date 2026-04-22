@@ -2206,6 +2206,10 @@ const SPRITE_FILES = {
   , playgroundSwingLeft: 'prop_playground_swing_set_934x532.webp'
   , playgroundSlideTallLeft: 'prop_playground_slide_tall_silver_704x976.webp'
   , playgroundSlideShortLeft: 'prop_playground_slide_short_silver_704x564.webp'
+  animals_cowbwstand_1168x784: 'animals_cowbwstand_1168x784.webp',
+  animals_cowbwstand_1168x784_2: 'animals_cowbwstand_1168x784_2.webp',
+  animals_cowbweat_1168x784: 'animals_cowbweat_1168x784.webp',
+  animals_cat_gray_walking_1168x784: 'animals_cat_gray_walking_1168x784.webp',
 };
 
 const SPRITE_BASE_PATH = 'images/';
@@ -2344,6 +2348,10 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicle_sports_car_yellow_side_left_459x145.webp',
   'vehicle_tractor_436x238.webp',
   'vehicle_ufo.webp',
+  'animals_cowbwstand_1168x784.webp',
+  'animals_cowbwstand_1168x784_2.webp',
+  'animals_cowbweat_1168x784.webp',
+  'animals_cat_gray_walking_1168x784.webp',
 ];
 
 function normalizeSpriteToken(value) {
@@ -5394,6 +5402,32 @@ function builderAddUploadedImage(file) {
   reader.readAsDataURL(file);
 }
 
+function builderChooseUploadDestination(fileName = 'image') {
+  const response = prompt(
+    `Upload mode for ${fileName}:\n1 = Builder only (browser local)\n2 = Builder + local repo source update\n3 = Builder + local + online publish`,
+    '1'
+  );
+  const value = String(response || '').trim();
+  if (!value) return 'cancel';
+  if (value === '2') return 'localRepo';
+  if (value === '3') return 'publish';
+  return 'builderOnly';
+}
+
+function builderShowRepoUploadHint(mode, fileName = 'image') {
+  const localCmd = 'C:\\REPO\\github.io-main\\games\\firefighter-game\\tools\\apply-builder-images-local.cmd';
+  const publishCmd = 'C:\\REPO\\github.io-main\\games\\firefighter-game\\tools\\apply-builder-images-and-publish.cmd';
+  if (mode === 'localRepo') {
+    builderSetStatus(`Builder upload complete for ${fileName}. Drag this same image onto apply-builder-images-local.cmd to update source files.`);
+    alert(`Builder upload complete.\n\nTo also update source files locally, drag this image file onto:\n${localCmd}`);
+    return;
+  }
+  if (mode === 'publish') {
+    builderSetStatus(`Builder upload complete for ${fileName}. Drag this same image onto apply-builder-images-and-publish.cmd to update + push.`);
+    alert(`Builder upload complete.\n\nTo update local repos and publish, drag this image file onto:\n${publishCmd}`);
+  }
+}
+
 function builderRenderAssetList() {
   if (!BUILDER_UI.assetList) return;
   const query = (BUILDER_UI.assetSearch?.value || '').trim().toLowerCase();
@@ -5948,7 +5982,14 @@ function builderSaveSubmissionFile() {
   anchor.download = `${safeName || 'custom-level'}.kvfdsubmission.json`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
-        builderSetStatus('Submission saved. Run tools\\\\apply-builder-submission-local-qa.cmd for local apply + test + Commit/Undo.');
+  builderSetStatus('Submission saved. Drag the downloaded .kvfdsubmission.json onto apply-builder-submission-local-qa.cmd to apply/test with Commit/Undo.');
+  alert(
+    'Submission file downloaded.\\n\\n' +
+    'Next step:\\n' +
+    '1) Drag the downloaded .kvfdsubmission.json file onto:\\n' +
+    'C:\\\\REPO\\\\github.io-main\\\\games\\\\firefighter-game\\\\tools\\\\apply-builder-submission-local-qa.cmd\\n\\n' +
+    'That tool applies locally, opens the game for QA, and lets you choose Commit or Undo.'
+  );
 }
 
 function builderDrawHelpers() {
@@ -13691,7 +13732,13 @@ document.getElementById('builderUploadImageBtn')?.addEventListener('click', () =
 BUILDER_UI.uploadImageInput?.addEventListener('change', async (event) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
+  const uploadMode = builderChooseUploadDestination(file.name || 'image');
+  if (uploadMode === 'cancel') {
+    event.target.value = '';
+    return;
+  }
   builderAddUploadedImage(file);
+  builderShowRepoUploadHint(uploadMode, file.name || 'image');
   event.target.value = '';
 });
 BUILDER_UI.assetCategory?.addEventListener('change', () => builderRenderAssetList());
@@ -13701,7 +13748,13 @@ BUILDER_UI.captureImageBtn?.addEventListener('click', () => {
 BUILDER_UI.captureImageInput?.addEventListener('change', async (event) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
+  const uploadMode = builderChooseUploadDestination(file.name || 'image');
+  if (uploadMode === 'cancel') {
+    event.target.value = '';
+    return;
+  }
   builderAddUploadedImage(file);
+  builderShowRepoUploadHint(uploadMode, file.name || 'image');
   event.target.value = '';
 });
 BUILDER_UI.addLakeBtn?.addEventListener('click', () => {
@@ -14350,7 +14403,7 @@ attachDelayedExportTip('builderExportOfflineBtn', 'Download Offline Game (This L
 attachDelayedExportTip('builderExportFullGameBtn', 'Download Offline Game (No Custom Level): exports the base game files + assets only.');
 attachDelayedExportTip('builderImportBtn', 'Import Level Package: load a packaged level JSON into Builder.');
 attachDelayedExportTip('builderShareBtn', 'Copy Package JSON: copy this level package text to your clipboard.');
-      attachDelayedExportTip('builderSaveSubmissionBtn', 'Download Source Submission File: create `.kvfdsubmission.json`, then run tools\\\\apply-builder-submission-local-qa.cmd.');
+      attachDelayedExportTip('builderSaveSubmissionBtn', 'Download Source Submission File: create `.kvfdsubmission.json`, then drag it onto tools\\\\apply-builder-submission-local-qa.cmd.');
 attachDelayedExportTip('builderPrintBtn', 'Print Level Summary: print level details and integration information.');
 attachDelayedExportTip('builderTestBtn', 'Test Level: quick-play this level with your selected test difficulty.');
 attachDelayedExportTip('builderPublishBtn', 'Save To Game Slot: writes this level into browser-local slot override on this computer (not source file update).');
@@ -17182,6 +17235,10 @@ loop();
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
