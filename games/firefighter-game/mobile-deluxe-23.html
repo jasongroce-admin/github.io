@@ -463,6 +463,27 @@ button:hover { filter: brightness(1.2); }
   border-radius: 8px;
   background: rgba(8, 16, 28, 0.52);
 }
+.builder-field.movement-zone {
+  border-left-color: rgba(101, 228, 255, 0.85);
+  background: rgba(10, 34, 46, 0.58);
+}
+.builder-field.movement-zone label {
+  color: #a8eaff;
+}
+.builder-field.weapon-zone {
+  border-left-color: rgba(255, 135, 90, 0.9);
+  background: rgba(46, 22, 18, 0.58);
+}
+.builder-field.weapon-zone label {
+  color: #ffd1b8;
+}
+.builder-field.formation-zone {
+  border-left-color: rgba(196, 148, 255, 0.88);
+  background: rgba(34, 20, 50, 0.58);
+}
+.builder-field.formation-zone label {
+  color: #e7d5ff;
+}
 .builder-field label {
   font-size: 12px;
   color: #a7bdd9;
@@ -965,6 +986,9 @@ button:hover { filter: brightness(1.2); }
 #builderTopSelectedColumn .builder-section > summary {
   background: linear-gradient(180deg, rgba(24, 69, 112, 0.84), rgba(13, 39, 64, 0.86));
 }
+#builderTopPrimaryColumn .builder-section > summary {
+  background: linear-gradient(180deg, rgba(96, 68, 22, 0.88), rgba(66, 44, 12, 0.88));
+}
 #builderTopLevelColumn .builder-section > summary {
   background: linear-gradient(180deg, rgba(32, 94, 85, 0.84), rgba(14, 54, 49, 0.86));
 }
@@ -1416,6 +1440,7 @@ button:hover { filter: brightness(1.2); }
         <select id="builderAssetCategory">
           <option value="all">All</option>
           <option value="vehicles">Vehicles</option>
+          <option value="military">Military</option>
           <option value="animals">Animals</option>
           <option value="buildings">Buildings</option>
           <option value="nature">Nature</option>
@@ -1433,7 +1458,7 @@ button:hover { filter: brightness(1.2); }
         <div id="builderAssetList"></div>
         <div id="builderTips">
           Drag a model onto the canvas, or tap a model then tap canvas to place.
-        Snap grid is on by default. Resize range is clamped to 60% - 140%.
+        Snap grid is on by default. Resize range supports very small to large scaling.
         </div>
         <div id="builderLegalNote" class="builder-legal-note">
           Game copyright stays with Jason Groce. Level creator credit will be saved from your creator name.
@@ -1485,7 +1510,7 @@ button:hover { filter: brightness(1.2); }
           <textarea id="builderSafetyTip" maxlength="220" readonly></textarea>
         </div>
         <div class="builder-field">
-          <label for="builderTruckSide">Truck Side</label>
+          <label for="builderTruckSide">Primary Vehicle Side</label>
           <select id="builderTruckSide">
             <option value="left">Left</option>
             <option value="right">Right</option>
@@ -1497,6 +1522,66 @@ button:hover { filter: brightness(1.2); }
             <option value="standard">Standard</option>
             <option value="scifi">Sci-Fi</option>
           </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderPrimaryVehicleSprite">Primary Vehicle Sprite (Replace Truck)</label>
+          <select id="builderPrimaryVehicleSprite">
+            <option value="">Default (Theme Engine)</option>
+          </select>
+          <div class="builder-mini-actions" style="margin-top:8px;">
+            <button id="builderSetPrimaryFromSelectedBtn" type="button" class="alt">Use Selected Layer As Primary</button>
+          </div>
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderPrimaryVehicleFacingBase">Primary Vehicle Facing (Source Art)</label>
+          <select id="builderPrimaryVehicleFacingBase">
+            <option value="right">&#8594; Facing Right</option>
+            <option value="left">&#8592; Facing Left</option>
+          </select>
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderPrimaryVehicleFlight">Primary Vehicle Flight Mode</label>
+          <select id="builderPrimaryVehicleFlight">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderPrimaryAttackMode">Primary Attack Mode</label>
+          <select id="builderPrimaryAttackMode">
+            <option value="water">Water</option>
+            <option value="laser">Laser</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderPrimaryLaserTankerRefill">Laser Mode Tanker Refill</label>
+          <select id="builderPrimaryLaserTankerRefill">
+            <option value="1">On</option>
+            <option value="0">Off</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderPrimaryLaserColor">Primary Laser Color</label>
+          <input id="builderPrimaryLaserColor" type="color" value="#4bb8ff">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderPrimaryRocketType">Primary Rocket Type (E)</label>
+          <select id="builderPrimaryRocketType">
+            <option value="rocket">Rocket</option>
+            <option value="plasma">Plasma Burst</option>
+            <option value="missile">Missile</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderPrimaryRocketColor">Primary Rocket Color</label>
+          <input id="builderPrimaryRocketColor" type="color" value="#9ad8ff">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderPrimaryVehicleScale">Primary Vehicle Size</label>
+          <div class="builder-dual-input">
+            <input id="builderPrimaryVehicleScale" type="range" min="0" max="2.6" step="0.01" value="0.5">
+            <input id="builderPrimaryVehicleScaleNumber" type="number" min="0" max="2.6" step="0.01" value="0.5">
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderTruckEntryDelay">Truck Entrance Delay (ms)</label>
@@ -1619,8 +1704,8 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label for="builderObjScale">Selected Scale</label>
           <div class="builder-dual-input">
-            <input id="builderObjScale" type="range" min="0.2" max="2.8" step="0.01">
-            <input id="builderObjScaleNumber" type="number" min="0.2" max="2.8" step="0.01">
+            <input id="builderObjScale" type="range" min="0.01" max="2.8" step="0.005">
+            <input id="builderObjScaleNumber" type="number" min="0.01" max="2.8" step="0.005">
           </div>
         </div>
         <div class="builder-field">
@@ -1869,6 +1954,155 @@ button:hover { filter: brightness(1.2); }
         <div class="builder-field">
           <label for="builderAnimalBonusPoints">Animal Bonus Points</label>
           <input id="builderAnimalBonusPoints" type="number" min="0" max="50" step="1" value="0">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyEnabled">Enemy</label>
+          <select id="builderLayerEnemyEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerEnemyModelKey">Enemy Model</label>
+          <select id="builderLayerEnemyModelKey"></select>
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerEnemyCount">Enemy Count</label>
+          <input id="builderLayerEnemyCount" type="number" min="1" max="30" step="1" value="1">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemySpawnDirection">Enemy Arrival Direction</label>
+          <select id="builderLayerEnemySpawnDirection">
+            <option value="both">Both Sides</option>
+            <option value="left">Left Only</option>
+            <option value="right">Right Only</option>
+          </select>
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemySpawnMinDelayMs">Enemy Spawn Min Delay (ms)</label>
+          <input id="builderLayerEnemySpawnMinDelayMs" type="number" min="80" max="5000" step="20" value="300">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemySpawnMaxDelayMs">Enemy Spawn Max Delay (ms)</label>
+          <input id="builderLayerEnemySpawnMaxDelayMs" type="number" min="120" max="10000" step="20" value="1200">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyScaleMin">Enemy Size Min</label>
+          <input id="builderLayerEnemyScaleMin" type="number" min="0.1" max="3" step="0.05" value="0.55">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyScaleMax">Enemy Size Max</label>
+          <input id="builderLayerEnemyScaleMax" type="number" min="0.1" max="3" step="0.05" value="1.1">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerFightBackEnabled">Fight Back If Attacked</label>
+          <select id="builderLayerFightBackEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerFlightEnabled">Flight Enabled (Unlocked Layer)</label>
+          <select id="builderLayerFlightEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerFlightSpeed">Flight Speed</label>
+          <input id="builderLayerFlightSpeed" type="range" min="0.5" max="8" step="0.1" value="2.4">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerLaserEnabled">Shoot Laser</label>
+          <select id="builderLayerLaserEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerLaserDamage">Laser Damage</label>
+          <input id="builderLayerLaserDamage" type="range" min="1" max="30" step="1" value="8">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerLaserCooldownMs">Laser Cooldown (ms)</label>
+          <input id="builderLayerLaserCooldownMs" type="number" min="40" max="3000" step="10" value="300">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerBombEnabled">Drop Bombs</label>
+          <select id="builderLayerBombEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerBombDamage">Bomb Damage</label>
+          <input id="builderLayerBombDamage" type="range" min="1" max="80" step="1" value="16">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerBombCooldownMs">Bomb Cooldown (ms)</label>
+          <input id="builderLayerBombCooldownMs" type="number" min="120" max="5000" step="20" value="1200">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerEnemyLaserColor">Enemy Laser Color</label>
+          <input id="builderLayerEnemyLaserColor" type="color" value="#ff5772">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerEnemyBombType">Enemy Bomb Type</label>
+          <select id="builderLayerEnemyBombType">
+            <option value="bomb">Bomb</option>
+            <option value="plasma">Plasma</option>
+            <option value="mine">Mine</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerEnemyBombColor">Enemy Bomb Color</label>
+          <input id="builderLayerEnemyBombColor" type="color" value="#ffa047">
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerAggressiveEnabled">Aggressive AI</label>
+          <select id="builderLayerAggressiveEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerAggressiveSkill">Aggressive Skill</label>
+          <input id="builderLayerAggressiveSkill" type="range" min="0.2" max="2.5" step="0.1" value="1">
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerAggressiveTargetId">Aggressive Target</label>
+          <select id="builderLayerAggressiveTargetId"></select>
+          <div class="builder-mini-actions" style="margin-top:8px;">
+            <button id="builderLayerPickTargetBtn" type="button" class="alt">Quick Select Target</button>
+          </div>
+        </div>
+        <div class="builder-field weapon-zone">
+          <label for="builderLayerAllowLaserDamage">Can Receive Laser Damage</label>
+          <select id="builderLayerAllowLaserDamage">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerRaidFormationEnabled">Formation Wave Attack</label>
+          <select id="builderLayerRaidFormationEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerRaidFormationCount">Formation Wave Count</label>
+          <input id="builderLayerRaidFormationCount" type="number" min="1" max="12" step="1" value="3">
+        </div>
+        <div class="builder-field formation-zone">
+          <label for="builderLayerRaidFormationPattern">Formation Pattern</label>
+          <select id="builderLayerRaidFormationPattern">
+            <option value="vee">V Sweep</option>
+            <option value="line">Line</option>
+            <option value="arc">Arc</option>
+            <option value="zigzag">Zig-Zag</option>
+            <option value="swoop">Swoop</option>
+          </select>
         </div>
         <div class="builder-field">
           <label for="builderLayerPathEnabled">Enable Moving Path</label>
@@ -2219,14 +2453,14 @@ const SPRITE_FILES = {
   scifi_background_alienplanet_redvolcano_wide_792x276: 'scifi_background_alienplanet_redvolcano_wide_792x276.webp',
   scifi_background_alienplanet1_wide_792x276: 'scifi_background_alienplanet1_wide_792x276.webp',
   scifi_background_alienplanet3_wide_792x276: 'scifi_background_alienplanet3_wide_792x276.webp',
-  vehicles_vehicle_armoredtransport_459x145: 'vehicles_vehicle_armoredtransport_459x145.webp',
-  vehicles_vehicle_cargohauler_792x276: 'vehicles_vehicle_cargohauler_792x276.webp',
-  vehicles_vehicle_fighter_459x145: 'vehicles_vehicle_fighter_459x145.webp',
-  vehicles_vehicle_flyingpod_459x145: 'vehicles_vehicle_flyingpod_459x145.webp',
-  vehicles_vehicle_hoverbike_459x145: 'vehicles_vehicle_hoverbike_459x145.webp',
-  vehicles_vehicle_hovercar_compact_459x145: 'vehicles_vehicle_hovercar_compact_459x145.webp',
-  vehicles_vehicle_mechwarrior_heavy_792x276: 'vehicles_vehicle_mechwarrior_heavy_792x276.webp',
-  vehicles_vehicle_mechwarrior_light_459x145: 'vehicles_vehicle_mechwarrior_light_459x145.webp',
+  scifi_vehicle_armoredtransport_459x145: 'scifi_vehicle_armoredtransport_459x145.webp',
+  scifi_vehicle_cargohauler_792x276: 'scifi_vehicle_cargohauler_792x276.webp',
+  scifi_vehicle_fighter_459x145: 'scifi_vehicle_fighter_459x145.webp',
+  scifi_vehicle_flyingpod_459x145: 'scifi_vehicle_flyingpod_459x145.webp',
+  scifi_vehicle_hoverbike_459x145: 'scifi_vehicle_hoverbike_459x145.webp',
+  scifi_vehicle_hovercar_compact_459x145: 'scifi_vehicle_hovercar_compact_459x145.webp',
+  scifi_vehicle_mechwarrior_heavy_792x276: 'scifi_vehicle_mechwarrior_heavy_792x276.webp',
+  scifi_vehicle_mechwarrior_light_459x145: 'scifi_vehicle_mechwarrior_light_459x145.webp',
   animals_bigcat_jaguar_standing_459x145: 'animals_bigcat_jaguar_standing_459x145.webp',
   animals_bigcat_leopard_crouching_459x145: 'animals_bigcat_leopard_crouching_459x145.webp',
   animals_bigcat_tiger_walking_459x145: 'animals_bigcat_tiger_walking_459x145.webp',
@@ -2407,14 +2641,14 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'scifi_background_alienplanet_redvolcano_wide_792x276.webp',
   'scifi_background_alienplanet1_wide_792x276.webp',
   'scifi_background_alienplanet3_wide_792x276.webp',
-  'vehicles_vehicle_armoredtransport_459x145.webp',
-  'vehicles_vehicle_cargohauler_792x276.webp',
-  'vehicles_vehicle_fighter_459x145.webp',
-  'vehicles_vehicle_flyingpod_459x145.webp',
-  'vehicles_vehicle_hoverbike_459x145.webp',
-  'vehicles_vehicle_hovercar_compact_459x145.webp',
-  'vehicles_vehicle_mechwarrior_heavy_792x276.webp',
-  'vehicles_vehicle_mechwarrior_light_459x145.webp',
+  'scifi_vehicle_armoredtransport_459x145.webp',
+  'scifi_vehicle_cargohauler_792x276.webp',
+  'scifi_vehicle_fighter_459x145.webp',
+  'scifi_vehicle_flyingpod_459x145.webp',
+  'scifi_vehicle_hoverbike_459x145.webp',
+  'scifi_vehicle_hovercar_compact_459x145.webp',
+  'scifi_vehicle_mechwarrior_heavy_792x276.webp',
+  'scifi_vehicle_mechwarrior_light_459x145.webp',
   'animals_bigcat_jaguar_standing_459x145.webp',
   'animals_bigcat_leopard_crouching_459x145.webp',
   'animals_bigcat_tiger_walking_459x145.webp',
@@ -2781,6 +3015,10 @@ function preloadLevelSprites(lvl) {
     needed.add('horseEatRight');
   }
   const entities = baseLevels[lvl - 1]?.entities || [];
+  const levelData = baseLevels[lvl - 1] || {};
+  const primaryVehicleSprite = resolveSpriteKey(levelData?.primaryVehicleSprite || '');
+  if (primaryVehicleSprite) needed.add(primaryVehicleSprite);
+  normalizeEnemyModelKeyList(levelData?.enemyRaid?.modelKeys || levelData?.enemyModelKeys || '').forEach((key) => needed.add(key));
   entities.forEach((ent) => {
     if (ent.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) {
       needed.add(ent.spriteKey);
@@ -3530,12 +3768,18 @@ function getEntityBounds(ent) {
       : (baseLevels[currentLevel - 1]?.truckSide === 'right' ? 'right' : 'left');
     const lane = side === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
     const renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
-    const key = getEngineSpriteKeyForTruckSide(side, builderState || {});
-    const layout = ENTITY_LAYOUT.engine;
     const truckX = (gameState === 'builder')
       ? clamp(Number(builderState?.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX)
       : clamp(Number(truck.x ?? lane.spawnX), lane.minX, lane.maxX);
-    return getSpriteFitRect(key, truckX + layout.x * renderScale, getTruckY() - (layout.h * renderScale), layout.w * renderScale, layout.h * renderScale, true);
+    const facing = side === 'right' ? -1 : 1;
+    const spec = getTruckSpriteRenderSpec(
+      builderState || baseLevels[currentLevel - 1] || {},
+      facing,
+      renderScale,
+      truckX,
+      gameState === 'builder' ? FIRETRUCK_LANE_Y : getTruckY()
+    );
+    return spec ? { x: spec.x, y: spec.y, w: spec.w, h: spec.h } : null;
   }
   if (ent.type === 'ufo') return getSpriteFitRect('ufo', ent.x + ENTITY_LAYOUT.ufo.x, ent.y || 90, ENTITY_LAYOUT.ufo.w, ENTITY_LAYOUT.ufo.h, true);
   if (ent.type === 'bikeRed') return getSpriteFitRect('bikeRed', ent.x + ENTITY_LAYOUT.bikeRed.x, gy - ENTITY_LAYOUT.bikeRed.h, ENTITY_LAYOUT.bikeRed.w, ENTITY_LAYOUT.bikeRed.h, true);
@@ -3548,11 +3792,9 @@ function getEntityBounds(ent) {
 }
 
 function getTruckDrawRect() {
-  const key = getEngineSpriteKeyForTruckFacing(truckFacing);
-  const layout = ENTITY_LAYOUT.engine;
-  const truckY = getTruckY();
-  const scale = getTruckRenderScale();
-  return getSpriteFitRect(key, truck.x + layout.x * scale, truckY - (layout.h * scale), layout.w * scale, layout.h * scale, true);
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const spec = getTruckSpriteRenderSpec(levelData, truckFacing, getTruckRenderScale(), truck.x, getTruckY());
+  return spec ? { x: spec.x, y: spec.y, w: spec.w, h: spec.h } : { x: truck.x, y: getTruckY() - 120, w: 220, h: 120 };
 }
 
 function rectsOverlap(a, b) {
@@ -3656,7 +3898,9 @@ let levelStartScore = 0;
 let mouseX = 500, mouseY = 300;
 let isSpraying = false;
 let isLaserFiring = false;
+let isRocketFiring = false;
 let lastLaserPulseAt = 0;
+let lastRocketPulseAt = 0;
 let gameState = 'title';
 let currentLevel = 1;
 let difficulty = 2;
@@ -3670,6 +3914,8 @@ let dispatchAutoAdvance = null;
 let pendingDispatchLevel = null;
 let truckDrive = 0;
 let truckFacing = 1;
+let truckFlightInput = 0;
+let truckFlightBoost = 0;
 let levelElapsedMs = 0;
 let lastFrameTime = 0;
 let tankerSupport = null;
@@ -3694,6 +3940,10 @@ let levelHorseEvent = null;
 let tornadoCompleted = false;
 let tornadoState = null;
 let pendingTornadoFireSpotsByKey = new Map();
+let enemyRaidState = null;
+let enemyLaserShots = [];
+let enemyBombShots = [];
+let playerRocketShots = [];
 let waterCapacity = 100;
 let waterCurrent = 100;
 let currentDifficultyTuning = null;
@@ -3708,6 +3958,7 @@ let builderPendingEntityType = null;
 let builderTool = 'select';
 let builderPointer = { active: false, mode: '', entityId: null, offsetX: 0, offsetY: 0, startScale: 1, startDist: 1 };
 let builderTornadoRoutePick = { active: false, phase: 0, entityId: null };
+let builderTargetPickMode = false;
 let builderTankerHintTimer = null;
 let builderTestLevelIndex = null;
 let builderLastPlaceAt = 0;
@@ -3749,6 +4000,17 @@ const BUILDER_UI = {
   tip: document.getElementById('builderSafetyTip'),
   truckSide: document.getElementById('builderTruckSide'),
   fireTruckTheme: document.getElementById('builderFireTruckTheme'),
+  primaryVehicleSprite: document.getElementById('builderPrimaryVehicleSprite'),
+  setPrimaryFromSelectedBtn: document.getElementById('builderSetPrimaryFromSelectedBtn'),
+  primaryVehicleFacingBase: document.getElementById('builderPrimaryVehicleFacingBase'),
+  primaryVehicleFlight: document.getElementById('builderPrimaryVehicleFlight'),
+  primaryAttackMode: document.getElementById('builderPrimaryAttackMode'),
+  primaryLaserTankerRefill: document.getElementById('builderPrimaryLaserTankerRefill'),
+  primaryLaserColor: document.getElementById('builderPrimaryLaserColor'),
+  primaryRocketType: document.getElementById('builderPrimaryRocketType'),
+  primaryRocketColor: document.getElementById('builderPrimaryRocketColor'),
+  primaryVehicleScale: document.getElementById('builderPrimaryVehicleScale'),
+  primaryVehicleScaleNumber: document.getElementById('builderPrimaryVehicleScaleNumber'),
   truckEntryDelayRange: document.getElementById('builderTruckEntryDelayRange'),
   truckEntryDelay: document.getElementById('builderTruckEntryDelay'),
   timeOfDay: document.getElementById('builderTimeOfDay'),
@@ -3849,6 +4111,34 @@ const BUILDER_UI = {
   animalExitDirection: document.getElementById('builderAnimalExitDirection'),
   animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
   animalBonusPoints: document.getElementById('builderAnimalBonusPoints'),
+  layerEnemyEnabled: document.getElementById('builderLayerEnemyEnabled'),
+  layerEnemyModelKey: document.getElementById('builderLayerEnemyModelKey'),
+  layerEnemyCount: document.getElementById('builderLayerEnemyCount'),
+  layerEnemySpawnDirection: document.getElementById('builderLayerEnemySpawnDirection'),
+  layerEnemySpawnMinDelayMs: document.getElementById('builderLayerEnemySpawnMinDelayMs'),
+  layerEnemySpawnMaxDelayMs: document.getElementById('builderLayerEnemySpawnMaxDelayMs'),
+  layerEnemyScaleMin: document.getElementById('builderLayerEnemyScaleMin'),
+  layerEnemyScaleMax: document.getElementById('builderLayerEnemyScaleMax'),
+  layerFightBackEnabled: document.getElementById('builderLayerFightBackEnabled'),
+  layerFlightEnabled: document.getElementById('builderLayerFlightEnabled'),
+  layerFlightSpeed: document.getElementById('builderLayerFlightSpeed'),
+  layerLaserEnabled: document.getElementById('builderLayerLaserEnabled'),
+  layerLaserDamage: document.getElementById('builderLayerLaserDamage'),
+  layerLaserCooldownMs: document.getElementById('builderLayerLaserCooldownMs'),
+  layerBombEnabled: document.getElementById('builderLayerBombEnabled'),
+  layerBombDamage: document.getElementById('builderLayerBombDamage'),
+  layerBombCooldownMs: document.getElementById('builderLayerBombCooldownMs'),
+  layerEnemyLaserColor: document.getElementById('builderLayerEnemyLaserColor'),
+  layerEnemyBombType: document.getElementById('builderLayerEnemyBombType'),
+  layerEnemyBombColor: document.getElementById('builderLayerEnemyBombColor'),
+  layerAggressiveEnabled: document.getElementById('builderLayerAggressiveEnabled'),
+  layerAggressiveSkill: document.getElementById('builderLayerAggressiveSkill'),
+  layerAggressiveTargetId: document.getElementById('builderLayerAggressiveTargetId'),
+  layerPickTargetBtn: document.getElementById('builderLayerPickTargetBtn'),
+  layerAllowLaserDamage: document.getElementById('builderLayerAllowLaserDamage'),
+  layerRaidFormationEnabled: document.getElementById('builderLayerRaidFormationEnabled'),
+  layerRaidFormationCount: document.getElementById('builderLayerRaidFormationCount'),
+  layerRaidFormationPattern: document.getElementById('builderLayerRaidFormationPattern'),
   legalNote: document.getElementById('builderLegalNote'),
   uploadImageInput: document.getElementById('builderUploadImageInput'),
   captureImageInput: document.getElementById('builderCaptureImageInput')
@@ -3862,6 +4152,13 @@ function createEmptyBuilderLevel() {
     safetyTip: 'Use the builder tools to set fire behavior and test your custom scene.',
     truckSide: 'left',
     fireTruckTheme: 'standard',
+    primaryAttackMode: 'water',
+    primaryLaserTankerRefill: true,
+    primaryLaserColor: '#4bb8ff',
+    primaryRocketType: 'rocket',
+    primaryRocketColor: '#9ad8ff',
+    primaryVehicleFacingBase: 'right',
+    primaryVehicleScale: 1,
     truckPlaced: true,
     truckEntryDelayMs: 0,
     timeOfDay: 0,
@@ -3885,6 +4182,7 @@ let builderTourIndex = -1;
 const BUILDER_TOUR_STEPS = [
   { selector: '#builderAssetList', title: 'Asset Library', body: 'Pick any model or uploaded image, then click the canvas once to place it.' },
   { selector: '#builderTopSelectedSection', title: 'Layers', body: 'Use this column for layer stack and selected WebP properties.' },
+  { selector: '#builderTopPrimarySection', title: 'Primary Vehicle', body: 'Set your main vehicle type, side, movement, and weapon behavior in one place.' },
   { selector: '#builderTopLevelSection', title: 'Level Properties', body: 'Set level title, creator, background, and load/save slot settings here.' },
   { selector: '#builderBurnZonesWrap', title: 'Burn Boxes', body: 'Toggle boxes on/off and set each box to Easy, Medium, or Hard intensity.' },
   { selector: '#builderTestDifficulty', title: 'Test Difficulty', body: 'Choose Easy, Medium, or Hard before Quick Play to test fire challenge levels.' },
@@ -4257,6 +4555,8 @@ function builderSyncLevelOptionVisibility() {
   ].forEach((id) => builderSetFieldVisibility(id, tornadoOn));
   const returnOn = tornadoOn && BUILDER_UI.tornadoReturnEnabled?.value === '1';
   builderSetFieldVisibility('builderTornadoReturnPercent', returnOn);
+  const laserPrimary = BUILDER_UI.primaryAttackMode?.value === 'laser';
+  builderSetFieldVisibility('builderPrimaryLaserTankerRefill', laserPrimary);
   const selectedForTornado = tornadoOn && !!selected;
   const affectedByTornado = selectedForTornado && (BUILDER_UI.layerTornadoFall?.value === '1');
   builderSetFieldVisibility('builderLayerTornadoFall', selectedForTornado);
@@ -4280,6 +4580,69 @@ function builderSyncLevelOptionVisibility() {
   builderSetFieldVisibility('builderLayerPathEndY', pathMaster);
   builderSetFieldVisibility('builderLayerPathDurationMs', pathMaster);
   builderSetFieldVisibility('builderLayerPathPauseMs', pathMaster);
+  const selectedSpriteKey = getLegacySpriteKeyForBuilder(selected);
+  const spriteSelected = !!selected && !!selectedSpriteKey;
+  const enemyOn = spriteSelected && BUILDER_UI.layerEnemyEnabled?.value === '1';
+  [
+    'builderLayerEnemyEnabled',
+    'builderLayerEnemyModelKey',
+    'builderLayerEnemyCount',
+    'builderLayerEnemySpawnDirection',
+    'builderLayerEnemySpawnMinDelayMs',
+    'builderLayerEnemySpawnMaxDelayMs',
+    'builderLayerEnemyScaleMin',
+    'builderLayerEnemyScaleMax',
+    'builderLayerFightBackEnabled',
+    'builderLayerFlightEnabled',
+    'builderLayerFlightSpeed',
+    'builderLayerLaserEnabled',
+    'builderLayerLaserDamage',
+    'builderLayerLaserCooldownMs',
+    'builderLayerBombEnabled',
+    'builderLayerBombDamage',
+    'builderLayerBombCooldownMs',
+    'builderLayerEnemyLaserColor',
+    'builderLayerEnemyBombType',
+    'builderLayerEnemyBombColor',
+    'builderLayerAggressiveEnabled',
+    'builderLayerAggressiveSkill',
+    'builderLayerAggressiveTargetId',
+    'builderLayerPickTargetBtn',
+    'builderLayerAllowLaserDamage',
+    'builderLayerRaidFormationEnabled',
+    'builderLayerRaidFormationCount',
+    'builderLayerRaidFormationPattern'
+  ].forEach((id) => builderSetFieldVisibility(id, spriteSelected));
+  [
+    'builderLayerEnemyModelKey',
+    'builderLayerEnemyCount',
+    'builderLayerEnemySpawnDirection',
+    'builderLayerEnemySpawnMinDelayMs',
+    'builderLayerEnemySpawnMaxDelayMs',
+    'builderLayerEnemyScaleMin',
+    'builderLayerEnemyScaleMax',
+    'builderLayerFightBackEnabled',
+    'builderLayerFlightEnabled',
+    'builderLayerFlightSpeed',
+    'builderLayerLaserEnabled',
+    'builderLayerLaserDamage',
+    'builderLayerLaserCooldownMs',
+    'builderLayerBombEnabled',
+    'builderLayerBombDamage',
+    'builderLayerBombCooldownMs',
+    'builderLayerEnemyLaserColor',
+    'builderLayerEnemyBombType',
+    'builderLayerEnemyBombColor',
+    'builderLayerAggressiveEnabled',
+    'builderLayerAggressiveSkill',
+    'builderLayerAggressiveTargetId',
+    'builderLayerPickTargetBtn',
+    'builderLayerAllowLaserDamage',
+    'builderLayerRaidFormationEnabled'
+  ].forEach((id) => builderSetFieldVisibility(id, enemyOn));
+  const formationOn = enemyOn && BUILDER_UI.layerRaidFormationEnabled?.value === '1';
+  builderSetFieldVisibility('builderLayerRaidFormationCount', formationOn);
+  builderSetFieldVisibility('builderLayerRaidFormationPattern', formationOn);
 }
 
 function builderRecalculateRightPanelWidth() {
@@ -4288,6 +4651,7 @@ function builderRecalculateRightPanelWidth() {
   const topSections = document.querySelector('#builderRightPanel .builder-top-sections');
   const cols = [
     document.getElementById('builderTopSelectedColumn'),
+    document.getElementById('builderTopPrimaryColumn'),
     document.getElementById('builderTopLevelColumn'),
     document.getElementById('builderTopExportColumn')
   ].filter(Boolean);
@@ -4329,10 +4693,12 @@ function builderRecalculateRightPanelWidth() {
 function builderUpdateTopColumnOrder() {
   const topSections = document.querySelector('#builderRightPanel .builder-top-sections');
   const selectedCol = document.getElementById('builderTopSelectedColumn');
+  const primaryCol = document.getElementById('builderTopPrimaryColumn');
   const levelCol = document.getElementById('builderTopLevelColumn');
   const exportCol = document.getElementById('builderTopExportColumn');
-  if (!topSections || !selectedCol || !levelCol || !exportCol) return;
+  if (!topSections || !selectedCol || !primaryCol || !levelCol || !exportCol) return;
   topSections.appendChild(selectedCol);
+  topSections.appendChild(primaryCol);
   topSections.appendChild(levelCol);
   topSections.appendChild(exportCol);
   builderRecalculateRightPanelWidth();
@@ -4353,9 +4719,11 @@ function builderApplyStateToUi() {
   if (!BUILDER_UI.name) return;
   const rightBody = document.querySelector('#builderRightPanel .builder-body');
   const selectedContent = document.querySelector('#builderTopSelectedSection .section-content');
+  const primaryContent = document.querySelector('#builderTopPrimarySection .section-content');
   const levelContent = document.querySelector('#builderTopLevelSection .section-content');
   const rightScroll = rightBody?.scrollTop ?? 0;
   const selectedScroll = selectedContent?.scrollTop ?? 0;
+  const primaryScroll = primaryContent?.scrollTop ?? 0;
   const levelScroll = levelContent?.scrollTop ?? 0;
   builderApplyAutoSafetyTip();
   BUILDER_UI.name.value = builderState.name || '';
@@ -4364,6 +4732,19 @@ function builderApplyStateToUi() {
   BUILDER_UI.tip.value = builderState.safetyTip || '';
   BUILDER_UI.truckSide.value = (builderState.truckSide === 'right') ? 'right' : 'left';
   if (BUILDER_UI.fireTruckTheme) BUILDER_UI.fireTruckTheme.value = builderState.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
+  builderPopulatePrimaryVehicleOptions();
+  if (BUILDER_UI.primaryVehicleSprite) BUILDER_UI.primaryVehicleSprite.value = String(builderState.primaryVehicleSprite || '');
+  if (BUILDER_UI.primaryVehicleFacingBase) BUILDER_UI.primaryVehicleFacingBase.value = builderState.primaryVehicleFacingBase === 'left' ? 'left' : 'right';
+  if (BUILDER_UI.primaryVehicleFlight) BUILDER_UI.primaryVehicleFlight.value = builderState.primaryVehicleFlight ? '1' : '0';
+  if (BUILDER_UI.primaryAttackMode) BUILDER_UI.primaryAttackMode.value = builderState.primaryAttackMode === 'laser' ? 'laser' : 'water';
+  if (BUILDER_UI.primaryLaserTankerRefill) BUILDER_UI.primaryLaserTankerRefill.value = builderState.primaryLaserTankerRefill === false ? '0' : '1';
+  if (BUILDER_UI.primaryLaserColor) BUILDER_UI.primaryLaserColor.value = /^#[0-9a-fA-F]{6}$/.test(String(builderState.primaryLaserColor || '')) ? String(builderState.primaryLaserColor) : '#4bb8ff';
+  if (BUILDER_UI.primaryRocketType) BUILDER_UI.primaryRocketType.value = (builderState.primaryRocketType === 'plasma' || builderState.primaryRocketType === 'missile') ? builderState.primaryRocketType : 'rocket';
+  if (BUILDER_UI.primaryRocketColor) BUILDER_UI.primaryRocketColor.value = /^#[0-9a-fA-F]{6}$/.test(String(builderState.primaryRocketColor || '')) ? String(builderState.primaryRocketColor) : '#9ad8ff';
+  const primaryScaleDefault = builderState.primaryVehicleSprite ? 0.5 : 1;
+  const primaryScale = clamp(Number(builderState.primaryVehicleScale ?? primaryScaleDefault), 0, 2.6);
+  if (BUILDER_UI.primaryVehicleScale) BUILDER_UI.primaryVehicleScale.value = String(primaryScale);
+  if (BUILDER_UI.primaryVehicleScaleNumber) BUILDER_UI.primaryVehicleScaleNumber.value = primaryScale.toFixed(2);
   if (BUILDER_UI.truckEntryDelay) BUILDER_UI.truckEntryDelay.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
   if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = String(clamp(Number(builderState.truckEntryDelayMs ?? 0), 0, 120000));
   const truckField = BUILDER_UI.truckSide?.closest('.builder-field');
@@ -4443,6 +4824,35 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.layerPathDurationMsRange) BUILDER_UI.layerPathDurationMsRange.value = String(clamp(Number(selected?.pathDurationMs ?? 2400), 200, 120000));
   if (BUILDER_UI.layerPathPauseMs) BUILDER_UI.layerPathPauseMs.value = String(clamp(Number(selected?.pathPauseMs ?? 0), 0, 60000));
   if (BUILDER_UI.layerPathPauseMsRange) BUILDER_UI.layerPathPauseMsRange.value = String(clamp(Number(selected?.pathPauseMs ?? 0), 0, 60000));
+  builderPopulateLayerEnemyModelOptions(selected);
+  if (BUILDER_UI.layerEnemyEnabled) BUILDER_UI.layerEnemyEnabled.value = selected?.enemyEnabled ? '1' : '0';
+  if (BUILDER_UI.layerEnemyModelKey) BUILDER_UI.layerEnemyModelKey.value = String(selected?.enemyModelKey || '');
+  if (BUILDER_UI.layerEnemyCount) BUILDER_UI.layerEnemyCount.value = String(clamp(Number(selected?.enemyCount ?? 1), 1, 30));
+  if (BUILDER_UI.layerEnemySpawnDirection) BUILDER_UI.layerEnemySpawnDirection.value = (selected?.enemySpawnDirection === 'left' || selected?.enemySpawnDirection === 'right') ? selected.enemySpawnDirection : 'both';
+  if (BUILDER_UI.layerEnemySpawnMinDelayMs) BUILDER_UI.layerEnemySpawnMinDelayMs.value = String(clamp(Number(selected?.enemySpawnMinDelayMs ?? 300), 80, 5000));
+  if (BUILDER_UI.layerEnemySpawnMaxDelayMs) BUILDER_UI.layerEnemySpawnMaxDelayMs.value = String(clamp(Number(selected?.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+  if (BUILDER_UI.layerEnemyScaleMin) BUILDER_UI.layerEnemyScaleMin.value = String(clamp(Number(selected?.enemyScaleMin ?? 0.55), 0.1, 3));
+  if (BUILDER_UI.layerEnemyScaleMax) BUILDER_UI.layerEnemyScaleMax.value = String(clamp(Number(selected?.enemyScaleMax ?? 1.1), 0.1, 3));
+  if (BUILDER_UI.layerFightBackEnabled) BUILDER_UI.layerFightBackEnabled.value = selected?.fightBackEnabled ? '1' : '0';
+  if (BUILDER_UI.layerFlightEnabled) BUILDER_UI.layerFlightEnabled.value = selected?.flightEnabled ? '1' : '0';
+  if (BUILDER_UI.layerFlightSpeed) BUILDER_UI.layerFlightSpeed.value = String(clamp(Number(selected?.flightSpeed ?? 2.4), 0.5, 8));
+  if (BUILDER_UI.layerLaserEnabled) BUILDER_UI.layerLaserEnabled.value = selected?.laserEnabled ? '1' : '0';
+  if (BUILDER_UI.layerLaserDamage) BUILDER_UI.layerLaserDamage.value = String(clamp(Number(selected?.laserDamage ?? 8), 1, 30));
+  if (BUILDER_UI.layerLaserCooldownMs) BUILDER_UI.layerLaserCooldownMs.value = String(clamp(Number(selected?.laserCooldownMs ?? 300), 40, 3000));
+  if (BUILDER_UI.layerBombEnabled) BUILDER_UI.layerBombEnabled.value = selected?.bombEnabled ? '1' : '0';
+  if (BUILDER_UI.layerBombDamage) BUILDER_UI.layerBombDamage.value = String(clamp(Number(selected?.bombDamage ?? 16), 1, 80));
+  if (BUILDER_UI.layerBombCooldownMs) BUILDER_UI.layerBombCooldownMs.value = String(clamp(Number(selected?.bombCooldownMs ?? 1200), 120, 5000));
+  if (BUILDER_UI.layerEnemyLaserColor) BUILDER_UI.layerEnemyLaserColor.value = /^#[0-9a-fA-F]{6}$/.test(String(selected?.enemyLaserColor || '')) ? String(selected.enemyLaserColor) : '#ff5772';
+  if (BUILDER_UI.layerEnemyBombType) BUILDER_UI.layerEnemyBombType.value = (selected?.enemyBombType === 'plasma' || selected?.enemyBombType === 'mine') ? selected.enemyBombType : 'bomb';
+  if (BUILDER_UI.layerEnemyBombColor) BUILDER_UI.layerEnemyBombColor.value = /^#[0-9a-fA-F]{6}$/.test(String(selected?.enemyBombColor || '')) ? String(selected.enemyBombColor) : '#ffa047';
+  if (BUILDER_UI.layerAggressiveEnabled) BUILDER_UI.layerAggressiveEnabled.value = selected?.aggressiveEnabled ? '1' : '0';
+  if (BUILDER_UI.layerAggressiveSkill) BUILDER_UI.layerAggressiveSkill.value = String(clamp(Number(selected?.aggressiveSkill ?? 1), 0.2, 2.5));
+  builderPopulateAggressiveTargetOptions(selected);
+  if (BUILDER_UI.layerAggressiveTargetId) BUILDER_UI.layerAggressiveTargetId.value = String(selected?.aggressiveTargetId || 'primaryVehicle');
+  if (BUILDER_UI.layerAllowLaserDamage) BUILDER_UI.layerAllowLaserDamage.value = selected?.allowLaserDamage ? '1' : '0';
+  if (BUILDER_UI.layerRaidFormationEnabled) BUILDER_UI.layerRaidFormationEnabled.value = selected?.raidFormationEnabled ? '1' : '0';
+  if (BUILDER_UI.layerRaidFormationCount) BUILDER_UI.layerRaidFormationCount.value = String(clamp(Number(selected?.raidFormationCount ?? 3), 1, 12));
+  if (BUILDER_UI.layerRaidFormationPattern) BUILDER_UI.layerRaidFormationPattern.value = String(selected?.raidFormationPattern || 'vee');
   if (BUILDER_UI.tornadoAffectStartX) BUILDER_UI.tornadoAffectStartX.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
   if (BUILDER_UI.tornadoAffectStartXRange) BUILDER_UI.tornadoAffectStartXRange.value = String(Math.round(Number(selected?.tornadoAffectStartX ?? ((selected?.x || 0) + 40))));
   if (BUILDER_UI.tornadoAffectLandX) BUILDER_UI.tornadoAffectLandX.value = String(Math.round(Number(selected?.tornadoAffectLandX ?? (selected?.x || 0))));
@@ -4465,6 +4875,7 @@ function builderApplyStateToUi() {
   builderRenderLayerList();
   builderUpdateUndoRedoButtons();
   if (selectedContent) selectedContent.scrollTop = selectedScroll;
+  if (primaryContent) primaryContent.scrollTop = primaryScroll;
   if (levelContent) levelContent.scrollTop = levelScroll;
   if (rightBody) rightBody.scrollTop = rightScroll;
 }
@@ -4479,6 +4890,17 @@ function builderReadUiIntoState() {
   if (builderState.truckSide !== selectedSide || !builderState.truckPlaced) builderPlaceTruckForUser(selectedSide);
   builderState.truckSide = selectedSide;
   builderState.fireTruckTheme = BUILDER_UI.fireTruckTheme?.value === 'scifi' ? 'scifi' : 'standard';
+  builderState.primaryVehicleSprite = resolveSpriteKey(BUILDER_UI.primaryVehicleSprite?.value || '') || '';
+  builderState.primaryVehicleFacingBase = BUILDER_UI.primaryVehicleFacingBase?.value === 'left' ? 'left' : 'right';
+  builderState.primaryVehicleFlight = BUILDER_UI.primaryVehicleFlight?.value === '1';
+  builderState.primaryAttackMode = BUILDER_UI.primaryAttackMode?.value === 'laser' ? 'laser' : 'water';
+  builderState.primaryLaserTankerRefill = BUILDER_UI.primaryLaserTankerRefill?.value !== '0';
+  builderState.primaryLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.primaryLaserColor?.value || '')) ? String(BUILDER_UI.primaryLaserColor.value) : '#4bb8ff';
+  builderState.primaryRocketType = (BUILDER_UI.primaryRocketType?.value === 'plasma' || BUILDER_UI.primaryRocketType?.value === 'missile') ? BUILDER_UI.primaryRocketType.value : 'rocket';
+  builderState.primaryRocketColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.primaryRocketColor?.value || '')) ? String(BUILDER_UI.primaryRocketColor.value) : '#9ad8ff';
+  const primaryScaleDefault = builderState.primaryVehicleSprite ? 0.5 : 1;
+  builderState.primaryVehicleScale = clamp(Number(BUILDER_UI.primaryVehicleScale?.value || BUILDER_UI.primaryVehicleScaleNumber?.value || primaryScaleDefault), 0, 2.6);
+  if (builderState.primaryVehicleSprite) ensureSpritesLoaded([builderState.primaryVehicleSprite]);
   builderState.truckEntryDelayMs = clamp(Number(BUILDER_UI.truckEntryDelay?.value || BUILDER_UI.truckEntryDelayRange?.value || 0), 0, 120000);
   builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 8);
   builderState.tankerSchedule.firstAt = clamp(Number(BUILDER_UI.tankerStart.value || 15000), 3000, 120000);
@@ -4496,6 +4918,7 @@ function builderReadUiIntoState() {
   }
   builderState.blackBoxPlan.enabled = BUILDER_UI.blackBoxEnabled.value !== '0';
   builderState.blackBoxPlan.firstAt = clamp(Number(BUILDER_UI.blackBoxStart.value || 7200), 1200, 40000);
+  builderState.enemyRaid = buildEnemyRaidFromEntities(builderState.entities || []);
   builderState.tornadoConfig.enabled = BUILDER_UI.tornadoEnabled.value === '1';
   builderState.tornadoConfig.speed = clamp(Number(BUILDER_UI.tornadoSpeed.value || 0.62), 0.2, 2.5);
   builderState.tornadoConfig.direction = Number(BUILDER_UI.tornadoDirection.value || 1) < 0 ? -1 : 1;
@@ -4651,7 +5074,7 @@ function builderSelectEntity(id) {
 
 function getLayerLabel(ent) {
   if (!ent) return 'Unknown';
-  if (ent.type === 'requiredFireTruck') return 'Required Fire Truck';
+  if (ent.type === 'requiredFireTruck') return 'Primary Vehicle';
   if (ent.type === 'builderSprite') return ent.spriteKey || 'builderSprite';
   if (ent.variant) return `${ent.type} (${ent.variant})`;
   return ent.type || 'entity';
@@ -4710,6 +5133,97 @@ function builderPopulateCollisionSwapSelectors() {
   });
   builderSetFieldVisibility('builderLayerWaterHitSprite', isSpriteLike);
   builderSetFieldVisibility('builderLayerTornadoHitSprite', isSpriteLike);
+}
+
+function builderPopulateAggressiveTargetOptions(selected = null) {
+  const select = BUILDER_UI.layerAggressiveTargetId;
+  if (!select) return;
+  const current = String(selected?.aggressiveTargetId || 'primaryVehicle');
+  select.innerHTML = '';
+  const add = (value, label) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    select.appendChild(opt);
+  };
+  add('primaryVehicle', 'Primary Vehicle');
+  const entities = (builderState?.entities || []).filter((ent) => ent && ent.id && (!selected || ent.id !== selected.id));
+  entities.forEach((ent) => {
+    add(String(ent.id), `Layer: ${getLayerLabel(ent)}`);
+  });
+  if (![...select.options].some((o) => o.value === current)) {
+    select.value = 'primaryVehicle';
+  } else {
+    select.value = current;
+  }
+}
+
+function isCombatSpriteKey(spriteKey) {
+  const key = String(spriteKey || '').toLowerCase();
+  const file = String(SPRITE_FILES[spriteKey] || '').toLowerCase();
+  const text = `${key} ${file}`;
+  return /(scifi|alien|ufo|space|vehicle|military|fighter|tank|armored|mech|hover|pod|jet|drone)/.test(text);
+}
+
+function builderPopulatePrimaryVehicleOptions() {
+  if (!BUILDER_UI.primaryVehicleSprite) return;
+  const select = BUILDER_UI.primaryVehicleSprite;
+  const current = String(builderState?.primaryVehicleSprite || '');
+  select.innerHTML = '';
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = '';
+  defaultOpt.textContent = 'Default (Theme Engine)';
+  select.appendChild(defaultOpt);
+  const seen = new Set();
+  const assets = builderGetAssets().filter((asset) => {
+    const key = String(asset?.key || '');
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    if (CUSTOM_SPRITE_DATA[key]) return true;
+    const file = String(asset?.file || SPRITE_FILES[key] || '');
+    return /\.(webp|png|jpg|jpeg)$/i.test(file);
+  });
+  assets.sort((a, b) => getAssetDisplayName(a.key).localeCompare(getAssetDisplayName(b.key)));
+  assets.forEach((asset) => {
+    const key = String(asset.key || '');
+    if (!key) return;
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = getAssetDisplayName(key);
+    select.appendChild(opt);
+  });
+  if (current && [...select.options].some((o) => o.value === current)) select.value = current;
+  else select.value = '';
+}
+
+function builderPopulateLayerEnemyModelOptions(selected = null) {
+  const select = BUILDER_UI.layerEnemyModelKey;
+  if (!select) return;
+  const fallback = String(getLegacySpriteKeyForBuilder(selected) || '');
+  const current = String(selected?.enemyModelKey || fallback || '');
+  const seen = new Set();
+  const options = [];
+  builderGetAssets().forEach((asset) => {
+    const key = resolveSpriteKey(String(asset?.key || ''));
+    if (!key || seen.has(key)) return;
+    if (!SPRITE_FILES[key] && !CUSTOM_SPRITE_DATA[key]) return;
+    seen.add(key);
+    options.push(key);
+  });
+  options.sort((a, b) => getAssetDisplayName(a).localeCompare(getAssetDisplayName(b)));
+  select.innerHTML = '';
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = '';
+  defaultOpt.textContent = 'Use this layer model';
+  select.appendChild(defaultOpt);
+  options.forEach((key) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = getAssetDisplayName(key);
+    select.appendChild(opt);
+  });
+  if (current && [...select.options].some((o) => o.value === current)) select.value = current;
+  else select.value = '';
 }
 
 function builderRenderLayerList() {
@@ -4808,7 +5322,7 @@ function builderDuplicateLayer(layerId) {
   if (index < 0) return;
   const source = entities[index];
   if (source?.type === 'requiredFireTruck') {
-    builderSetStatus('Required fire truck layer cannot be duplicated.');
+    builderSetStatus('Primary Vehicle layer cannot be duplicated.');
     return;
   }
   const copy = normalizeBuilderEntity({
@@ -4831,7 +5345,7 @@ function builderCopySelectedLayer() {
     return;
   }
   if (ent.type === 'requiredFireTruck') {
-    builderSetStatus('Required fire truck layer cannot be copied.');
+    builderSetStatus('Primary Vehicle layer cannot be copied.');
     return;
   }
   builderClipboardEntity = deepClone(ent);
@@ -4871,7 +5385,7 @@ function builderDeleteLayerById(layerId) {
   const index = entities.findIndex((ent) => ent.id === layerId);
   if (index < 0) return;
   if (entities[index]?.type === 'requiredFireTruck') {
-    builderSetStatus('Required fire truck layer cannot be deleted.');
+    builderSetStatus('Primary Vehicle layer cannot be deleted.');
     return;
   }
   const label = getLayerLabel(entities[index]);
@@ -4946,6 +5460,33 @@ function builderResetSelectedDefaults() {
   ent.waterExitDirection = 'nearest';
   ent.waterExitSpeed = 2.2;
   ent.waterExitBonusPoints = 0;
+  ent.enemyEnabled = false;
+  ent.enemyModelKey = '';
+  ent.enemyCount = 1;
+  ent.enemySpawnDirection = 'both';
+  ent.enemySpawnMinDelayMs = 300;
+  ent.enemySpawnMaxDelayMs = 1200;
+  ent.enemyScaleMin = 0.55;
+  ent.enemyScaleMax = 1.1;
+  ent.fightBackEnabled = false;
+  ent.flightEnabled = false;
+  ent.flightSpeed = 2.4;
+  ent.laserEnabled = false;
+  ent.laserDamage = 8;
+  ent.laserCooldownMs = 300;
+  ent.bombEnabled = false;
+  ent.bombDamage = 16;
+  ent.bombCooldownMs = 1200;
+  ent.enemyLaserColor = '#ff5772';
+  ent.enemyBombType = 'bomb';
+  ent.enemyBombColor = '#ffa047';
+  ent.aggressiveEnabled = false;
+  ent.aggressiveSkill = 1;
+  ent.aggressiveTargetId = 'primaryVehicle';
+  ent.allowLaserDamage = false;
+  ent.raidFormationEnabled = false;
+  ent.raidFormationCount = 3;
+  ent.raidFormationPattern = 'vee';
   ent._waterCollisionSwapDone = false;
   ent._tornadoCollisionSwapDone = false;
   resetTornadoAffectRuntime(ent);
@@ -5070,6 +5611,18 @@ function builderInitCollapsibleSections() {
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints',
+    '#builderLayerEnemyEnabled',
+    '#builderLayerEnemyModelKey',
+    '#builderLayerEnemyCount',
+    '#builderLayerEnemySpawnDirection',
+    '#builderLayerEnemySpawnMinDelayMs',
+    '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyScaleMin',
+    '#builderLayerEnemyScaleMax',
+    '#builderLayerFightBackEnabled',
+    '#builderLayerEnemyLaserColor',
+    '#builderLayerEnemyBombType',
+    '#builderLayerEnemyBombColor',
     '#builderLayerList',
     '#builderLayerTopBtn'
   ], topSections, 'builderTopSelectedSection');
@@ -5114,7 +5667,19 @@ function builderInitCollapsibleSections() {
     '#builderLayerPathPauseMs',
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
-    '#builderAnimalBonusPoints'
+    '#builderAnimalBonusPoints',
+    '#builderLayerEnemyEnabled',
+    '#builderLayerEnemyModelKey',
+    '#builderLayerEnemyCount',
+    '#builderLayerEnemySpawnDirection',
+    '#builderLayerEnemySpawnMinDelayMs',
+    '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyScaleMin',
+    '#builderLayerEnemyScaleMax',
+    '#builderLayerFightBackEnabled',
+    '#builderLayerEnemyLaserColor',
+    '#builderLayerEnemyBombType',
+    '#builderLayerEnemyBombColor'
   ].forEach((selector) => {
     const field = selectedSection.querySelector(selector)?.closest('.builder-field');
     if (field) field.classList.add('requires-selection');
@@ -5125,13 +5690,74 @@ function builderInitCollapsibleSections() {
     hint.textContent = 'No object selected. Use the layer stack below, or select a WebP to edit its properties.';
     selectedContent.insertBefore(hint, selectedContent.firstChild);
   }
+  const selectedFieldById = (id) => selectedSection.querySelector(id)?.closest('.builder-field');
+  const moveToSelectedSubsection = (title, ids, open = false) => {
+    if (!selectedContent) return null;
+    const details = document.createElement('details');
+    details.className = 'builder-subsection';
+    details.open = open;
+    const summary = document.createElement('summary');
+    summary.textContent = title;
+    const inner = document.createElement('div');
+    inner.className = 'subsection-content';
+    details.appendChild(summary);
+    details.appendChild(inner);
+    ids.forEach((id) => {
+      const field = selectedFieldById(id);
+      if (field) inner.appendChild(field);
+    });
+    selectedContent.appendChild(details);
+    return details;
+  };
+  moveToSelectedSubsection('Enemy', [
+    '#builderLayerEnemyEnabled',
+    '#builderLayerEnemyModelKey',
+    '#builderLayerEnemyCount',
+    '#builderLayerEnemySpawnDirection',
+    '#builderLayerEnemySpawnMinDelayMs',
+    '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyScaleMin',
+    '#builderLayerEnemyScaleMax',
+    '#builderLayerFightBackEnabled',
+    '#builderLayerFlightEnabled',
+    '#builderLayerFlightSpeed',
+    '#builderLayerLaserEnabled',
+    '#builderLayerLaserDamage',
+    '#builderLayerLaserCooldownMs',
+    '#builderLayerBombEnabled',
+    '#builderLayerBombDamage',
+    '#builderLayerBombCooldownMs',
+    '#builderLayerEnemyLaserColor',
+    '#builderLayerEnemyBombType',
+    '#builderLayerEnemyBombColor',
+    '#builderLayerAggressiveEnabled',
+    '#builderLayerAggressiveSkill',
+    '#builderLayerAggressiveTargetId',
+    '#builderLayerPickTargetBtn',
+    '#builderLayerAllowLaserDamage',
+    '#builderLayerRaidFormationEnabled',
+    '#builderLayerRaidFormationCount',
+    '#builderLayerRaidFormationPattern'
+  ], false);
+  const primarySection = wrap('Primary Vehicle', [
+    '#builderTruckSide',
+    '#builderFireTruckTheme',
+    '#builderPrimaryVehicleSprite',
+    '#builderSetPrimaryFromSelectedBtn',
+    '#builderPrimaryVehicleFacingBase',
+    '#builderPrimaryVehicleScale',
+    '#builderPrimaryVehicleFlight',
+    '#builderTruckEntryDelay',
+    '#builderPrimaryAttackMode',
+    '#builderPrimaryLaserTankerRefill',
+    '#builderPrimaryLaserColor',
+    '#builderPrimaryRocketType',
+    '#builderPrimaryRocketColor'
+  ], topSections, 'builderTopPrimarySection');
   const levelSection = wrap('Level Properties', [
     '#builderLevelName',
     '#builderCreatorName',
     '#builderSafetyTip',
-    '#builderTruckSide',
-    '#builderFireTruckTheme',
-    '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderTankerStart',
     '#builderTankerRepeat',
@@ -5166,6 +5792,7 @@ function builderInitCollapsibleSections() {
   ], topSections, 'builderTopExportSection');
   topSections.innerHTML = '';
   topSections.appendChild(createTopColumn(selectedSection, 'builderTopSelectedColumn', 'Layers', false));
+  topSections.appendChild(createTopColumn(primarySection, 'builderTopPrimaryColumn', 'Primary Vehicle', false));
   topSections.appendChild(createTopColumn(levelSection, 'builderTopLevelColumn', 'Level Properties', false));
   topSections.appendChild(createTopColumn(exportSection, 'builderTopExportColumn', 'Export And Test', false));
   builderUpdateTopColumnOrder();
@@ -5175,7 +5802,27 @@ function builderInitCollapsibleSections() {
   const levelContent = levelSection.querySelector('.section-content');
   const exportContent = exportSection.querySelector('.section-content');
   const exportActions = exportSection.querySelector('.builder-actions');
+  const primaryContent = primarySection.querySelector('.section-content');
+  const primaryFieldById = (id) => primarySection.querySelector(id)?.closest('.builder-field');
   const fieldById = (id) => levelSection.querySelector(id)?.closest('.builder-field');
+  const moveToPrimarySubsection = (title, ids, open = true) => {
+    if (!primaryContent) return null;
+    const details = document.createElement('details');
+    details.className = 'builder-subsection';
+    details.open = open;
+    const summary = document.createElement('summary');
+    summary.textContent = title;
+    const inner = document.createElement('div');
+    inner.className = 'subsection-content';
+    details.appendChild(summary);
+    details.appendChild(inner);
+    ids.forEach((id) => {
+      const field = primaryFieldById(id);
+      if (field) inner.appendChild(field);
+    });
+    primaryContent.appendChild(details);
+    return details;
+  };
   const moveToSubsection = (title, ids, open = true) => {
     if (!levelContent) return null;
     const details = document.createElement('details');
@@ -5194,13 +5841,29 @@ function builderInitCollapsibleSections() {
     levelContent.appendChild(details);
     return details;
   };
+  moveToPrimarySubsection('Vehicle Type', [
+    '#builderTruckSide',
+    '#builderFireTruckTheme',
+    '#builderPrimaryVehicleSprite',
+    '#builderSetPrimaryFromSelectedBtn',
+    '#builderPrimaryVehicleFacingBase'
+  ], true);
+  moveToPrimarySubsection('Movement', [
+    '#builderPrimaryVehicleScale',
+    '#builderPrimaryVehicleFlight',
+    '#builderTruckEntryDelay'
+  ], true);
+  moveToPrimarySubsection('Weapons', [
+    '#builderPrimaryAttackMode',
+    '#builderPrimaryLaserTankerRefill',
+    '#builderPrimaryLaserColor',
+    '#builderPrimaryRocketType',
+    '#builderPrimaryRocketColor'
+  ], true);
   const levelMainSub = moveToSubsection('Level Settings', [
     '#builderLevelName',
     '#builderCreatorName',
     '#builderSafetyTip',
-    '#builderTruckSide',
-    '#builderFireTruckTheme',
-    '#builderTruckEntryDelay',
     '#builderTimeOfDay',
     '#builderEditLevelSelect',
     '#builderLoadSelectedLevelBtn'
@@ -5325,9 +5988,10 @@ function builderOpen(levelData = null) {
   builderSetLeftPanelCollapsed(false);
   builderInitCollapsibleSections();
   const selectedCol = document.getElementById('builderTopSelectedColumn');
+  const primaryCol = document.getElementById('builderTopPrimaryColumn');
   const levelCol = document.getElementById('builderTopLevelColumn');
   const exportCol = document.getElementById('builderTopExportColumn');
-  [selectedCol, levelCol, exportCol].forEach((col) => col?.classList.remove('collapsed'));
+  [selectedCol, primaryCol, levelCol, exportCol].forEach((col) => col?.classList.remove('collapsed'));
   builderUpdateTopColumnOrder();
   // Defensive: ensure newly added images are registered even if the page was cached.
   try { registerDiscoveredSpriteFiles(); } catch (err) {}
@@ -5367,6 +6031,7 @@ function builderOpen(levelData = null) {
   builderAutoCollapseTimer = setTimeout(() => {
     if (gameState !== 'builder') return;
     selectedCol?.classList.remove('collapsed');
+    primaryCol?.classList.remove('collapsed');
     levelCol?.classList.add('collapsed');
     exportCol?.classList.add('collapsed');
     builderUpdateTopColumnOrder();
@@ -5452,6 +6117,7 @@ function getAssetCategory(asset) {
   const key = String(asset.key || '').toLowerCase();
   const file = String(asset.file || '').toLowerCase();
   const text = `${key} ${file}`;
+  if (/(military|tank|jet|fighter|armored|mech|drone|missile)/.test(text) || /military_/.test(text)) return 'military';
   if (/(^|\\s)(scifi|alien|ufo|space)\\b/.test(text) || /scifi_/.test(text)) return 'scifi';
   if (/(horse|dog|cat|cow|pig|sheep|chicken|goat|bird|robin|cardinal|bluebird|animal)/.test(text) || /animal_/.test(text)) return 'animals';
   if (/(engine|truck|tanker|sedan|pickup|semi|bus|tractor|mower|bike|bicycle|atv|golfcart|scooter|segway|vehicle|car_|wrecked)/.test(text) || /vehicle_/.test(text)) return 'vehicles';
@@ -5463,6 +6129,7 @@ function getAssetCategory(asset) {
 
 function getCategoryLabel(cat) {
   if (cat === 'vehicles') return 'Vehicles';
+  if (cat === 'military') return 'Military';
   if (cat === 'animals') return 'Animals';
   if (cat === 'buildings') return 'Buildings';
   if (cat === 'nature') return 'Nature';
@@ -5537,7 +6204,7 @@ function builderRenderAssetList() {
     BUILDER_UI.assetCountNote.textContent = `Assets: ${total} (images: ${discoveredCount})`;
   }
 
-  const order = ['vehicles', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
+  const order = ['vehicles', 'military', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
   const grouped = new Map();
   assets.forEach((asset) => {
     const cat = asset.category || 'misc';
@@ -5582,6 +6249,7 @@ function builderRenderAssetList() {
     BUILDER_UI.assetList.appendChild(section);
   });
   builderPopulateCollisionSwapSelectors();
+  builderPopulatePrimaryVehicleOptions();
 }
 
 function builderCreateEntity(spriteKey, x, baseY, spriteFile = '') {
@@ -5719,7 +6387,7 @@ function builderRemoveSelected() {
   if (!builderSelectedId) return;
   const selected = getBuilderEntityById(builderSelectedId);
   if (selected?.type === 'requiredFireTruck') {
-    builderSetStatus('Required fire truck layer cannot be removed.');
+    builderSetStatus('Primary Vehicle layer cannot be removed.');
     return;
   }
   builderState.entities = builderState.entities.filter((ent) => ent.id !== builderSelectedId);
@@ -5919,7 +6587,7 @@ function builderBuildSubmissionPayload() {
       ],
       validationChecklist: [
         'Open level in builder and run Quick Play on Easy/Medium/Hard',
-        'Confirm required fire truck layer and lane side',
+      'Confirm primary vehicle layer and lane side',
         'Confirm all WebP entities render and remain editable',
         'Confirm burnability settings, especially animals default non-flammable'
       ],
@@ -6134,13 +6802,16 @@ function builderDrawHelpers() {
     if (ent.type === 'requiredFireTruck') {
       const lane = level.truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
       const oldTruckX = truck.x;
+      const oldTruckY = truck.y;
       const oldFacing = truckFacing;
       const oldScale = truck.renderScale || 1;
       truck.x = clamp(Number(level.truckPlacementX ?? lane.spawnX), lane.minX, lane.maxX);
+      truck.y = FIRETRUCK_LANE_Y;
       truckFacing = level.truckSide === 'right' ? -1 : 1;
       truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
-      drawSideFireTruck();
+      drawSideFireTruck(level);
       truck.x = oldTruckX;
+      truck.y = oldTruckY;
       truckFacing = oldFacing;
       truck.renderScale = oldScale;
       return;
@@ -6242,6 +6913,23 @@ function builderPickEntityAt(x, y) {
 
 function builderStartPointer(x, y) {
   if (performance.now() - builderLastPlaceAt < 140) return;
+  if (builderTargetPickMode) {
+    const sourceEnt = getBuilderEntityById(builderSelectedId);
+    if (!sourceEnt) {
+      builderTargetPickMode = false;
+      builderSetStatus('No source layer selected. Quick target pick canceled.');
+      return;
+    }
+    const hit = builderPickEntityAt(x, y);
+    sourceEnt.aggressiveTargetId = hit?.id ? String(hit.id) : 'primaryVehicle';
+    builderTargetPickMode = false;
+    builderApplyStateToUi();
+    builderSaveLastDraft();
+    builderSetStatus(hit?.id
+      ? `Target set: ${getLayerLabel(sourceEnt)} -> ${getLayerLabel(hit)}`
+      : `Target set: ${getLayerLabel(sourceEnt)} -> Primary Vehicle`);
+    return;
+  }
   if (builderTornadoRoutePick.active) {
     const ent = getBuilderEntityById(builderTornadoRoutePick.entityId || builderSelectedId);
     if (!ent) {
@@ -6409,7 +7097,7 @@ const TANKER_FOLLOW_OFFSET_X = 250;
 const truck = { x: 110, y: FIRETRUCK_LANE_Y, speed: 3.8, minX: 80, maxX: 440, renderScale: 1 };
 
 function getTruckY() {
-  return FIRETRUCK_LANE_Y;
+  return clamp(Number(truck.y ?? FIRETRUCK_LANE_Y), 80, FIRETRUCK_LANE_Y + 40);
 }
 const nozzleAttachX = 112;
 const nozzleAttachY = -45;
@@ -6421,6 +7109,76 @@ function getTruckRenderScale() {
 
 function getTruckHoseLengthLimit() {
   return maxHoseLength * getTruckRenderScale();
+}
+
+function getTruckSpriteRenderSpec(levelData = null, facing = truckFacing, renderScale = null, truckX = null, truckY = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  const baseScale = Number(renderScale ?? truck.renderScale ?? 1);
+  const primaryScale = getLevelPrimaryVehicleScale(level);
+  const scale = clamp(baseScale * primaryScale, 0, 2.6);
+  const x = Number(truckX ?? truck.x ?? TRUCK_LANES.left.spawnX);
+  const y = Number(truckY ?? getTruckY());
+  const primarySprite = getLevelPrimaryVehicleSprite(level);
+  if (primarySprite) {
+    const img = SPRITES[primarySprite];
+    const baseW = Math.max(120, Number(img?.width || 320));
+    const baseH = Math.max(70, Number(img?.height || 180));
+    const targetW = baseW * scale;
+    const targetH = baseH * scale;
+    const fitRect = getSpriteFitRect(primarySprite, x - (24 * scale), y - targetH, targetW, targetH, true);
+    const sourceFacingSign = getLevelPrimaryVehicleFacingBase(level) === 'left' ? -1 : 1;
+    const travelFacingSign = Number(facing) < 0 ? -1 : 1;
+    return {
+      key: primarySprite,
+      x: fitRect.x,
+      y: fitRect.y,
+      w: fitRect.w,
+      h: fitRect.h,
+      flipX: travelFacingSign !== sourceFacingSign
+    };
+  }
+  const key = getEngineSpriteKeyForTruckFacing(facing, level);
+  const layout = ENTITY_LAYOUT.engine;
+  const fitRect = getSpriteFitRect(key, x + layout.x * scale, y - (layout.h * scale), layout.w * scale, layout.h * scale, true);
+  return {
+    key,
+    x: fitRect.x,
+    y: fitRect.y,
+    w: fitRect.w,
+    h: fitRect.h,
+    flipX: false
+  };
+}
+
+function drawTruckSpriteSpec(spec) {
+  if (!spec || !spec.key) return false;
+  if (spec.flipX) {
+    ctx.save();
+    ctx.translate(spec.x + spec.w, spec.y);
+    ctx.scale(-1, 1);
+    const ok = drawSprite(spec.key, 0, 0, spec.w, spec.h);
+    ctx.restore();
+    return !!ok;
+  }
+  return drawSprite(spec.key, spec.x, spec.y, spec.w, spec.h);
+}
+
+function updateTruckFlight(dt, levelData = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  if (!isPrimaryFlightModeActive(level) || !playerControlsEnabled || gameState !== 'playing') {
+    truckFlightBoost = 0;
+    truckFlightInput = 0;
+    truck.y = FIRETRUCK_LANE_Y;
+    return;
+  }
+  const elapsed = Math.max(0, Number(dt || 0));
+  const moving = Math.abs(Number(truckDrive || 0)) > 0.06;
+  const boostRate = moving ? 0.00145 : -0.0011;
+  truckFlightBoost = clamp(truckFlightBoost + (boostRate * elapsed), 0, 1);
+  const manualAdjust = clamp(truckFlightInput, -1, 1) * 64;
+  const targetY = clamp(FIRETRUCK_LANE_Y - (34 + (truckFlightBoost * 156) + manualAdjust), 82, FIRETRUCK_LANE_Y);
+  const step = Math.max(0.08, elapsed / 16.67);
+  truck.y = clamp((truck.y ?? FIRETRUCK_LANE_Y) + ((targetY - (truck.y ?? FIRETRUCK_LANE_Y)) * Math.min(0.18, 0.08 * step)), 80, FIRETRUCK_LANE_Y + 20);
 }
 
 const safetyTips = [
@@ -7030,7 +7788,7 @@ const BUILDER_OFFICIAL_STORAGE_KEY = 'kvfd_deluxe23_builder_official_v1';
 const BUILDER_LAST_DRAFT_KEY = 'kvfd_deluxe23_builder_last_v1';
 const BUILDER_DELETE_CONFIRM_SKIP_KEY = 'kvfd_builder_delete_noask_v1';
 const BUILDER_PACKAGE_VERSION = 1;
-const BUILDER_MIN_SCALE = 0.2;
+const BUILDER_MIN_SCALE = 0.01;
 const BUILDER_MAX_SCALE = 2.8;
 const BUILDER_SNAP_X = 10;
 const BUILDER_SNAP_Y = 5;
@@ -12595,6 +13353,33 @@ function normalizeBuilderEntity(ent, idx = 0) {
       waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
       waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
       waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
+      flightEnabled: !!ent.flightEnabled,
+      flightSpeed: clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8),
+      enemyEnabled: !!ent.enemyEnabled,
+      enemyModelKey: resolveSpriteKey(String(ent.enemyModelKey || '')) || '',
+      enemyCount: clamp(Number(ent.enemyCount ?? 1), 1, 30),
+      enemySpawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
+      enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
+      enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+      enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
+      enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+      fightBackEnabled: !!ent.fightBackEnabled,
+      laserEnabled: !!ent.laserEnabled,
+      laserDamage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
+      laserCooldownMs: clamp(Number(ent.laserCooldownMs ?? 300), 40, 3000),
+      bombEnabled: !!ent.bombEnabled,
+      bombDamage: clamp(Number(ent.bombDamage ?? 16), 1, 80),
+      bombCooldownMs: clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000),
+      enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || '')) ? String(ent.enemyLaserColor) : '#ff5772',
+      enemyBombType: (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : 'bomb',
+      enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || '')) ? String(ent.enemyBombColor) : '#ffa047',
+      aggressiveEnabled: !!ent.aggressiveEnabled,
+      aggressiveSkill: clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5),
+      aggressiveTargetId: typeof ent.aggressiveTargetId === 'string' ? ent.aggressiveTargetId : '',
+      allowLaserDamage: !!ent.allowLaserDamage,
+      raidFormationEnabled: !!ent.raidFormationEnabled,
+      raidFormationCount: clamp(Number(ent.raidFormationCount ?? 3), 1, 12),
+      raidFormationPattern: (ent.raidFormationPattern === 'line' || ent.raidFormationPattern === 'arc' || ent.raidFormationPattern === 'zigzag' || ent.raidFormationPattern === 'swoop') ? ent.raidFormationPattern : 'vee',
       onWaterHitSpriteKey: (typeof ent.onWaterHitSpriteKey === 'string' && (SPRITE_FILES[ent.onWaterHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onWaterHitSpriteKey])) ? ent.onWaterHitSpriteKey : undefined,
       onTornadoHitSpriteKey: (typeof ent.onTornadoHitSpriteKey === 'string' && (SPRITE_FILES[ent.onTornadoHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onTornadoHitSpriteKey])) ? ent.onTornadoHitSpriteKey : undefined,
       hitSwapScale: clamp(Number(ent.hitSwapScale ?? 1), 0.2, 4),
@@ -12643,6 +13428,33 @@ function normalizeBuilderEntity(ent, idx = 0) {
     waterExitDirection: (ent.waterExitDirection === 'left' || ent.waterExitDirection === 'right' || ent.waterExitDirection === 'nearest') ? ent.waterExitDirection : 'nearest',
     waterExitSpeed: clamp(Number(ent.waterExitSpeed ?? 2.2), 0.5, 7),
     waterExitBonusPoints: clamp(Number(ent.waterExitBonusPoints ?? 0), 0, 50),
+    flightEnabled: !!ent.flightEnabled,
+    flightSpeed: clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8),
+    enemyEnabled: !!ent.enemyEnabled,
+    enemyModelKey: resolveSpriteKey(String(ent.enemyModelKey || '')) || '',
+    enemyCount: clamp(Number(ent.enemyCount ?? 1), 1, 30),
+    enemySpawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
+    enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
+    enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+    enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
+    enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+    fightBackEnabled: !!ent.fightBackEnabled,
+    laserEnabled: !!ent.laserEnabled,
+    laserDamage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
+    laserCooldownMs: clamp(Number(ent.laserCooldownMs ?? 300), 40, 3000),
+    bombEnabled: !!ent.bombEnabled,
+    bombDamage: clamp(Number(ent.bombDamage ?? 16), 1, 80),
+    bombCooldownMs: clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000),
+    enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || '')) ? String(ent.enemyLaserColor) : '#ff5772',
+    enemyBombType: (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : 'bomb',
+    enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || '')) ? String(ent.enemyBombColor) : '#ffa047',
+    aggressiveEnabled: !!ent.aggressiveEnabled,
+    aggressiveSkill: clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5),
+    aggressiveTargetId: typeof ent.aggressiveTargetId === 'string' ? ent.aggressiveTargetId : '',
+    allowLaserDamage: !!ent.allowLaserDamage,
+    raidFormationEnabled: !!ent.raidFormationEnabled,
+    raidFormationCount: clamp(Number(ent.raidFormationCount ?? 3), 1, 12),
+    raidFormationPattern: (ent.raidFormationPattern === 'line' || ent.raidFormationPattern === 'arc' || ent.raidFormationPattern === 'zigzag' || ent.raidFormationPattern === 'swoop') ? ent.raidFormationPattern : 'vee',
     onWaterHitSpriteKey: (typeof ent.onWaterHitSpriteKey === 'string' && (SPRITE_FILES[ent.onWaterHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onWaterHitSpriteKey])) ? ent.onWaterHitSpriteKey : undefined,
     onTornadoHitSpriteKey: (typeof ent.onTornadoHitSpriteKey === 'string' && (SPRITE_FILES[ent.onTornadoHitSpriteKey] || CUSTOM_SPRITE_DATA[ent.onTornadoHitSpriteKey])) ? ent.onTornadoHitSpriteKey : undefined,
     hitSwapScale: clamp(Number(ent.hitSwapScale ?? 1), 0.2, 4),
@@ -12660,12 +13472,92 @@ function normalizeBuilderEntity(ent, idx = 0) {
   return normalized;
 }
 
+function normalizeEnemyModelKeyList(rawValue) {
+  const source = Array.isArray(rawValue)
+    ? rawValue
+    : String(rawValue || '').split(',');
+  const seen = new Set();
+  const out = [];
+  source.forEach((value) => {
+    const key = resolveSpriteKey(String(value || '').trim());
+    if (!key) return;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(key);
+  });
+  return out;
+}
+
+function buildEnemyRaidFromEntities(entities = []) {
+  const spriteEntities = Array.isArray(entities) ? entities.filter((ent) => ent && ent.type === 'builderSprite' && ent.enemyEnabled) : [];
+  const normalized = {
+    modelKeys: [],
+    targetCount: 0,
+    spawnDirection: 'both',
+    attackOrder: 'random',
+    spawnMinDelayMs: 300,
+    spawnMaxDelayMs: 1200,
+    scaleMin: 0.55,
+    scaleMax: 1.1,
+    laserColor: '#ff5772',
+    bombType: 'bomb',
+    bombColor: '#ffa047'
+  };
+  if (!spriteEntities.length) return normalized;
+  const modelKeys = [];
+  let hasLeft = false;
+  let hasRight = false;
+  let minDelay = 5000;
+  let maxDelay = 120;
+  let minScale = 3;
+  let maxScale = 0.1;
+  spriteEntities.forEach((ent) => {
+    const key = resolveSpriteKey(String(ent.enemyModelKey || ent.spriteKey || ''));
+    const count = clamp(Number(ent.enemyCount ?? 1), 1, 30);
+    if (key) {
+      for (let i = 0; i < count; i++) modelKeys.push(key);
+    }
+    normalized.targetCount += count;
+    const dir = (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both';
+    if (dir === 'left') hasLeft = true;
+    else if (dir === 'right') hasRight = true;
+    else { hasLeft = true; hasRight = true; }
+    minDelay = Math.min(minDelay, clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000));
+    maxDelay = Math.max(maxDelay, clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+    minScale = Math.min(minScale, clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3));
+    maxScale = Math.max(maxScale, clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3));
+    if (/^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || ''))) normalized.laserColor = String(ent.enemyLaserColor);
+    if (/^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || ''))) normalized.bombColor = String(ent.enemyBombColor);
+    if (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') normalized.bombType = ent.enemyBombType;
+    if (ent.raidFormationEnabled) normalized.attackOrder = 'sequence';
+  });
+  normalized.modelKeys = modelKeys;
+  normalized.spawnDirection = hasLeft && hasRight ? 'both' : (hasLeft ? 'left' : 'right');
+  normalized.spawnMinDelayMs = clamp(minDelay, 80, 5000);
+  normalized.spawnMaxDelayMs = Math.max(normalized.spawnMinDelayMs, clamp(maxDelay, 120, 10000));
+  normalized.scaleMin = clamp(minScale, 0.1, 3);
+  normalized.scaleMax = Math.max(normalized.scaleMin, clamp(maxScale, 0.1, 3));
+  return normalized;
+}
+
 function normalizeBuilderLevel(rawLevel) {
   const level = rawLevel && typeof rawLevel === 'object' ? rawLevel : {};
   const entities = Array.isArray(level.entities) ? level.entities : [];
   const normalizedEntities = entities.map((ent, idx) => normalizeBuilderEntity(ent, idx)).filter(Boolean);
+  const entityEnemyRaid = buildEnemyRaidFromEntities(normalizedEntities);
   const truckSide = (level.truckSide === 'left' || level.truckSide === 'right') ? level.truckSide : '';
   const fireTruckTheme = level.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
+  const primaryVehicleSprite = getLevelPrimaryVehicleSprite(level);
+const primaryVehicleScaleDefault = primaryVehicleSprite ? 0.5 : 1;
+const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVehicleScaleDefault), 0, 2.6);
+  const primaryVehicleFacingBase = level.primaryVehicleFacingBase === 'left' ? 'left' : 'right';
+  const primaryAttackMode = typeof level.primaryAttackMode === 'string'
+    ? (level.primaryAttackMode === 'laser' ? 'laser' : 'water')
+    : ((fireTruckTheme === 'scifi' || !!primaryVehicleSprite) ? 'laser' : 'water');
+  const primaryLaserTankerRefill = level.primaryLaserTankerRefill !== false;
+  const primaryLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(level.primaryLaserColor || '')) ? String(level.primaryLaserColor) : '#4bb8ff';
+  const primaryRocketType = (level.primaryRocketType === 'plasma' || level.primaryRocketType === 'missile') ? level.primaryRocketType : 'rocket';
+  const primaryRocketColor = /^#[0-9a-fA-F]{6}$/.test(String(level.primaryRocketColor || '')) ? String(level.primaryRocketColor) : '#9ad8ff';
   const lane = truckSide === 'right' ? TRUCK_LANES.right : TRUCK_LANES.left;
   const truckPlaced = truckSide ? (level.truckPlaced !== false) : false;
   const normalized = {
@@ -12677,6 +13569,15 @@ function normalizeBuilderLevel(rawLevel) {
     dispatchClearBody: String(level.dispatchClearBody || 'Dispatch confirms custom builder level is under control.'),
     truckSide,
     fireTruckTheme,
+    primaryVehicleSprite,
+    primaryVehicleFlight: !!level.primaryVehicleFlight,
+    primaryAttackMode,
+    primaryLaserTankerRefill,
+    primaryLaserColor,
+    primaryRocketType,
+    primaryRocketColor,
+    primaryVehicleFacingBase,
+    primaryVehicleScale,
     truckPlaced,
     truckPlacementX: clamp(Number(level.truckPlacementX ?? lane.spawnX), -220, 1520),
     truckEntryDelayMs: clamp(Number(level.truckEntryDelayMs ?? 0), 0, 120000),
@@ -12704,6 +13605,22 @@ function normalizeBuilderLevel(rawLevel) {
       returnDelay: clamp(Number(level?.blackBoxPlan?.returnDelay ?? 3200), 800, 40000),
       firstDir: Number(level?.blackBoxPlan?.firstDir) < 0 ? -1 : 1
     },
+    enemyRaid: {
+      ...entityEnemyRaid,
+      modelKeys: normalizeEnemyModelKeyList(level?.enemyRaid?.modelKeys ?? level?.enemyModelKeys ?? entityEnemyRaid.modelKeys),
+      targetCount: clamp(Number(level?.enemyRaid?.targetCount ?? level?.enemyTargetCount ?? entityEnemyRaid.targetCount), 0, 30),
+      spawnDirection: (level?.enemyRaid?.spawnDirection === 'left' || level?.enemyRaid?.spawnDirection === 'right')
+        ? level.enemyRaid.spawnDirection
+        : entityEnemyRaid.spawnDirection,
+      attackOrder: level?.enemyRaid?.attackOrder === 'sequence' ? 'sequence' : entityEnemyRaid.attackOrder,
+      spawnMinDelayMs: clamp(Number(level?.enemyRaid?.spawnMinDelayMs ?? entityEnemyRaid.spawnMinDelayMs), 80, 5000),
+      spawnMaxDelayMs: clamp(Number(level?.enemyRaid?.spawnMaxDelayMs ?? entityEnemyRaid.spawnMaxDelayMs), 120, 10000),
+      scaleMin: clamp(Number(level?.enemyRaid?.scaleMin ?? entityEnemyRaid.scaleMin), 0.1, 3),
+      scaleMax: clamp(Number(level?.enemyRaid?.scaleMax ?? entityEnemyRaid.scaleMax), 0.1, 3),
+      laserColor: /^#[0-9a-fA-F]{6}$/.test(String(level?.enemyRaid?.laserColor || '')) ? String(level.enemyRaid.laserColor) : entityEnemyRaid.laserColor,
+      bombType: (level?.enemyRaid?.bombType === 'plasma' || level?.enemyRaid?.bombType === 'mine') ? level.enemyRaid.bombType : entityEnemyRaid.bombType,
+      bombColor: /^#[0-9a-fA-F]{6}$/.test(String(level?.enemyRaid?.bombColor || '')) ? String(level.enemyRaid.bombColor) : entityEnemyRaid.bombColor
+    },
     tornadoConfig: {
       enabled: !!level?.tornadoConfig?.enabled,
       speed: clamp(Number(level?.tornadoConfig?.speed ?? 0.62), 0.2, 2.5),
@@ -12717,6 +13634,12 @@ function normalizeBuilderLevel(rawLevel) {
   };
   if (normalized.fireBehavior.vehicleExplosionMaxMs < normalized.fireBehavior.vehicleExplosionMinMs) {
     normalized.fireBehavior.vehicleExplosionMaxMs = normalized.fireBehavior.vehicleExplosionMinMs;
+  }
+  if (normalized.enemyRaid.spawnMaxDelayMs < normalized.enemyRaid.spawnMinDelayMs) {
+    normalized.enemyRaid.spawnMaxDelayMs = normalized.enemyRaid.spawnMinDelayMs;
+  }
+  if (normalized.enemyRaid.scaleMax < normalized.enemyRaid.scaleMin) {
+    normalized.enemyRaid.scaleMax = normalized.enemyRaid.scaleMin;
   }
   return ensureRequiredTruckLayer(normalized);
 }
@@ -12942,7 +13865,32 @@ function getLevelFireTruckTheme(levelData) {
   return levelData?.fireTruckTheme === 'scifi' ? 'scifi' : 'standard';
 }
 
+function getLevelPrimaryVehicleSprite(levelData) {
+  const key = resolveSpriteKey(levelData?.primaryVehicleSprite || '');
+  if (!key) return '';
+  if (!SPRITE_FILES[key] && !CUSTOM_SPRITE_DATA[key]) {
+    const discovered = Array.isArray(DISCOVERED_SPRITE_FILENAMES)
+      ? DISCOVERED_SPRITE_FILENAMES.find((file) => toSpriteKeyFromFilename(file) === key)
+      : '';
+    if (discovered) SPRITE_FILES[key] = discovered;
+  }
+  if (SPRITE_FILES[key] || CUSTOM_SPRITE_DATA[key]) return key;
+  return '';
+}
+
+function getLevelPrimaryVehicleScale(levelData) {
+  const hasReplacementSprite = !!resolveSpriteKey(levelData?.primaryVehicleSprite || '');
+  const defaultScale = hasReplacementSprite ? 0.5 : 1;
+  return clamp(Number(levelData?.primaryVehicleScale ?? defaultScale), 0, 2.6);
+}
+
+function getLevelPrimaryVehicleFacingBase(levelData) {
+  return levelData?.primaryVehicleFacingBase === 'left' ? 'left' : 'right';
+}
+
 function getEngineSpriteKeyForTruckFacing(facing, levelData = null) {
+  const primarySprite = getLevelPrimaryVehicleSprite(levelData || baseLevels[currentLevel - 1] || {});
+  if (primarySprite) return primarySprite;
   const theme = getLevelFireTruckTheme(levelData || baseLevels[currentLevel - 1] || {});
   if (theme === 'scifi') return facing < 0 ? 'spaceEngineLeft' : 'spaceEngineRight';
   return facing < 0 ? 'engineLeft' : 'engineRight';
@@ -12953,7 +13901,26 @@ function getEngineSpriteKeyForTruckSide(side, levelData = null) {
 }
 
 function isScifiTruckActive(levelData = null) {
-  return getLevelFireTruckTheme(levelData || baseLevels[currentLevel - 1] || {}) === 'scifi';
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  const primarySprite = getLevelPrimaryVehicleSprite(level);
+  if (primarySprite) return isCombatSpriteKey(primarySprite);
+  return getLevelFireTruckTheme(level) === 'scifi';
+}
+
+function isPrimaryFlightModeActive(levelData = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  return !!level?.primaryVehicleFlight;
+}
+
+function isPrimaryLaserMode(levelData = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  return level?.primaryAttackMode === 'laser';
+}
+
+function isTankerRefillEnabled(levelData = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  if (!isPrimaryLaserMode(level)) return true;
+  return level?.primaryLaserTankerRefill !== false;
 }
 
 function setTruckDrive(value) {
@@ -13493,10 +14460,13 @@ function loadLevel(lvl, options = {}) {
       ? TRUCK_LANES.right
       : getOppositeTruckLane(levelData, lvl);
   truck.x = lane.spawnX;
+  truck.y = FIRETRUCK_LANE_Y;
   truck.minX = lane.minX;
   truck.maxX = lane.maxX;
   truck.renderScale = clamp(Number(requiredTruckLayer?.scale || 1), 0.7, 1.8);
   truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
+  truckFlightBoost = 0;
+  truckFlightInput = 0;
   const configuredTruckEntryDelayMs = clamp(Number(levelData?.truckEntryDelayMs ?? 0), 0, 120000);
   if (configuredTruckEntryDelayMs > 0 && lvl !== 9) {
     playerControlsEnabled = false;
@@ -13504,6 +14474,8 @@ function loadLevel(lvl, options = {}) {
     truck.x = -260;
     setTruckDrive(0);
     isSpraying = false;
+    isLaserFiring = false;
+    isRocketFiring = false;
     truckEntryState = {
       active: true,
       elapsedMs: 0,
@@ -13514,6 +14486,8 @@ function loadLevel(lvl, options = {}) {
   }
   setTruckDrive(0);
   isSpraying = false;
+  isLaserFiring = false;
+  isRocketFiring = false;
   tornadoTravelX = -180;
   tornadoCompleted = false;
   initTornadoForLevel(levelData);
@@ -13532,6 +14506,10 @@ function loadLevel(lvl, options = {}) {
   ufoRaid = null;
   ufoPreview = null;
   levelHorseEvent = null;
+  enemyRaidState = null;
+  enemyLaserShots = [];
+  enemyBombShots = [];
+  playerRocketShots = [];
   if (dispatchAutoAdvance) {
     clearTimeout(dispatchAutoAdvance);
     dispatchAutoAdvance = null;
@@ -13540,6 +14518,7 @@ function loadLevel(lvl, options = {}) {
   else if (lvl === 8) setTimeOfDay(1);
   else if (timeOfDay === 1) setTimeOfDay(0);
   preloadLevelSprites(lvl);
+  initEnemyRaid(levelData);
   if (!skipDispatch) {
     showDispatchScreen(lvl, 'start');
   } else {
@@ -13898,6 +14877,45 @@ BUILDER_UI.testDifficulty?.addEventListener('change', () => {
 BUILDER_UI.tip?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.truckSide?.addEventListener('change', () => { builderStopTruckSideAttention(); builderReadUiIntoState(); });
 BUILDER_UI.fireTruckTheme?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.primaryVehicleSprite?.addEventListener('change', () => {
+  const hasReplacement = !!resolveSpriteKey(BUILDER_UI.primaryVehicleSprite?.value || '');
+  const nextScale = hasReplacement ? 0.5 : 1;
+  if (BUILDER_UI.primaryVehicleScale) BUILDER_UI.primaryVehicleScale.value = String(nextScale);
+  if (BUILDER_UI.primaryVehicleScaleNumber) BUILDER_UI.primaryVehicleScaleNumber.value = nextScale.toFixed(2);
+  builderReadUiIntoState();
+});
+BUILDER_UI.primaryVehicleFacingBase?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.primaryVehicleFlight?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.primaryAttackMode?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
+BUILDER_UI.primaryLaserTankerRefill?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.primaryLaserColor?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.primaryRocketType?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.primaryRocketColor?.addEventListener('input', () => builderReadUiIntoState());
+['input','change'].forEach((evt) => BUILDER_UI.primaryVehicleScale?.addEventListener(evt, () => {
+  if (BUILDER_UI.primaryVehicleScaleNumber) BUILDER_UI.primaryVehicleScaleNumber.value = Number(BUILDER_UI.primaryVehicleScale.value || 1).toFixed(2);
+  builderReadUiIntoState();
+}));
+['input','change'].forEach((evt) => BUILDER_UI.primaryVehicleScaleNumber?.addEventListener(evt, () => {
+  const scale = clamp(Number(BUILDER_UI.primaryVehicleScaleNumber.value || 0.5), 0, 2.6);
+  if (BUILDER_UI.primaryVehicleScale) BUILDER_UI.primaryVehicleScale.value = String(scale);
+  BUILDER_UI.primaryVehicleScaleNumber.value = scale.toFixed(2);
+  builderReadUiIntoState();
+}));
+BUILDER_UI.setPrimaryFromSelectedBtn?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  const spriteKey = getLegacySpriteKeyForBuilder(ent);
+  if (!ent || !spriteKey) {
+    builderSetStatus('Select a WebP layer first, then use Use Selected Layer As Primary.');
+    return;
+  }
+  if (BUILDER_UI.primaryVehicleSprite) BUILDER_UI.primaryVehicleSprite.value = spriteKey;
+  if (BUILDER_UI.primaryVehicleScale) BUILDER_UI.primaryVehicleScale.value = String(clamp(Number(ent.scale || 1), 0, 2.6));
+  if (BUILDER_UI.primaryVehicleScaleNumber) BUILDER_UI.primaryVehicleScaleNumber.value = clamp(Number(ent.scale || 1), 0, 2.6).toFixed(2);
+  if (BUILDER_UI.primaryVehicleFacingBase) BUILDER_UI.primaryVehicleFacingBase.value = ent.flipX ? 'left' : 'right';
+  if (BUILDER_UI.primaryVehicleFlight) BUILDER_UI.primaryVehicleFlight.value = ent.flightEnabled ? '1' : '0';
+  builderReadUiIntoState();
+  builderSetStatus(`Primary Vehicle set from selected layer: ${spriteKey}`);
+});
 ['input','change'].forEach((evt) => BUILDER_UI.truckEntryDelay?.addEventListener(evt, () => {
   if (BUILDER_UI.truckEntryDelayRange) BUILDER_UI.truckEntryDelayRange.value = BUILDER_UI.truckEntryDelay.value;
   builderReadUiIntoState();
@@ -14341,6 +15359,194 @@ BUILDER_UI.animalBonusPoints?.addEventListener('change', () => {
   ent.waterExitBonusPoints = clamp(Number(BUILDER_UI.animalBonusPoints.value || 0), 0, 50);
   builderSaveLastDraft();
 });
+BUILDER_UI.layerEnemyEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyEnabled = BUILDER_UI.layerEnemyEnabled.value === '1';
+  if (!ent.enemyEnabled) {
+    ent.raidFormationEnabled = false;
+    ent.aggressiveEnabled = false;
+  } else {
+    if (!ent.enemyModelKey) ent.enemyModelKey = resolveSpriteKey(String(ent.spriteKey || '')) || '';
+    ent.allowLaserDamage = true;
+  }
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyModelKey?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyModelKey = resolveSpriteKey(String(BUILDER_UI.layerEnemyModelKey.value || '')) || '';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyCount?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyCount = clamp(Number(BUILDER_UI.layerEnemyCount.value || 1), 1, 30);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemySpawnDirection?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemySpawnDirection = (BUILDER_UI.layerEnemySpawnDirection.value === 'left' || BUILDER_UI.layerEnemySpawnDirection.value === 'right') ? BUILDER_UI.layerEnemySpawnDirection.value : 'both';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemySpawnMinDelayMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemySpawnMinDelayMs = clamp(Number(BUILDER_UI.layerEnemySpawnMinDelayMs.value || 300), 80, 5000);
+  if (ent.enemySpawnMaxDelayMs < ent.enemySpawnMinDelayMs) ent.enemySpawnMaxDelayMs = ent.enemySpawnMinDelayMs;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemySpawnMaxDelayMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemySpawnMaxDelayMs = clamp(Number(BUILDER_UI.layerEnemySpawnMaxDelayMs.value || 1200), 120, 10000);
+  if (ent.enemySpawnMaxDelayMs < ent.enemySpawnMinDelayMs) ent.enemySpawnMaxDelayMs = ent.enemySpawnMinDelayMs;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyScaleMin?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyScaleMin = clamp(Number(BUILDER_UI.layerEnemyScaleMin.value || 0.55), 0.1, 3);
+  if (ent.enemyScaleMax < ent.enemyScaleMin) ent.enemyScaleMax = ent.enemyScaleMin;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyScaleMax?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyScaleMax = clamp(Number(BUILDER_UI.layerEnemyScaleMax.value || 1.1), 0.1, 3);
+  if (ent.enemyScaleMax < ent.enemyScaleMin) ent.enemyScaleMax = ent.enemyScaleMin;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFightBackEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.fightBackEnabled = BUILDER_UI.layerFightBackEnabled.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFlightEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flightEnabled = BUILDER_UI.layerFlightEnabled.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerFlightSpeed?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.flightSpeed = clamp(Number(BUILDER_UI.layerFlightSpeed.value || 2.4), 0.5, 8);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerLaserEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.laserEnabled = BUILDER_UI.layerLaserEnabled.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerLaserDamage?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.laserDamage = clamp(Number(BUILDER_UI.layerLaserDamage.value || 8), 1, 30);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerLaserCooldownMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.laserCooldownMs = clamp(Number(BUILDER_UI.layerLaserCooldownMs.value || 300), 40, 3000);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerBombEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.bombEnabled = BUILDER_UI.layerBombEnabled.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerBombDamage?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.bombDamage = clamp(Number(BUILDER_UI.layerBombDamage.value || 16), 1, 80);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerBombCooldownMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.bombCooldownMs = clamp(Number(BUILDER_UI.layerBombCooldownMs.value || 1200), 120, 5000);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyLaserColor?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.layerEnemyLaserColor.value || '')) ? String(BUILDER_UI.layerEnemyLaserColor.value) : '#ff5772';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyBombType?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyBombType = (BUILDER_UI.layerEnemyBombType.value === 'plasma' || BUILDER_UI.layerEnemyBombType.value === 'mine') ? BUILDER_UI.layerEnemyBombType.value : 'bomb';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyBombColor?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyBombColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.layerEnemyBombColor.value || '')) ? String(BUILDER_UI.layerEnemyBombColor.value) : '#ffa047';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerAggressiveEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.aggressiveEnabled = BUILDER_UI.layerAggressiveEnabled.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerAggressiveSkill?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.aggressiveSkill = clamp(Number(BUILDER_UI.layerAggressiveSkill.value || 1), 0.2, 2.5);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerAggressiveTargetId?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.aggressiveTargetId = String(BUILDER_UI.layerAggressiveTargetId.value || 'primaryVehicle');
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerPickTargetBtn?.addEventListener('click', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  builderTargetPickMode = !builderTargetPickMode;
+  builderSetStatus(builderTargetPickMode
+    ? 'Quick target pick: click a target layer on canvas. Click empty area for Primary Vehicle target.'
+    : 'Quick target pick canceled.');
+});
+BUILDER_UI.layerAllowLaserDamage?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.allowLaserDamage = BUILDER_UI.layerAllowLaserDamage.value === '1';
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerRaidFormationEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.raidFormationEnabled = BUILDER_UI.layerRaidFormationEnabled.value === '1';
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerRaidFormationCount?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.raidFormationCount = clamp(Number(BUILDER_UI.layerRaidFormationCount.value || 3), 1, 12);
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerRaidFormationPattern?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  const pattern = String(BUILDER_UI.layerRaidFormationPattern.value || 'vee');
+  ent.raidFormationPattern = (pattern === 'line' || pattern === 'arc' || pattern === 'zigzag' || pattern === 'swoop') ? pattern : 'vee';
+  builderSaveLastDraft();
+});
 
 document.getElementById('builderToolSelectBtn')?.addEventListener('click', () => { builderTool = 'select'; builderSetStatus('Select tool active.'); });
 document.getElementById('builderToolMoveBtn')?.addEventListener('click', () => { builderTool = 'move'; builderSetStatus('Move tool active.'); });
@@ -14532,6 +15738,12 @@ function handleStart(e) {
       return; 
     } 
     if (!playerControlsEnabled) return;
+    const levelData = baseLevels[currentLevel - 1] || {};
+  if (isPrimaryLaserMode(levelData)) {
+      isLaserFiring = true;
+      isSpraying = false;
+      return;
+    }
     if (!canSprayWaterNow()) return;
     isSpraying = true; 
   }
@@ -14550,6 +15762,7 @@ function handleEnd(e) {
     return;
   }
   isSpraying = false;
+  isLaserFiring = false;
 }
 
 canvas.addEventListener('mousemove', handleMove);
@@ -14801,7 +16014,7 @@ function createWaterParticles() {
       particles.push(new Particle(
         startX + vx * progress * 0.6, startY + vy * progress * 0.6,
         vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
-        isScifiTruckActive() ? (Math.random() > 0.5 ? '#99ff7a' : '#35d86a') : (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF'),
+        (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF'),
         (impact ? 12 : 32) + Math.random() * 10, 2.8 + Math.random() * 1.6, 'water'
       ));
     }
@@ -14810,13 +16023,14 @@ function createWaterParticles() {
 
 function isAlienDamageTarget(ent) {
   if (!ent || ent._laserDestroyed) return false;
+  if (ent.enemyEnabled || ent.allowLaserDamage || ent.fightBackEnabled) return true;
   if (ent.type === 'ufo') return true;
   const key = String(ent.spriteKey || ent.variant || ent.type || '').toLowerCase();
   return /(alien|scifi|ufo)/.test(key);
 }
 
 function pulseScifiLaser(dt, levelData) {
-  if (!isLaserFiring || gameState !== 'playing' || !truckVisible || !isScifiTruckActive(levelData)) return;
+  if (!isLaserFiring || gameState !== 'playing' || !truckVisible) return;
   const truckPoint = getTruckNozzlePoint();
   const tip = getClampedHoseEnd();
   const dirXRaw = tip.x - truckPoint.x;
@@ -14830,11 +16044,12 @@ function pulseScifiLaser(dt, levelData) {
   const beamEndX = beamStartX + (dirX * beamLength);
   const beamEndY = beamStartY + (dirY * beamLength);
   const nowMs = performance.now();
+  const laserColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.primaryLaserColor || '')) ? String(levelData.primaryLaserColor) : '#4bb8ff';
 
   const beamWidth = 3.2 + Math.sin(nowMs * 0.045) * 1.6;
   ctx.save();
-  ctx.strokeStyle = '#4bb8ff';
-  ctx.shadowColor = '#67c6ff';
+  ctx.strokeStyle = laserColor;
+  ctx.shadowColor = laserColor;
   ctx.shadowBlur = 18;
   ctx.lineWidth = beamWidth;
   ctx.beginPath();
@@ -14856,15 +16071,15 @@ function pulseScifiLaser(dt, levelData) {
     if (!spot) return;
     const hit = segmentRectHit(beamStartX, beamStartY, beamEndX, beamEndY, spot, 3);
     if (!hit) return;
-    const restartBoost = Math.max(12, (spot.maxHealth || 220) * 0.08);
-    spot.health = Math.min(spot.maxHealth || 600, Math.max(spot.health || 0, restartBoost) + restartBoost);
-    spot.active = true;
-    spot.outAwarded = false;
-    spot.emitMs = 0;
-    createFireParticles(hit.x, hit.y, 2.4, 0.8, { roof: !!spot.roof, big: false });
+    const laserDamage = Math.max(0.45, (dt || 16.67) * 0.038);
+    spot.health = Math.max(0, Number(spot.health || 0) - laserDamage);
+    createBonusStars(hit.x, hit.y, 1);
   });
 
-  const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
+  const entities = [
+    ...(Array.isArray(levelData?.entities) ? levelData.entities : []),
+    ...(Array.isArray(enemyRaidState?.attackers) ? enemyRaidState.attackers : [])
+  ];
   entities.forEach((ent) => {
     if (!isAlienDamageTarget(ent)) return;
     const rect = getEntityBounds(ent);
@@ -14872,12 +16087,128 @@ function pulseScifiLaser(dt, levelData) {
     const hit = segmentRectHit(beamStartX, beamStartY, beamEndX, beamEndY, rect, 2);
     if (!hit) return;
     ent._laserHealth = Number.isFinite(ent._laserHealth) ? ent._laserHealth : 100;
+    if (ent.fightBackEnabled) ent._enemyProvokedUntil = performance.now() + 6000;
     ent._laserHealth -= Math.max(4, (dt || 16.67) * 0.18);
     if (ent._laserHealth <= 0) {
       ent._laserDestroyed = true;
       addPointPopup(rect.x + rect.w * 0.5, rect.y + rect.h * 0.4, 'TARGET DOWN', '#7ffff0', 70);
     }
   });
+}
+
+function pulsePlayerRockets(dt, levelData) {
+  if (!isRocketFiring || gameState !== 'playing' || !truckVisible) return;
+  const rocketType = (levelData?.primaryRocketType === 'plasma' || levelData?.primaryRocketType === 'missile') ? levelData.primaryRocketType : 'rocket';
+  const configuredColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.primaryRocketColor || '')) ? String(levelData.primaryRocketColor) : '';
+  const trailColor = configuredColor || (rocketType === 'plasma' ? '#b08cff' : (rocketType === 'missile' ? '#ffcf8a' : '#9ad8ff'));
+  const popupText = rocketType === 'plasma' ? 'PLASMA' : (rocketType === 'missile' ? 'MISSILE' : 'ROCKET');
+  const nowMs = performance.now();
+  const cooldown = rocketType === 'plasma' ? 340 : (rocketType === 'missile' ? 520 : 420);
+  if (nowMs - lastRocketPulseAt < cooldown) return;
+  lastRocketPulseAt = nowMs;
+  const origin = getTruckNozzlePoint();
+  const tip = getClampedHoseEnd();
+  const tx = tip.x;
+  const ty = tip.y;
+  const dx = tx - origin.x;
+  const dy = ty - origin.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const speed = rocketType === 'missile' ? 20 : (rocketType === 'plasma' ? 23 : 21);
+  playerRocketShots.push({
+    x: origin.x,
+    y: origin.y,
+    tx,
+    ty,
+    vx: (dx / len) * speed,
+    vy: (dy / len) * speed,
+    ttlMs: 1200,
+    type: rocketType,
+    color: trailColor,
+    text: popupText
+  });
+}
+
+function applyPlayerRocketImpact(targetX, targetY, trailColor, popupText, dt, levelData) {
+  const blastR = 84;
+  const blastR2 = blastR * blastR;
+  createSmoke(targetX, targetY);
+  createFireParticles(targetX, targetY, 3.2, 1.2, { big: true });
+  addPointPopup(targetX, targetY - 10, popupText, trailColor, 48);
+
+  fireSpots.forEach((spot) => {
+    if (!spot) return;
+    const cx = spot.x + (spot.w * 0.5);
+    const cy = spot.y + (spot.h * 0.5);
+    const d2 = ((cx - targetX) ** 2) + ((cy - targetY) ** 2);
+    if (d2 > blastR2) return;
+    const falloff = 1 - Math.min(1, Math.sqrt(d2) / blastR);
+    const damage = 3.5 + (7.5 * falloff);
+    spot.health = Math.max(0, Number(spot.health || 0) - damage);
+  });
+
+  const entities = [
+    ...(Array.isArray(levelData?.entities) ? levelData.entities : []),
+    ...(Array.isArray(enemyRaidState?.attackers) ? enemyRaidState.attackers : [])
+  ];
+  entities.forEach((ent) => {
+    if (!isAlienDamageTarget(ent)) return;
+    const rect = getEntityBounds(ent);
+    if (!rect) return;
+    const cx = rect.x + (rect.w * 0.5);
+    const cy = rect.y + (rect.h * 0.5);
+    const d2 = ((cx - targetX) ** 2) + ((cy - targetY) ** 2);
+    if (d2 > blastR2) return;
+    ent._laserHealth = Number.isFinite(ent._laserHealth) ? ent._laserHealth : 100;
+    const falloff = 1 - Math.min(1, Math.sqrt(d2) / blastR);
+    ent._laserHealth -= (24 + (26 * falloff));
+    if (ent._laserHealth <= 0) {
+      ent._laserDestroyed = true;
+      addPointPopup(cx, cy, 'BOOM', trailColor, 64);
+    }
+  });
+}
+
+function updateDrawPlayerRocketShots(dt, levelData) {
+  if (!playerRocketShots.length || gameState !== 'playing') return;
+  const step = Math.max(0.25, Number(dt || 16.67) / 16.67);
+  playerRocketShots.forEach((shot) => {
+    shot.ttlMs -= Math.max(0, Number(dt || 0));
+    const prevX = shot.x;
+    const prevY = shot.y;
+    shot.x += shot.vx * step;
+    shot.y += shot.vy * step;
+    const dx = shot.tx - shot.x;
+    const dy = shot.ty - shot.y;
+    const dist = Math.hypot(dx, dy);
+    const angle = Math.atan2(shot.vy, shot.vx);
+    ctx.save();
+    ctx.translate(shot.x, shot.y);
+    ctx.rotate(angle);
+    ctx.fillStyle = String(shot.color || '#9ad8ff');
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(9, 0);
+    ctx.lineTo(2, 4);
+    ctx.lineTo(-9, 4);
+    ctx.lineTo(-12, 0);
+    ctx.lineTo(-9, -4);
+    ctx.lineTo(2, -4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 210, 140, 0.9)';
+    ctx.beginPath();
+    ctx.arc(-12, 0, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    const hit = dist <= Math.max(10, Math.hypot(shot.x - prevX, shot.y - prevY) + 4);
+    if (hit || shot.ttlMs <= 0 || shot.x < -260 || shot.x > 1460 || shot.y < -120 || shot.y > 720) {
+      applyPlayerRocketImpact(shot.tx, shot.ty, shot.color, shot.text, dt, levelData);
+      shot.ttlMs = 0;
+    }
+  });
+  playerRocketShots = playerRocketShots.filter((shot) => shot && shot.ttlMs > 0);
 }
 
 function segmentRectHit(aX, aY, bX, bY, rect, pad = 2) {
@@ -14938,8 +16269,10 @@ function getFirstWaterImpactPoint(aX, aY, bX, bY) {
 
 function getTruckNozzlePoint() {
   const rect = getTruckDrawRect();
-  const xRatio = truckFacing > 0 ? 0.74 : 0.30;
-  const yRatio = 0.29;
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const primarySprite = getLevelPrimaryVehicleSprite(levelData);
+  const xRatio = primarySprite ? (truckFacing > 0 ? 0.84 : 0.16) : (truckFacing > 0 ? 0.74 : 0.30);
+  const yRatio = primarySprite ? 0.45 : 0.29;
   return { x: rect.x + rect.w * xRatio, y: rect.y + rect.h * yRatio };
 }
 
@@ -14997,7 +16330,7 @@ function updateTankerSupport(dt) {
     tankerSupport.facing = -1;
     tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
     tankerSupport.x += (tankerSupport.targetX - tankerSupport.x) * Math.min(0.18, 0.06 * step);
-    if (isSupportTruckConnected(tankerSupport, 'refill')) addWater(Math.max(0, dt) * 0.0125);
+    if (isTankerRefillEnabled() && isSupportTruckConnected(tankerSupport, 'refill')) addWater(Math.max(0, dt) * 0.0125);
     if (levelElapsedMs >= tankerSupport.holdUntil) {
       tankerSupport.state = 'depart';
     }
@@ -15069,7 +16402,7 @@ function updateBoroTankerSupport(dt) {
     boroTankerSupport.facing = 1;
     boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
     boroTankerSupport.x += (boroTankerSupport.targetX - boroTankerSupport.x) * Math.min(0.18, 0.06 * step);
-    if (isSupportTruckConnected(boroTankerSupport, 'hold')) addWater(Math.max(0, dt) * 0.019);
+    if (isTankerRefillEnabled() && isSupportTruckConnected(boroTankerSupport, 'hold')) addWater(Math.max(0, dt) * 0.019);
     if (levelElapsedMs >= boroTankerSupport.holdUntil) {
       boroTankerSupport.state = 'depart';
     }
@@ -15536,17 +16869,19 @@ function drawBackground() {
   }
 }
 
-function drawSideFireTruck() {
+function drawSideFireTruck(levelDataOverride = null) {
   if (!truckVisible) return;
-  const key = getEngineSpriteKeyForTruckFacing(truckFacing);
-  const layout = ENTITY_LAYOUT.engine;
-  const truckY = getTruckY();
+  const levelData = levelDataOverride || baseLevels[currentLevel - 1] || {};
   const scale = getTruckRenderScale();
-  if (SPRITE_READY[key]) {
-    const rect = getSpriteFitRect(key, truck.x + layout.x * scale, truckY - (layout.h * scale), layout.w * scale, layout.h * scale, true);
-    drawSprite(key, rect.x, rect.y, rect.w, rect.h);
-    return;
+  const spec = getTruckSpriteRenderSpec(levelData, truckFacing, scale, truck.x, getTruckY());
+  if (spec?.key && !SPRITE_READY[spec.key]) {
+    ensureSpritesLoaded([spec.key]);
   }
+  if (spec?.key) {
+    const drawn = drawTruckSpriteSpec(spec);
+    if (drawn) return;
+  }
+  const truckY = getTruckY();
   const flip = truckFacing < 0 ? -1 : 1;
   const bodyW = 292 * scale;
   ctx.save();
@@ -16081,6 +17416,458 @@ function updateEntityPathAnimations(dt, entities) {
       }
       if (pauseMs > 0) ent._pathPauseUntil = pauseMs;
     }
+  });
+}
+
+function initEnemyRaid(levelData) {
+  const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
+  const profiles = [];
+  const formationSpecs = [];
+  entities.forEach((ent) => {
+    if (!ent || ent.type !== 'builderSprite' || !ent.enemyEnabled) return;
+    const spriteKey = resolveSpriteKey(String(ent.enemyModelKey || ent.spriteKey || ''));
+    if (!spriteKey) return;
+    const count = clamp(Number(ent.enemyCount ?? 1), 1, 30);
+    for (let i = 0; i < count; i++) {
+      profiles.push({
+        spriteKey,
+        spawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
+        scaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
+        scaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+        sourceScale: clamp(Number(ent.scale || 1), 0.1, 3),
+        targetId: String(ent.aggressiveTargetId || 'primaryVehicle'),
+        laserEnabled: !!ent.laserEnabled,
+        bombEnabled: !!ent.bombEnabled,
+        aggressiveEnabled: !!ent.aggressiveEnabled,
+        fightBackEnabled: !!ent.fightBackEnabled,
+        aggressiveSkill: clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5),
+        flightEnabled: !!ent.flightEnabled,
+        flightSpeed: clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8),
+        laserDamage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
+        laserCooldownMs: clamp(Number(ent.laserCooldownMs ?? 300), 40, 3000),
+        bombDamage: clamp(Number(ent.bombDamage ?? 16), 1, 80),
+        bombCooldownMs: clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000),
+        allowLaserDamage: !!ent.allowLaserDamage,
+        enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
+        enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+        enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || '')) ? String(ent.enemyLaserColor) : '#ff5772',
+        enemyBombType: (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : 'bomb',
+        enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || '')) ? String(ent.enemyBombColor) : '#ffa047'
+      });
+    }
+    if (ent.raidFormationEnabled) {
+      formationSpecs.push({
+        spriteKey,
+        count: clamp(Number(ent.raidFormationCount ?? 3), 1, 12),
+        pattern: (ent.raidFormationPattern === 'line' || ent.raidFormationPattern === 'arc' || ent.raidFormationPattern === 'zigzag' || ent.raidFormationPattern === 'swoop') ? ent.raidFormationPattern : 'vee',
+        sourceScale: clamp(Number(ent.scale || 1), 0.1, 3),
+        sourceTargetId: String(ent.aggressiveTargetId || 'primaryVehicle'),
+        profile: profiles[profiles.length - 1] || null
+      });
+    }
+  });
+  if (!profiles.length) {
+    const legacyKeys = normalizeEnemyModelKeyList(levelData?.enemyRaid?.modelKeys || levelData?.enemyModelKeys || []);
+    const legacyCount = clamp(Number(levelData?.enemyRaid?.targetCount ?? levelData?.enemyTargetCount ?? 0), 0, 30);
+    const legacySpawnDirection = (levelData?.enemyRaid?.spawnDirection === 'left' || levelData?.enemyRaid?.spawnDirection === 'right') ? levelData.enemyRaid.spawnDirection : 'both';
+    const legacyScaleMin = clamp(Number(levelData?.enemyRaid?.scaleMin ?? 0.55), 0.1, 3);
+    const legacyScaleMax = Math.max(legacyScaleMin, clamp(Number(levelData?.enemyRaid?.scaleMax ?? 1.1), 0.1, 3));
+    const legacyLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.laserColor || '')) ? String(levelData.enemyRaid.laserColor) : '#ff5772';
+    const legacyBombType = (levelData?.enemyRaid?.bombType === 'plasma' || levelData?.enemyRaid?.bombType === 'mine') ? levelData.enemyRaid.bombType : 'bomb';
+    const legacyBombColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.bombColor || '')) ? String(levelData.enemyRaid.bombColor) : '#ffa047';
+    for (let i = 0; i < legacyCount; i++) {
+      const spriteKey = legacyKeys.length ? legacyKeys[i % legacyKeys.length] : '';
+      if (!spriteKey) continue;
+      profiles.push({
+        spriteKey,
+        spawnDirection: legacySpawnDirection,
+        scaleMin: legacyScaleMin,
+        scaleMax: legacyScaleMax,
+        sourceScale: 1,
+        targetId: 'primaryVehicle',
+        laserEnabled: true,
+        bombEnabled: true,
+        aggressiveEnabled: true,
+        fightBackEnabled: false,
+        aggressiveSkill: 1,
+        flightEnabled: true,
+        flightSpeed: 2.4,
+        laserDamage: 8,
+        laserCooldownMs: 520,
+        bombDamage: 16,
+        bombCooldownMs: 1200,
+        allowLaserDamage: true,
+        enemySpawnMinDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMinDelayMs ?? 300), 80, 5000),
+        enemySpawnMaxDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? 1200), 120, 10000),
+        enemyLaserColor: legacyLaserColor,
+        enemyBombType: legacyBombType,
+        enemyBombColor: legacyBombColor
+      });
+    }
+  }
+  if (!profiles.length) {
+    enemyRaidState = null;
+    enemyLaserShots = [];
+    enemyBombShots = [];
+    playerRocketShots = [];
+    return;
+  }
+  enemyRaidState = {
+    profiles,
+    targetCount: profiles.length,
+    spawnDirection: 'both',
+    attackOrder: formationSpecs.length ? 'sequence' : 'random',
+    spawnMinDelayMs: Math.min(...profiles.map((p) => Number(p.enemySpawnMinDelayMs || 300))),
+    spawnMaxDelayMs: Math.max(...profiles.map((p) => Number(p.enemySpawnMaxDelayMs || 1200))),
+    scaleMin: Math.min(...profiles.map((p) => Number(p.scaleMin || 0.55))),
+    scaleMax: Math.max(...profiles.map((p) => Number(p.scaleMax || 1.1))),
+    laserColor: profiles[0]?.enemyLaserColor || '#ff5772',
+    bombType: profiles[0]?.enemyBombType || 'bomb',
+    bombColor: profiles[0]?.enemyBombColor || '#ffa047',
+    nextModelIndex: 0,
+    formationSpecs,
+    attackers: [],
+    spawnAccumulatorMs: 0,
+    nextSpawnDelayMs: Math.min(...profiles.map((p) => Number(p.enemySpawnMinDelayMs || 300)))
+  };
+  enemyLaserShots = [];
+  enemyBombShots = [];
+  playerRocketShots = [];
+}
+
+function createEnemyRaidClone(spriteKey, options = {}) {
+  const spawnLeft = options.spawnDirection === 'left'
+    ? true
+    : options.spawnDirection === 'right'
+      ? false
+      : (Math.random() < 0.5);
+  const speed = 1.1 + Math.random() * 1.4;
+  const y = Number.isFinite(Number(options.y)) ? clamp(Number(options.y), 90, 520) : (180 + Math.random() * 220);
+  const sourceScale = clamp(Number(options.sourceScale ?? 1), 0.1, 3);
+  const minScale = clamp(Number(options.scaleMin ?? 0.55), 0.1, 3);
+  const maxScale = Math.max(minScale, clamp(Number(options.scaleMax ?? 1.1), 0.1, 3));
+  const scale = clamp(sourceScale + ((Math.random() - 0.5) * 0.18), minScale, maxScale);
+  const spawnX = Number.isFinite(Number(options.x))
+    ? Number(options.x)
+    : (spawnLeft ? -220 : 1420);
+  return normalizeBuilderEntity({
+    type: 'builderSprite',
+    spriteKey,
+    x: spawnX,
+    baseY: y,
+    scale,
+    enemyEnabled: true,
+    lockedPosition: false,
+    flightEnabled: options.flightEnabled !== false,
+    flightSpeed: clamp(Number(options.flightSpeed ?? speed), 0.5, 8),
+    laserEnabled: !!options.laserEnabled,
+    laserDamage: clamp(Number(options.laserDamage ?? (7 + Math.round(Math.random() * 5))), 1, 30),
+    laserCooldownMs: clamp(Number(options.laserCooldownMs ?? (420 + Math.round(Math.random() * 520))), 40, 3000),
+    bombEnabled: !!options.bombEnabled,
+    bombDamage: clamp(Number(options.bombDamage ?? (14 + Math.round(Math.random() * 14))), 1, 80),
+    bombCooldownMs: clamp(Number(options.bombCooldownMs ?? (1200 + Math.round(Math.random() * 900))), 120, 5000),
+    aggressiveEnabled: !!options.aggressiveEnabled,
+    fightBackEnabled: !!options.fightBackEnabled,
+    aggressiveSkill: clamp(Number(options.aggressiveSkill ?? (0.8 + Math.random() * 1.1)), 0.2, 2.5),
+    aggressiveTargetId: String(options.targetId || 'primaryVehicle'),
+    allowLaserDamage: options.allowLaserDamage !== false,
+    enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(options.enemyLaserColor || '')) ? String(options.enemyLaserColor) : '#ff5772',
+    enemyBombType: (options.enemyBombType === 'plasma' || options.enemyBombType === 'mine') ? options.enemyBombType : 'bomb',
+    enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(options.enemyBombColor || '')) ? String(options.enemyBombColor) : '#ffa047'
+  });
+}
+
+function getRaidFormationOffsets(pattern, count) {
+  const safeCount = clamp(Number(count || 1), 1, 12);
+  const spacing = 84;
+  const out = [];
+  for (let i = 0; i < safeCount; i++) {
+    const center = (safeCount - 1) * 0.5;
+    const t = i - center;
+    let ox = Math.abs(t) * spacing;
+    let oy = 0;
+    if (pattern === 'line') {
+      ox = i * (spacing * 0.88);
+      oy = 0;
+    } else if (pattern === 'arc') {
+      ox = i * (spacing * 0.78);
+      oy = -Math.sin((i / Math.max(1, safeCount - 1)) * Math.PI) * 84;
+    } else if (pattern === 'zigzag') {
+      ox = i * (spacing * 0.75);
+      oy = (i % 2 === 0 ? -34 : 34);
+    } else if (pattern === 'swoop') {
+      ox = i * (spacing * 0.7);
+      oy = Math.sin((i / Math.max(1, safeCount - 1)) * Math.PI * 1.3) * 56;
+    } else {
+      oy = Math.abs(t) * 30;
+    }
+    out.push({ x: ox, y: oy });
+  }
+  return out;
+}
+
+function spawnEnemyRaidAttacker(spriteKey = '', options = {}) {
+  if (!enemyRaidState) return false;
+  let profile = options.profile || null;
+  if (!profile) {
+    if (enemyRaidState.attackOrder === 'sequence') {
+      const idx = enemyRaidState.nextModelIndex % Math.max(1, enemyRaidState.profiles.length);
+      profile = enemyRaidState.profiles[idx] || null;
+      enemyRaidState.nextModelIndex = (enemyRaidState.nextModelIndex + 1) % Math.max(1, enemyRaidState.profiles.length);
+    } else {
+      profile = enemyRaidState.profiles[Math.floor(Math.random() * enemyRaidState.profiles.length)] || null;
+    }
+  }
+  let key = spriteKey || profile?.spriteKey || '';
+  if (!key) return false;
+  const clone = createEnemyRaidClone(key, {
+    ...options,
+    profile,
+    targetId: options.targetId || profile?.targetId || 'primaryVehicle',
+    spawnDirection: options.spawnDirection || profile?.spawnDirection || enemyRaidState.spawnDirection,
+    sourceScale: options.sourceScale ?? profile?.sourceScale ?? 1,
+    scaleMin: options.scaleMin ?? profile?.scaleMin ?? enemyRaidState.scaleMin,
+    scaleMax: options.scaleMax ?? profile?.scaleMax ?? enemyRaidState.scaleMax,
+    flightEnabled: options.flightEnabled ?? profile?.flightEnabled,
+    flightSpeed: options.flightSpeed ?? profile?.flightSpeed,
+    laserEnabled: options.laserEnabled ?? profile?.laserEnabled,
+    laserDamage: options.laserDamage ?? profile?.laserDamage,
+    laserCooldownMs: options.laserCooldownMs ?? profile?.laserCooldownMs,
+    bombEnabled: options.bombEnabled ?? profile?.bombEnabled,
+    bombDamage: options.bombDamage ?? profile?.bombDamage,
+    bombCooldownMs: options.bombCooldownMs ?? profile?.bombCooldownMs,
+    aggressiveEnabled: options.aggressiveEnabled ?? profile?.aggressiveEnabled,
+    fightBackEnabled: options.fightBackEnabled ?? profile?.fightBackEnabled,
+    aggressiveSkill: options.aggressiveSkill ?? profile?.aggressiveSkill,
+    allowLaserDamage: options.allowLaserDamage ?? profile?.allowLaserDamage,
+    enemyLaserColor: options.enemyLaserColor ?? profile?.enemyLaserColor ?? enemyRaidState.laserColor,
+    enemyBombType: options.enemyBombType ?? profile?.enemyBombType ?? enemyRaidState.bombType,
+    enemyBombColor: options.enemyBombColor ?? profile?.enemyBombColor ?? enemyRaidState.bombColor
+  });
+  if (!clone) return false;
+  clone._raidSpawned = true;
+  if (options?.formationOffset) {
+    clone._formationOffsetX = Number(options.formationOffset.x || 0);
+    clone._formationOffsetY = Number(options.formationOffset.y || 0);
+    clone._formationLockMs = clamp(Number(options.formationLockMs ?? 1450), 300, 4200);
+  }
+  enemyRaidState.attackers.push(clone);
+  return true;
+}
+
+function spawnEnemyRaidFormationWave(spec, maxSpawn = 1) {
+  if (!enemyRaidState || !spec || !spec.spriteKey) return 0;
+  const count = clamp(Math.min(Number(maxSpawn || 1), Number(spec.count || 1)), 1, 12);
+  const offsets = getRaidFormationOffsets(spec.pattern || 'vee', count);
+  const fromLeft = enemyRaidState.spawnDirection === 'left'
+    ? true
+    : enemyRaidState.spawnDirection === 'right'
+      ? false
+      : (Math.random() < 0.5);
+  const baseX = fromLeft ? -240 : 1440;
+  const baseY = 150 + Math.random() * 220;
+  let spawned = 0;
+  offsets.forEach((off) => {
+    const ox = Number(off?.x || 0);
+    const oy = Number(off?.y || 0);
+    const spawnX = fromLeft ? (baseX - ox) : (baseX + ox);
+    const spawnY = clamp(baseY + oy, 90, 520);
+    const ok = spawnEnemyRaidAttacker(spec.spriteKey, {
+      profile: spec.profile || null,
+      x: spawnX,
+      y: spawnY,
+      sourceScale: spec.sourceScale,
+      targetId: spec.sourceTargetId || 'primaryVehicle',
+      formationOffset: { x: fromLeft ? ox : -ox, y: oy },
+      formationLockMs: 1200 + Math.round(Math.random() * 1300)
+    });
+    if (ok) spawned += 1;
+  });
+  return spawned;
+}
+
+function ensureEnemyRaidCount(dt) {
+  if (!enemyRaidState) return;
+  enemyRaidState.attackers = enemyRaidState.attackers.filter((ent) => ent && !ent._laserDestroyed);
+  const current = enemyRaidState.attackers.length;
+  const needed = Math.max(0, enemyRaidState.targetCount - current);
+  if (needed <= 0) return;
+  const elapsed = Math.max(0, Number(dt || 0));
+  enemyRaidState.spawnAccumulatorMs = Math.max(0, Number(enemyRaidState.spawnAccumulatorMs || 0)) + elapsed;
+  const nextDelay = clamp(Number(enemyRaidState.nextSpawnDelayMs || 350), 120, 2500);
+  if (enemyRaidState.spawnAccumulatorMs < nextDelay) return;
+  enemyRaidState.spawnAccumulatorMs = 0;
+  let spawned = false;
+  if (needed > 1 && enemyRaidState.formationSpecs?.length && Math.random() < 0.72) {
+    const spec = enemyRaidState.formationSpecs[Math.floor(Math.random() * enemyRaidState.formationSpecs.length)];
+    spawned = spawnEnemyRaidFormationWave(spec, needed) > 0;
+  } else {
+    spawned = spawnEnemyRaidAttacker();
+  }
+  if (spawned) {
+    const minDelay = clamp(Number(enemyRaidState.spawnMinDelayMs || 300), 80, 5000);
+    const maxDelay = Math.max(minDelay, clamp(Number(enemyRaidState.spawnMaxDelayMs || 1200), 120, 10000));
+    enemyRaidState.nextSpawnDelayMs = minDelay + Math.round(Math.random() * (maxDelay - minDelay));
+  }
+}
+
+function getEnemyRaidTargetRect(ent, levelData) {
+  const targetId = String(ent?.aggressiveTargetId || 'primaryVehicle');
+  if (!targetId || targetId === 'primaryVehicle') return getTruckDrawRect();
+  const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
+  const target = entities.find((item) => item && String(item.id || '') === targetId);
+  if (!target || target._laserDestroyed) return getTruckDrawRect();
+  return getEntityBounds(target) || getTruckDrawRect();
+}
+
+function updateEnemyRaid(dt, levelData) {
+  if (!enemyRaidState || gameState !== 'playing' || !playerControlsEnabled) return;
+  ensureEnemyRaidCount(dt);
+  const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
+  enemyRaidState.attackers.forEach((ent) => {
+    if (!ent || ent._laserDestroyed) return;
+    const targetRect = getEnemyRaidTargetRect(ent, levelData);
+    const skill = clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5);
+    const speed = clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8) * skill * 0.45;
+    let tx = targetRect.x + targetRect.w * 0.5 + (Math.sin((levelElapsedMs + (ent._seed || 0)) / 620) * 120);
+    let ty = clamp((targetRect.y + targetRect.h * 0.2) - 80 + Math.sin((levelElapsedMs + (ent._seed || 0)) / 540) * 40, 90, 490);
+    if (ent._formationLockMs > 0) {
+      ent._formationLockMs -= Math.max(0, Number(dt || 0));
+      tx += Number(ent._formationOffsetX || 0);
+      ty = clamp(ty + Number(ent._formationOffsetY || 0), 90, 520);
+    }
+    ent.x = clamp((ent.x || 0) + clamp(tx - (ent.x || 0), -speed * 5, speed * 5), -260, 1560);
+    if (ent.flightEnabled) ent.baseY = clamp((ent.baseY ?? ty) + clamp(ty - (ent.baseY ?? ty), -speed * 2.2, speed * 2.2), 90, 520);
+    if (!ent._enemyLaserCdMs) ent._enemyLaserCdMs = 0;
+    ent._enemyLaserCdMs -= Math.max(0, dt || 0);
+    const nowMs = performance.now();
+    const provoked = !!ent.fightBackEnabled && Number(ent._enemyProvokedUntil || 0) > nowMs;
+    const canShoot = !!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && (!!ent.aggressiveEnabled || provoked);
+    if (canShoot) {
+      const bounds = getEntityBounds(ent);
+      if (bounds) {
+        const sx = bounds.x + bounds.w * 0.5;
+        const sy = bounds.y + bounds.h * 0.45;
+        const tx2 = targetRect.x + targetRect.w * 0.5;
+        const ty2 = targetRect.y + targetRect.h * 0.35;
+        const dx = tx2 - sx;
+        const dy = ty2 - sy;
+        const len = Math.hypot(dx, dy) || 1;
+        const projSpeed = 7.2 + (skill * 1.2);
+        enemyLaserShots.push({
+          x: sx,
+          y: sy,
+          vx: (dx / len) * projSpeed,
+          vy: (dy / len) * projSpeed,
+          ttlMs: 2400,
+          damage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
+          color: ent.enemyLaserColor || enemyRaidState.laserColor || '#ff5772'
+        });
+      }
+      ent._enemyLaserCdMs = clamp(Number(ent.laserCooldownMs ?? 520), 40, 3000) / skill;
+    }
+    if (!ent._enemyBombCdMs) ent._enemyBombCdMs = 0;
+    ent._enemyBombCdMs -= Math.max(0, dt || 0);
+    const canBomb = !!ent.bombEnabled && ent._enemyBombCdMs <= 0 && (!!ent.aggressiveEnabled || provoked);
+    if (canBomb) {
+      const bounds = getEntityBounds(ent);
+      if (bounds) {
+        const sx = bounds.x + bounds.w * 0.5;
+        const sy = bounds.y + bounds.h * 0.9;
+        const tx2 = targetRect.x + targetRect.w * 0.5;
+        enemyBombShots.push({
+          x: sx,
+          y: sy,
+          vx: clamp((tx2 - sx) * 0.012, -3.6, 3.6),
+          vy: 2.0 + Math.random() * 1.4,
+          ttlMs: 3200,
+          damage: clamp(Number(ent.bombDamage ?? 16), 1, 80),
+          color: ent.enemyBombColor || enemyRaidState.bombColor || '#ffa047',
+          type: ent.enemyBombType || enemyRaidState.bombType || 'bomb'
+        });
+      }
+      ent._enemyBombCdMs = clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000) / Math.max(0.45, skill);
+    }
+    if (ent._raidSpawned && ((ent.x || 0) < -320 || (ent.x || 0) > 1620)) {
+      ent._laserDestroyed = true;
+    }
+  });
+  enemyLaserShots = enemyLaserShots.filter((shot) => shot && shot.ttlMs > 0);
+  enemyBombShots = enemyBombShots.filter((shot) => shot && shot.ttlMs > 0);
+}
+
+function updateEnemyLaserShots(dt) {
+  if ((!enemyLaserShots.length && !enemyBombShots.length) || gameState !== 'playing') return;
+  const truckRect = getTruckDrawRect();
+  const ms = Math.max(0, Number(dt || 0));
+  enemyLaserShots.forEach((shot) => {
+    shot.ttlMs -= ms;
+    const prevX = shot.x;
+    const prevY = shot.y;
+    shot.x += shot.vx * Math.max(0.2, ms / 16.67);
+    shot.y += shot.vy * Math.max(0.2, ms / 16.67);
+    shot._prevX = prevX;
+    shot._prevY = prevY;
+    if (shot.x < -200 || shot.x > 1400 || shot.y < -100 || shot.y > 700) shot.ttlMs = 0;
+    if (shot.ttlMs <= 0) return;
+    const hit = segmentRectHit(prevX, prevY, shot.x, shot.y, truckRect, 2);
+    if (!hit) return;
+    const drain = Math.max(1, Number(shot.damage || 6)) * 0.55;
+    useWater(drain);
+    addPointPopup(truckRect.x + truckRect.w * 0.5, truckRect.y - 12, `-${Math.round(drain)} water`, '#ff9a9a', 48);
+    shot.ttlMs = 0;
+  });
+  enemyLaserShots = enemyLaserShots.filter((shot) => shot.ttlMs > 0);
+  enemyBombShots.forEach((shot) => {
+    shot.ttlMs -= ms;
+    const prevX = shot.x;
+    const prevY = shot.y;
+    shot.vy += 0.06 * Math.max(0.2, ms / 16.67);
+    shot.x += shot.vx * Math.max(0.2, ms / 16.67);
+    shot.y += shot.vy * Math.max(0.2, ms / 16.67);
+    shot._prevX = prevX;
+    shot._prevY = prevY;
+    if (shot.y > 720 || shot.x < -220 || shot.x > 1420) shot.ttlMs = 0;
+    if (shot.ttlMs <= 0) return;
+    const hit = segmentRectHit(prevX, prevY, shot.x, shot.y, truckRect, 3);
+    if (!hit) return;
+    const drain = Math.max(2, Number(shot.damage || 10)) * 0.65;
+    useWater(drain);
+    addPointPopup(truckRect.x + truckRect.w * 0.5, truckRect.y - 20, `-${Math.round(drain)} water`, '#ffb594', 46);
+    createSmoke(hit.x, hit.y);
+    shot.ttlMs = 0;
+  });
+  enemyBombShots = enemyBombShots.filter((shot) => shot.ttlMs > 0);
+}
+
+function drawEnemyRaidOverlays() {
+  enemyLaserShots.forEach((shot) => {
+    const x1 = Number(shot._prevX ?? shot.x);
+    const y1 = Number(shot._prevY ?? shot.y);
+    const x2 = Number(shot.x);
+    const y2 = Number(shot.y);
+    ctx.save();
+    const color = String(shot.color || '#ff5772');
+    ctx.strokeStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.restore();
+  });
+  enemyBombShots.forEach((shot) => {
+    ctx.save();
+    ctx.fillStyle = String(shot.color || '#ffa047');
+    ctx.shadowColor = String(shot.color || '#ffa047');
+    ctx.shadowBlur = 10;
+    const radius = shot.type === 'mine' ? 5.8 : (shot.type === 'plasma' ? 4.8 : 6.4);
+    ctx.beginPath();
+    ctx.arc(Number(shot.x), Number(shot.y), radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   });
 }
 
@@ -16959,9 +18746,17 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') setTruckDrive(-1);
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') setTruckDrive(1);
   }
-  if ((e.key === 'e' || e.key === 'E') && isScifiTruckActive() && gameState === 'playing') {
+  if ((e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') && isPrimaryFlightModeActive(baseLevels[currentLevel - 1] || {}) && gameState === 'playing') {
     e.preventDefault();
-    isLaserFiring = true;
+    truckFlightInput = 1;
+  }
+  if ((e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') && isPrimaryFlightModeActive(baseLevels[currentLevel - 1] || {}) && gameState === 'playing') {
+    e.preventDefault();
+    truckFlightInput = -1;
+  }
+  if ((e.key === 'e' || e.key === 'E') && isPrimaryLaserMode() && gameState === 'playing') {
+    e.preventDefault();
+    isRocketFiring = true;
     isSpraying = false;
   }
 }, true);
@@ -16971,8 +18766,11 @@ window.addEventListener('keyup', (e) => {
     e.preventDefault();
     setTruckDrive(0);
   }
+  if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' || e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+    truckFlightInput = 0;
+  }
   if (e.key === 'e' || e.key === 'E') {
-    isLaserFiring = false;
+    isRocketFiring = false;
   }
 }, true);
 
@@ -16992,6 +18790,7 @@ function loop() {
   } else {
     setTruckDrive(0);
   }
+  updateTruckFlight(dt, baseLevels[currentLevel - 1] || {});
   if (gameState === 'playing' && pendingDispatchLevel === null) {
     levelElapsedMs += dt;
     if (!tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
@@ -17011,6 +18810,8 @@ function loop() {
   updateUfoPreview(dt);
   updateUfoRaid(dt);
   updateLevel7Horse(dt);
+  updateEnemyRaid(dt, baseLevels[currentLevel - 1] || {});
+  updateEnemyLaserShots(dt);
   ctx.clearRect(0,0,1200,600);
   drawBackground();
 if (false && currentLevel === 11) drawPlacementGrid();
@@ -17064,7 +18865,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'requiredFireTruck') {
       const oldScale = truck.renderScale || 1;
       truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
-      drawSideFireTruck();
+      drawSideFireTruck(data);
       truck.renderScale = oldScale;
       return;
     }
@@ -17138,6 +18939,12 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (ent.type === 'tornado') return;
     if (ent.type === 'ridingMower') drawRidingLawnMower(ent.x);
   });
+  if (enemyRaidState?.attackers?.length) {
+    enemyRaidState.attackers.forEach((ent) => {
+      if (!ent || ent._laserDestroyed || !ent._raidSpawned) return;
+      if (ent.type === 'builderSprite') drawBuilderSpriteEntity(ent);
+    });
+  }
 
   // Solid road lane matched to the firetruck's movement range and level.
   const truckLayout = ENTITY_LAYOUT.engine;
@@ -17148,22 +18955,22 @@ if (false && currentLevel === 11) drawPlacementGrid();
   ctx.fillStyle = '#000000';
   ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
 
-  if (!(data.entities || []).some((ent) => ent?.type === 'requiredFireTruck')) drawSideFireTruck();
+  if (!(data.entities || []).some((ent) => ent?.type === 'requiredFireTruck')) drawSideFireTruck(data);
   drawUfoPreview();
   drawUfoRaid();
   drawLevel7Horse(false);
 
   if (truckVisible) {
     const tip = getClampedHoseEnd();
-    const scifiTruck = isScifiTruckActive(data);
-    ctx.strokeStyle = scifiTruck ? '#2a8f57' : '#333333';
-    ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = scifiTruck ? '#1f5a40' : '#111';
+    const laserMode = isPrimaryLaserMode(data);
+    ctx.strokeStyle = laserMode ? '#3ba8ff' : '#333333';
+    ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = laserMode ? '#6bc3ff' : '#111';
     const truckPoint = getTruckNozzlePoint();
     ctx.beginPath(); ctx.moveTo(truckPoint.x, truckPoint.y);
     ctx.quadraticCurveTo(truckPoint.x + (truckFacing > 0 ? 90 : -90), truckPoint.y - 165, tip.x, tip.y); ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = scifiTruck ? '#27ad68' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
-    ctx.fillStyle = scifiTruck ? '#8dffd1' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+    ctx.fillStyle = laserMode ? '#1f7dff' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+    ctx.fillStyle = laserMode ? '#b7e3ff' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
   }
 
   const fireBehaviorTiming = getLevelFireBehavior(data, difficulty);
@@ -17260,7 +19067,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     }
   });
 
-  if (isLaserFiring && isScifiTruckActive(data)) {
+  if (isPrimaryLaserMode(data)) {
     isSpraying = false;
   }
   if (isSpraying) {
@@ -17268,8 +19075,13 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (canSprayWaterNow()) createWaterParticles();
     else isSpraying = false;
   }
-  pulseScifiLaser(dt, data);
+  if (isPrimaryLaserMode(data)) {
+    pulseScifiLaser(dt, data);
+    pulsePlayerRockets(dt, data);
+  }
+  updateDrawPlayerRocketShots(dt, data);
   applyWaterPushToEntities();
+  drawEnemyRaidOverlays();
 
   const blackBoxRect = getBlackBoxTruckRect();
   if (blackBoxRect && isSpraying && gameState === 'playing') {
@@ -17327,6 +19139,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
