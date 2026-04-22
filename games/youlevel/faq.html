@@ -1,0 +1,13 @@
+﻿<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouLevel FAQ</title>
+<style>body{font-family:Trebuchet MS,Segoe UI,sans-serif;margin:0;background:#0c1f2f;color:#e9f8ff}main{max-width:980px;margin:0 auto;padding:24px}h1,h2{color:#98e8ff}details{margin:10px 0;padding:10px;border:1px solid rgba(130,210,255,.3);border-radius:10px;background:rgba(8,30,46,.74)}</style></head>
+<body><main>
+<h1>YouLevel FAQ + Examples</h1>
+<details open><summary><strong>How do I build a basic enemy wave?</strong></summary><p>Place one enemy WebP, set Enemy = On, set count to 6, spawn both sides, tier = hard, and enable raid formation = V.</p></details>
+<details><summary><strong>How do I make a boss?</strong></summary><p>Set Layer Difficulty Tier = boss, Health Multiplier = 3.0, Damage Multiplier = 2.2, laser enabled, bomb enabled, aggressive AI on.</p></details>
+<details><summary><strong>Can I make a non-combat scene?</strong></summary><p>Yes. Set Enemy = Off for all layers and use path/timing tools for cinematic movement only.</p></details>
+<details><summary><strong>How does Overall Play Difficulty work?</strong></summary><p>It scales difficulty globally at runtime while preserving per-layer tuning.</p></details>
+<details><summary><strong>How do I import into a new game folder?</strong></summary><p>Run <code>import-youlevel-package.cmd</code>, choose <em>New</em>, enter game title. The tool scaffolds files/folders and imports the level.</p></details>
+<details><summary><strong>How do I add images to an existing game?</strong></summary><p>Run <code>youlevel-image-loader.cmd</code> and choose Existing Game.</p></details>
+<p><a href="./index.html">Back to YouLevel Home</a></p>
+</main></body></html>
