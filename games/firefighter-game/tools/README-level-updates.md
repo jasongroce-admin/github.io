@@ -58,6 +58,45 @@ This skips the test gate and pushes immediately.
 
 ---
 
+## 4) Drag-and-drop image import tools
+
+Use these when adding new scene images to `games/firefighter-game/images` and auto-registering them in `mobile-deluxe-23.html`.
+
+### A) Local repo only (no push)
+
+- Drag image file(s) onto:
+  - `C:\REPO\github.io-main\games\firefighter-game\tools\apply-builder-images-local.cmd`
+
+What it does:
+
+1. Lets you choose file mode or folder mode (folder imports all supported images recursively).
+2. Shows one review table so you can edit output filenames once before import.
+3. Reads image dimensions and renames as:
+   - `category_title_widthxheight.ext`
+4. Copies into:
+   - `C:\REPO\github.io-main\games\firefighter-game\images`
+5. Updates source lists in:
+   - `C:\REPO\github.io-main\games\firefighter-game\mobile-deluxe-23.html`
+   - `SPRITE_FILES`
+   - `DISCOVERED_SPRITE_FILENAMES`
+
+### B) Local + online publish
+
+- Drag image file(s) onto:
+  - `C:\REPO\github.io-main\games\firefighter-game\tools\apply-builder-images-and-publish.cmd`
+
+What it does:
+
+1. Same import + source updates as local mode.
+2. Syncs `main` in:
+   - `C:\REPO\github.io-main`
+   - `C:\REPO\Stagejasongroce-online`
+   - `C:\REPO\Kennard_repo` (if available/accessible)
+3. Copies updated HTML + images to stage/backup repos.
+4. Asks for final commit approval, then commits and pushes to `origin main`.
+
+---
+
 ## Troubleshooting
 
 ### A) `! [rejected] main -> main (fetch first)`
