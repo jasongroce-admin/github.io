@@ -2178,29 +2178,146 @@
           }
         }
 
+        function randomNormalish() {
+          return (Math.random() + Math.random() + Math.random() + Math.random() - 2);
+        }
+
+        function simulateAiShot(fromTank, toTank, weapon, angleDeg, powerPct, dir) {
+          const muzzle = getMuzzle(fromTank);
+          const angle = clamp(Number(angleDeg) || 45, 5, 85) * Math.PI / 180;
+          const power = clamp(Number(powerPct) || 50, 20, 100);
+          const speed = weapon.speed * (power / 60);
+          const ax = Number(state.wind || 0);
+          const ay = gravity * 0.18;
+
+          let x = muzzle.x;
+          let y = muzzle.y;
+          let vx = Math.cos(angle) * speed * dir;
+          let vy = -Math.sin(angle) * speed;
+
+          const targetRect = tankAabb(toTank);
+          const targetCX = toTank.x;
+          const targetCY = toTank.y;
+          let minDist2 = (x - targetCX) * (x - targetCX) + (y - targetCY) * (y - targetCY);
+          let impactX = x;
+          let impactY = y;
+          let steps = 0;
+          let hitTank = false;
+          let impacted = false;
+
+          const maxSteps = 320;
+          for (steps = 0; steps < maxSteps; steps += 1) {
+            const prevX = x;
+            const prevY = y;
+            vx += ax;
+            vy += ay;
+            x += vx;
+            y += vy;
+
+            const hitT = segmentHitsAabb(prevX, prevY, x, y, targetRect);
+            if (hitT !== null) {
+              const dx = x - prevX;
+              const dy = y - prevY;
+              impactX = prevX + dx * hitT;
+              impactY = prevY + dy * hitT;
+              hitTank = true;
+              impacted = true;
+              break;
+            }
+
+            const d2 = (x - targetCX) * (x - targetCX) + (y - targetCY) * (y - targetCY);
+            if (d2 < minDist2) minDist2 = d2;
+
+            if (x < 0 || x >= world.width || y >= world.height) {
+              impactX = x;
+              impactY = y;
+              impacted = true;
+              break;
+            }
+
+            const terrainY = terrainHeightAt(x);
+            if (y >= terrainY) {
+              impactX = x;
+              impactY = terrainY;
+              impacted = true;
+              break;
+            }
+          }
+
+          if (!impacted) {
+            impactX = x;
+            impactY = y;
+          }
+
+          const dxI = impactX - targetCX;
+          const dyI = impactY - targetCY;
+          const impactDist2 = dxI * dxI + dyI * dyI;
+          const nearRadius = Math.max(weapon.radius * 1.3 + Math.max(toTank.width, toTank.height) * 0.18, 42);
+          const near2 = nearRadius * nearRadius;
+          const splashClose = impactDist2 <= near2;
+
+          let score = -minDist2 - impactDist2 * 0.25 - steps * 9;
+          if (splashClose) score += 220000;
+          if (hitTank) score += 1600000;
+
+          return { score, angleDeg, powerPct, hitTank, splashClose, steps };
+        }
+
+        function pickAiAim(fromTank, toTank, weapon, dir, profile) {
+          const diff = state.difficulty;
+          const coarseAngleStep = diff === "hard" ? 2 : diff === "medium" ? 4 : 6;
+          const coarsePowerStep = diff === "hard" ? 2 : diff === "medium" ? 4 : 6;
+          const angleMin = 12;
+          const angleMax = 82;
+          const powerMin = 26;
+          const powerMax = 98;
+
+          let best = null;
+          for (let a = angleMin; a <= angleMax; a += coarseAngleStep) {
+            for (let p = powerMin; p <= powerMax; p += coarsePowerStep) {
+              const res = simulateAiShot(fromTank, toTank, weapon, a, p, dir);
+              if (!best || res.score > best.score) best = res;
+            }
+          }
+
+          const refineAngleStep = diff === "hard" ? 1 : 2;
+          const refinePowerStep = diff === "hard" ? 1 : 2;
+          const refineAngleMin = clamp(best.angleDeg - 6, 8, 85);
+          const refineAngleMax = clamp(best.angleDeg + 6, 8, 85);
+          const refinePowerMin = clamp(best.powerPct - 12, 25, 100);
+          const refinePowerMax = clamp(best.powerPct + 12, 25, 100);
+
+          for (let a = refineAngleMin; a <= refineAngleMax; a += refineAngleStep) {
+            for (let p = refinePowerMin; p <= refinePowerMax; p += refinePowerStep) {
+              const res = simulateAiShot(fromTank, toTank, weapon, a, p, dir);
+              if (res.score > best.score) best = res;
+            }
+          }
+
+          const levelBuff = Math.max(0, (state.level - 1) * 0.35);
+          const angleJitter = Math.max(0.7, profile.baseError - levelBuff * 0.75);
+          const powerJitter = Math.max(0.9, profile.powerError - levelBuff * 0.55);
+          const noisyAngle = clamp(Number(best.angleDeg) + randomNormalish() * angleJitter, 8, 85);
+          const noisyPower = clamp(Number(best.powerPct) + randomNormalish() * powerJitter, 25, 99);
+
+          return { angleDeg: noisyAngle, powerPct: noisyPower };
+        }
+
         function aiTakeTurn() {
           if (state.lockInput || state.activeProjectile || state.turn !== "enemy") return;
           const profile = aiProfiles[state.difficulty];
           const dx = state.player.x - state.enemy.x;
-          const dy = state.player.y - state.enemy.y;
           const aiDir = dx >= 0 ? 1 : -1;
           state.enemy.worldFacingDir = aiDir;
           const baseSign = imageBaseFacesRight(state.enemy.imageKey) ? 1 : -1;
           state.enemy.renderFacing = baseSign * aiDir;
-          const distance = Math.max(140, Math.abs(dx));
-          const levelBuff = Math.max(0, (state.level - 1) * 0.35);
-          const angleBase = 50;
-          const error = Math.max(0.8, profile.baseError - levelBuff) * (Math.random() * 2 - 1);
-          const powerError = Math.max(0.7, profile.powerError - levelBuff * 0.6) * (Math.random() * 2 - 1);
-
-          let guessPower = 42 + (distance / world.width) * 42 + Math.abs(dy) * profile.lead;
-          guessPower = Math.max(25, Math.min(98, guessPower + powerError));
-          const aiAngle = Math.max(8, Math.min(85, angleBase + error));
 
           const unlocked = weapons.filter((w) => state.level >= w.unlock);
-          const best = unlocked[Math.min(unlocked.length - 1, Math.floor((state.level - 1) / 3))];
-          launchShot(state.enemy, best.key, aiAngle, guessPower, aiDir);
-          updateStatus(`${tankTitles[state.enemy.imageKey] || "Enemy"} fired ${best.name}.`);
+          const bestWeapon = unlocked[Math.min(unlocked.length - 1, Math.floor((state.level - 1) / 3))];
+          const aim = pickAiAim(state.enemy, state.player, bestWeapon, aiDir, profile);
+
+          launchShot(state.enemy, bestWeapon.key, aim.angleDeg, aim.powerPct, aiDir);
+          updateStatus(`${tankTitles[state.enemy.imageKey] || "Enemy"} fired ${bestWeapon.name}.`);
           updateHud();
         }
 
