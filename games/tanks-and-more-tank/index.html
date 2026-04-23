@@ -801,7 +801,7 @@
             <div class="gauge-grid">
               <div class="gauge-cell">
                 <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
-                <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+                <input id="angleInput" type="range" min="5" max="89" step="1" value="45">
               </div>
               <div class="gauge-cell">
                 <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
@@ -985,6 +985,26 @@
           { key: "quantum", name: "Quantum Obliterator", unlock: 14, speed: 12, radius: 82, damage: 95, color: "#ff4fc9", trail: "#ffd1f3" }
         ];
 
+        function weaponExplosionPalette(weapon) {
+          const key = weapon?.key || "shell";
+          if (key === "heavy") return ["#ffd2a1", "#ff9f43", "#ff6d2a", "#fff1d6"];
+          if (key === "cluster") return ["#e4e1ff", "#c6c2ff", "#ffffff", "#d6f6ff"];
+          if (key === "napalm") return ["#ffb29f", "#ff5f3e", "#ff2f1a", "#ffe8c9"];
+          if (key === "rail") return ["#c7f1ff", "#76ddff", "#ffffff", "#7ffcff"];
+          if (key === "quantum") return ["#ffd1f3", "#ff4fc9", "#a34bff", "#76ddff"];
+          return ["#ffe7ba", "#ffc66d", "#ff9f43", "#ffffff"];
+        }
+
+        function weaponTrailFx(weapon) {
+          const key = weapon?.key || "shell";
+          if (key === "rail") return { particleLife: 10, particleSize: 2.5, lightLife: 8, lightIntensityMult: 1.12, radiusMult: 0.95 };
+          if (key === "cluster") return { particleLife: 9, particleSize: 2.8, lightLife: 7, lightIntensityMult: 1.05, radiusMult: 0.95 };
+          if (key === "heavy") return { particleLife: 12, particleSize: 3.2, lightLife: 10, lightIntensityMult: 1.08, radiusMult: 1.0 };
+          if (key === "napalm") return { particleLife: 16, particleSize: 3.6, lightLife: 14, lightIntensityMult: 1.18, radiusMult: 1.05 };
+          if (key === "quantum") return { particleLife: 18, particleSize: 3.4, lightLife: 16, lightIntensityMult: 1.22, radiusMult: 1.12 };
+          return { particleLife: 10, particleSize: 3, lightLife: 9, lightIntensityMult: 1.0, radiusMult: 1.0 };
+        }
+
         const guides = {
           easy: 0.55,
           medium: 0.22,
@@ -1011,6 +1031,7 @@
           activeProjectile: null,
           particles: [],
           craters: [],
+          fires: [],
           airBombs: [],
           bomberActive: null,
           bomberTurnPendingEnd: false,
@@ -1054,7 +1075,7 @@
           width: canvas.width,
           height: canvas.height,
           floorMax: canvas.height - 80,
-          floorMin: canvas.height * 0.43
+          floorMin: canvas.height * 0.58
         };
 
         function ensureImageLoaded(fileName) {
@@ -1425,6 +1446,7 @@
           state.activeProjectile = null;
           state.particles = [];
           state.craters = [];
+          state.fires = [];
           state.airBombs = [];
           state.bomberActive = null;
           state.bomberTurnPendingEnd = false;
@@ -1708,7 +1730,7 @@
         function launchShot(fromTank, weaponKey, angleDeg, powerPct, forcedDir) {
           const baseWeapon = weapons.find((w) => w.key === weaponKey) || weapons[0];
           const weapon = getTunedWeapon(baseWeapon);
-          const clampedArc = Math.max(5, Math.min(85, angleDeg));
+          const clampedArc = Math.max(5, Math.min(89, angleDeg));
           const angle = clampedArc * Math.PI / 180;
           const speed = weapon.speed * (powerPct / 60);
           const muzzle = getMuzzle(fromTank);
@@ -1720,6 +1742,31 @@
             vy: -Math.sin(angle) * speed,
             weapon
           };
+          if (state.night.enabled) {
+            const fx = weaponTrailFx(weapon);
+            state.lights.push({
+              x: muzzle.x,
+              y: muzzle.y,
+              radius: Math.max(42, state.night.shotLightRadius * 0.55 * fx.radiusMult),
+              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85) * (0.95 + fx.lightIntensityMult * 0.25), 0.35, 1),
+              feather: 0.74,
+              life: 10
+            });
+            const palette = weaponExplosionPalette(weapon);
+            for (let i = 0; i < 10; i += 1) {
+              const a = (Math.random() - 0.5) * 1.1;
+              const s = 0.8 + Math.random() * 2.2;
+              state.particles.push({
+                x: muzzle.x,
+                y: muzzle.y,
+                vx: Math.cos(angle + a) * s * shotDir,
+                vy: -Math.sin(angle + a) * s - 0.6,
+                life: 10 + Math.random() * 10,
+                color: palette[i % palette.length],
+                size: 2 + Math.random() * 2.4
+              });
+            }
+          }
         }
 
         function explode(x, y, weapon, source) {
@@ -1784,13 +1831,25 @@
           for (let i = 0; i < 42; i += 1) {
             const a = Math.random() * Math.PI * 2;
             const s = Math.random() * 4 + 1;
+            const palette = weaponExplosionPalette(weapon);
             state.particles.push({
               x,
               y,
               vx: Math.cos(a) * s,
               vy: Math.sin(a) * s - 2.2,
               life: 24 + Math.random() * 20,
-              color: i % 3 ? weapon.color : weapon.trail
+              color: palette[i % palette.length],
+              size: 3 + Math.random() * 2
+            });
+          }
+
+          if (weapon.burn) {
+            state.fires.push({
+              x,
+              y: centerY,
+              radius: Math.max(56, radius * 1.15),
+              life: 220,
+              intensity: 0.95
             });
           }
 
@@ -1816,7 +1875,8 @@
           for (let i = 0; i < 14; i += 1) {
             const a = Math.random() * Math.PI * 2;
             const s = Math.random() * 2 + 0.8;
-            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.1, life: 10 + Math.random() * 14, color: weapon.color });
+            const palette = weaponExplosionPalette(weapon);
+            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.1, life: 10 + Math.random() * 14, color: palette[(i + 1) % palette.length], size: 2 + Math.random() * 2 });
           }
         }
 
@@ -1869,16 +1929,18 @@
           p.x += p.vx;
           p.y += p.vy;
 
-          state.particles.push({ x: p.x, y: p.y, vx: 0, vy: 0, life: 7, color: p.weapon.trail });
+          const fx = weaponTrailFx(p.weapon);
+          state.particles.push({ x: p.x, y: p.y, vx: 0, vy: 0, life: fx.particleLife, color: p.weapon.trail, size: fx.particleSize });
           if (state.night.enabled) {
             state.lights.push({
               x: p.x,
               y: p.y,
-              radius: state.night.shotLightRadius,
-              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85), 0.2, 1),
-              feather: 0.7,
-              life: 2
+              radius: state.night.shotLightRadius * fx.radiusMult,
+              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85) * fx.lightIntensityMult, 0.25, 1),
+              feather: 0.72,
+              life: fx.lightLife
             });
+            if (state.lights.length > 260) state.lights.splice(0, state.lights.length - 260);
           }
 
           const shooterSide = state.turn === "player" ? "left" : "right";
@@ -1934,21 +1996,61 @@
             c.life -= 1;
             if (c.life <= 0) state.craters.splice(i, 1);
           }
+          for (let i = state.fires.length - 1; i >= 0; i -= 1) {
+            const f = state.fires[i];
+            f.life -= 1;
+            if (f.life <= 0) {
+              state.fires.splice(i, 1);
+              continue;
+            }
+            if (Math.random() < 0.5) {
+              const a = Math.random() * Math.PI * 2;
+              const s = 0.6 + Math.random() * 1.9;
+              const palette = ["#ffe8c9", "#ffb29f", "#ff5f3e", "#ff2f1a"];
+              state.particles.push({
+                x: f.x + Math.cos(a) * (f.radius * 0.25),
+                y: f.y + Math.sin(a) * (f.radius * 0.15),
+                vx: Math.cos(a) * s * 0.7,
+                vy: -Math.abs(Math.sin(a)) * s - 0.6,
+                life: 20 + Math.random() * 28,
+                color: palette[Math.floor(Math.random() * palette.length)],
+                size: 2 + Math.random() * 3
+              });
+            }
+          }
         }
 
         function drawProjectiles() {
           if (state.activeProjectile) {
             const p = state.activeProjectile;
+            ctx.save();
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = p.weapon.trail;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            const pr = p.weapon.piercing ? 3 : 4;
+            ctx.arc(p.x, p.y, pr, 0, Math.PI * 2);
             ctx.fillStyle = p.weapon.color;
             ctx.fill();
+            ctx.restore();
           }
           state.particles.forEach((p) => {
             ctx.globalAlpha = Math.max(0.2, p.life / 35);
             ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 3, 3);
+            const sz = Math.max(1.5, Number(p.size || 3));
+            ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
             ctx.globalAlpha = 1;
+          });
+          state.fires.forEach((f) => {
+            const t = clamp(Number(f.life || 0) / 220, 0, 1);
+            const r = Math.max(18, Number(f.radius || 56));
+            const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+            g.addColorStop(0, `rgba(255,190,120,${0.18 + t * 0.32})`);
+            g.addColorStop(0.5, `rgba(255,110,60,${0.08 + t * 0.22})`);
+            g.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+            ctx.fill();
           });
           state.craters.forEach((c) => {
             ctx.globalAlpha = c.life / 35;
@@ -2184,7 +2286,7 @@
 
         function simulateAiShot(fromTank, toTank, weapon, angleDeg, powerPct, dir) {
           const muzzle = getMuzzle(fromTank);
-          const angle = clamp(Number(angleDeg) || 45, 5, 85) * Math.PI / 180;
+          const angle = clamp(Number(angleDeg) || 45, 5, 89) * Math.PI / 180;
           const power = clamp(Number(powerPct) || 50, 20, 100);
           const speed = weapon.speed * (power / 60);
           const ax = Number(state.wind || 0);
@@ -2268,7 +2370,7 @@
           const coarseAngleStep = diff === "hard" ? 2 : diff === "medium" ? 4 : 6;
           const coarsePowerStep = diff === "hard" ? 2 : diff === "medium" ? 4 : 6;
           const angleMin = 12;
-          const angleMax = 82;
+          const angleMax = 86;
           const powerMin = 26;
           const powerMax = 98;
 
@@ -2282,8 +2384,8 @@
 
           const refineAngleStep = diff === "hard" ? 1 : 2;
           const refinePowerStep = diff === "hard" ? 1 : 2;
-          const refineAngleMin = clamp(best.angleDeg - 6, 8, 85);
-          const refineAngleMax = clamp(best.angleDeg + 6, 8, 85);
+          const refineAngleMin = clamp(best.angleDeg - 6, 8, 89);
+          const refineAngleMax = clamp(best.angleDeg + 6, 8, 89);
           const refinePowerMin = clamp(best.powerPct - 12, 25, 100);
           const refinePowerMax = clamp(best.powerPct + 12, 25, 100);
 
@@ -2297,7 +2399,7 @@
           const levelBuff = Math.max(0, (state.level - 1) * 0.35);
           const angleJitter = Math.max(0.7, profile.baseError - levelBuff * 0.75);
           const powerJitter = Math.max(0.9, profile.powerError - levelBuff * 0.55);
-          const noisyAngle = clamp(Number(best.angleDeg) + randomNormalish() * angleJitter, 8, 85);
+          const noisyAngle = clamp(Number(best.angleDeg) + randomNormalish() * angleJitter, 8, 89);
           const noisyPower = clamp(Number(best.powerPct) + randomNormalish() * powerJitter, 25, 99);
 
           return { angleDeg: noisyAngle, powerPct: noisyPower };
@@ -2406,18 +2508,32 @@
           if (!state.night.enabled || state.night.darkness <= 0) return;
           ctx.save();
           ctx.globalCompositeOperation = "source-over";
-          const overlayAlpha = clamp(state.night.darkness, 0, 1) * 0.75;
-          ctx.fillStyle = `rgba(0,0,0,${clamp(overlayAlpha, 0, 0.85)})`;
+          const overlayAlpha = clamp(state.night.darkness, 0, 1) * 0.92;
+          ctx.fillStyle = `rgba(0,0,0,${clamp(overlayAlpha, 0, 0.92)})`;
           ctx.fillRect(0, 0, world.width, world.height);
           ctx.globalCompositeOperation = "destination-out";
 
           const lights = [];
+          if (state.player) {
+            lights.push({
+              x: state.player.x,
+              y: state.player.y,
+              radius: Math.max(120, state.night.shotLightRadius * 0.85),
+              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85) + 0.12, 0.35, 1),
+              feather: 0.82,
+              life: 2
+            });
+          }
           state.lights.forEach((l) => { if (l.life > 0) lights.push(l); });
           state.flares.forEach((f) => {
             lights.push({ x: f.x, y: f.y, radius: f.radius, intensity: clamp(Number(f.intensity ?? state.night.flareIntensity ?? 0.95), 0.2, 1), feather: 0.78, life: 2 });
           });
+          state.fires.forEach((f) => {
+            const t = clamp(Number(f.life || 0) / 220, 0, 1);
+            lights.push({ x: f.x, y: f.y, radius: Math.max(60, Number(f.radius || 56)), intensity: clamp((Number(f.intensity || 0.9) * (0.35 + t * 0.65)), 0.2, 1), feather: 0.78, life: 2 });
+          });
           if (state.activeProjectile) {
-            lights.push({ x: state.activeProjectile.x, y: state.activeProjectile.y, radius: state.night.shotLightRadius, intensity: 0.9, feather: 0.7, life: 2 });
+            lights.push({ x: state.activeProjectile.x, y: state.activeProjectile.y, radius: state.night.shotLightRadius, intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85) + 0.18, 0.4, 1), feather: 0.7, life: 2 });
           }
 
           lights.forEach((l) => {
@@ -2715,7 +2831,7 @@
               firePlayer();
             }
             if (ev.code === "ArrowUp") {
-              angleInput.value = String(Math.min(85, Number(angleInput.value) + 1));
+              angleInput.value = String(Math.min(89, Number(angleInput.value) + 1));
               angleInput.dispatchEvent(new Event("input"));
             }
             if (ev.code === "ArrowDown") {
