@@ -300,7 +300,7 @@
             <h2>Tanks and More Tank</h2>
             <button class="menu-close" id="menuCloseBtn" aria-label="Close menu">X</button>
           </div>
-          <div class="legend">Scorched-earth style artillery with 15 levels, evolving AI, and unlockable weapons.</div>
+          <div class="legend">Scorched-earth style endless levels with evolving AI, score climb, and unlockable weapons.</div>
 
           <h3>Match Setup</h3>
           <div class="menu-grid">
@@ -338,7 +338,7 @@
 
         <div class="right-col">
           <div class="hud">
-            <div class="item"><span class="k">Level</span><span class="v" id="hudLevel">1 / 15</span></div>
+            <div class="item"><span class="k">Level</span><span class="v" id="hudLevel">1 / Endless</span></div>
             <div class="item"><span class="k">Round</span><span class="v" id="hudRound">1</span></div>
             <div class="item"><span class="k">Turn</span><span class="v" id="hudTurn">Player</span></div>
             <div class="item"><span class="k">HP</span><span class="v" id="hudHp">100 / 100</span></div>
@@ -527,6 +527,7 @@
           level: 1,
           rounds: 1,
           totalLevels: 15,
+          endlessAutoLevels: true,
           score: 0,
           difficulty: "easy",
           turn: "player",
@@ -735,7 +736,7 @@
 
           generateTerrain();
           state.levelDecor = [];
-          const custom = state.customLevelsBySlot[state.level];
+          const custom = state.endlessAutoLevels ? null : state.customLevelsBySlot[state.level];
           let heroX = 170;
           let enemyX = world.width - 170;
           if (custom) {
@@ -767,7 +768,9 @@
         }
 
         function updateHud() {
-          hud.level.textContent = `${state.level} / ${state.totalLevels}`;
+          hud.level.textContent = state.endlessAutoLevels
+            ? `${state.level} / Endless`
+            : `${state.level} / ${state.totalLevels}`;
           hud.round.textContent = String(state.rounds);
           hud.turn.textContent = state.turn === "player" ? "Player" : "Enemy AI";
           hud.hp.textContent = `${Math.max(0, Math.round(state.player.hp))} / ${Math.round(state.player.maxHp)}`;
@@ -1242,15 +1245,10 @@
 
         function checkWinLose() {
           if (state.enemy.hp <= 0) {
-            if (state.level >= state.totalLevels) {
-              updateStatus("You completed all 15 levels. Tanks and More Tank champion!");
-              state.lockInput = true;
-              return true;
-            }
             state.level += 1;
             state.rounds = 1;
             state.score += 300 + state.level * 45;
-            updateStatus(`Enemy destroyed. Advancing to level ${state.level}.`);
+            updateStatus(`Enemy destroyed. Auto-generating level ${state.level}.`);
             setTimeout(() => resetLevel(false), 950);
             return true;
           }
@@ -1397,7 +1395,7 @@
           "Welcome to Tanks and More Tank. First choose your Primary Tank and Enemy Tank in Match Setup.",
           "Set Angle and Power, then press Fire. Easy mode shows a long dotted aiming helper.",
           "Every few rounds you can move a short distance before firing. Use move controls in the bottom gauges.",
-          "Unlock better weapons as levels increase. Destroy enemy tanks to advance all 15 levels."
+          "Unlock better weapons as levels increase. Enemy destroys auto-generate the next level with new terrain."
         ];
 
         function showTutorialStep() {
