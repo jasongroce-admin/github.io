@@ -2849,6 +2849,60 @@
             loadSelectedShotProfile();
             updateStatus("Blast set to 100%.");
           });
+
+          const aimDrag = { active: false, pointerId: null, startX: 0, startY: 0, baseAngle: 45, basePower: 60 };
+          function canStartAimDrag() {
+            if (welcomeOverlay.classList.contains("open")) return false;
+            if (menuBackdrop.classList.contains("open")) return false;
+            if (airSupportPopover.classList.contains("open")) return false;
+            if (state.turn !== "player") return false;
+            if (state.lockInput || state.activeProjectile) return false;
+            if (state.bomberActive || state.bomberTurnPendingEnd) return false;
+            if (state.flarePlane) return false;
+            return true;
+          }
+          function applyAimDrag(ev) {
+            const dx = ev.clientX - aimDrag.startX;
+            const dy = ev.clientY - aimDrag.startY;
+            const nextAngle = clamp(aimDrag.baseAngle + (-dy) * 0.18, 5, 89);
+            const nextPower = clamp(aimDrag.basePower + (dx) * 0.22, 20, 100);
+            angleInput.value = String(Math.round(nextAngle));
+            powerInput.value = String(Math.round(nextPower));
+            angleInput.dispatchEvent(new Event("input"));
+            powerInput.dispatchEvent(new Event("input"));
+          }
+
+          canvas.addEventListener("pointerdown", (ev) => {
+            if (!canStartAimDrag()) return;
+            if (ev.button !== undefined && ev.button !== 0) return;
+            aimDrag.active = true;
+            aimDrag.pointerId = ev.pointerId;
+            aimDrag.startX = ev.clientX;
+            aimDrag.startY = ev.clientY;
+            aimDrag.baseAngle = Number(angleInput.value) || 45;
+            aimDrag.basePower = Number(powerInput.value) || 60;
+            canvas.setPointerCapture(ev.pointerId);
+            ev.preventDefault();
+          });
+          canvas.addEventListener("pointermove", (ev) => {
+            if (!aimDrag.active || ev.pointerId !== aimDrag.pointerId) return;
+            applyAimDrag(ev);
+            ev.preventDefault();
+          });
+          canvas.addEventListener("pointerup", (ev) => {
+            if (!aimDrag.active || ev.pointerId !== aimDrag.pointerId) return;
+            aimDrag.active = false;
+            aimDrag.pointerId = null;
+            try { canvas.releasePointerCapture(ev.pointerId); } catch {}
+            ev.preventDefault();
+          });
+          canvas.addEventListener("pointercancel", (ev) => {
+            if (!aimDrag.active || ev.pointerId !== aimDrag.pointerId) return;
+            aimDrag.active = false;
+            aimDrag.pointerId = null;
+            try { canvas.releasePointerCapture(ev.pointerId); } catch {}
+          });
+
           canvas.addEventListener("click", (ev) => {
             if (state.bomberActive && state.turn === "player") {
               dropBomberPayload();
