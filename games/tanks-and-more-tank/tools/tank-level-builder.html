@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tanks Level Builder</title>
+    <style>
+      :root {
+        --bg: #07131f;
+        --panel: #0d2236;
+        --line: #2c577f;
+        --text: #eaf4ff;
+        --muted: #9dc0e2;
+        --orange: #ff9b1a;
+        --blue: #2392ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 16% 0%, #13385d, #07131f 52%);
+        color: var(--text);
+        font-family: "Segoe UI", Tahoma, sans-serif;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) minmax(280px, 340px);
+        gap: 10px;
+        min-height: 100dvh;
+        padding: 10px;
+      }
+      .panel {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 10px;
+        overflow: auto;
+      }
+      h1,h2,h3 { margin: 0; }
+      h1 { font-size: 1.02rem; color: #ffd6a6; }
+      h2 {
+        margin-top: 10px;
+        margin-bottom: 8px;
+        font-size: 0.86rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #9ed2ff;
+      }
+      details.section {
+        border: 1px solid rgba(63,106,150,0.75);
+        background: rgba(9, 27, 45, 0.55);
+        padding: 8px;
+        margin-top: 10px;
+      }
+      details.section summary {
+        cursor: pointer;
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #9ed2ff;
+      }
+      details.section[open] summary { margin-bottom: 8px; }
+      .row { display: grid; gap: 5px; margin-bottom: 8px; }
+      .row label { color: var(--muted); font-size: 0.78rem; }
+      .row input, .row select, .row button, .row textarea {
+        width: 100%;
+        background: #0a1b2d;
+        border: 1px solid #3f6a96;
+        color: #fff;
+        min-height: 33px;
+      }
+      .row textarea { min-height: 70px; }
+      .btn {
+        background: linear-gradient(180deg, #2a78bf, #17548a);
+        border: 1px solid #3f6a96;
+        color: #fff;
+        min-height: 34px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn.alt { background: linear-gradient(180deg, #cc7a18, #91550d); }
+      .btn.warn { background: linear-gradient(180deg, #b84545, #7b2020); }
+      .btn-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .canvas-wrap {
+        border: 1px solid var(--line);
+        background: #05101b;
+        padding: 8px;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      #builderCanvas {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: #060f19;
+        border: 1px solid #305d84;
+        display: block;
+      }
+      .tools {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .tool-btn {
+        min-height: 32px;
+        font-size: 0.78rem;
+      }
+      .tool-btn.active {
+        outline: 2px solid var(--orange);
+      }
+      .asset-list {
+        max-height: 210px;
+        overflow: auto;
+        border: 1px solid #3f6a96;
+        background: #081726;
+      }
+      .asset-item {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 6px;
+        padding: 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.09);
+        cursor: pointer;
+      }
+      .asset-item.active { background: rgba(38,127,203,0.35); }
+      .asset-item img {
+        width: 54px;
+        height: 34px;
+        object-fit: contain;
+        border: 1px solid rgba(255,255,255,0.16);
+        background: #102238;
+      }
+      .asset-item .meta { font-size: 0.73rem; color: #bfd7f0; }
+      .entity-list {
+        border: 1px solid #3f6a96;
+        background: #081726;
+        max-height: 180px;
+        overflow: auto;
+      }
+      .entity-row {
+        padding: 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.09);
+        cursor: pointer;
+      }
+      .entity-row.active { background: rgba(255,153,35,0.26); }
+      .hint {
+        font-size: 0.78rem;
+        color: #b4cce5;
+        background: rgba(9, 29, 46, 0.75);
+        border: 1px dashed rgba(145,178,212,0.6);
+        padding: 7px;
+      }
+      @media (max-width: 1200px) {
+        .layout { grid-template-columns: 1fr; }
+        .tools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="panel">
+        <h1>Tanks Builder</h1>
+        <div class="hint">Build terrain, place Hero/Enemy spawn points, add assets with properties, then export a `.tanklevel.json` package.</div>
+        <div class="hint" id="legalNote">Copyright © Jason Groce. All rights reserved.</div>
+
+        <h2>Level Meta</h2>
+        <div class="row"><label for="levelSlot">Level Slot (1-15)</label><input id="levelSlot" type="number" min="1" max="15" value="1"></div>
+        <div class="row"><label for="levelTitle">Level Title</label><input id="levelTitle" type="text" value="Dust Bowl Clash"></div>
+        <div class="row">
+          <label for="levelDifficulty">Difficulty</label>
+          <select id="levelDifficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="row"><label for="levelNotes">Notes</label><textarea id="levelNotes" placeholder="Optional level notes..."></textarea></div>
+
+        <details class="section" open>
+          <summary>Environment & Night Tanks</summary>
+          <div class="row">
+            <label for="envWind">Wind (-100..100) (<span id="envWindValue">0</span>)</label>
+            <input id="envWind" type="range" min="-100" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envRain">Rain Intensity (0..100) (<span id="envRainValue">0</span>)</label>
+            <input id="envRain" type="range" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envBomberMode">Air Bomber Availability</label>
+            <select id="envBomberMode">
+              <option value="off">Off</option>
+              <option value="once">Once per match</option>
+              <option value="every3">Once every 3 rounds</option>
+              <option value="every5">Once every 5 rounds</option>
+              <option value="afterHit">Unlocked after first hit</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="envBombsPerCall">Bombs Per Call (1..6) (<span id="envBombsPerCallValue">3</span>)</label>
+            <input id="envBombsPerCall" type="range" min="1" max="6" step="1" value="3">
+          </div>
+          <div class="row">
+            <label for="envDarkness">Darkness (0..100) (<span id="envDarknessValue">0</span>)</label>
+            <input id="envDarkness" type="range" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envShotLightRadius">Shot Light Radius (<span id="envShotLightRadiusValue">170</span>)</label>
+            <input id="envShotLightRadius" type="range" min="60" max="520" step="1" value="170">
+          </div>
+          <div class="row">
+            <label for="envShotLightIntensity">Shot Brightness (<span id="envShotLightIntensityValue">85</span>%)</label>
+            <input id="envShotLightIntensity" type="range" min="20" max="100" step="1" value="85">
+          </div>
+          <div class="row">
+            <label for="envFlareAfterMisses">Grant Flare After Misses (<span id="envFlareAfterMissesValue">3</span>)</label>
+            <input id="envFlareAfterMisses" type="range" min="1" max="10" step="1" value="3">
+          </div>
+          <div class="row">
+            <label for="envFlareRadius">Flare Radius (<span id="envFlareRadiusValue">260</span>)</label>
+            <input id="envFlareRadius" type="range" min="120" max="620" step="1" value="260">
+          </div>
+          <div class="row">
+            <label for="envFlareIntensity">Flare Brightness (<span id="envFlareIntensityValue">95</span>%)</label>
+            <input id="envFlareIntensity" type="range" min="20" max="100" step="1" value="95">
+          </div>
+          <div class="row">
+            <label for="envFlareMax">Max Flares / Match (<span id="envFlareMaxValue">2</span>)</label>
+            <input id="envFlareMax" type="range" min="0" max="20" step="1" value="2">
+          </div>
+        </details>
+
+        <h2>Builder Actions</h2>
+        <div class="btn-grid">
+          <button class="btn" id="newTerrainBtn">New Terrain</button>
+          <button class="btn" id="smoothTerrainBtn">Smooth Terrain</button>
+          <button class="btn alt" id="exportLevelBtn">Export Level JSON</button>
+          <button class="btn" id="importLevelBtn">Import Level JSON</button>
+        </div>
+      </section>
+
+      <section class="canvas-wrap">
+        <canvas id="builderCanvas" width="1400" height="788"></canvas>
+        <div class="tools">
+          <button class="btn tool-btn active" data-tool="raise">Raise Dirt</button>
+          <button class="btn tool-btn" data-tool="lower">Lower Dirt</button>
+          <button class="btn tool-btn" data-tool="mountain">Mountain Lift</button>
+          <button class="btn tool-btn" data-tool="smooth">Smooth</button>
+          <button class="btn tool-btn" data-tool="hero">Place Hero</button>
+          <button class="btn tool-btn" data-tool="enemy">Place Enemy</button>
+          <button class="btn tool-btn" data-tool="asset">Place Asset</button>
+          <button class="btn tool-btn" data-tool="select">Select Asset</button>
+        </div>
+        <div class="btn-grid">
+          <div class="row"><label for="brushRadius">Brush Radius</label><input id="brushRadius" type="range" min="8" max="120" value="40"></div>
+          <div class="row"><label for="brushPower">Brush Power</label><input id="brushPower" type="range" min="1" max="32" value="10"></div>
+        </div>
+        <div class="hint" id="statusLine">Tool: Raise Dirt. Drag on terrain to sculpt.</div>
+      </section>
+
+      <section class="panel">
+        <h2>Asset Library</h2>
+        <div class="row"><label for="assetSearch">Search</label><input id="assetSearch" type="text" placeholder="tank, scifi, hover..."></div>
+        <div class="asset-list" id="assetList"></div>
+
+        <h2>Placed Assets</h2>
+        <div class="entity-list" id="entityList"></div>
+        <div class="btn-grid" style="margin-top:6px;">
+          <button class="btn warn" id="deleteAssetBtn">Delete Selected</button>
+          <button class="btn" id="cloneAssetBtn">Clone Selected</button>
+        </div>
+
+        <h2>Asset Properties</h2>
+        <div class="row"><label for="propScale">Scale</label><input id="propScale" type="range" min="0.1" max="3" step="0.01" value="1"></div>
+        <div class="row"><label for="propRotation">Rotation</label><input id="propRotation" type="range" min="-180" max="180" step="1" value="0"></div>
+        <div class="row"><label for="propHealth">Health</label><input id="propHealth" type="range" min="1" max="800" step="1" value="100"></div>
+        <div class="row"><label for="propSpeed">Move Speed</label><input id="propSpeed" type="range" min="0" max="18" step="0.1" value="0"></div>
+        <div class="row"><label for="propGroundClearance">Ground Clearance</label><input id="propGroundClearance" type="range" min="-40" max="80" step="1" value="0"></div>
+        <div class="row">
+          <label for="propWeaponType">Weapon Type</label>
+          <select id="propWeaponType">
+            <option value="none">None</option>
+            <option value="shell">Shell</option>
+            <option value="foam">Foam Blast (Green)</option>
+            <option value="laser">Laser</option>
+          </select>
+        </div>
+        <div class="row"><label for="propFireRate">Fire Rate/sec</label><input id="propFireRate" type="range" min="0" max="12" step="0.1" value="0"></div>
+        <div class="row"><label for="propDamage">Weapon Damage</label><input id="propDamage" type="range" min="0" max="350" step="1" value="0"></div>
+        <div class="row"><label for="propRadius">Explosion Radius</label><input id="propRadius" type="range" min="0" max="220" step="1" value="0"></div>
+        <div class="row">
+          <label for="propPathDirection">Path Direction</label>
+          <select id="propPathDirection">
+            <option value="ltr">Left to Right</option>
+            <option value="rtl">Right to Left</option>
+          </select>
+        </div>
+        <div class="btn-grid">
+          <button class="btn" id="toggleEnemyBtn">Toggle Enemy</button>
+          <button class="btn" id="toggleAggressiveBtn">Toggle Aggressive</button>
+          <button class="btn" id="toggleFightBackBtn">Toggle Fight Back</button>
+          <button class="btn" id="toggleLaserDamageBtn">Toggle Laser Damage</button>
+          <button class="btn" id="togglePathTraceBtn">Toggle Path Trace</button>
+          <button class="btn" id="toggleBomberCallInBtn">Toggle Air Bomber</button>
+          <button class="btn" id="toggleGroundLockBtn">Toggle Ground Lock</button>
+          <button class="btn alt" id="resetDefaultsBtn">Reset To Default</button>
+        </div>
+      </section>
+    </main>
+
+    <input id="hiddenImportInput" type="file" accept=".json,.tanklevel.json" style="display:none">
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("builderCanvas");
+        const ctx = canvas.getContext("2d");
+        const statusLine = document.getElementById("statusLine");
+
+        const levelSlot = document.getElementById("levelSlot");
+        const levelTitle = document.getElementById("levelTitle");
+        const levelDifficulty = document.getElementById("levelDifficulty");
+        const levelNotes = document.getElementById("levelNotes");
+        const assetSearch = document.getElementById("assetSearch");
+        const assetList = document.getElementById("assetList");
+        const entityList = document.getElementById("entityList");
+        const hiddenImportInput = document.getElementById("hiddenImportInput");
+
+        const env = {
+          wind: document.getElementById("envWind"),
+          windValue: document.getElementById("envWindValue"),
+          rain: document.getElementById("envRain"),
+          rainValue: document.getElementById("envRainValue"),
+          bomberMode: document.getElementById("envBomberMode"),
+          bombsPerCall: document.getElementById("envBombsPerCall"),
+          bombsPerCallValue: document.getElementById("envBombsPerCallValue"),
+          darkness: document.getElementById("envDarkness"),
+          darknessValue: document.getElementById("envDarknessValue"),
+          shotLightRadius: document.getElementById("envShotLightRadius"),
+          shotLightRadiusValue: document.getElementById("envShotLightRadiusValue"),
+          shotLightIntensity: document.getElementById("envShotLightIntensity"),
+          shotLightIntensityValue: document.getElementById("envShotLightIntensityValue"),
+          flareAfterMisses: document.getElementById("envFlareAfterMisses"),
+          flareAfterMissesValue: document.getElementById("envFlareAfterMissesValue"),
+          flareRadius: document.getElementById("envFlareRadius"),
+          flareRadiusValue: document.getElementById("envFlareRadiusValue"),
+          flareIntensity: document.getElementById("envFlareIntensity"),
+          flareIntensityValue: document.getElementById("envFlareIntensityValue"),
+          flareMax: document.getElementById("envFlareMax"),
+          flareMaxValue: document.getElementById("envFlareMaxValue")
+        };
+
+        const prop = {
+          scale: document.getElementById("propScale"),
+          rotation: document.getElementById("propRotation"),
+          health: document.getElementById("propHealth"),
+          speed: document.getElementById("propSpeed"),
+          groundClearance: document.getElementById("propGroundClearance"),
+          weaponType: document.getElementById("propWeaponType"),
+          fireRate: document.getElementById("propFireRate"),
+          damage: document.getElementById("propDamage"),
+          radius: document.getElementById("propRadius"),
+          pathDirection: document.getElementById("propPathDirection")
+        };
+
+        const state = {
+          tool: "raise",
+          dragging: false,
+          brushRadius: 40,
+          brushPower: 10,
+          terrain: [],
+          heroSpawn: { x: 160 },
+          enemySpawn: { x: 1240 },
+          environment: {
+            wind: 0,
+            rainIntensity: 0,
+            bomberMode: "off",
+            bombsPerCall: 3,
+            darkness: 0,
+            shotLightRadius: 170,
+            shotLightIntensity: 0.85,
+            flareAfterMisses: 3,
+            flareRadius: 260,
+            flareIntensity: 0.95,
+            flareMax: 2
+          },
+          assets: [],
+          entities: [],
+          selectedAssetKey: null,
+          selectedEntityId: null,
+          levelWidth: canvas.width,
+          levelHeight: canvas.height
+        };
+
+        function clamp(n, min, max) {
+          return Math.max(min, Math.min(max, n));
+        }
+
+        function syncEnvironmentUiFromState() {
+          const windSlider = clamp(Math.round((Number(state.environment.wind || 0) / 0.12) * 100), -100, 100);
+          env.wind.value = String(windSlider);
+          env.windValue.textContent = String(windSlider);
+
+          const rainSlider = clamp(Math.round(Number(state.environment.rainIntensity || 0) * 100), 0, 100);
+          env.rain.value = String(rainSlider);
+          env.rainValue.textContent = String(rainSlider);
+
+          env.bomberMode.value = String(state.environment.bomberMode || "off");
+          env.bombsPerCall.value = String(clamp(Number(state.environment.bombsPerCall || 3), 1, 6));
+          env.bombsPerCallValue.textContent = String(env.bombsPerCall.value);
+
+          const darknessSlider = clamp(Math.round(Number(state.environment.darkness || 0) * 100), 0, 100);
+          env.darkness.value = String(darknessSlider);
+          env.darknessValue.textContent = String(darknessSlider);
+
+          env.shotLightRadius.value = String(clamp(Number(state.environment.shotLightRadius || 170), 60, 520));
+          env.shotLightRadiusValue.textContent = String(env.shotLightRadius.value);
+
+          const shotIntensitySlider = clamp(Math.round(Number(state.environment.shotLightIntensity ?? 0.85) * 100), 20, 100);
+          env.shotLightIntensity.value = String(shotIntensitySlider);
+          env.shotLightIntensityValue.textContent = String(shotIntensitySlider);
+
+          env.flareAfterMisses.value = String(clamp(Number(state.environment.flareAfterMisses || 3), 1, 10));
+          env.flareAfterMissesValue.textContent = String(env.flareAfterMisses.value);
+
+          env.flareRadius.value = String(clamp(Number(state.environment.flareRadius || 260), 120, 620));
+          env.flareRadiusValue.textContent = String(env.flareRadius.value);
+
+          const flareIntensitySlider = clamp(Math.round(Number(state.environment.flareIntensity ?? 0.95) * 100), 20, 100);
+          env.flareIntensity.value = String(flareIntensitySlider);
+          env.flareIntensityValue.textContent = String(flareIntensitySlider);
+
+          env.flareMax.value = String(clamp(Number(state.environment.flareMax || 2), 0, 20));
+          env.flareMaxValue.textContent = String(env.flareMax.value);
+        }
+
+        function syncEnvironmentStateFromUi() {
+          state.environment.wind = (Number(env.wind.value || 0) / 100) * 0.12;
+          state.environment.rainIntensity = Number(env.rain.value || 0) / 100;
+          state.environment.bomberMode = String(env.bomberMode.value || "off");
+          state.environment.bombsPerCall = clamp(Number(env.bombsPerCall.value || 3), 1, 6);
+          state.environment.darkness = Number(env.darkness.value || 0) / 100;
+          state.environment.shotLightRadius = clamp(Number(env.shotLightRadius.value || 170), 60, 520);
+          state.environment.shotLightIntensity = clamp(Number(env.shotLightIntensity.value || 85), 20, 100) / 100;
+          state.environment.flareAfterMisses = clamp(Number(env.flareAfterMisses.value || 3), 1, 10);
+          state.environment.flareRadius = clamp(Number(env.flareRadius.value || 260), 120, 620);
+          state.environment.flareIntensity = clamp(Number(env.flareIntensity.value || 95), 20, 100) / 100;
+          state.environment.flareMax = clamp(Number(env.flareMax.value || 2), 0, 20);
+        }
+
+        function buildDefaultTerrain() {
+          state.terrain = new Array(state.levelWidth);
+          const seed = Math.random() * 9000;
+          for (let x = 0; x < state.levelWidth; x += 1) {
+            const a = Math.sin((x + seed) / 95) * 35;
+            const b = Math.sin((x + seed * 0.4) / 47) * 14;
+            const c = Math.sin((x + seed * 0.8) / 230) * 48;
+            state.terrain[x] = Math.max(290, Math.min(canvas.height - 40, canvas.height - 170 + a + b + c));
+          }
+          clampSpawns();
+        }
+
+        function clampSpawns() {
+          state.heroSpawn.x = Math.max(30, Math.min(state.levelWidth - 30, state.heroSpawn.x));
+          state.enemySpawn.x = Math.max(30, Math.min(state.levelWidth - 30, state.enemySpawn.x));
+        }
+
+        function yAt(x) {
+          const i = Math.max(0, Math.min(state.levelWidth - 1, Math.round(x)));
+          return state.terrain[i] || (canvas.height - 120);
+        }
+
+        function applyBrush(x, mode) {
+          const r = state.brushRadius;
+          const p = state.brushPower;
+          for (let ix = Math.max(0, Math.floor(x - r)); ix < Math.min(state.levelWidth, Math.ceil(x + r)); ix += 1) {
+            const d = Math.abs(ix - x);
+            const factor = 1 - (d / r);
+            if (factor <= 0) continue;
+            let delta = 0;
+            if (mode === "raise") delta = -p * factor;
+            if (mode === "lower") delta = p * factor;
+            if (mode === "mountain") delta = -(p * 1.6) * Math.pow(factor, 1.7);
+            if (mode === "smooth") {
+              const prev = state.terrain[Math.max(0, ix - 2)];
+              const next = state.terrain[Math.min(state.levelWidth - 1, ix + 2)];
+              state.terrain[ix] = state.terrain[ix] * 0.7 + ((prev + next) * 0.5) * 0.3;
+              continue;
+            }
+            state.terrain[ix] = Math.max(220, Math.min(canvas.height - 22, state.terrain[ix] + delta));
+          }
+          clampSpawns();
+        }
+
+        function drawBackdrop() {
+          const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          sky.addColorStop(0, "#1c3f66");
+          sky.addColorStop(0.45, "#0f2340");
+          sky.addColorStop(1, "#081422");
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawTerrain() {
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height);
+          for (let x = 0; x < state.levelWidth; x += 1) {
+            ctx.lineTo(x, state.terrain[x]);
+          }
+          ctx.lineTo(canvas.width, canvas.height);
+          ctx.closePath();
+          const dirt = ctx.createLinearGradient(0, 260, 0, canvas.height);
+          dirt.addColorStop(0, "#8d6031");
+          dirt.addColorStop(0.6, "#5a3816");
+          dirt.addColorStop(1, "#32200d");
+          ctx.fillStyle = dirt;
+          ctx.fill();
+          ctx.strokeStyle = "rgba(0,0,0,0.24)";
+          for (let x = 0; x < state.levelWidth; x += 9) {
+            const y = state.terrain[x];
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 6, y + 5);
+            ctx.stroke();
+          }
+        }
+
+        function drawSpawn(x, label, color) {
+          const y = yAt(x);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x, y - 52);
+          ctx.lineTo(x, y - 12);
+          ctx.stroke();
+          ctx.fillStyle = color;
+          ctx.fillRect(x - 10, y - 62, 20, 12);
+          ctx.fillStyle = "#fff";
+          ctx.font = "11px Segoe UI";
+          ctx.fillText(label, x - 8, y - 53);
+        }
+
+        function drawEntities() {
+          state.entities.forEach((e) => {
+            const img = e._img;
+            ctx.save();
+            const w = (img ? img.width : 140) * 0.22 * e.scale;
+            const h = (img ? img.height : 90) * 0.22 * e.scale;
+            const y = e.groundLock ? (yAt(e.x) - h / 2 - Number(e.groundClearance || 0)) : (yAt(e.x) - e.offsetY);
+            ctx.translate(e.x, y);
+            ctx.rotate((e.rotation || 0) * Math.PI / 180);
+            if (img) {
+              ctx.drawImage(img, -w / 2, -h / 2, w, h);
+            } else {
+              ctx.fillStyle = e.isEnemy ? "#8f1c1c" : "#1b73a8";
+              ctx.fillRect(-w / 2, -h / 2, w, h);
+            }
+            if (e.id === state.selectedEntityId) {
+              ctx.strokeStyle = "#ffab33";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(-w / 2, -h / 2, w, h);
+            }
+            ctx.restore();
+          });
+        }
+
+        function draw() {
+          drawBackdrop();
+          drawTerrain();
+          drawSpawn(state.heroSpawn.x, "H", "#41d36a");
+          drawSpawn(state.enemySpawn.x, "E", "#ff6d47");
+          drawEntities();
+        }
+
+        function pointerToCanvas(ev) {
+          const r = canvas.getBoundingClientRect();
+          const sx = canvas.width / r.width;
+          const sy = canvas.height / r.height;
+          return {
+            x: (ev.clientX - r.left) * sx,
+            y: (ev.clientY - r.top) * sy
+          };
+        }
+
+        function setStatus(msg) {
+          statusLine.textContent = msg;
+        }
+
+        function setTool(name) {
+          state.tool = name;
+          [...document.querySelectorAll(".tool-btn")].forEach((b) => {
+            b.classList.toggle("active", b.dataset.tool === name);
+          });
+          if (name === "asset" && !state.selectedAssetKey) {
+            setStatus("Pick an asset from library first, then click the map.");
+          } else {
+            setStatus(`Tool: ${name}`);
+          }
+        }
+
+        function pickEntityAt(x) {
+          for (let i = state.entities.length - 1; i >= 0; i -= 1) {
+            const e = state.entities[i];
+            const img = e._img;
+            const w = (img ? img.width : 140) * 0.22 * e.scale;
+            if (Math.abs(e.x - x) <= w * 0.55) {
+              return e;
+            }
+          }
+          return null;
+        }
+
+        function refreshEntityList() {
+          entityList.innerHTML = "";
+          state.entities.forEach((e) => {
+            const row = document.createElement("div");
+            row.className = "entity-row" + (e.id === state.selectedEntityId ? " active" : "");
+            row.textContent = `${e.key}  x:${Math.round(e.x)}  ${e.isEnemy ? "Enemy" : "Neutral/Hero"}  ${e.weaponType || "none"}`;
+            row.addEventListener("click", () => {
+              state.selectedEntityId = e.id;
+              loadEntityProps();
+              refreshEntityList();
+            });
+            entityList.appendChild(row);
+          });
+        }
+
+        function selectedEntity() {
+          return state.entities.find((e) => e.id === state.selectedEntityId) || null;
+        }
+
+        function loadEntityProps() {
+          const e = selectedEntity();
+          if (!e) return;
+          prop.scale.value = e.scale;
+          prop.rotation.value = e.rotation;
+          prop.health.value = e.health;
+          prop.speed.value = e.speed;
+          prop.groundClearance.value = e.groundClearance || 0;
+          prop.weaponType.value = e.weaponType;
+          prop.fireRate.value = e.fireRate;
+          prop.damage.value = e.damage;
+          prop.radius.value = e.radius;
+          prop.pathDirection.value = e.pathDirection || "ltr";
+        }
+
+        function applyDefaultsToEntity(e) {
+          if (!e || !e.defaults) return;
+          e.scale = Number(e.defaults.scale ?? 1);
+          e.rotation = Number(e.defaults.rotation ?? 0);
+          e.health = Number(e.defaults.health ?? 100);
+          e.speed = Number(e.defaults.speed ?? 0);
+          e.weaponType = String(e.defaults.weaponType ?? "none");
+          e.fireRate = Number(e.defaults.fireRate ?? 0);
+          e.damage = Number(e.defaults.damage ?? 0);
+          e.radius = Number(e.defaults.radius ?? 0);
+          e.pathDirection = String(e.defaults.pathDirection ?? "ltr");
+          e.pathTrace = !!e.defaults.pathTrace;
+          e.bomberCallIn = !!e.defaults.bomberCallIn;
+          e.groundLock = e.defaults.groundLock !== undefined ? !!e.defaults.groundLock : true;
+          e.groundClearance = Number(e.defaults.groundClearance ?? 0);
+          e.isEnemy = !!e.defaults.isEnemy;
+          e.aggressive = !!e.defaults.aggressive;
+          e.fightBack = !!e.defaults.fightBack;
+          e.laserDamage = !!e.defaults.laserDamage;
+        }
+
+        function bindPropInputs() {
+          Object.entries(prop).forEach(([k, el]) => {
+            el.addEventListener("input", () => {
+              const e = selectedEntity();
+              if (!e) return;
+              if (k === "weaponType") e[k] = el.value;
+              else e[k] = Number(el.value);
+            });
+          });
+          document.getElementById("toggleEnemyBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.isEnemy = !e.isEnemy;
+            refreshEntityList();
+          });
+          document.getElementById("toggleAggressiveBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.aggressive = !e.aggressive;
+          });
+          document.getElementById("toggleFightBackBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.fightBack = !e.fightBack;
+          });
+          document.getElementById("toggleLaserDamageBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.laserDamage = !e.laserDamage;
+          });
+          document.getElementById("togglePathTraceBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.pathTrace = !e.pathTrace;
+          });
+          document.getElementById("toggleBomberCallInBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.bomberCallIn = !e.bomberCallIn;
+          });
+          document.getElementById("toggleGroundLockBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            e.groundLock = !e.groundLock;
+          });
+          document.getElementById("resetDefaultsBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            applyDefaultsToEntity(e);
+            loadEntityProps();
+            refreshEntityList();
+            setStatus("Selected WebP reset to default properties.");
+          });
+        }
+
+        async function loadCatalog() {
+          try {
+            const res = await fetch("../levels/image-catalog.json", { cache: "no-store" });
+            const json = await res.json();
+            state.assets = Array.isArray(json.assets) ? json.assets : [];
+          } catch {
+            state.assets = [];
+          }
+          renderAssetList();
+        }
+
+        function renderAssetList() {
+          assetList.innerHTML = "";
+          const q = assetSearch.value.trim().toLowerCase();
+          state.assets
+            .filter((a) => !q || `${a.key} ${a.title} ${a.category}`.toLowerCase().includes(q))
+            .forEach((a) => {
+              const item = document.createElement("div");
+              item.className = "asset-item" + (a.key === state.selectedAssetKey ? " active" : "");
+              const img = document.createElement("img");
+              img.src = `../images/${a.file}`;
+              const meta = document.createElement("div");
+              meta.className = "meta";
+              meta.innerHTML = `<div><strong>${a.title || a.key}</strong></div><div>${a.key}</div><div>${a.category}</div>`;
+              item.append(img, meta);
+              item.addEventListener("click", () => {
+                state.selectedAssetKey = a.key;
+                setTool("asset");
+                renderAssetList();
+              });
+              assetList.appendChild(item);
+            });
+        }
+
+        function addEntityAt(x) {
+          const def = state.assets.find((a) => a.key === state.selectedAssetKey);
+          if (!def) {
+            setStatus("Select an asset first.");
+            return;
+          }
+          const img = new Image();
+          img.src = `../images/${def.file}`;
+          const e = {
+            id: `e_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
+            key: def.key,
+            file: def.file,
+            x: Math.round(x),
+            offsetY: 45,
+            scale: Number(def.defaultProperties?.scale || 1),
+            rotation: 0,
+            health: Number(def.defaultProperties?.health || 100),
+            speed: Number(def.defaultProperties?.speed || 0),
+            isEnemy: !!def.defaultProperties?.isEnemy,
+            aggressive: false,
+            fightBack: false,
+            laserDamage: false,
+            weaponType: def.defaultProperties?.weaponType || "none",
+            fireRate: Number(def.defaultProperties?.fireRate || 0),
+            damage: Number(def.defaultProperties?.damage || 0),
+            radius: Number(def.defaultProperties?.radius || 0),
+            pathTrace: false,
+            pathDirection: "ltr",
+            bomberCallIn: false,
+            groundLock: true,
+            groundClearance: 0,
+            defaults: {
+              scale: Number(def.defaultProperties?.scale || 1),
+              rotation: 0,
+              health: Number(def.defaultProperties?.health || 100),
+              speed: Number(def.defaultProperties?.speed || 0),
+              isEnemy: !!def.defaultProperties?.isEnemy,
+              aggressive: false,
+              fightBack: false,
+              laserDamage: false,
+              weaponType: String(def.defaultProperties?.weaponType || "none"),
+              fireRate: Number(def.defaultProperties?.fireRate || 0),
+              damage: Number(def.defaultProperties?.damage || 0),
+              radius: Number(def.defaultProperties?.radius || 0),
+              pathTrace: !!def.defaultProperties?.pathTrace,
+              pathDirection: String(def.defaultProperties?.pathDirection || "ltr"),
+              bomberCallIn: !!def.defaultProperties?.bomberCallIn,
+              groundLock: true,
+              groundClearance: 0
+            },
+            _img: img
+          };
+          state.entities.push(e);
+          state.selectedEntityId = e.id;
+          refreshEntityList();
+          loadEntityProps();
+        }
+
+        function smoothWholeTerrain() {
+          for (let pass = 0; pass < 3; pass += 1) {
+            const t = [...state.terrain];
+            for (let i = 2; i < state.terrain.length - 2; i += 1) {
+              state.terrain[i] = (t[i - 2] + t[i - 1] + t[i] + t[i + 1] + t[i + 2]) / 5;
+            }
+          }
+        }
+
+        function serializeLevel() {
+          return {
+            schema: "tank-level-builder-v1",
+            level: {
+              slot: Math.max(1, Math.min(15, Number(levelSlot.value || 1))),
+              title: String(levelTitle.value || "Untitled Tank Level"),
+              difficulty: String(levelDifficulty.value || "easy"),
+              notes: String(levelNotes.value || ""),
+              environment: {
+                wind: Number(state.environment.wind || 0),
+                rainIntensity: Number(state.environment.rainIntensity || 0),
+                bomberMode: String(state.environment.bomberMode || "off"),
+              bombsPerCall: Number(state.environment.bombsPerCall || 3),
+              darkness: Number(state.environment.darkness || 0),
+              shotLightRadius: Number(state.environment.shotLightRadius || 170),
+              shotLightIntensity: Number(state.environment.shotLightIntensity ?? 0.85),
+              flareAfterMisses: Number(state.environment.flareAfterMisses || 3),
+              flareRadius: Number(state.environment.flareRadius || 260),
+              flareIntensity: Number(state.environment.flareIntensity ?? 0.95),
+              flareMax: Number(state.environment.flareMax || 2)
+            },
+              width: state.levelWidth,
+              height: state.levelHeight,
+              terrain: state.terrain.map((n) => Math.round(n)),
+              heroSpawn: { x: Math.round(state.heroSpawn.x) },
+              enemySpawn: { x: Math.round(state.enemySpawn.x) },
+              entities: state.entities.map((e) => ({
+                key: e.key,
+                file: e.file,
+                x: Math.round(e.x),
+                offsetY: Number(e.offsetY || 45),
+                scale: Number(e.scale || 1),
+                rotation: Number(e.rotation || 0),
+                health: Number(e.health || 100),
+                speed: Number(e.speed || 0),
+                isEnemy: !!e.isEnemy,
+                aggressive: !!e.aggressive,
+                fightBack: !!e.fightBack,
+                laserDamage: !!e.laserDamage,
+                weaponType: String(e.weaponType || "none"),
+                fireRate: Number(e.fireRate || 0),
+                damage: Number(e.damage || 0),
+                radius: Number(e.radius || 0)
+                ,
+                pathTrace: !!e.pathTrace,
+                pathDirection: String(e.pathDirection || "ltr"),
+                bomberCallIn: !!e.bomberCallIn
+                ,
+                groundLock: !!e.groundLock,
+                groundClearance: Number(e.groundClearance || 0)
+                ,
+                defaults: e.defaults || null
+              }))
+            },
+            integrationNotes: {
+              targetSlot: Math.max(1, Math.min(15, Number(levelSlot.value || 1))),
+              game: "tanks-and-more-tank"
+            }
+          };
+        }
+
+        function downloadLevel() {
+          const data = serializeLevel();
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+          const a = document.createElement("a");
+          const safeTitle = String(levelTitle.value || "tank-level").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          a.href = URL.createObjectURL(blob);
+          a.download = `${safeTitle || "tank-level"}-slot${String(levelSlot.value || 1)}.tanklevel.json`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+          setStatus("Level package downloaded. Run tools/apply-builder-level-local.cmd to inject it into game files.");
+        }
+
+        function importLevelFromFile(file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const json = JSON.parse(String(reader.result || "{}"));
+              const lvl = json.level || json;
+              if (!Array.isArray(lvl.terrain)) throw new Error("Missing terrain array.");
+              state.terrain = lvl.terrain.map((n) => Number(n || 0));
+              state.heroSpawn = { x: Number(lvl.heroSpawn?.x || 160) };
+              state.enemySpawn = { x: Number(lvl.enemySpawn?.x || 1240) };
+
+              const envIn = lvl.environment || lvl.env || {};
+              state.environment.wind = Number(envIn.wind || 0);
+              state.environment.rainIntensity = Number(envIn.rainIntensity || 0);
+              state.environment.bomberMode = String(envIn.bomberMode || "off");
+              state.environment.bombsPerCall = Number(envIn.bombsPerCall || 3);
+              state.environment.darkness = Number(envIn.darkness || 0);
+              state.environment.shotLightRadius = Number(envIn.shotLightRadius || 170);
+              state.environment.shotLightIntensity = Number(envIn.shotLightIntensity ?? 0.85);
+              state.environment.flareAfterMisses = Number(envIn.flareAfterMisses || 3);
+              state.environment.flareRadius = Number(envIn.flareRadius || 260);
+              state.environment.flareIntensity = Number(envIn.flareIntensity ?? 0.95);
+              state.environment.flareMax = Number(envIn.flareMax || 2);
+              syncEnvironmentUiFromState();
+
+              state.entities = (lvl.entities || []).map((e) => {
+                const img = new Image();
+                img.src = `../images/${e.file || `${e.key}.webp`}`;
+                return {
+                  id: `e_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
+                  key: e.key,
+                  file: e.file || `${e.key}.webp`,
+                  x: Number(e.x || 0),
+                  offsetY: Number(e.offsetY || 45),
+                  scale: Number(e.scale || 1),
+                  rotation: Number(e.rotation || 0),
+                  health: Number(e.health || 100),
+                  speed: Number(e.speed || 0),
+                  isEnemy: !!e.isEnemy,
+                  aggressive: !!e.aggressive,
+                  fightBack: !!e.fightBack,
+                  laserDamage: !!e.laserDamage,
+                  weaponType: String(e.weaponType || "none"),
+                  fireRate: Number(e.fireRate || 0),
+                  damage: Number(e.damage || 0),
+                  radius: Number(e.radius || 0),
+                  pathTrace: !!e.pathTrace,
+                  pathDirection: String(e.pathDirection || "ltr"),
+                  bomberCallIn: !!e.bomberCallIn,
+                  groundLock: e.groundLock !== undefined ? !!e.groundLock : true,
+                  groundClearance: Number(e.groundClearance || 0),
+                  defaults: e.defaults || {
+                    scale: Number(e.scale || 1),
+                    rotation: Number(e.rotation || 0),
+                    health: Number(e.health || 100),
+                    speed: Number(e.speed || 0),
+                    isEnemy: !!e.isEnemy,
+                    aggressive: !!e.aggressive,
+                    fightBack: !!e.fightBack,
+                    laserDamage: !!e.laserDamage,
+                    weaponType: String(e.weaponType || "none"),
+                    fireRate: Number(e.fireRate || 0),
+                    damage: Number(e.damage || 0),
+                    radius: Number(e.radius || 0),
+                    pathTrace: !!e.pathTrace,
+                    pathDirection: String(e.pathDirection || "ltr"),
+                    bomberCallIn: !!e.bomberCallIn,
+                    groundLock: e.groundLock !== undefined ? !!e.groundLock : true,
+                    groundClearance: Number(e.groundClearance || 0)
+                  },
+                  _img: img
+                };
+              });
+              levelSlot.value = Number(lvl.slot || 1);
+              levelTitle.value = String(lvl.title || "Imported Level");
+              levelDifficulty.value = String(lvl.difficulty || "easy");
+              levelNotes.value = String(lvl.notes || "");
+              state.selectedEntityId = null;
+              refreshEntityList();
+              setStatus("Imported level package.");
+            } catch (err) {
+              setStatus(`Import failed: ${err.message}`);
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        function bindUi() {
+          document.querySelectorAll(".tool-btn").forEach((b) => {
+            b.addEventListener("click", () => setTool(b.dataset.tool));
+          });
+          document.getElementById("newTerrainBtn").addEventListener("click", () => {
+            buildDefaultTerrain();
+            setStatus("Generated new terrain.");
+          });
+          document.getElementById("smoothTerrainBtn").addEventListener("click", () => {
+            smoothWholeTerrain();
+            setStatus("Smoothed terrain.");
+          });
+          document.getElementById("exportLevelBtn").addEventListener("click", downloadLevel);
+          document.getElementById("importLevelBtn").addEventListener("click", () => hiddenImportInput.click());
+          hiddenImportInput.addEventListener("change", () => {
+            const f = hiddenImportInput.files?.[0];
+            if (f) importLevelFromFile(f);
+            hiddenImportInput.value = "";
+          });
+          assetSearch.addEventListener("input", renderAssetList);
+
+          syncEnvironmentUiFromState();
+          env.wind.addEventListener("input", () => {
+            env.windValue.textContent = String(env.wind.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.rain.addEventListener("input", () => {
+            env.rainValue.textContent = String(env.rain.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.bomberMode.addEventListener("change", () => {
+            syncEnvironmentStateFromUi();
+          });
+          env.bombsPerCall.addEventListener("input", () => {
+            env.bombsPerCallValue.textContent = String(env.bombsPerCall.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.darkness.addEventListener("input", () => {
+            env.darknessValue.textContent = String(env.darkness.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.shotLightRadius.addEventListener("input", () => {
+            env.shotLightRadiusValue.textContent = String(env.shotLightRadius.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.shotLightIntensity.addEventListener("input", () => {
+            env.shotLightIntensityValue.textContent = String(env.shotLightIntensity.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareAfterMisses.addEventListener("input", () => {
+            env.flareAfterMissesValue.textContent = String(env.flareAfterMisses.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareRadius.addEventListener("input", () => {
+            env.flareRadiusValue.textContent = String(env.flareRadius.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareIntensity.addEventListener("input", () => {
+            env.flareIntensityValue.textContent = String(env.flareIntensity.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareMax.addEventListener("input", () => {
+            env.flareMaxValue.textContent = String(env.flareMax.value);
+            syncEnvironmentStateFromUi();
+          });
+
+          document.getElementById("deleteAssetBtn").addEventListener("click", () => {
+            if (!state.selectedEntityId) return;
+            state.entities = state.entities.filter((e) => e.id !== state.selectedEntityId);
+            state.selectedEntityId = null;
+            refreshEntityList();
+          });
+          document.getElementById("cloneAssetBtn").addEventListener("click", () => {
+            const e = selectedEntity();
+            if (!e) return;
+            const c = { ...e, id: `e_${Date.now()}_${Math.floor(Math.random() * 9999)}`, x: e.x + 22 };
+            c._img = e._img;
+            state.entities.push(c);
+            state.selectedEntityId = c.id;
+            refreshEntityList();
+          });
+
+          const brushRadius = document.getElementById("brushRadius");
+          const brushPower = document.getElementById("brushPower");
+          brushRadius.addEventListener("input", () => { state.brushRadius = Number(brushRadius.value); });
+          brushPower.addEventListener("input", () => { state.brushPower = Number(brushPower.value); });
+
+          canvas.addEventListener("pointerdown", (ev) => {
+            state.dragging = true;
+            const p = pointerToCanvas(ev);
+            if (["raise", "lower", "mountain", "smooth"].includes(state.tool)) {
+              applyBrush(p.x, state.tool);
+            } else if (state.tool === "hero") {
+              state.heroSpawn.x = Math.round(p.x);
+              setStatus("Hero spawn updated.");
+            } else if (state.tool === "enemy") {
+              state.enemySpawn.x = Math.round(p.x);
+              setStatus("Enemy spawn updated.");
+            } else if (state.tool === "asset") {
+              addEntityAt(p.x);
+            } else if (state.tool === "select") {
+              const hit = pickEntityAt(p.x);
+              state.selectedEntityId = hit ? hit.id : null;
+              loadEntityProps();
+              refreshEntityList();
+            }
+          });
+          canvas.addEventListener("pointermove", (ev) => {
+            if (!state.dragging) return;
+            if (!["raise", "lower", "mountain", "smooth"].includes(state.tool)) return;
+            const p = pointerToCanvas(ev);
+            applyBrush(p.x, state.tool);
+          });
+          const stopDrag = () => { state.dragging = false; };
+          canvas.addEventListener("pointerup", stopDrag);
+          canvas.addEventListener("pointerleave", stopDrag);
+
+          bindPropInputs();
+        }
+
+        function frame() {
+          draw();
+          requestAnimationFrame(frame);
+        }
+
+        buildDefaultTerrain();
+        bindUi();
+        loadCatalog();
+        frame();
+      })();
+    </script>
+  </body>
+</html>
