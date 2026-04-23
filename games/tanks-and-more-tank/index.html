@@ -658,8 +658,8 @@
                 <summary>Night Tanks Settings</summary>
                 <div class="welcome-form">
                   <div class="row">
-                    <label for="welcomeDarkness">Darkness (<span id="welcomeDarknessValue">86</span>%)</label>
-                    <input id="welcomeDarkness" type="range" min="0" max="100" step="1" value="86">
+                    <label for="welcomeDarkness">Darkness (<span id="welcomeDarknessValue">70</span>%)</label>
+                    <input id="welcomeDarkness" type="range" min="0" max="100" step="1" value="70">
                   </div>
                   <div class="row">
                     <label for="welcomeShotLightRadius">Shot Light Radius (<span id="welcomeShotLightRadiusValue">170</span>)</label>
@@ -1030,7 +1030,7 @@
           firstMatchStarted: false,
           wind: 0,
           rain: { enabled: false, intensity: 0, drops: [] },
-          night: { enabled: false, darkness: 0.86, shotLightRadius: 170, shotLightIntensity: 0.85, flareAfterMisses: 3, flareRadius: 260, flareIntensity: 0.95, flareMax: 2 },
+          night: { enabled: false, darkness: 0.7, shotLightRadius: 170, shotLightIntensity: 0.85, flareAfterMisses: 3, flareRadius: 260, flareIntensity: 0.95, flareMax: 2 },
           lights: [],
           flares: [],
           flarePlane: null,
@@ -1046,6 +1046,10 @@
         });
 
         const gravity = 0.18;
+        const assetBaseUrl = new URL("./", window.location.href);
+        function assetUrl(relPath) {
+          return new URL(relPath, assetBaseUrl).toString();
+        }
         const world = {
           width: canvas.width,
           height: canvas.height,
@@ -1058,7 +1062,7 @@
           if (images.has(fileName)) return images.get(fileName);
           if (extraImages.has(fileName)) return extraImages.get(fileName);
           const img = new Image();
-          img.src = `./images/${fileName}`;
+          img.src = assetUrl(`images/${fileName}`);
           extraImages.set(fileName, img);
           return img;
         }
@@ -1068,7 +1072,7 @@
             const img = new Image();
             img.onload = () => { images.set(file, img); resolve(); };
             img.onerror = () => resolve();
-            img.src = `./images/${file}`;
+            img.src = assetUrl(`images/${file}`);
           })));
         }
 
@@ -1147,8 +1151,8 @@
           const heroKey = imageKeys[clamp(heroCarouselIndex, 0, imageKeys.length - 1)];
           const enemyKey = imageKeys[clamp(enemyCarouselIndex, 0, imageKeys.length - 1)];
 
-          heroPreviewImg.src = `./images/${heroKey}`;
-          enemyPreviewImg.src = `./images/${enemyKey}`;
+          heroPreviewImg.src = assetUrl(`images/${heroKey}`);
+          enemyPreviewImg.src = assetUrl(`images/${enemyKey}`);
           heroPreviewName.textContent = tankTitles[heroKey] || heroKey.replace(".webp", "");
           enemyPreviewName.textContent = tankTitles[enemyKey] || enemyKey.replace(".webp", "");
           heroPreviewMeta.textContent = `File: ${heroKey}`;
@@ -1176,7 +1180,7 @@
           const bomberMode = welcomeBomberMode.value || "off";
           const bombsPerCall = clamp(Number(welcomeBomberBombs.value) || 3, 1, 6);
 
-          const darkness = clamp(Number(welcomeDarkness.value) || 86, 0, 100) / 100;
+          const darkness = clamp(Number(welcomeDarkness.value) || 70, 0, 100) / 100;
           const shotLightRadius = clamp(Number(welcomeShotLightRadius.value) || 170, 60, 360);
           const shotLightIntensity = clamp(Number(welcomeShotLightIntensity.value) || 85, 20, 100) / 100;
           const flareAfterMisses = clamp(Number(welcomeFlareAfterMisses.value) || 3, 1, 7);
@@ -1200,7 +1204,7 @@
           state.rain.intensity = Number(cfg.rain?.intensity || 0);
 
           state.night.enabled = !!cfg.night?.enabled;
-          state.night.darkness = state.night.enabled ? Number(cfg.night?.darkness ?? 0.86) : 0;
+          state.night.darkness = state.night.enabled ? Number(cfg.night?.darkness ?? 0.7) : 0;
           state.night.shotLightRadius = Number(cfg.night?.shotLightRadius ?? 170);
           state.night.shotLightIntensity = Number(cfg.night?.shotLightIntensity ?? 0.85);
           state.night.flareAfterMisses = Number(cfg.night?.flareAfterMisses ?? 3);
@@ -2212,7 +2216,8 @@
           if (!state.night.enabled || state.night.darkness <= 0) return;
           ctx.save();
           ctx.globalCompositeOperation = "source-over";
-          ctx.fillStyle = `rgba(0,0,0,${clamp(state.night.darkness, 0, 0.98)})`;
+          const overlayAlpha = clamp(state.night.darkness, 0, 1) * 0.75;
+          ctx.fillStyle = `rgba(0,0,0,${clamp(overlayAlpha, 0, 0.85)})`;
           ctx.fillRect(0, 0, world.width, world.height);
           ctx.globalCompositeOperation = "destination-out";
 
@@ -2274,14 +2279,14 @@
         async function loadCustomLevels() {
           state.customLevelsBySlot = {};
           try {
-            const manifestRes = await fetch("./levels/level-manifest.json", { cache: "no-store" });
+            const manifestRes = await fetch(assetUrl("levels/level-manifest.json"), { cache: "no-store" });
             if (!manifestRes.ok) return;
             const manifest = await manifestRes.json();
             const levels = Array.isArray(manifest.levels) ? manifest.levels : [];
             for (const item of levels) {
               try {
                 if (!item?.file) continue;
-                const res = await fetch(`./levels/${item.file}`, { cache: "no-store" });
+                const res = await fetch(assetUrl(`levels/${item.file}`), { cache: "no-store" });
                 if (!res.ok) continue;
                 const payload = await res.json();
                 const lvl = payload.level || payload;
