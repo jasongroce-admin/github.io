@@ -44,6 +44,21 @@
         letter-spacing: 0.03em;
         color: #9ed2ff;
       }
+      details.section {
+        border: 1px solid rgba(63,106,150,0.75);
+        background: rgba(9, 27, 45, 0.55);
+        padding: 8px;
+        margin-top: 10px;
+      }
+      details.section summary {
+        cursor: pointer;
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #9ed2ff;
+      }
+      details.section[open] summary { margin-bottom: 8px; }
       .row { display: grid; gap: 5px; margin-bottom: 8px; }
       .row label { color: var(--muted); font-size: 0.78rem; }
       .row input, .row select, .row button, .row textarea {
@@ -163,6 +178,60 @@
         </div>
         <div class="row"><label for="levelNotes">Notes</label><textarea id="levelNotes" placeholder="Optional level notes..."></textarea></div>
 
+        <details class="section" open>
+          <summary>Environment & Night Tanks</summary>
+          <div class="row">
+            <label for="envWind">Wind (-100..100) (<span id="envWindValue">0</span>)</label>
+            <input id="envWind" type="range" min="-100" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envRain">Rain Intensity (0..100) (<span id="envRainValue">0</span>)</label>
+            <input id="envRain" type="range" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envBomberMode">Air Bomber Availability</label>
+            <select id="envBomberMode">
+              <option value="off">Off</option>
+              <option value="once">Once per match</option>
+              <option value="every3">Once every 3 rounds</option>
+              <option value="every5">Once every 5 rounds</option>
+              <option value="afterHit">Unlocked after first hit</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="envBombsPerCall">Bombs Per Call (1..6) (<span id="envBombsPerCallValue">3</span>)</label>
+            <input id="envBombsPerCall" type="range" min="1" max="6" step="1" value="3">
+          </div>
+          <div class="row">
+            <label for="envDarkness">Darkness (0..100) (<span id="envDarknessValue">0</span>)</label>
+            <input id="envDarkness" type="range" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="row">
+            <label for="envShotLightRadius">Shot Light Radius (<span id="envShotLightRadiusValue">170</span>)</label>
+            <input id="envShotLightRadius" type="range" min="60" max="520" step="1" value="170">
+          </div>
+          <div class="row">
+            <label for="envShotLightIntensity">Shot Brightness (<span id="envShotLightIntensityValue">85</span>%)</label>
+            <input id="envShotLightIntensity" type="range" min="20" max="100" step="1" value="85">
+          </div>
+          <div class="row">
+            <label for="envFlareAfterMisses">Grant Flare After Misses (<span id="envFlareAfterMissesValue">3</span>)</label>
+            <input id="envFlareAfterMisses" type="range" min="1" max="10" step="1" value="3">
+          </div>
+          <div class="row">
+            <label for="envFlareRadius">Flare Radius (<span id="envFlareRadiusValue">260</span>)</label>
+            <input id="envFlareRadius" type="range" min="120" max="620" step="1" value="260">
+          </div>
+          <div class="row">
+            <label for="envFlareIntensity">Flare Brightness (<span id="envFlareIntensityValue">95</span>%)</label>
+            <input id="envFlareIntensity" type="range" min="20" max="100" step="1" value="95">
+          </div>
+          <div class="row">
+            <label for="envFlareMax">Max Flares / Match (<span id="envFlareMaxValue">2</span>)</label>
+            <input id="envFlareMax" type="range" min="0" max="20" step="1" value="2">
+          </div>
+        </details>
+
         <h2>Builder Actions</h2>
         <div class="btn-grid">
           <button class="btn" id="newTerrainBtn">New Terrain</button>
@@ -258,6 +327,30 @@
         const entityList = document.getElementById("entityList");
         const hiddenImportInput = document.getElementById("hiddenImportInput");
 
+        const env = {
+          wind: document.getElementById("envWind"),
+          windValue: document.getElementById("envWindValue"),
+          rain: document.getElementById("envRain"),
+          rainValue: document.getElementById("envRainValue"),
+          bomberMode: document.getElementById("envBomberMode"),
+          bombsPerCall: document.getElementById("envBombsPerCall"),
+          bombsPerCallValue: document.getElementById("envBombsPerCallValue"),
+          darkness: document.getElementById("envDarkness"),
+          darknessValue: document.getElementById("envDarknessValue"),
+          shotLightRadius: document.getElementById("envShotLightRadius"),
+          shotLightRadiusValue: document.getElementById("envShotLightRadiusValue"),
+          shotLightIntensity: document.getElementById("envShotLightIntensity"),
+          shotLightIntensityValue: document.getElementById("envShotLightIntensityValue"),
+          flareAfterMisses: document.getElementById("envFlareAfterMisses"),
+          flareAfterMissesValue: document.getElementById("envFlareAfterMissesValue"),
+          flareRadius: document.getElementById("envFlareRadius"),
+          flareRadiusValue: document.getElementById("envFlareRadiusValue"),
+          flareIntensity: document.getElementById("envFlareIntensity"),
+          flareIntensityValue: document.getElementById("envFlareIntensityValue"),
+          flareMax: document.getElementById("envFlareMax"),
+          flareMaxValue: document.getElementById("envFlareMaxValue")
+        };
+
         const prop = {
           scale: document.getElementById("propScale"),
           rotation: document.getElementById("propRotation"),
@@ -279,6 +372,19 @@
           terrain: [],
           heroSpawn: { x: 160 },
           enemySpawn: { x: 1240 },
+          environment: {
+            wind: 0,
+            rainIntensity: 0,
+            bomberMode: "off",
+            bombsPerCall: 3,
+            darkness: 0,
+            shotLightRadius: 170,
+            shotLightIntensity: 0.85,
+            flareAfterMisses: 3,
+            flareRadius: 260,
+            flareIntensity: 0.95,
+            flareMax: 2
+          },
           assets: [],
           entities: [],
           selectedAssetKey: null,
@@ -286,6 +392,62 @@
           levelWidth: canvas.width,
           levelHeight: canvas.height
         };
+
+        function clamp(n, min, max) {
+          return Math.max(min, Math.min(max, n));
+        }
+
+        function syncEnvironmentUiFromState() {
+          const windSlider = clamp(Math.round((Number(state.environment.wind || 0) / 0.12) * 100), -100, 100);
+          env.wind.value = String(windSlider);
+          env.windValue.textContent = String(windSlider);
+
+          const rainSlider = clamp(Math.round(Number(state.environment.rainIntensity || 0) * 100), 0, 100);
+          env.rain.value = String(rainSlider);
+          env.rainValue.textContent = String(rainSlider);
+
+          env.bomberMode.value = String(state.environment.bomberMode || "off");
+          env.bombsPerCall.value = String(clamp(Number(state.environment.bombsPerCall || 3), 1, 6));
+          env.bombsPerCallValue.textContent = String(env.bombsPerCall.value);
+
+          const darknessSlider = clamp(Math.round(Number(state.environment.darkness || 0) * 100), 0, 100);
+          env.darkness.value = String(darknessSlider);
+          env.darknessValue.textContent = String(darknessSlider);
+
+          env.shotLightRadius.value = String(clamp(Number(state.environment.shotLightRadius || 170), 60, 520));
+          env.shotLightRadiusValue.textContent = String(env.shotLightRadius.value);
+
+          const shotIntensitySlider = clamp(Math.round(Number(state.environment.shotLightIntensity ?? 0.85) * 100), 20, 100);
+          env.shotLightIntensity.value = String(shotIntensitySlider);
+          env.shotLightIntensityValue.textContent = String(shotIntensitySlider);
+
+          env.flareAfterMisses.value = String(clamp(Number(state.environment.flareAfterMisses || 3), 1, 10));
+          env.flareAfterMissesValue.textContent = String(env.flareAfterMisses.value);
+
+          env.flareRadius.value = String(clamp(Number(state.environment.flareRadius || 260), 120, 620));
+          env.flareRadiusValue.textContent = String(env.flareRadius.value);
+
+          const flareIntensitySlider = clamp(Math.round(Number(state.environment.flareIntensity ?? 0.95) * 100), 20, 100);
+          env.flareIntensity.value = String(flareIntensitySlider);
+          env.flareIntensityValue.textContent = String(flareIntensitySlider);
+
+          env.flareMax.value = String(clamp(Number(state.environment.flareMax || 2), 0, 20));
+          env.flareMaxValue.textContent = String(env.flareMax.value);
+        }
+
+        function syncEnvironmentStateFromUi() {
+          state.environment.wind = (Number(env.wind.value || 0) / 100) * 0.12;
+          state.environment.rainIntensity = Number(env.rain.value || 0) / 100;
+          state.environment.bomberMode = String(env.bomberMode.value || "off");
+          state.environment.bombsPerCall = clamp(Number(env.bombsPerCall.value || 3), 1, 6);
+          state.environment.darkness = Number(env.darkness.value || 0) / 100;
+          state.environment.shotLightRadius = clamp(Number(env.shotLightRadius.value || 170), 60, 520);
+          state.environment.shotLightIntensity = clamp(Number(env.shotLightIntensity.value || 85), 20, 100) / 100;
+          state.environment.flareAfterMisses = clamp(Number(env.flareAfterMisses.value || 3), 1, 10);
+          state.environment.flareRadius = clamp(Number(env.flareRadius.value || 260), 120, 620);
+          state.environment.flareIntensity = clamp(Number(env.flareIntensity.value || 95), 20, 100) / 100;
+          state.environment.flareMax = clamp(Number(env.flareMax.value || 2), 0, 20);
+        }
 
         function buildDefaultTerrain() {
           state.terrain = new Array(state.levelWidth);
@@ -668,6 +830,19 @@
               title: String(levelTitle.value || "Untitled Tank Level"),
               difficulty: String(levelDifficulty.value || "easy"),
               notes: String(levelNotes.value || ""),
+              environment: {
+                wind: Number(state.environment.wind || 0),
+                rainIntensity: Number(state.environment.rainIntensity || 0),
+                bomberMode: String(state.environment.bomberMode || "off"),
+              bombsPerCall: Number(state.environment.bombsPerCall || 3),
+              darkness: Number(state.environment.darkness || 0),
+              shotLightRadius: Number(state.environment.shotLightRadius || 170),
+              shotLightIntensity: Number(state.environment.shotLightIntensity ?? 0.85),
+              flareAfterMisses: Number(state.environment.flareAfterMisses || 3),
+              flareRadius: Number(state.environment.flareRadius || 260),
+              flareIntensity: Number(state.environment.flareIntensity ?? 0.95),
+              flareMax: Number(state.environment.flareMax || 2)
+            },
               width: state.levelWidth,
               height: state.levelHeight,
               terrain: state.terrain.map((n) => Math.round(n)),
@@ -730,6 +905,21 @@
               state.terrain = lvl.terrain.map((n) => Number(n || 0));
               state.heroSpawn = { x: Number(lvl.heroSpawn?.x || 160) };
               state.enemySpawn = { x: Number(lvl.enemySpawn?.x || 1240) };
+
+              const envIn = lvl.environment || lvl.env || {};
+              state.environment.wind = Number(envIn.wind || 0);
+              state.environment.rainIntensity = Number(envIn.rainIntensity || 0);
+              state.environment.bomberMode = String(envIn.bomberMode || "off");
+              state.environment.bombsPerCall = Number(envIn.bombsPerCall || 3);
+              state.environment.darkness = Number(envIn.darkness || 0);
+              state.environment.shotLightRadius = Number(envIn.shotLightRadius || 170);
+              state.environment.shotLightIntensity = Number(envIn.shotLightIntensity ?? 0.85);
+              state.environment.flareAfterMisses = Number(envIn.flareAfterMisses || 3);
+              state.environment.flareRadius = Number(envIn.flareRadius || 260);
+              state.environment.flareIntensity = Number(envIn.flareIntensity ?? 0.95);
+              state.environment.flareMax = Number(envIn.flareMax || 2);
+              syncEnvironmentUiFromState();
+
               state.entities = (lvl.entities || []).map((e) => {
                 const img = new Image();
                 img.src = `../images/${e.file || `${e.key}.webp`}`;
@@ -812,6 +1002,51 @@
             hiddenImportInput.value = "";
           });
           assetSearch.addEventListener("input", renderAssetList);
+
+          syncEnvironmentUiFromState();
+          env.wind.addEventListener("input", () => {
+            env.windValue.textContent = String(env.wind.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.rain.addEventListener("input", () => {
+            env.rainValue.textContent = String(env.rain.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.bomberMode.addEventListener("change", () => {
+            syncEnvironmentStateFromUi();
+          });
+          env.bombsPerCall.addEventListener("input", () => {
+            env.bombsPerCallValue.textContent = String(env.bombsPerCall.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.darkness.addEventListener("input", () => {
+            env.darknessValue.textContent = String(env.darkness.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.shotLightRadius.addEventListener("input", () => {
+            env.shotLightRadiusValue.textContent = String(env.shotLightRadius.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.shotLightIntensity.addEventListener("input", () => {
+            env.shotLightIntensityValue.textContent = String(env.shotLightIntensity.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareAfterMisses.addEventListener("input", () => {
+            env.flareAfterMissesValue.textContent = String(env.flareAfterMisses.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareRadius.addEventListener("input", () => {
+            env.flareRadiusValue.textContent = String(env.flareRadius.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareIntensity.addEventListener("input", () => {
+            env.flareIntensityValue.textContent = String(env.flareIntensity.value);
+            syncEnvironmentStateFromUi();
+          });
+          env.flareMax.addEventListener("input", () => {
+            env.flareMaxValue.textContent = String(env.flareMax.value);
+            syncEnvironmentStateFromUi();
+          });
 
           document.getElementById("deleteAssetBtn").addEventListener("click", () => {
             if (!state.selectedEntityId) return;
