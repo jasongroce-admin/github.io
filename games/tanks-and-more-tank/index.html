@@ -153,6 +153,16 @@
         padding: 10px;
         display: grid;
         gap: 8px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 45;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        background: linear-gradient(180deg, rgba(5,15,26,0.32), rgba(8,21,37,0.96));
+        backdrop-filter: blur(6px);
       }
       .menu-launch {
         position: absolute;
@@ -206,6 +216,7 @@
         border: 1px solid #2f577f;
         background: #040b14;
         overflow: hidden;
+        --controls-h: 188px;
       }
       .hud.hud-overlay {
         position: absolute;
@@ -223,7 +234,7 @@
       .tuning-overlay {
         position: absolute;
         right: 12px;
-        bottom: 12px;
+        bottom: calc(var(--controls-h) + 12px);
         display: grid;
         gap: 8px;
         z-index: 36;
@@ -470,11 +481,7 @@
       @media (max-width: 800px) {
         .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .gauge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .bottom-gauges {
-          position: sticky;
-          bottom: 0;
-          z-index: 50;
-        }
+        .game-wrap { --controls-h: 250px; }
         .menu-launch { top: 176px; }
         .overlay-help { top: 176px; }
       }
@@ -484,6 +491,7 @@
           grid-template-columns: 1fr 1fr;
         }
         .welcome-grid { grid-template-columns: 1fr; }
+        .game-wrap { --controls-h: 330px; }
       }
     </style>
   </head>
@@ -763,48 +771,49 @@
               </div>
             </div>
             <div class="arrow-hint" id="arrowHint">--&gt;</div>
-          </div>
-          <div class="bottom-gauges">
-            <div class="gauge-grid">
-              <div class="gauge-cell">
-                <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
-                <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+
+            <div class="bottom-gauges" aria-label="Game controls">
+              <div class="gauge-grid">
+                <div class="gauge-cell">
+                  <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
+                  <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+                </div>
+                <div class="gauge-cell">
+                  <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
+                  <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
+                </div>
+                <div class="gauge-cell">
+                  <label for="weaponSelect">Weapon</label>
+                  <select id="weaponSelect"></select>
+                </div>
+                <div class="gauge-cell">
+                  <label for="shotKindProfileSelect">Shot Kind Profile</label>
+                  <select id="shotKindProfileSelect">
+                    <option value="shell">Shell</option>
+                    <option value="heavy">Heavy</option>
+                    <option value="cluster">Cluster</option>
+                    <option value="napalm">Napalm</option>
+                    <option value="rail">Rail</option>
+                    <option value="quantum">Quantum</option>
+                    <option value="bomber">Bomber</option>
+                  </select>
+                </div>
               </div>
-              <div class="gauge-cell">
-                <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
-                <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
+              <div class="gauge-grid">
+                <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
+                <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
+                <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
+                <div class="gauge-cell">
+                  <label for="bomberDirectionSelect">Air Bomber Direction</label>
+                  <select id="bomberDirectionSelect">
+                    <option value="ltr">Left to Right</option>
+                    <option value="rtl">Right to Left</option>
+                  </select>
+                </div>
+                <div class="gauge-cell"><label>Special</label><button id="callBomberBtn">Call Air Bomber</button></div>
+                <div class="gauge-cell"><label>Night</label><button id="callFlareBtn">Drop Flare</button></div>
+                <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
               </div>
-              <div class="gauge-cell">
-                <label for="weaponSelect">Weapon</label>
-                <select id="weaponSelect"></select>
-              </div>
-              <div class="gauge-cell">
-                <label for="shotKindProfileSelect">Shot Kind Profile</label>
-                <select id="shotKindProfileSelect">
-                  <option value="shell">Shell</option>
-                  <option value="heavy">Heavy</option>
-                  <option value="cluster">Cluster</option>
-                  <option value="napalm">Napalm</option>
-                  <option value="rail">Rail</option>
-                  <option value="quantum">Quantum</option>
-                  <option value="bomber">Bomber</option>
-                </select>
-              </div>
-            </div>
-            <div class="gauge-grid">
-              <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
-              <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
-              <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
-              <div class="gauge-cell">
-                <label for="bomberDirectionSelect">Air Bomber Direction</label>
-                <select id="bomberDirectionSelect">
-                  <option value="ltr">Left to Right</option>
-                  <option value="rtl">Right to Left</option>
-                </select>
-              </div>
-              <div class="gauge-cell"><label>Special</label><button id="callBomberBtn">Call Air Bomber</button></div>
-              <div class="gauge-cell"><label>Night</label><button id="callFlareBtn">Drop Flare</button></div>
-              <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
             </div>
           </div>
           <div class="legend" id="statusLine">
