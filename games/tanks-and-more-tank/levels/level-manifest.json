@@ -1,0 +1,96 @@
+﻿{
+    "version":  1,
+    "updatedAt":  "2026-04-23T07:13:40",
+    "levels":  [
+                   {
+                       "slot":  1,
+                       "title":  "Training Ridge",
+                       "difficulty":  "easy",
+                       "file":  "slot-01-training-ridge.json"
+                   },
+                   {
+                       "slot":  2,
+                       "title":  "Crater Road",
+                       "difficulty":  "easy",
+                       "file":  "slot-02-crater-road.json"
+                   },
+                   {
+                       "slot":  3,
+                       "title":  "Burnt Canyon",
+                       "difficulty":  "easy",
+                       "file":  "slot-03-burnt-canyon.json"
+                   },
+                   {
+                       "slot":  4,
+                       "title":  "Razor Hills",
+                       "difficulty":  "easy",
+                       "file":  "slot-04-razor-hills.json"
+                   },
+                   {
+                       "slot":  5,
+                       "title":  "Twin Mounds",
+                       "difficulty":  "easy",
+                       "file":  "slot-05-twin-mounds.json"
+                   },
+                   {
+                       "slot":  6,
+                       "title":  "Steel Pass",
+                       "difficulty":  "medium",
+                       "file":  "slot-06-steel-pass.json"
+                   },
+                   {
+                       "slot":  7,
+                       "title":  "Dust Thunder",
+                       "difficulty":  "medium",
+                       "file":  "slot-07-dust-thunder.json"
+                   },
+                   {
+                       "slot":  8,
+                       "title":  "Broken Plateau",
+                       "difficulty":  "medium",
+                       "file":  "slot-08-broken-plateau.json"
+                   },
+                   {
+                       "slot":  9,
+                       "title":  "Meteor Path",
+                       "difficulty":  "medium",
+                       "file":  "slot-09-meteor-path.json"
+                   },
+                   {
+                       "slot":  10,
+                       "title":  "Siege Valley",
+                       "difficulty":  "medium",
+                       "file":  "slot-10-siege-valley.json"
+                   },
+                   {
+                       "slot":  11,
+                       "title":  "Ashline Front",
+                       "difficulty":  "hard",
+                       "file":  "slot-11-ashline-front.json"
+                   },
+                   {
+                       "slot":  12,
+                       "title":  "Iron Cliffs",
+                       "difficulty":  "hard",
+                       "file":  "slot-12-iron-cliffs.json"
+                   },
+                   {
+                       "slot":  13,
+                       "title":  "Shatter Dunes",
+                       "difficulty":  "hard",
+                       "file":  "slot-13-shatter-dunes.json"
+                   },
+                   {
+                       "slot":  14,
+                       "title":  "Nova Trench",
+                       "difficulty":  "hard",
+                       "file":  "slot-14-nova-trench.json"
+                   },
+                   {
+                       "slot":  15,
+                       "title":  "Final Barrage",
+                       "difficulty":  "hard",
+                       "file":  "slot-15-final-barrage.json"
+                   }
+               ]
+}
