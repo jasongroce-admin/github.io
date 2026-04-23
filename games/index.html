@@ -14,6 +14,9 @@
       .games-card{display:grid;gap:.35rem;padding:1rem;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);text-decoration:none}
       .games-card strong{color:#fff}
       .games-card span{color:var(--muted)}
+      .games-card .tag{display:inline-flex;align-items:center;gap:.4rem;justify-self:start;padding:.15rem .55rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);font-size:.8rem;color:#bfe0ff;margin-bottom:.2rem}
+      .games-section{display:grid;gap:.8rem}
+      .games-section h2{margin:0;font-size:1.1rem}
     </style>
   </head>
   <body>
@@ -28,11 +31,44 @@
       </header>
       <section class="panel stack games-intro">
         <h1>Games</h1>
-        <p>Choose a category: Board, Web, or Work In Progress.</p>
-        <div class="games-grid">
-          <a class="games-card" href="old-school-board-games/index.html"><strong>Board</strong><span>Classic board-game style play.</span></a>
-          <a class="games-card" href="work-in-progress/index.html"><strong>Web</strong><span>Online games and current playable builds.</span></a>
-          <a class="games-card" href="work-in-progress/index.html"><strong>Work In Progress</strong><span>Current titles and active builds.</span></a>
+        <p>All playable games and tools on one screen.</p>
+
+        <div class="games-section">
+          <h2>Featured</h2>
+          <div class="games-grid">
+            <a class="games-card" href="tanks-and-more-tank/index.html">
+              <span class="tag">New</span>
+              <strong>Tanks and More Tank</strong>
+              <span>Campaign, auto-generated maps, and Night Tanks (with flares).</span>
+            </a>
+            <a class="games-card" href="youlevel/index.html">
+              <span class="tag">Editor</span>
+              <strong>YouLevel Studio</strong>
+              <span>Web-based level editor and builder tools.</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="games-section">
+          <h2>Play</h2>
+          <div class="games-grid">
+            <a class="games-card" href="snake/index.html"><strong>Snake</strong><span>Classic snake, modern feel.</span></a>
+            <a class="games-card" href="color-puzzle/index.html"><strong>Color Puzzle</strong><span>Pattern + color matching challenge.</span></a>
+            <a class="games-card" href="old-school-board-games/index.html"><strong>Old School Board Games</strong><span>Board-game style play.</span></a>
+            <a class="games-card" href="pd-witness-recall/index.html"><strong>PD Witness Recall</strong><span>Training-style memory and recall game.</span></a>
+            <a class="games-card" href="game-01/index.html"><strong>Game 01</strong><span>Prototype build and experiments.</span></a>
+          </div>
+        </div>
+
+        <div class="games-section">
+          <h2>Work In Progress</h2>
+          <div class="games-grid">
+            <a class="games-card" href="work-in-progress/index.html"><strong>WIP Hub</strong><span>Current titles and active builds.</span></a>
+            <a class="games-card" href="firefighter-game/index.html"><strong>Firefighter (Mobile)</strong><span>Mobile-focused firefighter game builds.</span></a>
+            <a class="games-card" href="kpd-crimescene/index.html"><strong>KPD Crime Scene Library</strong><span>Scene gallery + assets (WIP).</span></a>
+            <a class="games-card" href="utilities/index.html"><strong>Game Utilities</strong><span>Tools used by games and builders.</span></a>
+            <a class="games-card" href="archive/index.html"><strong>Archive</strong><span>Older builds and experiments.</span></a>
+          </div>
         </div>
       </section>
     </main>
