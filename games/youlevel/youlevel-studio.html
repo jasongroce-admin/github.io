@@ -1466,6 +1466,83 @@ body {
   text-decoration: none;
 }
 .studio-quick-link:hover { text-decoration: underline; }
+.studio-left-nav {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(108, 210, 248, 0.22);
+  background: linear-gradient(180deg, rgba(7, 27, 44, 0.75), rgba(6, 20, 32, 0.78));
+}
+.studio-left-nav-title {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(202, 240, 255, 0.92);
+  margin: 0 0 8px 0;
+  font-weight: 900;
+}
+.studio-left-nav-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.studio-left-nav-btn {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(132, 221, 255, 0.32);
+  background: linear-gradient(180deg, rgba(12, 66, 98, 0.86), rgba(10, 44, 71, 0.86));
+  color: #dff8ff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin: 0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+}
+.studio-left-nav-btn:hover { filter: brightness(1.08); }
+.studio-left-nav-btn.active {
+  border-color: rgba(255, 214, 78, 0.72);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.24);
+}
+.studio-left-nav-divider {
+  height: 1px;
+  margin: 12px 0;
+  background: linear-gradient(90deg, transparent, rgba(126, 168, 214, 0.44), transparent);
+}
+.studio-section-header {
+  margin: 14px 0 10px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(126, 168, 214, 0.30);
+  background: linear-gradient(180deg, rgba(10, 34, 52, 0.72), rgba(8, 25, 40, 0.74));
+  color: rgba(231, 247, 255, 0.96);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.studio-section-actions { margin-left: auto; }
+.studio-section-action-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 214, 78, 0.55);
+  background: linear-gradient(180deg, rgba(255, 174, 0, 0.88), rgba(197, 99, 0, 0.88));
+  color: #111;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  margin: 0;
+}
+.studio-section-action-btn:hover { filter: brightness(1.08); }
 .studio-meta-zone {
   border-left-color: rgba(245, 197, 95, 0.9);
   background: rgba(46, 35, 15, 0.55);
@@ -1500,6 +1577,155 @@ body {
 }
 .studio-modal-card h3 { margin: 0 0 8px 0; color: #a5ebff; }
 .studio-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+.studio-command-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(130, 220, 255, 0.30);
+  background: rgba(6, 18, 30, 0.76);
+  color: #e7f7ff;
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+}
+.studio-command-input:focus {
+  border-color: rgba(255, 214, 78, 0.62);
+  box-shadow: 0 0 0 3px rgba(255, 214, 78, 0.16);
+}
+.studio-command-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+.studio-command-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(132, 221, 255, 0.28);
+  background: rgba(6, 18, 30, 0.55);
+  color: #e7f7ff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+}
+.studio-command-item:hover { filter: brightness(1.06); }
+.studio-command-item.active {
+  border-color: rgba(255, 214, 78, 0.62);
+  background: rgba(28, 22, 10, 0.55);
+}
+.studio-command-hint {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(196, 232, 255, 0.72);
+}
+.studio-menu-popover {
+  position: fixed;
+  z-index: 1900;
+  min-width: 250px;
+  max-width: min(420px, 92vw);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(130, 220, 255, 0.32);
+  background: linear-gradient(180deg, rgba(9, 30, 48, 0.98), rgba(8, 24, 38, 0.98));
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  display: none;
+}
+.studio-menu-popover .studio-menu-popover-title {
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(202, 240, 255, 0.86);
+}
+.studio-menu-popover .studio-menu-section-title {
+  padding: 10px 8px 6px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(196, 232, 255, 0.70);
+}
+.studio-menu-popover .studio-menu-sep {
+  height: 1px;
+  margin: 8px 6px;
+  background: linear-gradient(90deg, transparent, rgba(126, 168, 214, 0.34), transparent);
+}
+.studio-menu-popover button {
+  width: 100%;
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(132, 221, 255, 0.22);
+  background: rgba(6, 18, 30, 0.56);
+  color: #e7f7ff;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+.studio-menu-popover button:hover { filter: brightness(1.06); }
+.studio-menu-popover button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none !important;
+}
+.studio-command-item[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.studio-history-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+.studio-history-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(132, 221, 255, 0.22);
+  background: rgba(6, 18, 30, 0.52);
+  color: rgba(231, 247, 255, 0.96);
+}
+.studio-history-row .top {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 900;
+  font-size: 12px;
+}
+.studio-history-row .sub {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.78;
+  line-height: 1.35;
+}
+.studio-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 214, 78, 0.40);
+  background: rgba(28, 22, 10, 0.38);
+  color: rgba(255, 236, 180, 0.94);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.studio-menu-popover button .k {
+  float: right;
+  opacity: 0.75;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
 </style>
 </head>
 <body>
@@ -1530,6 +1756,18 @@ body {
       <div class="builder-head"><h2>Asset Library</h2></div>
       <button id="builderLeftCollapseBtn" type="button" class="left-collapse-btn">Collapse</button>
       <div class="builder-body">
+        <div class="studio-left-nav" aria-label="Studio Sections">
+          <div class="studio-left-nav-title">Studio Sections</div>
+          <div class="studio-left-nav-grid">
+            <button type="button" class="studio-left-nav-btn" data-studio-section="layers">Layers</button>
+            <button type="button" class="studio-left-nav-btn" data-studio-section="scene">Scene</button>
+            <button type="button" class="studio-left-nav-btn" data-studio-section="movement">Movement</button>
+            <button type="button" class="studio-left-nav-btn" data-studio-section="combat">Combat</button>
+            <button type="button" class="studio-left-nav-btn" data-studio-section="ai">AI</button>
+            <button type="button" class="studio-left-nav-btn" data-studio-section="export">Export</button>
+          </div>
+        </div>
+        <div class="studio-left-nav-divider" aria-hidden="true"></div>
         <div class="builder-field">
           <label>Upload Image</label>
           <div class="builder-mini-actions" style="margin-top:0;">
@@ -1625,6 +1863,7 @@ body {
         <div class="builder-head-status" id="builderStatusTextRight">Build your own level, save and play.</div>
       </div>
       <div class="builder-body">
+        <div id="studioAnchorScene" class="studio-section-header" data-studio-section="scene">Scene</div>
         <div class="builder-field">
           <label for="builderLevelName">Level Name</label>
           <input id="builderLevelName" type="text" maxlength="80">
@@ -1688,6 +1927,7 @@ body {
           <label for="builderSafetyTip">Instruction Tip</label>
           <textarea id="builderSafetyTip" maxlength="220" readonly></textarea>
         </div>
+        <div id="studioAnchorAI" class="studio-section-header" data-studio-section="ai">AI</div>
         <div class="builder-field studio-ai-zone">
           <label for="builderGlobalTimeScale">Global Time Scale</label>
           <input id="builderGlobalTimeScale" type="number" min="0.25" max="2.5" step="0.05" value="1">
@@ -1708,6 +1948,7 @@ body {
             <option value="vertical">Vertical (Galaga Style)</option>
           </select>
         </div>
+        <div id="studioAnchorCombat" class="studio-section-header" data-studio-section="combat">Combat</div>
         <div class="builder-field studio-combat-zone">
           <label for="builderScoreMultiplier">Score Multiplier</label>
           <input id="builderScoreMultiplier" type="number" min="0.1" max="10" step="0.1" value="1">
@@ -1755,6 +1996,7 @@ body {
             <button id="builderSetPrimaryFromSelectedBtn" type="button" class="alt">Use Selected Layer As Primary Hero</button>
           </div>
         </div>
+        <div id="studioAnchorMovement" class="studio-section-header" data-studio-section="movement">Movement</div>
         <div class="builder-field movement-zone">
           <label for="builderPrimaryVehicleFacingBase">Primary Hero Facing (Source Art)</label>
           <select id="builderPrimaryVehicleFacingBase">
@@ -1987,6 +2229,7 @@ body {
             <button id="builderLoadCurrentLevelBtn2" type="button">Load Current Scene</button>
           </div>
         </div>
+        <div id="studioAnchorLayers" class="studio-section-header" data-studio-section="layers">Layers</div>
         <div class="builder-field">
           <label>Layer Stack (Top at Top)</label>
           <div id="builderLayerList" class="builder-layer-list"></div>
@@ -2420,6 +2663,12 @@ body {
           </div>
         </div>
 
+        <div id="studioAnchorExport" class="studio-section-header" data-studio-section="export">
+          <span>Export</span>
+          <span class="studio-section-actions">
+            <button id="studioOpenExportCenterBtn" type="button" class="studio-section-action-btn">Export Center</button>
+          </span>
+        </div>
         <div class="builder-actions">
           <button id="builderToolSelectBtn" type="button">Select Tool</button>
           <button id="builderToolMoveBtn" type="button" class="alt">Move Tool</button>
@@ -6452,6 +6701,17 @@ function builderOpen(levelData = null) {
     BUILDER_UI.layerDeleteNoAsk.checked = localStorage.getItem(BUILDER_DELETE_CONFIRM_SKIP_KEY) === '1';
   }
   builderPopulateLevelSelect();
+
+  // Project layer: default to active project level when not explicitly passed a level.
+  try {
+    studioEnsureDefaultProject();
+    studioEnsureDefaultLevel();
+    if (!levelData) {
+      const active = studioGetActiveLevelEntry();
+      if (active?.level) levelData = active.level;
+    }
+  } catch {}
+
   if (levelData) {
     builderLoadFromLevel(levelData);
     if (!builderHasTruckPlaced()) builderPlaceTruckForUser(builderState.truckSide === 'right' ? 'right' : 'left');
@@ -6916,6 +7176,7 @@ function builderPublishToSlot(slot) {
 }
 
 function builderSaveLocalLevel() {
+  studioSaveCurrentLevelToProject({ updateName: true });
   const payload = safeJsonParse(localStorage.getItem(BUILDER_STORAGE_KEY) || '', {});
   const snapshot = builderCloneToRuntimeLevel();
   const name = (snapshot.name || 'Custom Builder Level').trim();
@@ -6941,7 +7202,9 @@ function builderLoadLocalLevel() {
 }
 
 function builderExportPackage() {
+  try { studioSaveCurrentLevelToProject({ updateName: true }); } catch {}
   const pkg = builderBuildSubmissionPayload();
+  pkg.studioManifest = studioBuildManifest('level_package', pkg);
   const text = JSON.stringify(pkg, null, 2);
   const blob = new Blob([text], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -6955,6 +7218,7 @@ function builderExportPackage() {
 }
 
 function builderSharePackage() {
+  try { studioSaveCurrentLevelToProject({ updateName: true }); } catch {}
   const pkg = builderBuildSubmissionPayload();
   const text = JSON.stringify(pkg, null, 2);
   navigator.clipboard?.writeText(text).catch(() => {});
@@ -7205,14 +7469,26 @@ Option B (Node, if installed):
   if (includeLevel) {
     await writeText(folderHandle, 'submission-package.json', JSON.stringify(pkg, null, 2));
   }
+  try {
+    const manifest = studioBuildManifest(includeLevel ? 'offline_with_level' : 'offline_game_only', pkg);
+    manifest.offline = {
+      includeLevel,
+      folderName: `YouLevel-${folderSuffix}`,
+      missingImages
+    };
+    await writeText(folderHandle, 'manifest.json', JSON.stringify(manifest, null, 2));
+  } catch {}
   if (missingImages.length) {
     await writeText(folderHandle, 'missing-images.txt', missingImages.join('\n'));
   }
   builderSetStatus(`Offline folder saved: YouLevel-${folderSuffix}`);
+  studioRecordExport(includeLevel ? 'offline_with_level' : 'offline_game_only', { folderName: `YouLevel-${folderSuffix}` });
 }
 
 function builderSaveSubmissionFile() {
+  try { studioSaveCurrentLevelToProject({ updateName: true }); } catch {}
   const pkg = builderBuildSubmissionPayload();
+  pkg.studioManifest = studioBuildManifest('submission_file', pkg);
   const text = JSON.stringify(pkg, null, 2);
   const blob = new Blob([text], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -15605,17 +15881,1448 @@ BUILDER_UI.importGameBtn?.addEventListener('click', () => {
 BUILDER_UI.imageLoaderBtn?.addEventListener('click', () => {
   alert('Use: C:\\REPO\\github.io-main\\games\\youlevel\\tools\\youlevel-image-loader.cmd\\n\\nIt asks which game to update (or create), then copies dropped image files into that game\'s images folder.');
 });
+
+function studioGetSectionAnchorId(section) {
+  const key = String(section || '').toLowerCase();
+  if (key === 'layers') return 'studioAnchorLayers';
+  if (key === 'scene') return 'studioAnchorScene';
+  if (key === 'movement') return 'studioAnchorMovement';
+  if (key === 'combat') return 'studioAnchorCombat';
+  if (key === 'ai') return 'studioAnchorAI';
+  if (key === 'export') return 'studioAnchorExport';
+  return 'studioAnchorScene';
+}
+
+function studioSetActiveSection(section, { silent = false } = {}) {
+  const key = String(section || '').toLowerCase();
+  document.querySelectorAll('.studio-left-nav-btn[data-studio-section]').forEach((btn) => {
+    const isActive = String(btn.getAttribute('data-studio-section') || '') === key;
+    btn.classList.toggle('active', isActive);
+    if (!silent) btn.setAttribute('aria-current', isActive ? 'true' : 'false');
+  });
+}
+
+function studioScrollToSection(section) {
+  const anchorId = studioGetSectionAnchorId(section);
+  const anchor = document.getElementById(anchorId);
+  const body = document.querySelector('#builderRightPanel .builder-body');
+  if (!anchor || !body) return;
+  const bodyRect = body.getBoundingClientRect();
+  const anchorRect = anchor.getBoundingClientRect();
+  const top = (anchorRect.top - bodyRect.top) + body.scrollTop - 10;
+  body.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+}
+
+function studioFocusSection(section) {
+  const key = String(section || '').toLowerCase();
+  studioSetActiveSection(key);
+  studioScrollToSection(key);
+}
+
+function studioInferActiveSectionFromScroll() {
+  const body = document.querySelector('#builderRightPanel .builder-body');
+  if (!body) return 'scene';
+  const anchors = Array.from(body.querySelectorAll('.studio-section-header[data-studio-section]'));
+  if (!anchors.length) return 'scene';
+  const threshold = body.scrollTop + 18;
+  let active = String(anchors[0].getAttribute('data-studio-section') || 'scene');
+  anchors.forEach((node) => {
+    if (node.offsetTop <= threshold) active = String(node.getAttribute('data-studio-section') || active);
+  });
+  return active || 'scene';
+}
+
+function studioInitSectionNav() {
+  document.querySelectorAll('.studio-left-nav-btn[data-studio-section]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const section = String(btn.getAttribute('data-studio-section') || 'scene');
+      studioFocusSection(section);
+    });
+  });
+
+  const body = document.querySelector('#builderRightPanel .builder-body');
+  if (body) {
+    let raf = 0;
+    body.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        studioSetActiveSection(studioInferActiveSectionFromScroll(), { silent: true });
+      });
+    }, { passive: true });
+  }
+
+  studioSetActiveSection('scene', { silent: true });
+}
+
+const STUDIO_COMMANDS = [];
+let studioMenuPopoverNode = null;
+let studioMenuPopoverAction = '';
+let studioPaletteNode = null;
+let studioPaletteInput = null;
+let studioPaletteList = null;
+let studioPaletteSelectionIndex = 0;
+let studioPaletteVisible = [];
+let studioExportCenterNode = null;
+let studioExportCenterStatusNode = null;
+let studioExportCenterHistoryNode = null;
+let studioExportCenterSummaryNode = null;
+let studioExportCenterDiffNode = null;
+let studioExportCenterAutosaveNode = null;
+let studioExportCenterProjectSelectNode = null;
+let studioExportHistoryAttached = false;
+let studioAutosaveTimer = 0;
+let studioLastAutosaveHash = '';
+
+const STUDIO_PROJECTS_KEY = 'youlevel.projects.v1';
+const STUDIO_ACTIVE_PROJECT_KEY = 'youlevel.activeProjectId.v1';
+const STUDIO_EXPORT_HISTORY_LIMIT = 18;
+const STUDIO_AUTOSAVE_LIMIT = 24;
+const STUDIO_LEVELS_LIMIT = 80;
+const STUDIO_ACTIVE_LEVEL_KEY_SUFFIX = 'activeLevelId';
+const STUDIO_PROJECT_DATA_SUFFIX = 'projectData';
+
+function studioStorageKey(suffix) {
+  const projectId = studioGetActiveProjectId();
+  return `youlevel.${projectId}.${suffix}.v1`;
+}
+
+function studioLoadProjects() {
+  const parsed = safeJsonParse(localStorage.getItem(STUDIO_PROJECTS_KEY) || '', []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function studioSaveProjects(projects) {
+  localStorage.setItem(STUDIO_PROJECTS_KEY, JSON.stringify(Array.isArray(projects) ? projects : []));
+}
+
+function studioEnsureDefaultProject() {
+  const projects = studioLoadProjects();
+  if (projects.length) return projects;
+  const created = {
+    id: 'default',
+    name: 'Default Project',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  studioSaveProjects([created]);
+  localStorage.setItem(STUDIO_ACTIVE_PROJECT_KEY, created.id);
+  return [created];
+}
+
+function studioGetActiveProjectId() {
+  const projects = studioEnsureDefaultProject();
+  const stored = String(localStorage.getItem(STUDIO_ACTIVE_PROJECT_KEY) || '');
+  if (stored && projects.some((p) => p?.id === stored)) return stored;
+  const fallback = String(projects[0]?.id || 'default');
+  localStorage.setItem(STUDIO_ACTIVE_PROJECT_KEY, fallback);
+  return fallback;
+}
+
+function studioGetActiveProject() {
+  const projects = studioEnsureDefaultProject();
+  const id = studioGetActiveProjectId();
+  return projects.find((p) => p?.id === id) || projects[0] || { id: 'default', name: 'Default Project' };
+}
+
+function studioSetActiveProjectId(id) {
+  const projects = studioEnsureDefaultProject();
+  const key = String(id || '');
+  if (!projects.some((p) => p?.id === key)) return false;
+  localStorage.setItem(STUDIO_ACTIVE_PROJECT_KEY, key);
+  studioLastAutosaveHash = '';
+  return true;
+}
+
+function studioLoadProjectData() {
+  const parsed = safeJsonParse(localStorage.getItem(studioStorageKey(STUDIO_PROJECT_DATA_SUFFIX)) || '', null);
+  if (parsed && typeof parsed === 'object') return parsed;
+  return { levels: [], updatedAt: new Date().toISOString() };
+}
+
+function studioSaveProjectData(data) {
+  const next = (data && typeof data === 'object') ? data : { levels: [] };
+  next.updatedAt = new Date().toISOString();
+  if (!Array.isArray(next.levels)) next.levels = [];
+  next.levels = next.levels.slice(0, STUDIO_LEVELS_LIMIT);
+  localStorage.setItem(studioStorageKey(STUDIO_PROJECT_DATA_SUFFIX), JSON.stringify(next));
+}
+
+function studioGetActiveLevelId() {
+  const stored = String(localStorage.getItem(studioStorageKey(STUDIO_ACTIVE_LEVEL_KEY_SUFFIX)) || '');
+  const data = studioLoadProjectData();
+  if (stored && (data.levels || []).some((l) => l?.id === stored)) return stored;
+  const fallback = String((data.levels && data.levels[0]?.id) || '');
+  if (fallback) {
+    localStorage.setItem(studioStorageKey(STUDIO_ACTIVE_LEVEL_KEY_SUFFIX), fallback);
+    return fallback;
+  }
+  return '';
+}
+
+function studioSetActiveLevelId(id) {
+  const key = String(id || '');
+  const data = studioLoadProjectData();
+  if (!(data.levels || []).some((l) => l?.id === key)) return false;
+  localStorage.setItem(studioStorageKey(STUDIO_ACTIVE_LEVEL_KEY_SUFFIX), key);
+  return true;
+}
+
+function studioEnsureDefaultLevel() {
+  const data = studioLoadProjectData();
+  if ((data.levels || []).length) return data;
+  const level = builderCloneToRuntimeLevel();
+  const id = builderHashText(`lvl|${Date.now()}|${Math.random()}`).slice(0, 10);
+  data.levels = [{
+    id,
+    name: String(level.name || 'Level 1'),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastSavedHash: builderHashText(JSON.stringify(level)),
+    level
+  }];
+  studioSaveProjectData(data);
+  localStorage.setItem(studioStorageKey(STUDIO_ACTIVE_LEVEL_KEY_SUFFIX), id);
+  return data;
+}
+
+function studioGetActiveLevelEntry() {
+  const data = studioEnsureDefaultLevel();
+  const id = studioGetActiveLevelId();
+  return (data.levels || []).find((l) => l?.id === id) || data.levels[0] || null;
+}
+
+function studioSaveCurrentLevelToProject({ updateName = false } = {}) {
+  const data = studioEnsureDefaultLevel();
+  const entry = studioGetActiveLevelEntry();
+  if (!entry) return;
+  const snapshot = builderCloneToRuntimeLevel();
+  const idx = (data.levels || []).findIndex((l) => l?.id === entry.id);
+  const nextName = updateName ? String(snapshot.name || entry.name || 'Level') : String(entry.name || snapshot.name || 'Level');
+  const updated = {
+    ...entry,
+    name: nextName,
+    updatedAt: new Date().toISOString(),
+    lastSavedHash: builderHashText(JSON.stringify(snapshot)),
+    level: snapshot
+  };
+  data.levels[idx] = updated;
+  studioSaveProjectData(data);
+}
+
+function studioCreateNewProjectLevel({ blank = true } = {}) {
+  studioSaveCurrentLevelToProject({ updateName: true });
+  const data = studioEnsureDefaultLevel();
+  const base = blank ? createEmptyBuilderLevel() : builderCloneToRuntimeLevel();
+  const id = builderHashText(`lvl|${Date.now()}|${Math.random()}|new`).slice(0, 10);
+  const name = blank ? `Level ${Math.min(999, (data.levels || []).length + 1)}` : String(base.name || `Level ${Math.min(999, (data.levels || []).length + 1)}`);
+  data.levels.unshift({
+    id,
+    name,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastSavedHash: builderHashText(JSON.stringify(base)),
+    level: base
+  });
+  studioSaveProjectData(data);
+  studioSetActiveLevelId(id);
+  builderLoadFromLevel(base);
+  if (!builderHasTruckPlaced()) builderPlaceTruckForUser('left');
+  builderSelectEntity(null);
+  builderApplyStateToUi();
+  builderResetHistory();
+  builderSaveLastDraft();
+  builderSetStatus(`New project level created: ${name}`);
+  return id;
+}
+
+function studioBuildProjectBundle() {
+  studioSaveCurrentLevelToProject({ updateName: true });
+  const project = studioGetActiveProject();
+  const data = studioEnsureDefaultLevel();
+  const levels = (data.levels || []).map((l) => ({
+    id: String(l.id || ''),
+    name: String(l.name || 'Level'),
+    createdAt: l.createdAt || '',
+    updatedAt: l.updatedAt || '',
+    lastSavedHash: l.lastSavedHash || '',
+    level: l.level || null
+  })).filter((l) => !!l.level);
+
+  const neededKeys = new Set();
+  levels.forEach((l) => builderCollectRequiredSpriteKeys(l.level || {}).forEach((k) => neededKeys.add(k)));
+  const customSprites = {};
+  Array.from(neededKeys).forEach((key) => {
+    if (CUSTOM_SPRITE_DATA[key]) {
+      customSprites[key] = {
+        dataUrl: CUSTOM_SPRITE_DATA[key].dataUrl,
+        originalName: CUSTOM_SPRITE_DATA[key].originalName || SPRITE_FILES[key] || `${key}.png`
+      };
+    }
+  });
+
+  const hash = builderHashText(JSON.stringify({
+    levels: levels.map((l) => l.lastSavedHash || builderHashText(JSON.stringify(l.level))),
+    customKeys: Object.keys(customSprites).sort()
+  }));
+  return {
+    kind: 'youlevel_project_bundle',
+    createdAt: new Date().toISOString(),
+    bundleVersion: 1,
+    project: { id: String(project?.id || ''), name: String(project?.name || '') },
+    activeLevelId: studioGetActiveLevelId(),
+    hash,
+    customSprites,
+    levels
+  };
+}
+
+function studioDownloadJson(filename, obj) {
+  const text = JSON.stringify(obj, null, 2);
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+function studioExportProjectBundle() {
+  const bundle = studioBuildProjectBundle();
+  const safeName = String(bundle.project?.name || 'youlevel-project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'youlevel-project';
+  studioDownloadJson(`${safeName}.youlevelproject.json`, bundle);
+  studioRecordExport('project_bundle', { levelCount: (bundle.levels || []).length, bundleHash: bundle.hash });
+  builderSetStatus(`Project bundle exported: ${safeName}.youlevelproject.json`);
+}
+
+function studioImportProjectBundleFromText(text) {
+  const parsed = safeJsonParse(String(text || ''), null);
+  if (!parsed || parsed.kind !== 'youlevel_project_bundle' || !Array.isArray(parsed.levels)) return false;
+
+  try {
+    if (parsed.customSprites && typeof parsed.customSprites === 'object') {
+      Object.keys(parsed.customSprites).forEach((key) => {
+        const info = parsed.customSprites[key];
+        if (!info?.dataUrl) return;
+        registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`);
+      });
+    }
+  } catch {}
+
+  const name = prompt('Import project name:', String(parsed.project?.name || 'Imported Project'));
+  if (!name || !String(name).trim()) {
+    builderSetStatus('Import canceled.');
+    return true;
+  }
+  const projects = studioEnsureDefaultProject();
+  const id = builderHashText(`proj|${Date.now()}|${name}|${Math.random()}`).slice(0, 10);
+  projects.push({ id, name: String(name).trim(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+  studioSaveProjects(projects);
+  studioSetActiveProjectId(id);
+
+  const data = { levels: [] };
+  (parsed.levels || []).forEach((l) => {
+    if (!l?.level) return;
+    const lvlId = builderHashText(`lvl|${Date.now()}|${Math.random()}|${l.name || ''}`).slice(0, 10);
+    data.levels.push({
+      id: lvlId,
+      name: String(l.name || 'Level'),
+      createdAt: l.createdAt || new Date().toISOString(),
+      updatedAt: l.updatedAt || new Date().toISOString(),
+      lastSavedHash: l.lastSavedHash || builderHashText(JSON.stringify(l.level)),
+      level: l.level
+    });
+  });
+  if (!data.levels.length) {
+    builderSetStatus('Import failed: bundle has no levels.');
+    return false;
+  }
+  studioSaveProjectData(data);
+  studioSetActiveLevelId(String(data.levels[0].id));
+  studioSwitchToLevel(String(data.levels[0].id));
+  builderSetStatus(`Imported project: ${name}`);
+  return true;
+}
+
+function studioSwitchToLevel(levelId) {
+  const data = studioEnsureDefaultLevel();
+  const currentEntry = studioGetActiveLevelEntry();
+  const currentHash = builderHashText(JSON.stringify(builderCloneToRuntimeLevel()));
+  const currentSavedHash = String(currentEntry?.lastSavedHash || '');
+  if (currentEntry && currentHash !== currentSavedHash) {
+    const ok = confirm('You have unsaved changes for the current project level.\n\nSave changes to project before switching levels?');
+    if (ok) studioSaveCurrentLevelToProject({ updateName: true });
+  }
+  const target = (data.levels || []).find((l) => l?.id === String(levelId || ''));
+  if (!target?.level) return false;
+  studioSetActiveLevelId(target.id);
+  builderLoadFromLevel(target.level);
+  if (!builderHasTruckPlaced()) builderPlaceTruckForUser('left');
+  builderSelectEntity(null);
+  builderApplyStateToUi();
+  builderResetHistory();
+  builderSaveLastDraft();
+  builderSetStatus(`Loaded project level: ${target.name}`);
+  return true;
+}
+
+function studioGetSelectedEntity() {
+  if (!builderSelectedId) return null;
+  return getBuilderEntityById(builderSelectedId);
+}
+
+function studioGetCommandState(cmd) {
+  if (!cmd) return { enabled: false, reason: 'Unknown command.' };
+  if (typeof cmd.enabled === 'function') {
+    try {
+      const ok = !!cmd.enabled();
+      return ok ? { enabled: true, reason: '' } : { enabled: false, reason: String(cmd.disabledReason || 'Not available right now.') };
+    } catch (err) {
+      return { enabled: false, reason: `Not available: ${err?.message || err}` };
+    }
+  }
+  return { enabled: true, reason: '' };
+}
+
+function studioRegisterCommand(cmd) {
+  if (!cmd || !cmd.id || !cmd.title) return;
+  if (STUDIO_COMMANDS.some((c) => c.id === cmd.id)) return;
+  STUDIO_COMMANDS.push(cmd);
+}
+
+function studioGetCommandById(id) {
+  const key = String(id || '');
+  return STUDIO_COMMANDS.find((c) => c.id === key) || null;
+}
+
+function studioRunCommand(id) {
+  const cmd = studioGetCommandById(id);
+  if (!cmd || typeof cmd.run !== 'function') return;
+  const state = studioGetCommandState(cmd);
+  if (!state.enabled) {
+    builderSetStatus(state.reason || `Not available: ${cmd.title}`);
+    return;
+  }
+  try {
+    const out = cmd.run();
+    if (out && typeof out.then === 'function') {
+      out.catch((err) => builderSetStatus(`Command failed: ${cmd.title}. ${err?.message || err}`));
+    }
+  } catch (err) {
+    builderSetStatus(`Command failed: ${cmd.title}. ${err?.message || err}`);
+  }
+}
+
+function studioComputeValidationIssues(level) {
+  const issues = [];
+  const lvl = level || builderCloneToRuntimeLevel();
+  if (!builderState.gameTitle || !builderState.gameTitle.trim()) issues.push('Game Title is empty.');
+  if (!lvl.entities || !lvl.entities.length) issues.push('No entities placed yet.');
+  const enemyCount = (lvl.entities || []).filter((ent) => ent?.enemyEnabled).length;
+  if (enemyCount === 0) issues.push('No enemy layers enabled (optional, but recommended).');
+  if (Number(builderState?.tuning?.scoreMultiplier || 1) <= 0.2) issues.push('Score Multiplier is very low.');
+  return issues;
+}
+
+function studioGetPerfNote(level) {
+  const lvl = level || builderCloneToRuntimeLevel();
+  const count = (lvl.entities || []).length;
+  return count > 220
+    ? `Performance warning: ${count} entities.`
+    : `Performance check: ${count} entities looks safe for most devices.`;
+}
+
+function studioLoadExportHistory() {
+  const parsed = safeJsonParse(localStorage.getItem(studioStorageKey('exportHistory')) || '', []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function studioSaveExportHistory(items) {
+  localStorage.setItem(studioStorageKey('exportHistory'), JSON.stringify((items || []).slice(0, STUDIO_EXPORT_HISTORY_LIMIT)));
+}
+
+function studioLoadAutosaves() {
+  const parsed = safeJsonParse(localStorage.getItem(studioStorageKey('autosaves')) || '', []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function studioSaveAutosaves(items) {
+  localStorage.setItem(studioStorageKey('autosaves'), JSON.stringify((items || []).slice(0, STUDIO_AUTOSAVE_LIMIT)));
+}
+
+function studioPushExportHistory(entry) {
+  const items = studioLoadExportHistory();
+  items.unshift(entry);
+  studioSaveExportHistory(items);
+  if (studioExportCenterNode && studioExportCenterNode.style.display === 'flex') {
+    studioRenderExportCenter();
+  }
+}
+
+function studioRecordExport(type, extra = {}) {
+  const level = builderCloneToRuntimeLevel();
+  const entityCount = (level.entities || []).length;
+  const spriteCount = builderCollectRequiredSpriteKeys(level).length;
+  const hash = builderHashText(JSON.stringify(level));
+  const project = studioGetActiveProject();
+  studioPushExportHistory({
+    type: String(type || 'export'),
+    at: new Date().toISOString(),
+    name: String(level.name || 'Untitled'),
+    entityCount,
+    spriteCount,
+    hash,
+    projectId: project?.id || '',
+    projectName: project?.name || '',
+    ...extra
+  });
+}
+
+function studioBuildManifest(kind, pkg) {
+  const project = studioGetActiveProject();
+  const level = pkg?.level || builderCloneToRuntimeLevel();
+  const levelHash = builderHashText(JSON.stringify(level));
+  return {
+    kind: String(kind || 'export'),
+    createdAt: new Date().toISOString(),
+    project: { id: project?.id || '', name: project?.name || '' },
+    app: 'YouLevel Studio',
+    appVersion: BUILDER_APP_VERSION,
+    packageVersion: BUILDER_PACKAGE_VERSION,
+    level: {
+      name: String(level?.name || 'Untitled'),
+      hash: levelHash,
+      entityCount: (level?.entities || []).length
+    },
+    sprites: {
+      requiredCount: builderCollectRequiredSpriteKeys(level).length
+    }
+  };
+}
+
+function studioStartAutosave() {
+  if (studioAutosaveTimer) return;
+  studioAutosaveTimer = setInterval(() => {
+    try {
+      if (gameState !== 'builder') return;
+      if (builderHistoryMute) return;
+      const level = builderCloneToRuntimeLevel();
+      const hash = builderHashText(JSON.stringify(level));
+      if (hash === studioLastAutosaveHash) return;
+      studioLastAutosaveHash = hash;
+      const items = studioLoadAutosaves();
+      items.unshift({
+        at: new Date().toISOString(),
+        hash,
+        selectedId: builderSelectedId || '',
+        level
+      });
+      studioSaveAutosaves(items);
+      if (studioExportCenterNode && studioExportCenterNode.style.display === 'flex') {
+        studioRenderExportCenter();
+      }
+    } catch {}
+  }, 12000);
+}
+
+function studioTryImportLevelText(text) {
+  const parsed = safeJsonParse(String(text || ''), null);
+  if (!parsed) {
+    builderSetStatus('Import failed: invalid JSON.');
+    return false;
+  }
+  if (parsed.level) {
+    builderImportPackageFromText(JSON.stringify(parsed));
+    builderSetStatus('Imported level package.');
+    return true;
+  }
+  if (parsed.entities && Array.isArray(parsed.entities)) {
+    builderLoadFromLevel(parsed);
+    builderSetStatus('Imported level JSON.');
+    return true;
+  }
+  builderSetStatus('Import failed: JSON is not a YouLevel package/level.');
+  return false;
+}
+
+function studioInitCommands() {
+  if (STUDIO_COMMANDS.length) return;
+  const hasSelection = () => !!studioGetSelectedEntity();
+  const selectedIsPrimary = () => studioGetSelectedEntity()?.type === 'requiredFireTruck';
+  const canEditSelection = () => hasSelection() && !selectedIsPrimary();
+
+  studioRegisterCommand({ id: 'view.scene', title: 'Go to Scene', menu: 'view', keys: 'Alt+1', run: () => studioFocusSection('scene') });
+  studioRegisterCommand({ id: 'view.layers', title: 'Go to Layers', menu: 'view', keys: 'Alt+2', run: () => studioFocusSection('layers') });
+  studioRegisterCommand({ id: 'view.movement', title: 'Go to Movement', menu: 'view', keys: 'Alt+3', run: () => studioFocusSection('movement') });
+  studioRegisterCommand({ id: 'view.combat', title: 'Go to Combat', menu: 'view', keys: 'Alt+4', run: () => studioFocusSection('combat') });
+  studioRegisterCommand({ id: 'view.ai', title: 'Go to AI', menu: 'view', keys: 'Alt+5', run: () => studioFocusSection('ai') });
+  studioRegisterCommand({ id: 'view.export', title: 'Go to Export', menu: 'view', keys: 'Alt+6', run: () => studioFocusSection('export') });
+
+  studioRegisterCommand({ id: 'file.export_center', title: 'Open Export Center', menu: 'file', keys: 'Ctrl+Shift+E', run: () => studioOpenExportCenter() });
+  studioRegisterCommand({ id: 'file.export_project_bundle', title: 'Export Project Bundle', menu: 'file', keys: '', run: () => studioExportProjectBundle() });
+  studioRegisterCommand({ id: 'project.new_level', title: 'New Project Level', menu: 'file', keys: 'Ctrl+Alt+N', run: () => studioCreateNewProjectLevel({ blank: true }) });
+  studioRegisterCommand({ id: 'file.new_blank', title: 'New Blank Level', menu: 'file', keys: '', run: () => document.getElementById('builderNewBtn')?.click() });
+  studioRegisterCommand({ id: 'file.save_local', title: 'Save Level (This Browser)', menu: 'file', keys: 'Ctrl+S', run: () => document.getElementById('builderSaveLocalBtn')?.click() });
+  studioRegisterCommand({ id: 'file.load_local', title: 'Load Saved Level', menu: 'file', keys: '', run: () => document.getElementById('builderLoadLocalBtn')?.click() });
+  studioRegisterCommand({ id: 'file.export_package', title: 'Download Level Package', menu: 'file', keys: '', run: () => document.getElementById('builderExportBtn')?.click() });
+  studioRegisterCommand({ id: 'file.copy_package_json', title: 'Copy Package JSON (Share)', menu: 'file', keys: '', run: () => document.getElementById('builderShareBtn')?.click() });
+  studioRegisterCommand({ id: 'file.download_submission', title: 'Download Source Submission File', menu: 'publish', keys: '', run: () => document.getElementById('builderSaveSubmissionBtn')?.click() });
+  studioRegisterCommand({ id: 'file.offline_with_level', title: 'Download Offline Game (This Level)', menu: 'file', keys: '', run: () => document.getElementById('builderExportOfflineBtn')?.click() });
+  studioRegisterCommand({ id: 'file.offline_game_only', title: 'Download Offline Game (No Custom Level)', menu: 'file', keys: '', run: () => document.getElementById('builderExportFullGameBtn')?.click() });
+
+  studioRegisterCommand({ id: 'file.import_package', title: 'Import Level Package (File)', menu: 'file', keys: '', run: () => document.getElementById('builderImportBtn')?.click() });
+  studioRegisterCommand({
+    id: 'file.import_clipboard',
+    title: 'Import Package/Level From Clipboard',
+    menu: 'file',
+    keys: '',
+    enabled: () => !!navigator.clipboard?.readText,
+    disabledReason: 'Clipboard read not supported in this browser.',
+    run: async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) { builderSetStatus('Clipboard is empty.'); return; }
+        studioTryImportLevelText(text);
+      } catch (err) {
+        builderSetStatus(`Clipboard read failed: ${err?.message || err}`);
+      }
+    }
+  });
+
+  studioRegisterCommand({ id: 'edit.undo', title: 'Undo', menu: 'edit', keys: 'Ctrl+Z', enabled: () => builderUndoStack.length > 1, disabledReason: 'Nothing to undo.', run: () => builderUndo() });
+  studioRegisterCommand({ id: 'edit.redo', title: 'Redo', menu: 'edit', keys: 'Ctrl+Y / Ctrl+Shift+Z', enabled: () => builderRedoStack.length > 0, disabledReason: 'Nothing to redo.', run: () => builderRedo() });
+  studioRegisterCommand({ id: 'edit.duplicate_layer', title: 'Duplicate Selected Layer', menu: 'edit', keys: 'Ctrl+D', enabled: () => canEditSelection(), disabledReason: 'Select a non-primary layer to duplicate.', run: () => builderDuplicateLayer(builderSelectedId) });
+  studioRegisterCommand({ id: 'edit.copy_layer', title: 'Copy Selected Layer', menu: 'edit', keys: 'Ctrl+C', enabled: () => canEditSelection(), disabledReason: 'Select a non-primary layer to copy.', run: () => builderCopySelectedLayer() });
+  studioRegisterCommand({ id: 'edit.paste_layer', title: 'Paste Layer', menu: 'edit', keys: 'Ctrl+V', enabled: () => !!builderClipboardEntity, disabledReason: 'Copy a layer first (Ctrl+C).', run: () => builderPasteCopiedLayer() });
+  studioRegisterCommand({ id: 'edit.delete_layer', title: 'Delete Selected Layer', menu: 'edit', keys: 'Del', enabled: () => canEditSelection(), disabledReason: 'Select a non-primary layer to delete.', run: () => builderDeleteSelectedLayer() });
+
+  studioRegisterCommand({ id: 'test.validate', title: 'Validate Scene', menu: 'scene', keys: '', run: () => BUILDER_UI.validateBtn?.click() });
+  studioRegisterCommand({ id: 'test.performance', title: 'Performance Check', menu: 'scene', keys: '', run: () => BUILDER_UI.perfBtn?.click() });
+  studioRegisterCommand({ id: 'test.quick_play', title: 'Quick Play / Test Level', menu: 'scene', keys: 'Space', run: () => document.getElementById('builderTestBtn')?.click() });
+}
+
+function studioGetMenuSections(action) {
+  const key = String(action || '').toLowerCase();
+  if (key === 'file') {
+    return [
+      { title: 'Project', commands: ['project.new_level', 'file.new_blank', 'file.save_local', 'file.load_local'] },
+      { title: 'Import', commands: ['file.import_package', 'file.import_clipboard'] },
+      { title: 'Export', commands: ['file.export_center', 'file.export_project_bundle', 'file.export_package', 'file.copy_package_json', 'file.download_submission'] },
+      { title: 'Offline', commands: ['file.offline_with_level', 'file.offline_game_only'] }
+    ];
+  }
+  if (key === 'edit') {
+    return [
+      { title: 'History', commands: ['edit.undo', 'edit.redo'] },
+      { title: 'Layer', commands: ['edit.duplicate_layer', 'edit.copy_layer', 'edit.paste_layer', 'edit.delete_layer'] }
+    ];
+  }
+  if (key === 'view') {
+    return [
+      { title: 'Sections', commands: ['view.scene', 'view.layers', 'view.movement', 'view.combat', 'view.ai', 'view.export'] }
+    ];
+  }
+  if (key === 'publish') {
+    return [
+      { title: 'Export + Tools', commands: ['file.export_center', 'file.download_submission', 'file.export_package'] }
+    ];
+  }
+  return [];
+}
+
+function studioEnsureMenuPopover() {
+  if (studioMenuPopoverNode) return studioMenuPopoverNode;
+  const node = document.createElement('div');
+  node.id = 'studioMenuPopover';
+  node.className = 'studio-menu-popover';
+  node.setAttribute('role', 'menu');
+  document.body.appendChild(node);
+  studioMenuPopoverNode = node;
+
+  document.addEventListener('mousedown', (e) => {
+    if (!studioMenuPopoverNode || studioMenuPopoverNode.style.display !== 'block') return;
+    const t = e.target;
+    if (studioMenuPopoverNode.contains(t)) return;
+    studioCloseMenuPopover();
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') studioCloseMenuPopover();
+  });
+
+  return node;
+}
+
+function studioCloseMenuPopover() {
+  if (!studioMenuPopoverNode) return;
+  studioMenuPopoverNode.style.display = 'none';
+  studioMenuPopoverNode.innerHTML = '';
+  studioMenuPopoverAction = '';
+}
+
+function studioOpenMenuPopover(action, anchorBtn) {
+  const key = String(action || '').toLowerCase();
+  const node = studioEnsureMenuPopover();
+  const sections = studioGetMenuSections(key);
+  const title = key === 'publish' ? 'Publish' : (key.charAt(0).toUpperCase() + key.slice(1));
+
+  const parts = [`<div class="studio-menu-popover-title">${title}</div>`];
+  sections.forEach((sec, secIdx) => {
+    if (sec?.title) parts.push(`<div class="studio-menu-section-title">${sec.title}</div>`);
+    (sec?.commands || []).forEach((cmdId) => {
+      const cmd = studioGetCommandById(cmdId);
+      if (!cmd) return;
+      const state = studioGetCommandState(cmd);
+      const k = cmd.keys ? `<span class="k">${cmd.keys}</span>` : '';
+      const disabledAttr = state.enabled ? '' : ' disabled';
+      const titleAttr = state.enabled ? '' : ` title="${String(state.reason || 'Not available').replace(/\"/g, '&quot;')}"`;
+      parts.push(`<button type="button" data-command="${cmd.id}"${disabledAttr}${titleAttr}>${cmd.title}${k}</button>`);
+    });
+    if (secIdx !== sections.length - 1) parts.push('<div class="studio-menu-sep"></div>');
+  });
+  node.innerHTML = parts.join('');
+
+  node.querySelectorAll('button[data-command]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.disabled) return;
+      const id = String(b.getAttribute('data-command') || '');
+      studioRunCommand(id);
+      studioCloseMenuPopover();
+    });
+  });
+
+  const r = anchorBtn.getBoundingClientRect();
+  const pad = 8;
+  const preferredLeft = r.left;
+  const preferredTop = r.bottom + 6;
+  node.style.display = 'block';
+  const nodeRect = node.getBoundingClientRect();
+  const left = clamp(preferredLeft, pad, Math.max(pad, window.innerWidth - nodeRect.width - pad));
+  const top = clamp(preferredTop, pad, Math.max(pad, window.innerHeight - nodeRect.height - pad));
+  node.style.left = `${left}px`;
+  node.style.top = `${top}px`;
+  studioMenuPopoverAction = key;
+}
+
+function studioToggleMenuPopover(action, anchorBtn) {
+  const key = String(action || '').toLowerCase();
+  if (studioMenuPopoverNode && studioMenuPopoverNode.style.display === 'block' && studioMenuPopoverAction === key) {
+    studioCloseMenuPopover();
+    return;
+  }
+  studioOpenMenuPopover(key, anchorBtn);
+}
+
+function studioEnsureExportCenter() {
+  if (studioExportCenterNode) return studioExportCenterNode;
+  const modal = document.createElement('div');
+  modal.id = 'studioExportCenter';
+  modal.className = 'studio-modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="studio-modal-card" role="dialog" aria-label="Export Center">
+      <h3>Export Center</h3>
+      <div class="builder-field" style="margin-top:10px;">
+        <label>Project</label>
+        <div class="builder-mini-actions" style="margin-top:0;">
+          <select id="studioProjectSelect" class="builder-title-select" style="width:100%; max-width:none;"></select>
+        </div>
+        <div class="builder-mini-actions" style="margin-top:8px;">
+          <button type="button" class="secondary-btn" id="studioProjectNewBtn">New</button>
+          <button type="button" class="secondary-btn" id="studioProjectRenameBtn">Rename</button>
+          <button type="button" class="warn" id="studioProjectDeleteBtn">Delete</button>
+        </div>
+      </div>
+      <div class="builder-field">
+        <label>Project Levels</label>
+        <div class="builder-mini-actions" style="margin-top:0;">
+          <select id="studioLevelSelect" class="builder-title-select" style="width:100%; max-width:none;"></select>
+        </div>
+        <div class="builder-mini-actions" style="margin-top:8px;">
+          <button type="button" class="difficulty-btn" id="studioLevelLoadBtn">Load</button>
+          <button type="button" class="secondary-btn" id="studioLevelSaveBtn">Save</button>
+          <button type="button" class="secondary-btn" id="studioLevelNewBtn">New</button>
+          <button type="button" class="secondary-btn" id="studioLevelDuplicateBtn">Duplicate</button>
+          <button type="button" class="secondary-btn" id="studioLevelRenameBtn">Rename</button>
+          <button type="button" class="warn" id="studioLevelDeleteBtn">Delete</button>
+        </div>
+        <div class="builder-mini-actions" style="margin-top:8px;">
+          <button type="button" class="alt" id="studioProjectExportBtn">Export Project Bundle</button>
+          <button type="button" class="alt" id="studioProjectImportBtn">Import Project Bundle</button>
+        </div>
+      </div>
+      <div class="builder-head-status" id="studioExportSummary"></div>
+      <div class="builder-head-status" id="studioExportDiff" style="margin-top:10px;"></div>
+
+      <div class="builder-field" style="margin-top:10px;">
+        <label>Quick Actions</label>
+        <div class="builder-mini-actions" style="margin-top:0;">
+          <button type="button" class="difficulty-btn" id="studioExportDoPackageBtn">Download Level Package</button>
+          <button type="button" class="secondary-btn" id="studioExportCopyJsonBtn">Copy Package JSON</button>
+          <button type="button" class="secondary-btn" id="studioExportSubmissionBtn">Download Submission File</button>
+        </div>
+        <div class="builder-mini-actions" style="margin-top:8px;">
+          <button type="button" class="alt" id="studioExportOfflineWithBtn">Offline Game (This Level)</button>
+          <button type="button" class="alt" id="studioExportOfflineGameOnlyBtn">Offline Game (No Custom Level)</button>
+        </div>
+      </div>
+
+      <div class="builder-field">
+        <label>Import</label>
+        <div class="builder-mini-actions" style="margin-top:0;">
+          <button type="button" class="difficulty-btn" id="studioImportFileBtn">Import From File</button>
+          <button type="button" class="secondary-btn" id="studioImportClipboardBtn">Import From Clipboard</button>
+        </div>
+        <div style="margin-top:8px; font-size:12px; opacity:0.82; line-height:1.35;">
+          Tip: you can also drag/drop a <span class="studio-pill">.youlevellevel.json</span> file onto the editor, or paste JSON (outside of text fields).
+        </div>
+      </div>
+
+      <div class="builder-field">
+        <label>Diagnostics</label>
+        <div class="builder-mini-actions" style="margin-top:0;">
+          <button type="button" class="difficulty-btn" id="studioRunValidateBtn">Validate Scene</button>
+          <button type="button" class="secondary-btn" id="studioRunPerfBtn">Performance Check</button>
+          <button type="button" class="secondary-btn" id="studioQuickPlayBtn">Quick Play</button>
+        </div>
+        <div class="builder-head-status" id="studioExportStatus" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="builder-field">
+        <label>Recent Exports</label>
+        <div id="studioExportHistory" class="studio-history-list"></div>
+      </div>
+
+      <div class="builder-field">
+        <label>Autosaves</label>
+        <div style="font-size:12px; opacity:0.82; line-height:1.35;">
+          Autosaves are stored in this browser for the active project.
+        </div>
+        <div id="studioAutosaveList" class="studio-history-list"></div>
+      </div>
+
+      <div class="studio-modal-actions">
+        <button type="button" class="secondary-btn" id="studioExportCenterCloseBtn">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  studioExportCenterNode = modal;
+  studioExportCenterSummaryNode = modal.querySelector('#studioExportSummary');
+  studioExportCenterDiffNode = modal.querySelector('#studioExportDiff');
+  studioExportCenterStatusNode = modal.querySelector('#studioExportStatus');
+  studioExportCenterHistoryNode = modal.querySelector('#studioExportHistory');
+  studioExportCenterAutosaveNode = modal.querySelector('#studioAutosaveList');
+  studioExportCenterProjectSelectNode = modal.querySelector('#studioProjectSelect');
+  const studioExportCenterLevelSelectNode = modal.querySelector('#studioLevelSelect');
+
+  const close = () => studioCloseExportCenter();
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  modal.querySelector('#studioExportCenterCloseBtn')?.addEventListener('click', close);
+
+  modal.querySelector('#studioExportDoPackageBtn')?.addEventListener('click', () => document.getElementById('builderExportBtn')?.click());
+  modal.querySelector('#studioExportCopyJsonBtn')?.addEventListener('click', () => document.getElementById('builderShareBtn')?.click());
+  modal.querySelector('#studioExportSubmissionBtn')?.addEventListener('click', () => document.getElementById('builderSaveSubmissionBtn')?.click());
+  modal.querySelector('#studioExportOfflineWithBtn')?.addEventListener('click', () => document.getElementById('builderExportOfflineBtn')?.click());
+  modal.querySelector('#studioExportOfflineGameOnlyBtn')?.addEventListener('click', () => document.getElementById('builderExportFullGameBtn')?.click());
+
+  modal.querySelector('#studioImportFileBtn')?.addEventListener('click', () => document.getElementById('builderImportBtn')?.click());
+  modal.querySelector('#studioImportClipboardBtn')?.addEventListener('click', () => studioRunCommand('file.import_clipboard'));
+
+  modal.querySelector('#studioRunValidateBtn')?.addEventListener('click', () => studioRunCommand('test.validate'));
+  modal.querySelector('#studioRunPerfBtn')?.addEventListener('click', () => studioRunCommand('test.performance'));
+  modal.querySelector('#studioQuickPlayBtn')?.addEventListener('click', () => studioRunCommand('test.quick_play'));
+
+  const refreshProjectSelect = () => {
+    const projects = studioEnsureDefaultProject();
+    const active = studioGetActiveProjectId();
+    if (!studioExportCenterProjectSelectNode) return;
+    studioExportCenterProjectSelectNode.innerHTML = '';
+    projects.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = String(p.id || '');
+      opt.textContent = String(p.name || p.id || 'Project');
+      studioExportCenterProjectSelectNode.appendChild(opt);
+    });
+    studioExportCenterProjectSelectNode.value = active;
+  };
+
+  const refreshLevelSelect = () => {
+    if (!studioExportCenterLevelSelectNode) return;
+    const data = studioEnsureDefaultLevel();
+    const active = studioGetActiveLevelId() || String(data.levels?.[0]?.id || '');
+    studioExportCenterLevelSelectNode.innerHTML = '';
+    (data.levels || []).forEach((l, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(l.id || '');
+      opt.textContent = `${idx + 1}. ${String(l.name || 'Level')}`;
+      studioExportCenterLevelSelectNode.appendChild(opt);
+    });
+    studioExportCenterLevelSelectNode.value = active;
+  };
+  refreshProjectSelect();
+  refreshLevelSelect();
+
+  studioExportCenterProjectSelectNode?.addEventListener('change', () => {
+    const next = String(studioExportCenterProjectSelectNode?.value || '');
+    if (studioSetActiveProjectId(next)) {
+      studioEnsureDefaultLevel();
+      refreshLevelSelect();
+      studioRenderExportCenter();
+      builderSetStatus(`Project switched: ${studioGetActiveProject()?.name || next}`);
+    }
+  });
+  modal.querySelector('#studioProjectNewBtn')?.addEventListener('click', () => {
+    const name = prompt('New project name:', 'My YouLevel Project');
+    if (!name || !String(name).trim()) return;
+    const projects = studioEnsureDefaultProject();
+    const id = builderHashText(`${Date.now()}|${name}|${Math.random()}`).slice(0, 10);
+    projects.push({ id, name: String(name).trim(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    studioSaveProjects(projects);
+    studioSetActiveProjectId(id);
+    refreshProjectSelect();
+    studioEnsureDefaultLevel();
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioProjectRenameBtn')?.addEventListener('click', () => {
+    const active = studioGetActiveProject();
+    const name = prompt('Rename project:', String(active?.name || 'Project'));
+    if (!name || !String(name).trim()) return;
+    const projects = studioEnsureDefaultProject();
+    const idx = projects.findIndex((p) => p?.id === active?.id);
+    if (idx >= 0) {
+      projects[idx] = { ...projects[idx], name: String(name).trim(), updatedAt: new Date().toISOString() };
+      studioSaveProjects(projects);
+      refreshProjectSelect();
+      studioRenderExportCenter();
+    }
+  });
+  modal.querySelector('#studioProjectDeleteBtn')?.addEventListener('click', () => {
+    const active = studioGetActiveProject();
+    const projects = studioEnsureDefaultProject();
+    if (projects.length <= 1) {
+      alert('Cannot delete the last project.');
+      return;
+    }
+    if (!confirm(`Delete project "${active?.name || active?.id}"?\n\nThis removes its export history and autosaves from this browser.`)) return;
+    try {
+      const pid = String(active?.id || '');
+      if (pid) {
+        localStorage.removeItem(`youlevel.${pid}.exportHistory.v1`);
+        localStorage.removeItem(`youlevel.${pid}.autosaves.v1`);
+        localStorage.removeItem(`youlevel.${pid}.projectData.v1`);
+        localStorage.removeItem(`youlevel.${pid}.activeLevelId.v1`);
+      }
+    } catch {}
+    const remaining = projects.filter((p) => p?.id !== active?.id);
+    studioSaveProjects(remaining);
+    studioSetActiveProjectId(String(remaining[0]?.id || 'default'));
+    refreshProjectSelect();
+    studioEnsureDefaultLevel();
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+
+  modal.querySelector('#studioLevelLoadBtn')?.addEventListener('click', () => {
+    const id = String(studioExportCenterLevelSelectNode?.value || studioGetActiveLevelId() || '');
+    if (!id) return;
+    studioCloseMenuPopover();
+    studioSwitchToLevel(id);
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioLevelSaveBtn')?.addEventListener('click', () => {
+    studioSaveCurrentLevelToProject({ updateName: true });
+    refreshLevelSelect();
+    studioRenderExportCenter();
+    builderSetStatus('Saved current level to project.');
+  });
+  modal.querySelector('#studioLevelNewBtn')?.addEventListener('click', () => {
+    studioCloseMenuPopover();
+    studioCreateNewProjectLevel({ blank: true });
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioLevelDuplicateBtn')?.addEventListener('click', () => {
+    const data = studioEnsureDefaultLevel();
+    const current = studioGetActiveLevelEntry();
+    if (!current?.level) return;
+    const clone = deepClone(current.level);
+    const id = builderHashText(`lvl|${Date.now()}|${Math.random()}`).slice(0, 10);
+    const name = `${String(current.name || 'Level')} Copy`;
+    data.levels.unshift({
+      id,
+      name,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastSavedHash: builderHashText(JSON.stringify(clone)),
+      level: clone
+    });
+    studioSaveProjectData(data);
+    studioSetActiveLevelId(id);
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioLevelRenameBtn')?.addEventListener('click', () => {
+    const data = studioEnsureDefaultLevel();
+    const id = String(studioExportCenterLevelSelectNode?.value || studioGetActiveLevelId() || '');
+    const entry = (data.levels || []).find((l) => l?.id === id);
+    if (!entry) return;
+    const name = prompt('Rename level:', String(entry.name || 'Level'));
+    if (!name || !String(name).trim()) return;
+    entry.name = String(name).trim();
+    entry.updatedAt = new Date().toISOString();
+    studioSaveProjectData(data);
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioLevelDeleteBtn')?.addEventListener('click', () => {
+    const data = studioEnsureDefaultLevel();
+    if ((data.levels || []).length <= 1) {
+      alert('Cannot delete the last level in a project.');
+      return;
+    }
+    const id = String(studioExportCenterLevelSelectNode?.value || studioGetActiveLevelId() || '');
+    const entry = (data.levels || []).find((l) => l?.id === id);
+    if (!entry) return;
+    if (!confirm(`Delete level "${entry.name}" from this project?`)) return;
+    data.levels = (data.levels || []).filter((l) => l?.id !== id);
+    studioSaveProjectData(data);
+    studioSetActiveLevelId(String(data.levels?.[0]?.id || ''));
+    refreshLevelSelect();
+    studioRenderExportCenter();
+  });
+
+  modal.querySelector('#studioProjectExportBtn')?.addEventListener('click', () => {
+    studioExportProjectBundle();
+    studioRenderExportCenter();
+  });
+  modal.querySelector('#studioProjectImportBtn')?.addEventListener('click', () => {
+    document.getElementById('builderImportFileInput')?.click();
+    builderSetStatus('Select a .youlevelproject.json to import as a new project.');
+  });
+
+  return modal;
+}
+
+function studioRenderExportCenter() {
+  if (!studioExportCenterNode) return;
+  const level = builderCloneToRuntimeLevel();
+  const issues = studioComputeValidationIssues(level);
+  const perf = studioGetPerfNote(level);
+  const entityCount = (level.entities || []).length;
+  const spriteCount = builderCollectRequiredSpriteKeys(level).length;
+  const hash = builderHashText(JSON.stringify(level)).slice(0, 10);
+  const exports = studioLoadExportHistory();
+  const last = exports[0] || null;
+  const project = studioGetActiveProject();
+
+  if (studioExportCenterSummaryNode) {
+    const name = String(level.name || 'Untitled');
+    studioExportCenterSummaryNode.textContent = `Project "${project?.name || 'Project'}" • Level "${name}" • Entities: ${entityCount} • Sprites: ${spriteCount} • Hash: ${hash}`;
+  }
+
+  if (studioExportCenterStatusNode) {
+    const status = issues.length ? `Validation: ${issues.join(' ')}` : 'Validation passed: scene is ready for playtest.';
+    studioExportCenterStatusNode.textContent = `${status} ${perf}`;
+  }
+
+  if (studioExportCenterDiffNode) {
+    if (!last) {
+      studioExportCenterDiffNode.textContent = 'Diff: no previous export recorded for this project.';
+    } else {
+      const deltaEntities = entityCount - Number(last.entityCount || 0);
+      const deltaSprites = spriteCount - Number(last.spriteCount || 0);
+      const lastAt = String(last.at || '').replace('T', ' ').replace('Z', '');
+      const lastType = String(last.type || 'export');
+      const lastHash = String(last.hash || '').slice(0, 10);
+      const parts = [
+        `Last export: ${lastType} @ ${lastAt} (hash ${lastHash}).`,
+        `Change since last: entities ${deltaEntities >= 0 ? '+' : ''}${deltaEntities}, sprites ${deltaSprites >= 0 ? '+' : ''}${deltaSprites}.`
+      ];
+      if (issues.length) parts.push('Note: validation warnings present.');
+      studioExportCenterDiffNode.textContent = parts.join(' ');
+    }
+  }
+
+  if (studioExportCenterHistoryNode) {
+    if (!exports.length) {
+      studioExportCenterHistoryNode.innerHTML = `<div class="studio-history-row"><div class="sub">No exports recorded yet.</div></div>`;
+    } else {
+      studioExportCenterHistoryNode.innerHTML = exports.slice(0, STUDIO_EXPORT_HISTORY_LIMIT).map((it) => {
+        const when = String(it.at || '').replace('T', ' ').replace('Z', '');
+        const t = String(it.type || 'export');
+        const nm = String(it.name || 'Untitled');
+        const h = String(it.hash || '').slice(0, 10);
+        const counts = `Entities: ${Number(it.entityCount || 0)} • Sprites: ${Number(it.spriteCount || 0)}`;
+        return `<div class="studio-history-row">
+          <div class="top"><span>${nm}</span><span class="studio-pill">${t}</span></div>
+          <div class="sub">${when} • ${counts} • Hash: ${h}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  if (studioExportCenterAutosaveNode) {
+    const items = studioLoadAutosaves();
+    if (!items.length) {
+      studioExportCenterAutosaveNode.innerHTML = `<div class="studio-history-row"><div class="sub">No autosaves yet. Start editing and they’ll appear here.</div></div>`;
+    } else {
+      studioExportCenterAutosaveNode.innerHTML = items.slice(0, STUDIO_AUTOSAVE_LIMIT).map((it, idx) => {
+        const when = String(it.at || '').replace('T', ' ').replace('Z', '');
+        const h = String(it.hash || '').slice(0, 10);
+        const count = (it.level?.entities || []).length;
+        return `<div class="studio-history-row">
+          <div class="top"><span>Autosave</span><span class="studio-pill">#${idx + 1}</span></div>
+          <div class="sub">${when} • Entities: ${count} • Hash: ${h}</div>
+          <div class="builder-mini-actions" style="margin-top:8px;">
+            <button type="button" class="difficulty-btn" data-autosave-restore="${idx}">Restore</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      studioExportCenterAutosaveNode.querySelectorAll('button[data-autosave-restore]').forEach((b) => {
+        b.addEventListener('click', () => {
+          const idx = Number(b.getAttribute('data-autosave-restore') || -1);
+          const list = studioLoadAutosaves();
+          const item = list[idx];
+          if (!item?.level) return;
+          builderLoadFromLevel(item.level);
+          if (item.selectedId) builderSelectEntity(String(item.selectedId));
+          builderSetStatus(`Autosave restored (hash ${String(item.hash || '').slice(0, 10)}).`);
+          studioRenderExportCenter();
+        });
+      });
+    }
+  }
+}
+
+function studioOpenExportCenter() {
+  studioCloseMenuPopover();
+  studioEnsureExportCenter();
+  if (!studioExportCenterNode) return;
+  studioExportCenterNode.style.display = 'flex';
+  studioExportCenterNode.setAttribute('aria-hidden', 'false');
+  studioRenderExportCenter();
+}
+
+function studioCloseExportCenter() {
+  if (!studioExportCenterNode) return;
+  studioExportCenterNode.style.display = 'none';
+  studioExportCenterNode.setAttribute('aria-hidden', 'true');
+}
+
+function studioEnsureCommandPalette() {
+  if (studioPaletteNode) return studioPaletteNode;
+  const modal = document.createElement('div');
+  modal.id = 'studioCommandPalette';
+  modal.className = 'studio-modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="studio-modal-card" role="dialog" aria-label="Command Palette">
+      <h3>Command Palette</h3>
+      <input id="studioCommandSearch" class="studio-command-input" type="text" placeholder="Type a command… (Ctrl+K)" autocomplete="off" spellcheck="false" />
+      <div id="studioCommandList" class="studio-command-list"></div>
+      <div class="studio-modal-actions">
+        <button type="button" class="secondary-btn" id="studioCommandCloseBtn">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  studioPaletteNode = modal;
+  studioPaletteInput = modal.querySelector('#studioCommandSearch');
+  studioPaletteList = modal.querySelector('#studioCommandList');
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) studioCloseCommandPalette();
+  });
+  modal.querySelector('#studioCommandCloseBtn')?.addEventListener('click', studioCloseCommandPalette);
+  studioPaletteInput?.addEventListener('input', () => studioRenderCommandPalette());
+  studioPaletteInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); studioCloseCommandPalette(); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); studioMovePaletteSelection(1); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); studioMovePaletteSelection(-1); return; }
+    if (e.key === 'Enter') { e.preventDefault(); studioRunPaletteSelection(); return; }
+  });
+
+  return modal;
+}
+
+function studioIsCommandPaletteOpen() {
+  return !!studioPaletteNode && studioPaletteNode.style.display === 'flex';
+}
+
+function studioOpenCommandPalette() {
+  studioEnsureCommandPalette();
+  if (!studioPaletteNode) return;
+  studioPaletteNode.style.display = 'flex';
+  studioPaletteNode.setAttribute('aria-hidden', 'false');
+  studioPaletteSelectionIndex = 0;
+  if (studioPaletteInput) {
+    studioPaletteInput.value = '';
+    studioPaletteInput.focus();
+    studioPaletteInput.select();
+  }
+  studioRenderCommandPalette();
+}
+
+function studioCloseCommandPalette() {
+  if (!studioPaletteNode) return;
+  studioPaletteNode.style.display = 'none';
+  studioPaletteNode.setAttribute('aria-hidden', 'true');
+}
+
+function studioFilterCommands(query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return STUDIO_COMMANDS.slice();
+  return STUDIO_COMMANDS.filter((cmd) => {
+    const hay = `${cmd.title} ${cmd.id} ${cmd.menu || ''} ${cmd.keys || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function studioRenderCommandPalette() {
+  if (!studioPaletteList) return;
+  const q = studioPaletteInput ? studioPaletteInput.value : '';
+  studioPaletteVisible = studioFilterCommands(q);
+  studioPaletteSelectionIndex = clamp(studioPaletteSelectionIndex, 0, Math.max(0, studioPaletteVisible.length - 1));
+  if (!studioPaletteVisible.length) {
+    studioPaletteList.innerHTML = `<div class="studio-command-hint">No matches</div>`;
+    return;
+  }
+  studioPaletteList.innerHTML = studioPaletteVisible.map((cmd, idx) => {
+    const state = studioGetCommandState(cmd);
+    const keys = cmd.keys ? `<span class="studio-command-hint">${cmd.keys}</span>` : '';
+    const active = idx === studioPaletteSelectionIndex ? ' active' : '';
+    const disabledAttr = state.enabled ? '' : ' disabled';
+    const titleAttr = state.enabled ? '' : ` title="${String(state.reason || 'Not available').replace(/\"/g, '&quot;')}"`;
+    return `<button type="button" class="studio-command-item${active}" data-index="${idx}" data-command="${cmd.id}"${disabledAttr}${titleAttr}><span>${cmd.title}</span>${keys}</button>`;
+  }).join('');
+  studioPaletteList.querySelectorAll('button[data-command]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.disabled) {
+        const cmd = studioGetCommandById(String(b.getAttribute('data-command') || ''));
+        const state = studioGetCommandState(cmd);
+        builderSetStatus(state.reason || 'Not available.');
+        return;
+      }
+      const id = String(b.getAttribute('data-command') || '');
+      studioRunCommand(id);
+      studioCloseCommandPalette();
+    });
+  });
+}
+
+function studioMovePaletteSelection(delta) {
+  if (!studioPaletteVisible.length) return;
+  studioPaletteSelectionIndex = clamp(studioPaletteSelectionIndex + Number(delta || 0), 0, studioPaletteVisible.length - 1);
+  studioRenderCommandPalette();
+  const active = studioPaletteList?.querySelector('.studio-command-item.active');
+  active?.scrollIntoView({ block: 'nearest' });
+}
+
+function studioRunPaletteSelection() {
+  if (!studioPaletteVisible.length) return;
+  const cmd = studioPaletteVisible[studioPaletteSelectionIndex];
+  if (!cmd) return;
+  studioRunCommand(cmd.id);
+  studioCloseCommandPalette();
+}
+
+function studioInitShortcuts() {
+  document.addEventListener('keydown', (event) => {
+    if (gameState !== 'builder') return;
+    const target = event.target;
+    const tag = String(target?.tagName || '').toLowerCase();
+    const isTypingTarget = tag === 'input' || tag === 'textarea' || tag === 'select' || !!target?.isContentEditable;
+
+    if ((event.ctrlKey || event.metaKey) && !event.altKey) {
+      const key = String(event.key || '').toLowerCase();
+      if (key === 'k' || (key === 'p' && event.shiftKey)) {
+        event.preventDefault();
+        studioOpenCommandPalette();
+        return;
+      }
+      if (key === 'e' && event.shiftKey) {
+        event.preventDefault();
+        studioRunCommand('file.export_center');
+        return;
+      }
+      if (isTypingTarget) return;
+      if (key === 's') {
+        event.preventDefault();
+        studioRunCommand('file.save_local');
+        return;
+      }
+      if (key === 'd') {
+        event.preventDefault();
+        studioRunCommand('edit.duplicate_layer');
+        return;
+      }
+      if (key === 'c') {
+        event.preventDefault();
+        studioRunCommand('edit.copy_layer');
+        return;
+      }
+      if (key === 'v') {
+        event.preventDefault();
+        studioRunCommand('edit.paste_layer');
+        return;
+      }
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.altKey && !event.shiftKey) {
+      const key = String(event.key || '').toLowerCase();
+      if (key === 'n') {
+        event.preventDefault();
+        studioRunCommand('project.new_level');
+        return;
+      }
+    }
+
+    if (event.altKey && !event.ctrlKey && !event.metaKey) {
+      if (isTypingTarget) return;
+      const key = String(event.key || '');
+      if (key === '1') { event.preventDefault(); studioRunCommand('view.scene'); return; }
+      if (key === '2') { event.preventDefault(); studioRunCommand('view.layers'); return; }
+      if (key === '3') { event.preventDefault(); studioRunCommand('view.movement'); return; }
+      if (key === '4') { event.preventDefault(); studioRunCommand('view.combat'); return; }
+      if (key === '5') { event.preventDefault(); studioRunCommand('view.ai'); return; }
+      if (key === '6') { event.preventDefault(); studioRunCommand('view.export'); return; }
+    }
+
+    if (event.key === 'Escape') {
+      if (studioIsCommandPaletteOpen()) {
+        event.preventDefault();
+        studioCloseCommandPalette();
+        return;
+      }
+      if (studioExportCenterNode && studioExportCenterNode.style.display === 'flex') {
+        event.preventDefault();
+        studioCloseExportCenter();
+        return;
+      }
+      studioCloseMenuPopover();
+    }
+
+    if (event.key === 'Delete') {
+      if (isTypingTarget) return;
+      studioRunCommand('edit.delete_layer');
+    }
+  });
+
+  document.addEventListener('paste', (event) => {
+    if (gameState !== 'builder') return;
+    const target = event.target;
+    const tag = String(target?.tagName || '').toLowerCase();
+    const isTypingTarget = tag === 'input' || tag === 'textarea' || tag === 'select' || !!target?.isContentEditable;
+    if (isTypingTarget) return;
+    const text = event.clipboardData?.getData('text/plain');
+    if (!text || !String(text).trim()) return;
+    if (!String(text).trim().startsWith('{')) return;
+    if (studioTryImportLevelText(text)) {
+      event.preventDefault();
+    }
+  });
+}
+
+function studioInitDragDropImport() {
+  let lastHintAt = 0;
+  document.addEventListener('dragover', (event) => {
+    if (gameState !== 'builder') return;
+    const dt = event.dataTransfer;
+    const hasFiles = !!(dt && ((dt.files && dt.files.length) || (dt.types && Array.from(dt.types).includes('Files'))));
+    if (!hasFiles) return;
+    event.preventDefault();
+    const now = performance.now();
+    if (now - lastHintAt > 900) {
+      builderSetStatus('Drop a .youlevellevel.json / .youlevelsubmission.json file to import.');
+      lastHintAt = now;
+    }
+  });
+  document.addEventListener('drop', async (event) => {
+    if (gameState !== 'builder') return;
+    const file = event.dataTransfer?.files && event.dataTransfer.files[0];
+    if (!file) return;
+    event.preventDefault();
+    try {
+      const text = await file.text();
+      if (!studioTryImportLevelText(text)) return;
+      builderSetStatus(`Imported: ${file.name}`);
+    } catch (err) {
+      builderSetStatus(`Import failed: ${err?.message || err}`);
+    }
+  });
+}
+
+function studioInitExportUx() {
+  if (!studioExportHistoryAttached) {
+    studioExportHistoryAttached = true;
+    const hook = (elementId, type, extra = null) => {
+      const node = document.getElementById(elementId);
+      if (!node) return;
+      node.addEventListener('click', () => {
+        try {
+          const payload = typeof extra === 'function' ? extra() : (extra || {});
+          studioRecordExport(type, payload);
+        } catch {}
+      }, true);
+    };
+    hook('builderExportBtn', 'level_package');
+    hook('builderSaveSubmissionBtn', 'submission_file');
+    hook('builderShareBtn', 'copy_package_json');
+  }
+
+  document.getElementById('studioOpenExportCenterBtn')?.addEventListener('click', () => {
+    studioCloseMenuPopover();
+    studioOpenExportCenter();
+  });
+}
+
+function studioInitStudioUi() {
+  studioInitCommands();
+  studioInitShortcuts();
+  studioInitSectionNav();
+  studioInitDragDropImport();
+  studioInitExportUx();
+  studioStartAutosave();
+}
+
+studioInitStudioUi();
 document.querySelectorAll('#youlevelStudioMenu .studio-menu-btn[data-menu-action]').forEach((btn) => {
   btn.addEventListener('click', () => {
     const action = String(btn.getAttribute('data-menu-action') || '');
-    if (action === 'file') builderSetStatus('File: New, Save Local, Load Local, Export Package, Import Package.');
-    else if (action === 'edit') builderSetStatus('Edit: Undo/Redo, duplicate layer, copy/paste layer, transform controls.');
-    else if (action === 'view') builderSetStatus('View: switch panel focus, show/hide sections, track selected layer.');
-    else if (action === 'scene') builderSetStatus('Scene: title dashboard, lighting/background, events and timeline timings.');
-    else if (action === 'movement') builderSetStatus('Movement: path controls, flight controls, speed and directional setup.');
-    else if (action === 'combat') builderSetStatus('Combat: hero/enemy projectile tuning, blast radius, hitbox health, score.');
-    else if (action === 'ai') builderSetStatus('AI: enemy model pool, aggression, formations, fight-back, target selection.');
-    else if (action === 'publish') builderSetStatus('Publish: save package, offline export, import into target game tool.');
+    if (action === 'file') {
+      studioToggleMenuPopover('file', btn);
+      builderSetStatus('File: New, Save Local, Load Local, Export Package, Import Package.');
+    } else if (action === 'edit') {
+      studioToggleMenuPopover('edit', btn);
+      builderSetStatus('Edit: Undo/Redo, duplicate layer, copy/paste layer, transform controls.');
+    } else if (action === 'view') {
+      studioToggleMenuPopover('view', btn);
+      builderSetStatus('View: jump to major sections, show/hide panels, track selected layer.');
+    } else if (action === 'scene') {
+      studioCloseMenuPopover();
+      studioFocusSection('scene');
+      builderSetStatus('Scene: title dashboard, lighting/background, events and timeline timings.');
+    } else if (action === 'movement') {
+      studioCloseMenuPopover();
+      studioFocusSection('movement');
+      builderSetStatus('Movement: path controls, flight controls, speed and directional setup.');
+    } else if (action === 'combat') {
+      studioCloseMenuPopover();
+      studioFocusSection('combat');
+      builderSetStatus('Combat: hero/enemy projectile tuning, blast radius, hitbox health, score.');
+    } else if (action === 'ai') {
+      studioCloseMenuPopover();
+      studioFocusSection('ai');
+      builderSetStatus('AI: global pacing/difficulty, enemy behaviors, formations, fight-back, target selection.');
+    } else if (action === 'publish') {
+      studioToggleMenuPopover('publish', btn);
+      builderSetStatus('Publish: save package, offline export, import into target game tool.');
+    }
   });
 });
 BUILDER_UI.testDifficulty?.addEventListener('change', () => {
@@ -16442,7 +18149,9 @@ document.getElementById('builderImportFileInput')?.addEventListener('change', as
   const file = event.target.files && event.target.files[0];
   if (!file) return;
   const text = await file.text();
-  builderImportPackageFromText(text);
+  if (!studioImportProjectBundleFromText(text)) {
+    builderImportPackageFromText(text);
+  }
   event.target.value = '';
 });
 document.addEventListener('keydown', (event) => {
