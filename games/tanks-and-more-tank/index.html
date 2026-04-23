@@ -1147,6 +1147,22 @@
 
         let heroCarouselIndex = 0;
         let enemyCarouselIndex = 1;
+        function describeTankType(key) {
+          const k = String(key || "").toLowerCase();
+          if (k.includes("tank_heavy")) return "Heavy Tank";
+          if (k.includes("tank_light")) return "Light Tank";
+          if (k.includes("mechwarrior")) return "Mech Walker";
+          if (k.includes("fighter")) return "Fighter";
+          if (k.includes("armoredtransport")) return "Armored Transport";
+          if (k.includes("hoverbike")) return "Hover Bike";
+          if (k.includes("hovercar")) return "Hover Car";
+          if (k.includes("hover1")) return "Hover Tank";
+          if (k.includes("command")) return "Command Tank";
+          if (k.includes("recon")) return "Recon Tank";
+          if (k.includes("assault")) return "Assault Tank";
+          if (k.includes("futuristic")) return "Future Tank";
+          return "Vehicle";
+        }
         function updateCarouselPreviews() {
           const heroKey = imageKeys[clamp(heroCarouselIndex, 0, imageKeys.length - 1)];
           const enemyKey = imageKeys[clamp(enemyCarouselIndex, 0, imageKeys.length - 1)];
@@ -1155,8 +1171,8 @@
           enemyPreviewImg.src = assetUrl(`images/${enemyKey}`);
           heroPreviewName.textContent = tankTitles[heroKey] || heroKey.replace(".webp", "");
           enemyPreviewName.textContent = tankTitles[enemyKey] || enemyKey.replace(".webp", "");
-          heroPreviewMeta.textContent = `File: ${heroKey}`;
-          enemyPreviewMeta.textContent = `File: ${enemyKey}`;
+          heroPreviewMeta.textContent = `Type: ${describeTankType(heroKey)}`;
+          enemyPreviewMeta.textContent = `Type: ${describeTankType(enemyKey)}`;
 
           if (playerTankSelect && playerTankSelect.value !== heroKey) playerTankSelect.value = heroKey;
           if (enemyTankSelect && enemyTankSelect.value !== enemyKey) enemyTankSelect.value = enemyKey;
