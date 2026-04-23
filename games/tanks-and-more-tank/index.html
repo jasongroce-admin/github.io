@@ -1,0 +1,2531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tanks and More Tank | Jason Groce</title>
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+    <style>
+      :root {
+        --hud-bg: #06121f;
+        --hud-border: #1f3f61;
+        --panel-bg: #0d1f31;
+        --panel-border: #2f577f;
+        --accent-orange: #ff8f00;
+        --accent-blue: #1e90ff;
+        --text: #f2f7ff;
+        --muted: #95acc6;
+        --danger: #ff5252;
+      }
+      body {
+        background:
+          linear-gradient(180deg, rgba(255,143,0,0.08), rgba(30,144,255,0.08)),
+          #050a12;
+        color: var(--text);
+      }
+      .game-root {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .panel {
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        padding: 12px;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: min(330px, 92vw);
+        height: 100dvh;
+        overflow: auto;
+        z-index: 80;
+        transform: translateX(-104%);
+        transition: transform 180ms ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar h2, .sidebar h3 {
+        margin: 0;
+      }
+      .sidebar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .menu-close {
+        border: 1px solid #3f6b96;
+        background: #10263c;
+        color: #fff;
+        width: 36px;
+        height: 36px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .menu-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 8, 15, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease;
+        z-index: 70;
+      }
+      .menu-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sidebar h2 {
+        font-size: 1.12rem;
+        color: #ffd29b;
+      }
+      .sidebar h3 {
+        margin-top: 14px;
+        margin-bottom: 8px;
+        font-size: 0.96rem;
+        color: #9ed0ff;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .menu-grid {
+        display: grid;
+        gap: 8px;
+      }
+      .menu-row {
+        display: grid;
+        gap: 4px;
+      }
+      .menu-row label {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .menu-row input, .menu-row select, .menu-row button {
+        width: 100%;
+      }
+      .menu-row input, .menu-row select {
+        border: 1px solid #375e86;
+        background: #09192a;
+        color: #fff;
+        min-height: 34px;
+        padding: 4px 6px;
+      }
+      .menu-row button, .toolbar button, #tutorialNext {
+        border: 1px solid #375e86;
+        background: linear-gradient(180deg, #236db4, #184c7d);
+        color: #fff;
+        min-height: 34px;
+        padding: 6px 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .menu-row button.alt, .toolbar button.alt {
+        background: linear-gradient(180deg, #c77010, #8a4d08);
+      }
+      .right-col {
+        display: grid;
+        gap: 10px;
+      }
+      .hud {
+        border: 1px solid var(--hud-border);
+        background: var(--hud-bg);
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .hud .item {
+        border: 1px solid #2a4f74;
+        background: #0a1a2b;
+        padding: 6px 8px;
+      }
+      .item .k { display: block; color: var(--muted); font-size: 0.72rem; }
+      .item .v { display: block; font-size: 0.96rem; font-weight: 700; }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .bottom-gauges {
+        border: 1px solid #29587e;
+        background: linear-gradient(180deg, rgba(5,15,26,0.95), rgba(8,21,37,0.95));
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+      .menu-launch {
+        position: absolute;
+        top: 84px;
+        left: 12px;
+        z-index: 35;
+        border: 1px solid #3b6791;
+        background: linear-gradient(180deg, #1f5f9b, #16456f);
+        color: #fff;
+        min-height: 34px;
+        min-width: 88px;
+        font-weight: 700;
+      }
+      .gauge-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .gauge-cell {
+        border: 1px solid #2a4f74;
+        background: #0a1a2b;
+        padding: 6px 8px;
+        display: grid;
+        gap: 4px;
+      }
+      .gauge-cell label {
+        font-size: 0.76rem;
+        color: #9fc6eb;
+      }
+      .gauge-cell input, .gauge-cell select, .gauge-cell button {
+        width: 100%;
+      }
+      .gauge-cell input, .gauge-cell select {
+        border: 1px solid #3b6791;
+        background: #081523;
+        color: #fff;
+        min-height: 32px;
+      }
+      .gauge-cell button {
+        border: 1px solid #3b6791;
+        background: linear-gradient(180deg, #236db4, #184c7d);
+        color: #fff;
+        min-height: 34px;
+        font-weight: 700;
+      }
+      .gauge-cell button.alt {
+        background: linear-gradient(180deg, #c77010, #8a4d08);
+      }
+      .game-wrap {
+        position: relative;
+        border: 1px solid #2f577f;
+        background: #040b14;
+        overflow: hidden;
+      }
+      .hud.hud-overlay {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 40;
+        border-bottom: 1px solid rgba(47, 87, 127, 0.9);
+        background: linear-gradient(180deg, rgba(6,18,31,0.94), rgba(6,18,31,0.72));
+        backdrop-filter: blur(6px);
+      }
+      .hud.hud-overlay .item {
+        background: rgba(10, 26, 43, 0.7);
+      }
+      .tuning-overlay {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: grid;
+        gap: 8px;
+        z-index: 36;
+        pointer-events: auto;
+      }
+      .tuning-overlay button {
+        border: 1px solid #3b6791;
+        background: rgba(8, 21, 35, 0.72);
+        color: #fff;
+        min-height: 34px;
+        padding: 6px 10px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      #gameCanvas {
+        width: 100%;
+        max-width: 1400px;
+        aspect-ratio: 16 / 9;
+        display: block;
+        background: radial-gradient(circle at 20% 0%, #173456 0%, #08172a 45%, #040b14 100%);
+      }
+      .overlay-help {
+        position: absolute;
+        left: 14px;
+        top: 84px;
+        width: min(420px, calc(100% - 28px));
+        border: 1px solid #47709a;
+        background: rgba(4, 12, 20, 0.92);
+        padding: 10px;
+        display: none;
+        z-index: 30;
+      }
+      .overlay-help.active {
+        display: block;
+      }
+      .overlay-help h3 {
+        margin: 0 0 6px 0;
+        color: #ffd18b;
+      }
+      .overlay-help p {
+        margin: 0 0 8px 0;
+        color: #d4e5fa;
+        font-size: 0.9rem;
+      }
+      .arrow-hint {
+        position: fixed;
+        font-size: 24px;
+        color: #ffb74d;
+        font-weight: 700;
+        text-shadow: 0 0 12px rgba(255,160,70,0.8);
+        animation: pulse 1s infinite;
+        pointer-events: none;
+        display: none;
+        z-index: 25;
+      }
+      .arrow-hint.active {
+        display: block;
+      }
+      @keyframes pulse {
+        0% { transform: translateX(0); opacity: 0.5; }
+        50% { transform: translateX(5px); opacity: 1; }
+        100% { transform: translateX(0); opacity: 0.5; }
+      }
+      .legend {
+        color: #a8c2dd;
+        font-size: 0.88rem;
+        margin-top: 8px;
+      }
+
+      .welcome-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 8, 15, 0.74);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 120;
+        padding: 14px;
+      }
+      .welcome-overlay.open { display: flex; }
+      .welcome-card {
+        width: min(1040px, 96vw);
+        max-height: min(92dvh, 900px);
+        overflow: auto;
+        border: 1px solid #2f577f;
+        background: linear-gradient(180deg, rgba(13,31,49,0.98), rgba(8,18,30,0.98));
+        box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+        padding: 14px;
+      }
+      .welcome-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .welcome-head h2 {
+        margin: 0;
+        font-size: 1.12rem;
+        color: #ffd29b;
+      }
+      .welcome-sub {
+        color: #a8c2dd;
+        margin-top: 6px;
+        margin-bottom: 12px;
+        font-size: 0.92rem;
+      }
+      .welcome-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(280px, 1.05fr);
+        gap: 12px;
+      }
+      .mode-list {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .mode-item {
+        border: 1px solid #2a4f74;
+        background: rgba(10, 26, 43, 0.72);
+        padding: 10px;
+      }
+      .mode-item label {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px;
+        align-items: start;
+        cursor: pointer;
+      }
+      .mode-item .title { font-weight: 800; }
+      .mode-item .desc { color: var(--muted); font-size: 0.86rem; margin-top: 4px; }
+      .welcome-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .welcome-actions button {
+        border: 1px solid #375e86;
+        background: linear-gradient(180deg, #236db4, #184c7d);
+        color: #fff;
+        min-height: 36px;
+        padding: 8px 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .welcome-actions button.alt {
+        background: linear-gradient(180deg, #c77010, #8a4d08);
+      }
+      .welcome-actions button.ghost {
+        background: rgba(9, 25, 42, 0.65);
+      }
+      .welcome-details {
+        border: 1px solid #2a4f74;
+        background: rgba(8, 21, 37, 0.66);
+        padding: 10px;
+      }
+      .welcome-details summary {
+        cursor: pointer;
+        font-weight: 800;
+        color: #9ed0ff;
+      }
+      .welcome-details[open] summary { margin-bottom: 8px; }
+      .welcome-form {
+        display: grid;
+        gap: 8px;
+      }
+      .welcome-form .row {
+        display: grid;
+        gap: 4px;
+      }
+      .welcome-form label { font-size: 0.8rem; color: var(--muted); }
+      .welcome-form input, .welcome-form select, .welcome-form button {
+        width: 100%;
+        border: 1px solid #375e86;
+        background: #09192a;
+        color: #fff;
+        min-height: 34px;
+        padding: 4px 6px;
+      }
+      .carousel {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+      }
+      .carousel button {
+        width: 42px;
+        min-height: 42px;
+        border: 1px solid #375e86;
+        background: rgba(9,25,42,0.75);
+        color: #fff;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .carousel .mid {
+        display: grid;
+        grid-template-columns: 84px 1fr;
+        gap: 10px;
+        align-items: center;
+      }
+      .carousel img {
+        width: 84px;
+        height: 52px;
+        object-fit: contain;
+        border: 1px solid rgba(255,255,255,0.16);
+        background: #102238;
+      }
+      .carousel .name { font-weight: 800; }
+      .carousel .meta { color: var(--muted); font-size: 0.82rem; }
+      .hidden-file { display: none; }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 999px;
+        color: #bfe0ff;
+        background: rgba(11, 34, 56, 0.6);
+        font-size: 0.78rem;
+        margin-left: 6px;
+      }
+      @media (max-width: 1200px) {
+        .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .menu-launch { top: 130px; }
+        .overlay-help { top: 130px; }
+      }
+      @media (max-width: 800px) {
+        .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gauge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .bottom-gauges {
+          position: sticky;
+          bottom: 0;
+          z-index: 50;
+        }
+        .menu-launch { top: 176px; }
+        .overlay-help { top: 176px; }
+      }
+      @media (max-width: 560px) {
+        .gauge-grid { grid-template-columns: 1fr; }
+        .sidebar .menu-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .welcome-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+          <a class="menu-link active" href="../index.html">Games</a>
+        </nav>
+      </header>
+
+      <div class="welcome-overlay" id="welcomeOverlay" aria-hidden="true">
+        <div class="welcome-card" role="dialog" aria-modal="true" aria-label="Tanks welcome menu">
+          <div class="welcome-head">
+            <div>
+              <h2>Welcome to Tanks and More Tank</h2>
+              <div class="welcome-sub">Choose your game type, tank loadout, and optional weather + night systems. You can always reopen the Menu in-game.</div>
+            </div>
+            <button class="menu-close" id="welcomeCloseBtn" aria-label="Close welcome menu">X</button>
+          </div>
+
+          <div class="welcome-grid">
+            <div>
+              <div class="mode-list" role="radiogroup" aria-label="Game mode">
+                <div class="mode-item">
+                  <label>
+                    <input type="radio" name="gameMode" value="leveled">
+                    <div>
+                      <div class="title">Leveled Campaign <span class="pill">15 levels</span></div>
+                      <div class="desc">Plays the built-in levels in order. Good for learning and practice.</div>
+                    </div>
+                  </label>
+                </div>
+                <div class="mode-item">
+                  <label>
+                    <input type="radio" name="gameMode" value="auto" checked>
+                    <div>
+                      <div class="title">Auto Generated Levels <span class="pill">endless</span></div>
+                      <div class="desc">Procedural terrain + evolving AI. Great for score runs.</div>
+                    </div>
+                  </label>
+                </div>
+                <div class="mode-item">
+                  <label>
+                    <input type="radio" name="gameMode" value="custom">
+                    <div>
+                      <div class="title">Custom (Builder)</div>
+                      <div class="desc">Import a `.tanklevel.json` exported from the builder. Perfect for sharing levels.</div>
+                    </div>
+                  </label>
+                </div>
+                <div class="mode-item">
+                  <label>
+                    <input type="radio" name="gameMode" value="night">
+                    <div>
+                      <div class="title">Night Tanks</div>
+                      <div class="desc">The arena is dark. Shots briefly illuminate the world. Earn flares after missed shots.</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <details class="welcome-details" open>
+                <summary>Tank Gallery</summary>
+                <div class="welcome-form">
+                  <div class="row">
+                    <label>Hero Tank</label>
+                    <div class="carousel">
+                      <button type="button" id="heroPrevBtn" aria-label="Previous hero tank">◀</button>
+                      <div class="mid">
+                        <img id="heroPreviewImg" alt="Hero tank preview">
+                        <div>
+                          <div class="name" id="heroPreviewName">Hero</div>
+                          <div class="meta" id="heroPreviewMeta">Use arrows or the in-menu selects.</div>
+                        </div>
+                      </div>
+                      <button type="button" id="heroNextBtn" aria-label="Next hero tank">▶</button>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <label>Enemy Tank</label>
+                    <div class="carousel">
+                      <button type="button" id="enemyPrevBtn" aria-label="Previous enemy tank">◀</button>
+                      <div class="mid">
+                        <img id="enemyPreviewImg" alt="Enemy tank preview">
+                        <div>
+                          <div class="name" id="enemyPreviewName">Enemy</div>
+                          <div class="meta" id="enemyPreviewMeta">You can change anytime.</div>
+                        </div>
+                      </div>
+                      <button type="button" id="enemyNextBtn" aria-label="Next enemy tank">▶</button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <div>
+              <details class="welcome-details" open>
+                <summary>Weather & Air Support</summary>
+                <div class="welcome-form">
+                  <div class="row">
+                    <label for="welcomeWindEnabled">Wind</label>
+                    <select id="welcomeWindEnabled">
+                      <option value="off">Off</option>
+                      <option value="on">On</option>
+                    </select>
+                  </div>
+                  <div class="row">
+                    <label for="welcomeWindStrength">Wind Strength (<span id="welcomeWindStrengthValue">0</span>)</label>
+                    <input id="welcomeWindStrength" type="range" min="-100" max="100" step="1" value="0">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeRainEnabled">Rain</label>
+                    <select id="welcomeRainEnabled">
+                      <option value="off">Off</option>
+                      <option value="on">On</option>
+                    </select>
+                  </div>
+                  <div class="row">
+                    <label for="welcomeRainIntensity">Rain Intensity (<span id="welcomeRainIntensityValue">0</span>%)</label>
+                    <input id="welcomeRainIntensity" type="range" min="0" max="100" step="1" value="0">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeBomberMode">Air Bomber Availability</label>
+                    <select id="welcomeBomberMode">
+                      <option value="off">Off</option>
+                      <option value="once">Once per match</option>
+                      <option value="every3">Once every 3 rounds</option>
+                      <option value="every5">Once every 5 rounds</option>
+                      <option value="afterHit">Unlocked after first hit</option>
+                    </select>
+                  </div>
+                  <div class="row">
+                    <label for="welcomeBomberBombs">Bombs Per Call (<span id="welcomeBomberBombsValue">3</span>)</label>
+                    <input id="welcomeBomberBombs" type="range" min="1" max="6" step="1" value="3">
+                  </div>
+                </div>
+              </details>
+
+              <details class="welcome-details" id="welcomeNightDetails">
+                <summary>Night Tanks Settings</summary>
+                <div class="welcome-form">
+                  <div class="row">
+                    <label for="welcomeDarkness">Darkness (<span id="welcomeDarknessValue">86</span>%)</label>
+                    <input id="welcomeDarkness" type="range" min="0" max="100" step="1" value="86">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeShotLightRadius">Shot Light Radius (<span id="welcomeShotLightRadiusValue">170</span>)</label>
+                    <input id="welcomeShotLightRadius" type="range" min="60" max="360" step="1" value="170">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeShotLightIntensity">Shot Brightness (<span id="welcomeShotLightIntensityValue">85</span>%)</label>
+                    <input id="welcomeShotLightIntensity" type="range" min="20" max="100" step="1" value="85">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeFlareAfterMisses">Grant Flare After Misses (<span id="welcomeFlareAfterMissesValue">3</span>)</label>
+                    <input id="welcomeFlareAfterMisses" type="range" min="1" max="7" step="1" value="3">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeFlareRadius">Flare Radius (<span id="welcomeFlareRadiusValue">260</span>)</label>
+                    <input id="welcomeFlareRadius" type="range" min="120" max="520" step="1" value="260">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeFlareIntensity">Flare Brightness (<span id="welcomeFlareIntensityValue">95</span>%)</label>
+                    <input id="welcomeFlareIntensity" type="range" min="20" max="100" step="1" value="95">
+                  </div>
+                  <div class="row">
+                    <label for="welcomeFlareMax">Max Flares / Match (<span id="welcomeFlareMaxValue">2</span>)</label>
+                    <input id="welcomeFlareMax" type="range" min="0" max="5" step="1" value="2">
+                  </div>
+                </div>
+              </details>
+
+              <details class="welcome-details" id="welcomeCustomDetails">
+                <summary>Custom Level (Builder)</summary>
+                <div class="welcome-form">
+                  <div class="row">
+                    <label>Open Builder</label>
+                    <a class="menu-link" href="./tools/tank-level-builder.html" target="_blank" rel="noreferrer">Open Tank Level Builder</a>
+                  </div>
+                  <div class="row">
+                    <label>Import `.tanklevel.json`</label>
+                    <button type="button" id="welcomeImportBtn">Choose File…</button>
+                    <input class="hidden-file" id="welcomeImportFile" type="file" accept=".json,.tanklevel.json">
+                  </div>
+                  <div class="row">
+                    <label>Loaded Custom Level</label>
+                    <div id="welcomeCustomSummary" style="color:#bfe0ff; font-weight:800;">None loaded</div>
+                  </div>
+                </div>
+              </details>
+
+              <div class="welcome-actions">
+                <button class="alt" type="button" id="welcomeStartBtn">Start Game</button>
+                <button class="ghost" type="button" id="welcomeDefaultsBtn">Play Defaults</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="panel game-root">
+        <aside class="sidebar" id="mainSidebar">
+          <div class="sidebar-head">
+            <h2>Tanks and More Tank</h2>
+            <button class="menu-close" id="menuCloseBtn" aria-label="Close menu">X</button>
+          </div>
+          <div class="legend">Scorched-earth style endless levels with evolving AI, score climb, and unlockable weapons.</div>
+
+          <h3>Match Setup</h3>
+          <div class="menu-grid">
+            <div class="menu-row">
+              <label for="difficultySelect">Difficulty</label>
+              <select id="difficultySelect">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="menu-row">
+              <label for="playerTankSelect">Primary Tank</label>
+              <select id="playerTankSelect"></select>
+            </div>
+            <div class="menu-row">
+              <label for="enemyTankSelect">Enemy Tank</label>
+              <select id="enemyTankSelect"></select>
+            </div>
+            <div class="menu-row">
+              <label for="playerNameInput">Hero Call Sign</label>
+              <input id="playerNameInput" type="text" value="Player One">
+            </div>
+          </div>
+
+          <h3>Actions</h3>
+          <div class="menu-grid">
+            <div class="menu-row"><button id="startButton">Start Match</button></div>
+            <div class="menu-row"><button id="nextTurnButton">Force Next Turn</button></div>
+            <div class="menu-row"><button id="resetLevelButton">Retry Level</button></div>
+            <div class="menu-row"><button id="tutorialButton">Toggle Tutorial</button></div>
+          </div>
+        </aside>
+        <div class="menu-backdrop" id="menuBackdrop"></div>
+
+        <div class="right-col">
+          <div class="game-wrap">
+            <div class="hud hud-overlay">
+              <div class="item"><span class="k">Level</span><span class="v" id="hudLevel">1 / Endless</span></div>
+              <div class="item"><span class="k">Round</span><span class="v" id="hudRound">1</span></div>
+              <div class="item"><span class="k">Turn</span><span class="v" id="hudTurn">Player</span></div>
+              <div class="item"><span class="k">HP</span><span class="v" id="hudHp">100 / 100</span></div>
+              <div class="item"><span class="k">Enemy HP</span><span class="v" id="hudEnemyHp">100 / 100</span></div>
+              <div class="item"><span class="k">Score</span><span class="v" id="hudScore">0</span></div>
+            </div>
+            <button class="menu-launch" id="menuToggleBtn">Menu</button>
+            <div class="tuning-overlay" aria-label="Default shot tuning">
+              <button type="button" id="damage100Btn">Damage 100%</button>
+              <button type="button" id="blast100Btn">Blast 100%</button>
+            </div>
+            <canvas id="gameCanvas" width="1400" height="788" aria-label="Tanks battle arena"></canvas>
+            <div class="overlay-help" id="tutorialOverlay">
+              <h3>Tutorial</h3>
+              <p id="tutorialText"></p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="tutorialNext">Next</button>
+                <button id="tutorialSkip">Skip Tutorial</button>
+              </div>
+            </div>
+            <div class="arrow-hint" id="arrowHint">--&gt;</div>
+          </div>
+          <div class="bottom-gauges">
+            <div class="gauge-grid">
+              <div class="gauge-cell">
+                <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
+                <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+              </div>
+              <div class="gauge-cell">
+                <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
+                <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
+              </div>
+              <div class="gauge-cell">
+                <label for="weaponSelect">Weapon</label>
+                <select id="weaponSelect"></select>
+              </div>
+              <div class="gauge-cell">
+                <label for="shotKindProfileSelect">Shot Kind Profile</label>
+                <select id="shotKindProfileSelect">
+                  <option value="shell">Shell</option>
+                  <option value="heavy">Heavy</option>
+                  <option value="cluster">Cluster</option>
+                  <option value="napalm">Napalm</option>
+                  <option value="rail">Rail</option>
+                  <option value="quantum">Quantum</option>
+                  <option value="bomber">Bomber</option>
+                </select>
+              </div>
+            </div>
+            <div class="gauge-grid">
+              <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
+              <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
+              <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
+              <div class="gauge-cell">
+                <label for="bomberDirectionSelect">Air Bomber Direction</label>
+                <select id="bomberDirectionSelect">
+                  <option value="ltr">Left to Right</option>
+                  <option value="rtl">Right to Left</option>
+                </select>
+              </div>
+              <div class="gauge-cell"><label>Special</label><button id="callBomberBtn">Call Air Bomber</button></div>
+              <div class="gauge-cell"><label>Night</label><button id="callFlareBtn">Drop Flare</button></div>
+              <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
+            </div>
+          </div>
+          <div class="legend" id="statusLine">
+            Select your tank, choose enemy tank, set angle/power, then fire. Easy mode shows a longer dotted aim guide.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const statusLine = document.getElementById("statusLine");
+
+        const angleInput = document.getElementById("angleInput");
+        const powerInput = document.getElementById("powerInput");
+        const angleValue = document.getElementById("angleValue");
+        const powerValue = document.getElementById("powerValue");
+        const weaponSelect = document.getElementById("weaponSelect");
+        const difficultySelect = document.getElementById("difficultySelect");
+        const playerTankSelect = document.getElementById("playerTankSelect");
+        const enemyTankSelect = document.getElementById("enemyTankSelect");
+        const playerNameInput = document.getElementById("playerNameInput");
+        const bomberDirectionSelect = document.getElementById("bomberDirectionSelect");
+        const shotKindProfileSelect = document.getElementById("shotKindProfileSelect");
+        const damage100Btn = document.getElementById("damage100Btn");
+        const blast100Btn = document.getElementById("blast100Btn");
+
+        const hud = {
+          level: document.getElementById("hudLevel"),
+          round: document.getElementById("hudRound"),
+          turn: document.getElementById("hudTurn"),
+          hp: document.getElementById("hudHp"),
+          enemyHp: document.getElementById("hudEnemyHp"),
+          score: document.getElementById("hudScore")
+        };
+
+        const tutorialOverlay = document.getElementById("tutorialOverlay");
+        const tutorialText = document.getElementById("tutorialText");
+        const tutorialNext = document.getElementById("tutorialNext");
+        const tutorialSkip = document.getElementById("tutorialSkip");
+        const arrowHint = document.getElementById("arrowHint");
+        const mainSidebar = document.getElementById("mainSidebar");
+        const menuBackdrop = document.getElementById("menuBackdrop");
+        const menuToggleBtn = document.getElementById("menuToggleBtn");
+        const menuCloseBtn = document.getElementById("menuCloseBtn");
+
+        const welcomeOverlay = document.getElementById("welcomeOverlay");
+        const welcomeCloseBtn = document.getElementById("welcomeCloseBtn");
+        const welcomeStartBtn = document.getElementById("welcomeStartBtn");
+        const welcomeDefaultsBtn = document.getElementById("welcomeDefaultsBtn");
+        const welcomeCustomDetails = document.getElementById("welcomeCustomDetails");
+        const welcomeNightDetails = document.getElementById("welcomeNightDetails");
+        const welcomeImportBtn = document.getElementById("welcomeImportBtn");
+        const welcomeImportFile = document.getElementById("welcomeImportFile");
+        const welcomeCustomSummary = document.getElementById("welcomeCustomSummary");
+
+        const heroPrevBtn = document.getElementById("heroPrevBtn");
+        const heroNextBtn = document.getElementById("heroNextBtn");
+        const enemyPrevBtn = document.getElementById("enemyPrevBtn");
+        const enemyNextBtn = document.getElementById("enemyNextBtn");
+        const heroPreviewImg = document.getElementById("heroPreviewImg");
+        const enemyPreviewImg = document.getElementById("enemyPreviewImg");
+        const heroPreviewName = document.getElementById("heroPreviewName");
+        const enemyPreviewName = document.getElementById("enemyPreviewName");
+        const heroPreviewMeta = document.getElementById("heroPreviewMeta");
+        const enemyPreviewMeta = document.getElementById("enemyPreviewMeta");
+
+        const welcomeWindEnabled = document.getElementById("welcomeWindEnabled");
+        const welcomeWindStrength = document.getElementById("welcomeWindStrength");
+        const welcomeWindStrengthValue = document.getElementById("welcomeWindStrengthValue");
+        const welcomeRainEnabled = document.getElementById("welcomeRainEnabled");
+        const welcomeRainIntensity = document.getElementById("welcomeRainIntensity");
+        const welcomeRainIntensityValue = document.getElementById("welcomeRainIntensityValue");
+        const welcomeBomberMode = document.getElementById("welcomeBomberMode");
+        const welcomeBomberBombs = document.getElementById("welcomeBomberBombs");
+        const welcomeBomberBombsValue = document.getElementById("welcomeBomberBombsValue");
+
+        const welcomeDarkness = document.getElementById("welcomeDarkness");
+        const welcomeDarknessValue = document.getElementById("welcomeDarknessValue");
+        const welcomeShotLightRadius = document.getElementById("welcomeShotLightRadius");
+        const welcomeShotLightRadiusValue = document.getElementById("welcomeShotLightRadiusValue");
+        const welcomeShotLightIntensity = document.getElementById("welcomeShotLightIntensity");
+        const welcomeShotLightIntensityValue = document.getElementById("welcomeShotLightIntensityValue");
+        const welcomeFlareAfterMisses = document.getElementById("welcomeFlareAfterMisses");
+        const welcomeFlareAfterMissesValue = document.getElementById("welcomeFlareAfterMissesValue");
+        const welcomeFlareRadius = document.getElementById("welcomeFlareRadius");
+        const welcomeFlareRadiusValue = document.getElementById("welcomeFlareRadiusValue");
+        const welcomeFlareIntensity = document.getElementById("welcomeFlareIntensity");
+        const welcomeFlareIntensityValue = document.getElementById("welcomeFlareIntensityValue");
+        const welcomeFlareMax = document.getElementById("welcomeFlareMax");
+        const welcomeFlareMaxValue = document.getElementById("welcomeFlareMaxValue");
+
+        const imageKeys = [
+          "vehicles_tank_heavy_792x276.webp",
+          "vehicles_tank_light_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_assault_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_command_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_hover1_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_mechhybrid_792x276.webp",
+          "vehicles_vehicle_tank_futuristic_recon_792x276.webp",
+          "scifi_vehicle_armoredtransport_459x145.webp",
+          "scifi_vehicle_fighter_459x145.webp",
+          "scifi_vehicle_hoverbike_459x145.webp",
+          "scifi_vehicle_hovercar_compact_459x145.webp",
+          "scifi_vehicle_mechwarrior_heavy_792x276.webp",
+          "scifi_vehicle_mechwarrior_light_459x145.webp"
+        ];
+
+        const tankTitles = {
+          "vehicles_tank_heavy_792x276.webp": "Iron Mammoth",
+          "vehicles_tank_light_792x276.webp": "Dust Scout",
+          "vehicles_vehicle_tank_futuristic_792x276.webp": "Nova Siege",
+          "vehicles_vehicle_tank_futuristic_assault_792x276.webp": "Pulse Breaker",
+          "vehicles_vehicle_tank_futuristic_command_792x276.webp": "Command Core",
+          "vehicles_vehicle_tank_futuristic_hover1_792x276.webp": "Hover Pike",
+          "vehicles_vehicle_tank_futuristic_mechhybrid_792x276.webp": "Steel Hydra",
+          "vehicles_vehicle_tank_futuristic_recon_792x276.webp": "Ghost Radar",
+          "scifi_vehicle_armoredtransport_459x145.webp": "Titan Carrier",
+          "scifi_vehicle_fighter_459x145.webp": "Sky Lancer",
+          "scifi_vehicle_hoverbike_459x145.webp": "Rift Bike",
+          "scifi_vehicle_hovercar_compact_459x145.webp": "Comet Rider",
+          "scifi_vehicle_mechwarrior_heavy_792x276.webp": "Atlas Walker",
+          "scifi_vehicle_mechwarrior_light_459x145.webp": "Viper Walker"
+        };
+        const baseFacingRightByImage = {
+          "vehicle_boro_tanker_685x289.webp": true,
+          "vehicle_semi_tank_700x283.webp": true
+        };
+
+        const weapons = [
+          { key: "shell", name: "120mm Shell", unlock: 1, speed: 11, radius: 42, damage: 34, color: "#ffc66d", trail: "#ffe7ba" },
+          { key: "heavy", name: "Heavy Buster", unlock: 3, speed: 10, radius: 58, damage: 52, color: "#ff9f43", trail: "#ffd2a1" },
+          { key: "cluster", name: "Cluster Storm", unlock: 5, speed: 10.5, radius: 36, damage: 21, cluster: 4, color: "#c6c2ff", trail: "#e4e1ff" },
+          { key: "napalm", name: "Napalm Bloom", unlock: 8, speed: 9.8, radius: 66, damage: 60, burn: true, color: "#ff5f3e", trail: "#ffb29f" },
+          { key: "rail", name: "Rail Lance", unlock: 11, speed: 14, radius: 34, damage: 78, piercing: true, color: "#76ddff", trail: "#c7f1ff" },
+          { key: "quantum", name: "Quantum Obliterator", unlock: 14, speed: 12, radius: 82, damage: 95, color: "#ff4fc9", trail: "#ffd1f3" }
+        ];
+
+        const guides = {
+          easy: 0.55,
+          medium: 0.22,
+          hard: 0
+        };
+
+        const aiProfiles = {
+          easy: { baseError: 13, powerError: 8, lead: 0.07 },
+          medium: { baseError: 7, powerError: 5, lead: 0.04 },
+          hard: { baseError: 3.2, powerError: 2.2, lead: 0.02 }
+        };
+
+        const images = new Map();
+        const extraImages = new Map();
+        const state = {
+          mode: "auto",
+          level: 1,
+          rounds: 1,
+          totalLevels: 15,
+          endlessAutoLevels: true,
+          score: 0,
+          difficulty: "easy",
+          turn: "player",
+          activeProjectile: null,
+          particles: [],
+          craters: [],
+          airBombs: [],
+          bomberActive: null,
+          bomberTurnPendingEnd: false,
+          airBomberCharges: 1,
+          terrain: [],
+          mountainsFar: [],
+          mountainsNear: [],
+          customLevelsBySlot: {},
+          levelDecor: [],
+          player: null,
+          enemy: null,
+          customLevelEnvOverride: null,
+          preMoveUsed: false,
+          preMoveAllowance: 0,
+          tutorialOn: true,
+          tutorialStep: 0,
+          lockInput: false,
+          firstMatchStarted: false,
+          wind: 0,
+          rain: { enabled: false, intensity: 0, drops: [] },
+          night: { enabled: false, darkness: 0.86, shotLightRadius: 170, shotLightIntensity: 0.85, flareAfterMisses: 3, flareRadius: 260, flareIntensity: 0.95, flareMax: 2 },
+          lights: [],
+          flares: [],
+          flarePlane: null,
+          missStreak: 0,
+          flareCharges: 0,
+          flaresUsed: 0,
+          enemySpotted: false,
+          airSupport: { mode: "off", bombsPerCall: 3, used: 0, lastRound: -999 }
+        };
+        const weaponTuning = {};
+        ["shell","heavy","cluster","napalm","rail","quantum","bomber"].forEach((k) => {
+          weaponTuning[k] = { damageScale: 100, radiusScale: 100 };
+        });
+
+        const gravity = 0.18;
+        const world = {
+          width: canvas.width,
+          height: canvas.height,
+          floorMax: canvas.height - 80,
+          floorMin: canvas.height * 0.43
+        };
+
+        function ensureImageLoaded(fileName) {
+          if (!fileName) return null;
+          if (images.has(fileName)) return images.get(fileName);
+          if (extraImages.has(fileName)) return extraImages.get(fileName);
+          const img = new Image();
+          img.src = `./images/${fileName}`;
+          extraImages.set(fileName, img);
+          return img;
+        }
+
+        function loadImages() {
+          return Promise.all(imageKeys.map((file) => new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => { images.set(file, img); resolve(); };
+            img.onerror = () => resolve();
+            img.src = `./images/${file}`;
+          })));
+        }
+
+        function buildSelects() {
+          playerTankSelect.innerHTML = "";
+          enemyTankSelect.innerHTML = "";
+          imageKeys.forEach((key) => {
+            const label = tankTitles[key] || key.replace(".webp", "");
+            const pOpt = document.createElement("option");
+            pOpt.value = key;
+            pOpt.textContent = label;
+            playerTankSelect.appendChild(pOpt);
+
+            const eOpt = document.createElement("option");
+            eOpt.value = key;
+            eOpt.textContent = label;
+            enemyTankSelect.appendChild(eOpt);
+          });
+          playerTankSelect.value = "vehicles_tank_heavy_792x276.webp";
+          enemyTankSelect.value = "scifi_vehicle_armoredtransport_459x145.webp";
+        }
+
+        function refreshWeaponMenu() {
+          weaponSelect.innerHTML = "";
+          const unlocked = weapons.filter((w) => state.level >= w.unlock);
+          unlocked.forEach((w) => {
+            const option = document.createElement("option");
+            option.value = w.key;
+            option.textContent = `${w.name}`;
+            weaponSelect.appendChild(option);
+          });
+          if (!weaponSelect.value && unlocked.length) {
+            weaponSelect.value = unlocked[0].key;
+          }
+        }
+
+        function clamp(n, min, max) {
+          return Math.max(min, Math.min(max, n));
+        }
+
+        function setWelcomeOpen(isOpen) {
+          if (isOpen) {
+            welcomeOverlay.classList.add("open");
+            welcomeOverlay.setAttribute("aria-hidden", "false");
+          } else {
+            welcomeOverlay.classList.remove("open");
+            welcomeOverlay.setAttribute("aria-hidden", "true");
+          }
+        }
+
+        function selectedWelcomeMode() {
+          const node = document.querySelector('input[name="gameMode"]:checked');
+          return node ? node.value : "auto";
+        }
+
+        function syncWelcomeDetailsToMode() {
+          const mode = selectedWelcomeMode();
+          welcomeCustomDetails.style.display = mode === "custom" ? "block" : "none";
+          welcomeNightDetails.style.display = mode === "night" ? "block" : "none";
+          document.getElementById("callFlareBtn").style.display = mode === "night" ? "inline-block" : "none";
+        }
+
+        let heroCarouselIndex = 0;
+        let enemyCarouselIndex = 1;
+        let loadedCustomLevel = null;
+        function updateCarouselPreviews() {
+          const heroKey = imageKeys[clamp(heroCarouselIndex, 0, imageKeys.length - 1)];
+          const enemyKey = imageKeys[clamp(enemyCarouselIndex, 0, imageKeys.length - 1)];
+
+          heroPreviewImg.src = `./images/${heroKey}`;
+          enemyPreviewImg.src = `./images/${enemyKey}`;
+          heroPreviewName.textContent = tankTitles[heroKey] || heroKey.replace(".webp", "");
+          enemyPreviewName.textContent = tankTitles[enemyKey] || enemyKey.replace(".webp", "");
+          heroPreviewMeta.textContent = `File: ${heroKey}`;
+          enemyPreviewMeta.textContent = `File: ${enemyKey}`;
+
+          if (playerTankSelect && playerTankSelect.value !== heroKey) playerTankSelect.value = heroKey;
+          if (enemyTankSelect && enemyTankSelect.value !== enemyKey) enemyTankSelect.value = enemyKey;
+        }
+
+        function moveCarousel(which, dir) {
+          if (which === "hero") heroCarouselIndex = (heroCarouselIndex + dir + imageKeys.length) % imageKeys.length;
+          if (which === "enemy") enemyCarouselIndex = (enemyCarouselIndex + dir + imageKeys.length) % imageKeys.length;
+          updateCarouselPreviews();
+        }
+
+        function loadMatchConfigFromWelcome() {
+          const mode = selectedWelcomeMode();
+          const windOn = welcomeWindEnabled.value === "on";
+          const windStrengthRaw = Number(welcomeWindStrength.value) || 0;
+          const wind = windOn ? (windStrengthRaw / 100) * 0.12 : 0;
+
+          const rainOn = welcomeRainEnabled.value === "on";
+          const rainIntensity = rainOn ? clamp(Number(welcomeRainIntensity.value) || 0, 0, 100) / 100 : 0;
+
+          const bomberMode = welcomeBomberMode.value || "off";
+          const bombsPerCall = clamp(Number(welcomeBomberBombs.value) || 3, 1, 6);
+
+          const darkness = clamp(Number(welcomeDarkness.value) || 86, 0, 100) / 100;
+          const shotLightRadius = clamp(Number(welcomeShotLightRadius.value) || 170, 60, 360);
+          const shotLightIntensity = clamp(Number(welcomeShotLightIntensity.value) || 85, 20, 100) / 100;
+          const flareAfterMisses = clamp(Number(welcomeFlareAfterMisses.value) || 3, 1, 7);
+          const flareRadius = clamp(Number(welcomeFlareRadius.value) || 260, 120, 520);
+          const flareIntensity = clamp(Number(welcomeFlareIntensity.value) || 95, 20, 100) / 100;
+          const flareMax = clamp(Number(welcomeFlareMax.value) || 2, 0, 5);
+
+          return {
+            mode,
+            wind,
+            rain: { enabled: rainOn, intensity: rainIntensity },
+            bomber: { mode: bomberMode, bombsPerCall },
+            night: { enabled: mode === "night", darkness, shotLightRadius, shotLightIntensity, flareAfterMisses, flareRadius, flareIntensity, flareMax }
+          };
+        }
+
+        function applyMatchConfig(cfg) {
+          state.mode = cfg.mode || "auto";
+          state.wind = Number(cfg.wind || 0);
+          state.rain.enabled = !!cfg.rain?.enabled;
+          state.rain.intensity = Number(cfg.rain?.intensity || 0);
+
+          state.night.enabled = !!cfg.night?.enabled;
+          state.night.darkness = Number(cfg.night?.darkness ?? 0.86);
+          state.night.shotLightRadius = Number(cfg.night?.shotLightRadius ?? 170);
+          state.night.shotLightIntensity = Number(cfg.night?.shotLightIntensity ?? 0.85);
+          state.night.flareAfterMisses = Number(cfg.night?.flareAfterMisses ?? 3);
+          state.night.flareRadius = Number(cfg.night?.flareRadius ?? 260);
+          state.night.flareIntensity = Number(cfg.night?.flareIntensity ?? 0.95);
+          state.night.flareMax = Number(cfg.night?.flareMax ?? 2);
+
+          state.airSupport.mode = cfg.bomber?.mode || "off";
+          state.airSupport.bombsPerCall = Number(cfg.bomber?.bombsPerCall || 3);
+          state.airSupport.used = 0;
+          state.airSupport.lastRound = -999;
+
+          state.enemySpotted = false;
+          state.missStreak = 0;
+          state.flareCharges = 0;
+          state.flaresUsed = 0;
+          state.flares = [];
+          state.lights = [];
+
+          if (state.mode === "leveled") {
+            state.endlessAutoLevels = false;
+            state.totalLevels = 15;
+          } else if (state.mode === "custom") {
+            state.endlessAutoLevels = false;
+            state.totalLevels = 1;
+          } else {
+            state.endlessAutoLevels = true;
+            state.totalLevels = 15;
+          }
+        }
+
+        function applyEnvironmentOverrides(envCfg) {
+          if (!envCfg) return;
+          if (typeof envCfg.wind === "number") state.wind = Number(envCfg.wind) || 0;
+          if (envCfg.rain) {
+            state.rain.enabled = !!envCfg.rain.enabled;
+            state.rain.intensity = Number(envCfg.rain.intensity || 0);
+          }
+          if (envCfg.bomber) {
+            state.airSupport.mode = envCfg.bomber.mode || state.airSupport.mode;
+            state.airSupport.bombsPerCall = Number(envCfg.bomber.bombsPerCall || state.airSupport.bombsPerCall);
+          }
+          if (envCfg.night) {
+            state.night.enabled = !!envCfg.night.enabled;
+            state.night.darkness = Number(envCfg.night.darkness ?? state.night.darkness);
+            state.night.shotLightRadius = Number(envCfg.night.shotLightRadius ?? state.night.shotLightRadius);
+            state.night.shotLightIntensity = Number(envCfg.night.shotLightIntensity ?? state.night.shotLightIntensity);
+            state.night.flareAfterMisses = Number(envCfg.night.flareAfterMisses ?? state.night.flareAfterMisses);
+            state.night.flareRadius = Number(envCfg.night.flareRadius ?? state.night.flareRadius);
+            state.night.flareIntensity = Number(envCfg.night.flareIntensity ?? state.night.flareIntensity);
+            state.night.flareMax = Number(envCfg.night.flareMax ?? state.night.flareMax);
+          }
+        }
+
+        function levelEnvironmentFromPayload(lvl) {
+          const env = lvl?.environment || lvl?.env || null;
+          if (!env) return null;
+          const darkness = clamp(Number(env.darkness ?? env.night?.darkness ?? 0), 0, 1);
+          const shotLightRadius = clamp(Number(env.shotLightRadius ?? env.lighting?.shotLightRadius ?? 170), 60, 520);
+          const shotLightIntensity = clamp(Number(env.shotLightIntensity ?? env.lighting?.shotLightIntensity ?? 0.85), 0.2, 1);
+          const flareAfterMisses = clamp(Number(env.flareAfterMisses ?? env.flares?.afterMisses ?? 3), 1, 10);
+          const flareRadius = clamp(Number(env.flareRadius ?? env.flares?.radius ?? 260), 120, 620);
+          const flareIntensity = clamp(Number(env.flareIntensity ?? env.flares?.flareIntensity ?? 0.95), 0.2, 1);
+          const flareMax = clamp(Number(env.flareMax ?? env.flares?.maxPerMatch ?? 2), 0, 20);
+          const wind = clamp(Number(env.wind ?? env.weather?.wind ?? 0), -0.2, 0.2);
+          const rainIntensity = clamp(Number(env.rainIntensity ?? env.weather?.rainIntensity ?? 0), 0, 1);
+          const bomberMode = String(env.bomberMode ?? env.airSupport?.bomberMode ?? "off");
+          const bombsPerCall = clamp(Number(env.bombsPerCall ?? env.airSupport?.bombsPerCall ?? 3), 1, 6);
+          return {
+            wind,
+            rain: { enabled: rainIntensity > 0, intensity: rainIntensity },
+            bomber: { mode: bomberMode, bombsPerCall },
+            night: { enabled: darkness > 0, darkness, shotLightRadius, shotLightIntensity, flareAfterMisses, flareRadius, flareIntensity, flareMax }
+          };
+        }
+
+        function setLoadedCustomLevel(payload) {
+          try {
+            const lvl = payload?.level || payload;
+            if (!lvl || !Array.isArray(lvl.terrain)) throw new Error("Invalid level payload.");
+            loadedCustomLevel = payload;
+            localStorage.setItem("tanks.customLevelPayload.v1", JSON.stringify(payload));
+            const title = String(lvl.title || "Custom Level");
+            const slot = Number(lvl.slot || 1);
+            welcomeCustomSummary.textContent = `${title} (slot ${slot})`;
+            welcomeCustomSummary.style.color = "#bfe0ff";
+          } catch {
+            loadedCustomLevel = null;
+            try { localStorage.removeItem("tanks.customLevelPayload.v1"); } catch {}
+            welcomeCustomSummary.textContent = "Invalid custom level file.";
+            welcomeCustomSummary.style.color = "#ffb2b2";
+          }
+        }
+
+        function loadCustomLevelFromStorage() {
+          try {
+            const raw = localStorage.getItem("tanks.customLevelPayload.v1");
+            if (!raw) return;
+            const payload = JSON.parse(raw);
+            setLoadedCustomLevel(payload);
+          } catch {}
+        }
+
+        function startNewMatchFromWelcome(cfg) {
+          applyMatchConfig(cfg);
+          state.customLevelEnvOverride = null;
+
+          if (state.mode === "custom") {
+            const payload = loadedCustomLevel || (() => {
+              try {
+                const raw = localStorage.getItem("tanks.customLevelPayload.v1");
+                return raw ? JSON.parse(raw) : null;
+              } catch {
+                return null;
+              }
+            })();
+
+            if (!payload) {
+              updateStatus("Custom mode selected. Import a `.tanklevel.json` first.");
+              setMenuOpen(true);
+              return;
+            }
+            const lvl = payload.level || payload;
+            state.customLevelsBySlot = { 1: lvl };
+            state.customLevelEnvOverride = levelEnvironmentFromPayload(lvl);
+            state.level = 1;
+            state.rounds = 1;
+          } else {
+            state.level = 1;
+            state.rounds = 1;
+          }
+
+          state.score = 0;
+          state.turn = "player";
+          state.activeProjectile = null;
+          state.airBombs = [];
+          state.bomberActive = null;
+          state.bomberTurnPendingEnd = false;
+
+          state.firstMatchStarted = true;
+          state.lockInput = false;
+          resetLevel(true);
+          document.getElementById("callFlareBtn").style.display = state.night.enabled ? "inline-block" : "none";
+          setWelcomeOpen(false);
+          setMenuOpen(false);
+        }
+
+        function loadSelectedShotProfile() {
+          const key = shotKindProfileSelect.value;
+          const tune = weaponTuning[key] || { damageScale: 100, radiusScale: 100 };
+          const dmg = Math.round(Number(tune.damageScale || 100));
+          const blast = Math.round(Number(tune.radiusScale || 100));
+          if (damage100Btn) damage100Btn.textContent = `Damage ${dmg}%`;
+          if (blast100Btn) blast100Btn.textContent = `Blast ${blast}%`;
+        }
+
+        function getTunedWeapon(weapon) {
+          const base = weapon || weapons[0];
+          const tune = weaponTuning[base.key] || { damageScale: 100, radiusScale: 100 };
+          return {
+            ...base,
+            damage: Number(base.damage) * (Number(tune.damageScale) / 100),
+            radius: Number(base.radius) * (Number(tune.radiusScale) / 100)
+          };
+        }
+
+        function terrainHeightAt(x) {
+          const i = Math.max(0, Math.min(world.width - 1, Math.round(x)));
+          return state.terrain[i] || world.floorMax;
+        }
+
+        function generateTerrain() {
+          state.terrain = new Array(world.width);
+          const seed = Math.random() * 9000;
+          let ridgeShift = 0;
+          let cliffBias = 0;
+          for (let x = 0; x < world.width; x += 1) {
+            const n1 = Math.sin((x + seed) / 110) * 44;
+            const n2 = Math.sin((x + seed * 0.41) / 53) * 12;
+            const n3 = Math.sin((x + seed * 0.83) / 250) * 63;
+            if (x % 80 === 0) ridgeShift += (Math.random() * 2 - 1) * 18;
+            if (x % 210 === 0) cliffBias += (Math.random() > 0.5 ? 1 : -1) * (24 + Math.random() * 38);
+            cliffBias *= 0.997;
+            let h = world.floorMax - 180 + n1 + n2 + n3 + ridgeShift + cliffBias;
+            if (state.level > 8) h -= Math.sin((x + seed) / 28) * 16;
+            h = Math.max(world.floorMin, Math.min(world.floorMax, h));
+            state.terrain[x] = h;
+          }
+          generateMountainBackdrop(seed);
+        }
+
+        function generateMountainBackdrop(seed) {
+          state.mountainsFar = [];
+          state.mountainsNear = [];
+          for (let x = -120; x < world.width + 220; x += 70) {
+            const h = 120 + Math.abs(Math.sin((x + seed) * 0.009)) * 120 + Math.random() * 55;
+            state.mountainsFar.push({ x, w: 190 + Math.random() * 120, h });
+          }
+          for (let x = -90; x < world.width + 180; x += 56) {
+            const h = 80 + Math.abs(Math.sin((x + seed) * 0.014)) * 98 + Math.random() * 46;
+            state.mountainsNear.push({ x, w: 120 + Math.random() * 90, h });
+          }
+        }
+
+        function imageBaseFacesRight(imageKey) {
+          return !!baseFacingRightByImage[imageKey];
+        }
+
+        function resolveTankSize(imgKey) {
+          const img = images.get(imgKey);
+          const base = img ? img.width / img.height : 2.5;
+          const width = 122;
+          const height = width / base;
+          return { width, height };
+        }
+
+        function createTank(side, imgKey, hp) {
+          const size = resolveTankSize(imgKey);
+          const x = side === "left" ? 170 : world.width - 170;
+          const groundSink = size.height * 0.14;
+          const y = terrainHeightAt(x) - size.height / 2 + groundSink;
+          return {
+            side,
+            x,
+            y,
+            vx: 0,
+            vy: 0,
+            angle: side === "left" ? 45 : 135,
+            power: 63,
+            hp,
+            maxHp: hp,
+            imageKey: imgKey,
+            width: size.width,
+            height: size.height,
+            groundSink,
+            moveLeft: -26,
+            moveRight: 26,
+            moveTargetX: x,
+            moveDir: 0,
+            moving: false,
+            renderFacing: 1,
+            worldFacingDir: side === "left" ? 1 : -1
+          };
+        }
+
+        function resetLevel(fullReset) {
+          if (fullReset) {
+            state.level = 1;
+            state.rounds = 1;
+            state.score = 0;
+          }
+          state.difficulty = difficultySelect.value;
+          state.turn = "player";
+          state.activeProjectile = null;
+          state.particles = [];
+          state.craters = [];
+          state.airBombs = [];
+          state.bomberActive = null;
+          state.bomberTurnPendingEnd = false;
+          state.airBomberCharges = Math.min(3, 1 + Math.floor((state.level - 1) / 4));
+          state.preMoveUsed = false;
+          state.preMoveAllowance = 0;
+          state.lockInput = false;
+
+          generateTerrain();
+          state.levelDecor = [];
+          const custom = state.endlessAutoLevels ? null : state.customLevelsBySlot[state.level];
+          let heroX = 170;
+          let enemyX = world.width - 170;
+          if (custom) {
+            if (Array.isArray(custom.terrain) && custom.terrain.length >= world.width * 0.6) {
+              state.terrain = custom.terrain.slice(0, world.width).map((n) => Math.max(world.floorMin, Math.min(world.height - 20, Number(n || world.floorMax))));
+              while (state.terrain.length < world.width) { state.terrain.push(state.terrain[state.terrain.length - 1]); }
+            }
+            heroX = Number(custom.heroSpawn?.x || heroX);
+            enemyX = Number(custom.enemySpawn?.x || enemyX);
+            state.levelDecor = Array.isArray(custom.entities) ? custom.entities : [];
+          }
+
+          const envFromLevel = custom ? levelEnvironmentFromPayload(custom) : null;
+          const envOverride = state.customLevelEnvOverride || envFromLevel;
+          if (envOverride) applyEnvironmentOverrides(envOverride);
+          if (!state.night.enabled) {
+            state.flares = [];
+            state.flarePlane = null;
+            state.lights = [];
+            state.flareCharges = 0;
+            state.flaresUsed = 0;
+            state.missStreak = 0;
+          }
+          const hpScale = 100 + (state.level - 1) * 7;
+          state.player = createTank("left", playerTankSelect.value, hpScale);
+          state.enemy = createTank("right", enemyTankSelect.value, hpScale + 10 + Math.floor(state.level * 2.2));
+          state.player.x = Math.max(40, Math.min(world.width - 40, heroX));
+          state.enemy.x = Math.max(40, Math.min(world.width - 40, enemyX));
+          state.player.y = terrainHeightAt(state.player.x) - state.player.height / 2 + Number(state.player.groundSink || 0);
+          state.enemy.y = terrainHeightAt(state.enemy.x) - state.enemy.height / 2 + Number(state.enemy.groundSink || 0);
+          refreshWeaponMenu();
+          updateHud();
+          updateStatus(`Level ${state.level} ready. ${state.turn === "player" ? "Your turn." : "Enemy turn."}`);
+
+          if (state.level === 1 && state.tutorialOn && !state.firstMatchStarted) {
+            state.tutorialStep = 0;
+            showTutorialStep();
+          } else {
+            hideTutorial();
+          }
+        }
+
+        function updateHud() {
+          hud.level.textContent = state.endlessAutoLevels
+            ? `${state.level} / Endless`
+            : `${state.level} / ${state.totalLevels}`;
+          hud.round.textContent = String(state.rounds);
+          hud.turn.textContent = state.turn === "player" ? "Player" : "Enemy AI";
+          hud.hp.textContent = `${Math.max(0, Math.round(state.player.hp))} / ${Math.round(state.player.maxHp)}`;
+          hud.enemyHp.textContent = `${Math.max(0, Math.round(state.enemy.hp))} / ${Math.round(state.enemy.maxHp)}`;
+          hud.score.textContent = String(Math.round(state.score));
+          angleValue.textContent = String(angleInput.value);
+          powerValue.textContent = String(powerInput.value);
+        }
+
+        function updateStatus(text) {
+          statusLine.textContent = text;
+        }
+
+        function resolveBomberIfDone() {
+          if (!state.bomberTurnPendingEnd) return;
+          if (state.bomberActive) return;
+          if (state.airBombs.length > 0) return;
+          state.bomberTurnPendingEnd = false;
+          endTurn();
+        }
+
+        function setMenuOpen(open) {
+          mainSidebar.classList.toggle("open", open);
+          menuBackdrop.classList.toggle("open", open);
+        }
+
+        function ensureGrounded(tank) {
+          updateTankMovement(tank);
+          const wheelSpan = Math.max(20, tank.width * 0.34);
+          const groundLeft = terrainHeightAt(tank.x - wheelSpan);
+          const groundMid = terrainHeightAt(tank.x);
+          const groundRight = terrainHeightAt(tank.x + wheelSpan);
+          const groundSurface = Math.min(groundLeft, groundMid, groundRight);
+          const ground = groundSurface - tank.height / 2 + Number(tank.groundSink || 0);
+          if (tank.y < ground - 1) {
+            tank.vy += gravity;
+            tank.y += tank.vy;
+          } else {
+            tank.y = ground;
+            tank.vy = 0;
+          }
+        }
+
+        function updateTankMovement(tank) {
+          if (!tank.moving) return;
+          const dx = tank.moveTargetX - tank.x;
+          if (Math.abs(dx) <= 0.7) {
+            tank.x = tank.moveTargetX;
+            tank.moving = false;
+            tank.moveDir = 0;
+            return;
+          }
+          const step = Math.sign(dx) * Math.min(2.8, Math.abs(dx));
+          tank.x += step;
+          tank.moveDir = Math.sign(step);
+        }
+
+        function updateTankFacing(tank, target) {
+          const towardEnemy = target.x >= tank.x ? 1 : -1;
+          const worldDir = towardEnemy;
+          tank.worldFacingDir = worldDir;
+          const baseSign = imageBaseFacesRight(tank.imageKey) ? 1 : -1;
+          tank.renderFacing = baseSign * worldDir;
+        }
+
+        function drawTerrain() {
+          drawBackdropMountains();
+          ctx.beginPath();
+          ctx.moveTo(0, world.height);
+          for (let x = 0; x < world.width; x += 1) {
+            ctx.lineTo(x, state.terrain[x]);
+          }
+          ctx.lineTo(world.width, world.height);
+          ctx.closePath();
+          const grad = ctx.createLinearGradient(0, world.floorMin, 0, world.height);
+          grad.addColorStop(0, "#6c4a21");
+          grad.addColorStop(0.55, "#5a3a17");
+          grad.addColorStop(1, "#2f1d0f");
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.strokeStyle = "rgba(209,154,90,0.22)";
+          for (let x = 0; x < world.width; x += 9) {
+            const top = state.terrain[x];
+            ctx.beginPath();
+            ctx.moveTo(x, top);
+            ctx.lineTo(x + 7, top + 6);
+            ctx.stroke();
+          }
+
+          ctx.strokeStyle = "rgba(18,8,2,0.45)";
+          for (let y = world.floorMin + 15; y < world.height; y += 18) {
+            ctx.beginPath();
+            for (let x = 0; x < world.width; x += 14) {
+              const groundY = state.terrain[x];
+              if (y > groundY + 8) {
+                const wave = Math.sin((x + y) * 0.03) * 3;
+                if (x === 0) ctx.moveTo(x, y + wave);
+                else ctx.lineTo(x, y + wave);
+              }
+            }
+            ctx.stroke();
+          }
+        }
+
+        function drawDecorEntities() {
+          state.levelDecor.forEach((e) => {
+            const x = Number(e.x || 0);
+            const img = ensureImageLoaded(e.file || `${e.key || ""}.webp`);
+            const scale = Number(e.scale || 1);
+            const baseW = (img && img.complete && img.naturalWidth > 0 ? img.naturalWidth : 140) * 0.22 * scale;
+            const baseH = (img && img.complete && img.naturalHeight > 0 ? img.naturalHeight : 90) * 0.22 * scale;
+            const autoGroundLock = /tank|vehicle|scifi_vehicle/i.test(`${e.key || ""} ${e.file || ""}`);
+            const groundLock = e.groundLock !== undefined ? !!e.groundLock : autoGroundLock;
+            const groundClearance = Number(e.groundClearance || 0);
+            const y = groundLock
+              ? terrainHeightAt(x) - baseH / 2 - groundClearance
+              : terrainHeightAt(x) - Number(e.offsetY || 45);
+            const rotation = Number(e.rotation || 0) * Math.PI / 180;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            if (img && img.complete) {
+              ctx.drawImage(img, -baseW / 2, -baseH / 2, baseW, baseH);
+            } else {
+              ctx.fillStyle = e.isEnemy ? "rgba(176,66,66,0.7)" : "rgba(63,122,186,0.7)";
+              ctx.fillRect(-baseW / 2, -baseH / 2, baseW, baseH);
+            }
+            ctx.restore();
+          });
+        }
+
+        function drawBackdropMountains() {
+          const farColor = "rgba(43, 66, 95, 0.42)";
+          const nearColor = "rgba(66, 92, 126, 0.5)";
+          state.mountainsFar.forEach((m) => {
+            ctx.beginPath();
+            ctx.moveTo(m.x, world.floorMin + 80);
+            ctx.lineTo(m.x + m.w * 0.5, world.floorMin + 80 - m.h);
+            ctx.lineTo(m.x + m.w, world.floorMin + 80);
+            ctx.closePath();
+            ctx.fillStyle = farColor;
+            ctx.fill();
+          });
+          state.mountainsNear.forEach((m) => {
+            ctx.beginPath();
+            ctx.moveTo(m.x, world.floorMin + 124);
+            ctx.lineTo(m.x + m.w * 0.46, world.floorMin + 124 - m.h);
+            ctx.lineTo(m.x + m.w, world.floorMin + 124);
+            ctx.closePath();
+            ctx.fillStyle = nearColor;
+            ctx.fill();
+          });
+        }
+
+        function drawTank(tank) {
+          const img = images.get(tank.imageKey);
+          const left = tank.x - tank.width / 2;
+          const top = tank.y - tank.height / 2;
+          if (img) {
+            ctx.save();
+            ctx.translate(tank.x, tank.y);
+            ctx.scale(tank.renderFacing, 1);
+            ctx.drawImage(img, -tank.width / 2, -tank.height / 2, tank.width, tank.height);
+            ctx.restore();
+          } else {
+            ctx.fillStyle = tank.side === "right" ? "#7a1010" : "#13608f";
+            ctx.fillRect(left, top, tank.width, tank.height);
+          }
+
+          const barW = Math.max(56, tank.width * 0.7);
+          const hpPct = Math.max(0, Math.min(1, tank.hp / tank.maxHp));
+          ctx.fillStyle = "rgba(0,0,0,0.65)";
+          ctx.fillRect(tank.x - barW / 2, top - 14, barW, 8);
+          ctx.fillStyle = hpPct > 0.5 ? "#49d16a" : hpPct > 0.25 ? "#ffbe45" : "#ff4a4a";
+          ctx.fillRect(tank.x - barW / 2, top - 14, barW * hpPct, 8);
+        }
+
+        function drawAimGuide() {
+          const lenMultiplier = guides[state.difficulty] || 0;
+          if (!lenMultiplier || state.turn !== "player" || state.activeProjectile) return;
+          const tank = state.player;
+          const angle = Number(angleInput.value) * Math.PI / 180;
+          const facing = tank.worldFacingDir;
+          const speed = Number(powerInput.value) * 0.18;
+          const start = getMuzzle(tank);
+          ctx.save();
+          ctx.setLineDash([4, 7]);
+          ctx.strokeStyle = "rgba(255,255,255,0.55)";
+          ctx.beginPath();
+          ctx.moveTo(start.x, start.y);
+          let px = start.x;
+          let py = start.y;
+          let vx = Math.cos(angle) * speed * facing;
+          let vy = -Math.sin(angle) * speed;
+          const max = 180 * lenMultiplier;
+          for (let i = 0; i < max; i += 1) {
+            vx += 0;
+            vy += gravity * 0.12;
+            px += vx;
+            py += vy;
+            ctx.lineTo(px, py);
+            if (px < 0 || px >= world.width || py >= world.height) break;
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        function getMuzzle(tank) {
+          const offsetX = tank.width * 0.41 * tank.worldFacingDir;
+          const offsetY = -tank.height * 0.12;
+          return { x: tank.x + offsetX, y: tank.y + offsetY };
+        }
+
+        function launchShot(fromTank, weaponKey, angleDeg, powerPct, forcedDir) {
+          const baseWeapon = weapons.find((w) => w.key === weaponKey) || weapons[0];
+          const weapon = getTunedWeapon(baseWeapon);
+          const clampedArc = Math.max(5, Math.min(85, angleDeg));
+          const angle = clampedArc * Math.PI / 180;
+          const speed = weapon.speed * (powerPct / 60);
+          const muzzle = getMuzzle(fromTank);
+          const shotDir = forcedDir || fromTank.worldFacingDir || 1;
+          state.activeProjectile = {
+            x: muzzle.x,
+            y: muzzle.y,
+            vx: Math.cos(angle) * speed * shotDir,
+            vy: -Math.sin(angle) * speed,
+            weapon
+          };
+        }
+
+        function explode(x, y, weapon, source) {
+          const radius = weapon.radius;
+          const centerY = Math.min(world.height - 1, Math.max(0, y));
+          state.craters.push({ x, y: centerY, radius, life: 26, color: weapon.color });
+
+          for (let ix = Math.max(0, Math.floor(x - radius)); ix < Math.min(world.width, Math.ceil(x + radius)); ix += 1) {
+            const dx = ix - x;
+            const inside = radius * radius - dx * dx;
+            if (inside <= 0) continue;
+            const cut = Math.sqrt(inside) * 0.88;
+            const newHeight = Math.min(world.height, centerY + cut);
+            if (state.terrain[ix] < newHeight) {
+              state.terrain[ix] = newHeight;
+            }
+          }
+
+          const hitTargets = [state.player, state.enemy];
+          let hitEnemy = false;
+          hitTargets.forEach((tank) => {
+            const hpBefore = tank.hp;
+            const dx = tank.x - x;
+            const dy = tank.y - y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= radius * 1.3) {
+              const falloff = Math.max(0.15, 1 - dist / (radius * 1.3));
+              let dmg = weapon.damage * falloff;
+              if (weapon.piercing && dist < radius * 0.65) dmg *= 1.28;
+              tank.hp -= dmg;
+              if (tank.side !== source) state.score += Math.round(dmg * 1.8);
+              if (tank.side === source) state.score -= Math.round(dmg * 0.8);
+            }
+            if (tank === state.enemy && source === "left" && tank.hp < hpBefore - 0.5) hitEnemy = true;
+          });
+
+          if (state.night.enabled) {
+            state.lights.push({
+              x,
+              y: centerY,
+              radius: Math.max(state.night.shotLightRadius * 0.7, radius * 2.1),
+              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.9) + 0.1, 0.2, 1),
+              feather: 0.72,
+              life: 22
+            });
+          }
+
+          if (source === "left") {
+            if (hitEnemy) {
+              state.missStreak = 0;
+              state.enemySpotted = true;
+            } else {
+              state.missStreak += 1;
+              if (state.night.enabled && state.flaresUsed < state.night.flareMax && state.missStreak >= state.night.flareAfterMisses) {
+                state.missStreak = 0;
+                state.flareCharges += 1;
+                updateStatus("Flare available. Use Drop Flare to illuminate an area.");
+              }
+            }
+          }
+
+          for (let i = 0; i < 42; i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const s = Math.random() * 4 + 1;
+            state.particles.push({
+              x,
+              y,
+              vx: Math.cos(a) * s,
+              vy: Math.sin(a) * s - 2.2,
+              life: 24 + Math.random() * 20,
+              color: i % 3 ? weapon.color : weapon.trail
+            });
+          }
+
+          if (weapon.cluster) {
+            for (let i = 0; i < weapon.cluster; i += 1) {
+              const ox = x + (Math.random() - 0.5) * radius * 1.8;
+              const oy = y + (Math.random() - 0.5) * radius * 0.8;
+              explodeMini(ox, oy, weapon);
+            }
+          }
+        }
+
+        function explodeMini(x, y, weapon) {
+          const r = Math.max(14, weapon.radius * 0.4);
+          for (let ix = Math.max(0, Math.floor(x - r)); ix < Math.min(world.width, Math.ceil(x + r)); ix += 1) {
+            const dx = ix - x;
+            const inside = r * r - dx * dx;
+            if (inside <= 0) continue;
+            const cut = Math.sqrt(inside) * 0.75;
+            const newHeight = Math.min(world.height, y + cut);
+            if (state.terrain[ix] < newHeight) state.terrain[ix] = newHeight;
+          }
+          for (let i = 0; i < 14; i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const s = Math.random() * 2 + 0.8;
+            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.1, life: 10 + Math.random() * 14, color: weapon.color });
+          }
+        }
+
+        function updateProjectile() {
+          const p = state.activeProjectile;
+          if (!p) return;
+          p.vy += gravity * 0.18;
+          p.vx += state.wind;
+          p.x += p.vx;
+          p.y += p.vy;
+
+          state.particles.push({ x: p.x, y: p.y, vx: 0, vy: 0, life: 7, color: p.weapon.trail });
+          if (state.night.enabled) {
+            state.lights.push({
+              x: p.x,
+              y: p.y,
+              radius: state.night.shotLightRadius,
+              intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85), 0.2, 1),
+              feather: 0.7,
+              life: 2
+            });
+          }
+
+          if (p.x < 0 || p.x >= world.width || p.y >= world.height) {
+            if (state.turn === "player" && state.night.enabled && state.flaresUsed < state.night.flareMax) {
+              state.missStreak += 1;
+              if (state.missStreak >= state.night.flareAfterMisses) {
+                state.missStreak = 0;
+                state.flareCharges += 1;
+                updateStatus("Flare available. Use Drop Flare to illuminate an area.");
+              }
+            }
+            state.activeProjectile = null;
+            endTurn();
+            return;
+          }
+
+          const terrainY = terrainHeightAt(p.x);
+          if (p.y >= terrainY) {
+            explode(p.x, terrainY, p.weapon, state.turn === "player" ? "left" : "right");
+            state.activeProjectile = null;
+            checkWinLose();
+            endTurn();
+          }
+        }
+
+        function updateParticles() {
+          for (let i = state.particles.length - 1; i >= 0; i -= 1) {
+            const p = state.particles[i];
+            p.life -= 1;
+            p.vy += 0.08;
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.life <= 0) state.particles.splice(i, 1);
+          }
+          for (let i = state.craters.length - 1; i >= 0; i -= 1) {
+            const c = state.craters[i];
+            c.life -= 1;
+            if (c.life <= 0) state.craters.splice(i, 1);
+          }
+        }
+
+        function drawProjectiles() {
+          if (state.activeProjectile) {
+            const p = state.activeProjectile;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = p.weapon.color;
+            ctx.fill();
+          }
+          state.particles.forEach((p) => {
+            ctx.globalAlpha = Math.max(0.2, p.life / 35);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 3, 3);
+            ctx.globalAlpha = 1;
+          });
+          state.craters.forEach((c) => {
+            ctx.globalAlpha = c.life / 35;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, c.radius * (1.15 - c.life / 60), 0, Math.PI * 2);
+            ctx.strokeStyle = c.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          });
+          state.airBombs.forEach((b) => {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffd25f";
+            ctx.fill();
+            ctx.strokeStyle = "#8f5c0d";
+            ctx.stroke();
+          });
+        }
+
+        function callAirBomber() {
+          if (state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (state.bomberActive || state.bomberTurnPendingEnd) {
+            updateStatus("Air bomber already in progress. Click the sky path to drop bombs.");
+            return;
+          }
+          const mode = state.airSupport.mode || "off";
+          if (mode === "off") {
+            updateStatus("Air bomber disabled for this match.");
+            return;
+          }
+          if (mode === "once" && state.airSupport.used >= 1) {
+            updateStatus("Air bomber already used this match.");
+            return;
+          }
+          if (mode === "every3" && (state.rounds - state.airSupport.lastRound) < 3) {
+            updateStatus("Air bomber recharging (every 3 rounds).");
+            return;
+          }
+          if (mode === "every5" && (state.rounds - state.airSupport.lastRound) < 5) {
+            updateStatus("Air bomber recharging (every 5 rounds).");
+            return;
+          }
+          if (mode === "afterHit" && !state.enemySpotted) {
+            updateStatus("Air bomber unlocks after you land your first hit.");
+            return;
+          }
+          const dir = bomberDirectionSelect.value === "rtl" ? -1 : 1;
+          const startX = dir === 1 ? -90 : world.width + 90;
+          state.bomberActive = {
+            x: startX,
+            y: 124,
+            dir,
+            speed: 4.6,
+            dropsLeft: clamp(Number(state.airSupport.bombsPerCall || 3), 1, 6),
+            trace: []
+          };
+          state.airSupport.used += 1;
+          state.airSupport.lastRound = state.rounds;
+          state.bomberTurnPendingEnd = true;
+          updateStatus("Air bomber inbound. Click as it flies to drop bombs.");
+        }
+
+        function dropBomberPayload() {
+          const b = state.bomberActive;
+          if (!b || b.dropsLeft <= 0) return;
+          const bombBase = { key: "bomber", radius: 74, damage: 78, color: "#ff7643", trail: "#ffd8bf" };
+          const bombWeapon = getTunedWeapon(bombBase);
+          state.airBombs.push({
+            x: b.x,
+            y: b.y + 12,
+            vx: b.dir * 0.3,
+            vy: 0.9,
+            weapon: bombWeapon
+          });
+          b.dropsLeft -= 1;
+          updateStatus("Bomber payload dropped.");
+        }
+
+        function callFlare() {
+          if (!state.night.enabled) {
+            updateStatus("Flares are available in Night Tanks.");
+            return;
+          }
+          if (state.flarePlane) {
+            updateStatus("Flare plane inbound. Click to drop the flare.");
+            return;
+          }
+          if (state.flareCharges <= 0) {
+            updateStatus("No flare charges yet. Miss a few shots to earn one.");
+            return;
+          }
+          if (state.flaresUsed >= state.night.flareMax) {
+            updateStatus("No more flares left for this match.");
+            return;
+          }
+          const dir = bomberDirectionSelect.value === "rtl" ? -1 : 1;
+          state.flarePlane = { x: dir === 1 ? -120 : world.width + 120, y: 72, vx: dir * 7.2 };
+          state.flareCharges -= 1;
+          state.flaresUsed += 1;
+          updateStatus("Flare plane inbound. Click to drop a flare.");
+        }
+
+        function updateBomberAndBombs() {
+          if (state.bomberActive) {
+            const b = state.bomberActive;
+            b.trace.push({ x: b.x, y: b.y });
+            if (b.trace.length > 80) b.trace.shift();
+            b.x += b.dir * b.speed;
+            if ((b.dir === 1 && b.x > world.width + 100) || (b.dir === -1 && b.x < -100)) {
+              state.bomberActive = null;
+            }
+          }
+
+          for (let i = state.airBombs.length - 1; i >= 0; i -= 1) {
+            const bomb = state.airBombs[i];
+            bomb.vy += gravity * 0.22;
+            bomb.x += bomb.vx;
+            bomb.y += bomb.vy;
+            if (bomb.x < 0 || bomb.x >= world.width || bomb.y >= world.height) {
+              state.airBombs.splice(i, 1);
+              continue;
+            }
+            const ty = terrainHeightAt(bomb.x);
+            if (bomb.y >= ty) {
+              explode(bomb.x, ty, bomb.weapon, "left");
+              state.airBombs.splice(i, 1);
+              checkWinLose();
+            }
+          }
+          resolveBomberIfDone();
+        }
+
+        function drawBomber() {
+          const b = state.bomberActive;
+          if (!b) return;
+          if (b.trace.length > 1) {
+            ctx.save();
+            ctx.setLineDash([5, 7]);
+            ctx.strokeStyle = "rgba(255,208,120,0.65)";
+            ctx.beginPath();
+            ctx.moveTo(b.trace[0].x, b.trace[0].y);
+            for (let i = 1; i < b.trace.length; i += 1) {
+              ctx.lineTo(b.trace[i].x, b.trace[i].y);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          if (b.dir === -1) ctx.scale(-1, 1);
+          ctx.fillStyle = "#d2e9ff";
+          ctx.fillRect(-26, -6, 52, 12);
+          ctx.fillStyle = "#9bb8d8";
+          ctx.fillRect(-16, -14, 28, 8);
+          ctx.fillStyle = "#ff9440";
+          ctx.fillRect(-8, 5, 16, 3);
+          ctx.restore();
+        }
+
+        function drawFlarePlane() {
+          const p = state.flarePlane;
+          if (!p) return;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          if (p.vx < 0) ctx.scale(-1, 1);
+          ctx.fillStyle = "rgba(210, 233, 255, 0.9)";
+          ctx.fillRect(-20, -4, 40, 8);
+          ctx.fillStyle = "rgba(155, 184, 216, 0.9)";
+          ctx.fillRect(-12, -10, 22, 6);
+          ctx.fillStyle = "rgba(255, 155, 60, 0.9)";
+          ctx.fillRect(-6, 4, 12, 2);
+          ctx.restore();
+        }
+
+        function checkWinLose() {
+          if (state.enemy.hp <= 0) {
+            state.level += 1;
+            state.rounds = 1;
+            state.score += 300 + state.level * 45;
+            updateStatus(`Enemy destroyed. Auto-generating level ${state.level}.`);
+            setTimeout(() => resetLevel(false), 950);
+            return true;
+          }
+          if (state.player.hp <= 0) {
+            updateStatus("You were destroyed. Retry level and adjust angle/power.");
+            state.lockInput = true;
+            return true;
+          }
+          return false;
+        }
+
+        function applyPreRoundMove() {
+          if (state.rounds % 3 !== 0 || state.preMoveUsed) return;
+          state.preMoveAllowance = 1;
+          updateStatus("Pre-round drift move ready. You may move one short step left or right.");
+        }
+
+        function moveTankShortStep(direction) {
+          if (state.turn !== "player" || state.preMoveAllowance <= 0 || state.activeProjectile) return;
+          const shift = direction === "left" ? state.player.moveLeft : state.player.moveRight;
+          state.player.moveTargetX = Math.max(50, Math.min(world.width - 50, state.player.x + shift));
+          state.player.moving = true;
+          state.player.moveDir = direction === "left" ? -1 : 1;
+          state.preMoveAllowance -= 1;
+          state.preMoveUsed = true;
+          updateStatus("Pre-round move applied.");
+        }
+
+        function endTurn() {
+          if (state.lockInput) return;
+          if (state.turn === "player") {
+            if (state.bomberTurnPendingEnd) return;
+            state.turn = "enemy";
+            updateHud();
+            setTimeout(aiTakeTurn, 700);
+          } else {
+            state.turn = "player";
+            state.rounds += 1;
+            state.preMoveUsed = false;
+            applyPreRoundMove();
+            if (state.rounds % 4 === 0) {
+              state.airBomberCharges = Math.min(3, state.airBomberCharges + 1);
+            }
+            updateHud();
+            updateStatus("Your turn.");
+          }
+        }
+
+        function aiTakeTurn() {
+          if (state.lockInput || state.activeProjectile || state.turn !== "enemy") return;
+          const profile = aiProfiles[state.difficulty];
+          const dx = state.player.x - state.enemy.x;
+          const dy = state.player.y - state.enemy.y;
+          const aiDir = dx >= 0 ? 1 : -1;
+          state.enemy.worldFacingDir = aiDir;
+          const baseSign = imageBaseFacesRight(state.enemy.imageKey) ? 1 : -1;
+          state.enemy.renderFacing = baseSign * aiDir;
+          const distance = Math.max(140, Math.abs(dx));
+          const levelBuff = Math.max(0, (state.level - 1) * 0.35);
+          const angleBase = 50;
+          const error = Math.max(0.8, profile.baseError - levelBuff) * (Math.random() * 2 - 1);
+          const powerError = Math.max(0.7, profile.powerError - levelBuff * 0.6) * (Math.random() * 2 - 1);
+
+          let guessPower = 42 + (distance / world.width) * 42 + Math.abs(dy) * profile.lead;
+          guessPower = Math.max(25, Math.min(98, guessPower + powerError));
+          const aiAngle = Math.max(8, Math.min(85, angleBase + error));
+
+          const unlocked = weapons.filter((w) => state.level >= w.unlock);
+          const best = unlocked[Math.min(unlocked.length - 1, Math.floor((state.level - 1) / 3))];
+          launchShot(state.enemy, best.key, aiAngle, guessPower, aiDir);
+          updateStatus(`${tankTitles[state.enemy.imageKey] || "Enemy"} fired ${best.name}.`);
+          updateHud();
+        }
+
+        function firePlayer() {
+          if (state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          const chosen = weapons.find((w) => w.key === weaponSelect.value);
+          if (!chosen || state.level < chosen.unlock) {
+            updateStatus("That weapon is not unlocked yet.");
+            return;
+          }
+          launchShot(state.player, chosen.key, Number(angleInput.value), Number(powerInput.value));
+          updateStatus(`${playerNameInput.value || "Player"} fired ${chosen.name}.`);
+        }
+
+        function drawSky() {
+          const levelTint = Math.min(0.35, state.level * 0.015);
+          const g = ctx.createLinearGradient(0, 0, 0, world.height * 0.6);
+          g.addColorStop(0, `rgba(${12 + state.level * 3}, ${36 + state.level * 2}, ${70 + state.level * 2}, 0.95)`);
+          g.addColorStop(1, `rgba(8, 18, 32, ${0.8 + levelTint})`);
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, world.width, world.height);
+          for (let i = 0; i < 45; i += 1) {
+            const sx = (i * 123 + state.level * 77) % world.width;
+            const sy = (i * 81 + 30) % 220;
+            ctx.fillStyle = `rgba(255,255,255,${0.2 + (i % 3) * 0.12})`;
+            ctx.fillRect(sx, sy, 2, 2);
+          }
+        }
+
+        function render() {
+          drawSky();
+          drawTerrain();
+          drawDecorEntities();
+          ensureGrounded(state.player);
+          ensureGrounded(state.enemy);
+          updateTankFacing(state.player, state.enemy);
+          updateTankFacing(state.enemy, state.player);
+          drawTank(state.player);
+          drawTank(state.enemy);
+          drawAimGuide();
+          updateProjectile();
+          updateBomberAndBombs();
+          updateFlarePlaneAndFlares();
+          updateParticles();
+          drawBomber();
+          drawFlarePlane();
+          drawProjectiles();
+          drawRain();
+          drawNightMask();
+          requestAnimationFrame(render);
+        }
+
+        function drawRain() {
+          if (!state.rain.enabled || state.rain.intensity <= 0) return;
+          const density = Math.round(30 + state.rain.intensity * 150);
+          if (state.rain.drops.length < density) {
+            for (let i = state.rain.drops.length; i < density; i += 1) {
+              state.rain.drops.push({
+                x: Math.random() * world.width,
+                y: Math.random() * world.height,
+                vy: 7 + Math.random() * 6,
+                vx: -1.2 + Math.random() * 0.5
+              });
+            }
+          }
+          ctx.save();
+          ctx.globalAlpha = 0.25 + state.rain.intensity * 0.35;
+          ctx.strokeStyle = "rgba(180,220,255,0.85)";
+          ctx.lineWidth = 1;
+          state.rain.drops.forEach((d) => {
+            d.x += d.vx + state.wind * 36;
+            d.y += d.vy;
+            if (d.y > world.height + 20 || d.x < -40 || d.x > world.width + 40) {
+              d.x = Math.random() * world.width;
+              d.y = -Math.random() * 120;
+            }
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(d.x + d.vx * 2, d.y + d.vy * 1.2);
+            ctx.stroke();
+          });
+          ctx.restore();
+        }
+
+        function drawNightMask() {
+          if (!state.night.enabled || state.night.darkness <= 0) return;
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.fillStyle = `rgba(0,0,0,${clamp(state.night.darkness, 0, 0.98)})`;
+          ctx.fillRect(0, 0, world.width, world.height);
+          ctx.globalCompositeOperation = "destination-out";
+
+          const lights = [];
+          state.lights.forEach((l) => { if (l.life > 0) lights.push(l); });
+          state.flares.forEach((f) => {
+            lights.push({ x: f.x, y: f.y, radius: f.radius, intensity: clamp(Number(f.intensity ?? state.night.flareIntensity ?? 0.95), 0.2, 1), feather: 0.78, life: 2 });
+          });
+          if (state.activeProjectile) {
+            lights.push({ x: state.activeProjectile.x, y: state.activeProjectile.y, radius: state.night.shotLightRadius, intensity: 0.9, feather: 0.7, life: 2 });
+          }
+
+          lights.forEach((l) => {
+            const r = clamp(Number(l.radius || 160), 24, 800);
+            const intensity = clamp(Number(l.intensity ?? 0.9), 0.05, 1);
+            const feather = clamp(Number(l.feather ?? 0.75), 0.2, 0.95);
+            const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, r);
+            const a0 = 0.92 * intensity;
+            g.addColorStop(0, `rgba(0,0,0,${a0})`);
+            g.addColorStop(clamp(1 - feather, 0.05, 0.9), `rgba(0,0,0,${a0 * 0.55})`);
+            g.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(l.x, l.y, r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          ctx.restore();
+        }
+
+        function updateFlarePlaneAndFlares() {
+          for (let i = state.lights.length - 1; i >= 0; i -= 1) {
+            const l = state.lights[i];
+            l.life -= 1;
+            if (l.life <= 0) state.lights.splice(i, 1);
+          }
+
+          if (state.flarePlane) {
+            const p = state.flarePlane;
+            p.x += p.vx;
+            if (p.x < -160 || p.x > world.width + 160) {
+              state.flarePlane = null;
+            }
+          }
+
+          for (let i = state.flares.length - 1; i >= 0; i -= 1) {
+            const f = state.flares[i];
+            f.vy = Math.min(4.2, f.vy + 0.03);
+            f.y += f.vy;
+            f.life -= 1;
+            if (f.y >= terrainHeightAt(f.x) - 6) {
+              f.y = terrainHeightAt(f.x) - 6;
+              f.vy = 0;
+            }
+            if (f.life <= 0) state.flares.splice(i, 1);
+          }
+        }
+
+        async function loadCustomLevels() {
+          state.customLevelsBySlot = {};
+          try {
+            const manifestRes = await fetch("./levels/level-manifest.json", { cache: "no-store" });
+            if (!manifestRes.ok) return;
+            const manifest = await manifestRes.json();
+            const levels = Array.isArray(manifest.levels) ? manifest.levels : [];
+            for (const item of levels) {
+              try {
+                if (!item?.file) continue;
+                const res = await fetch(`./levels/${item.file}`, { cache: "no-store" });
+                if (!res.ok) continue;
+                const payload = await res.json();
+                const lvl = payload.level || payload;
+                const slot = Number(item.slot || lvl.slot || 0);
+                if (slot >= 1 && slot <= 99) {
+                  state.customLevelsBySlot[slot] = lvl;
+                }
+              } catch {}
+            }
+          } catch {}
+        }
+
+        const tutorialSteps = [
+          "Welcome to Tanks and More Tank. First choose your Primary Tank and Enemy Tank in Match Setup.",
+          "Set Angle and Power, then press Fire. Easy mode shows a long dotted aiming helper.",
+          "Every few rounds you can move a short distance before firing. Use move controls in the bottom gauges.",
+          "Unlock better weapons as levels increase. Enemy destroys auto-generate the next level with new terrain."
+        ];
+
+        function showTutorialStep() {
+          const step = tutorialSteps[state.tutorialStep] || tutorialSteps[tutorialSteps.length - 1];
+          tutorialText.textContent = step;
+          tutorialOverlay.classList.add("active");
+          arrowHint.classList.add("active");
+          if (state.tutorialStep === 0) {
+            pointArrowAt("menuToggleBtn");
+          } else if (state.tutorialStep === 1) {
+            pointArrowAt("angleInput");
+          } else if (state.tutorialStep === 2) {
+            pointArrowAt("moveLeftBtn");
+          } else {
+            pointArrowAt("fireButton");
+          }
+        }
+
+        function hideTutorial() {
+          tutorialOverlay.classList.remove("active");
+          arrowHint.classList.remove("active");
+        }
+
+        function pointArrowAt(targetId) {
+          const el = document.getElementById(targetId);
+          if (!el) return;
+          const r = el.getBoundingClientRect();
+          const left = Math.max(8, r.left - 36);
+          const top = Math.max(8, r.top + Math.min(12, r.height * 0.35));
+          arrowHint.style.left = `${left}px`;
+          arrowHint.style.top = `${top}px`;
+        }
+
+        function bindUi() {
+          menuToggleBtn.addEventListener("click", () => setMenuOpen(true));
+          menuCloseBtn.addEventListener("click", () => setMenuOpen(false));
+          menuBackdrop.addEventListener("click", () => setMenuOpen(false));
+
+          document.querySelectorAll('input[name="gameMode"]').forEach((el) => {
+            el.addEventListener("change", () => {
+              syncWelcomeDetailsToMode();
+            });
+          });
+          welcomeCloseBtn.addEventListener("click", () => setWelcomeOpen(false));
+          welcomeDefaultsBtn.addEventListener("click", () => {
+            const auto = document.querySelector('input[name="gameMode"][value="auto"]');
+            if (auto) auto.checked = true;
+            syncWelcomeDetailsToMode();
+            startNewMatchFromWelcome(loadMatchConfigFromWelcome());
+          });
+          welcomeStartBtn.addEventListener("click", () => {
+            syncWelcomeDetailsToMode();
+            startNewMatchFromWelcome(loadMatchConfigFromWelcome());
+          });
+
+          heroPrevBtn.addEventListener("click", () => moveCarousel("hero", -1));
+          heroNextBtn.addEventListener("click", () => moveCarousel("hero", 1));
+          enemyPrevBtn.addEventListener("click", () => moveCarousel("enemy", -1));
+          enemyNextBtn.addEventListener("click", () => moveCarousel("enemy", 1));
+
+          playerTankSelect.addEventListener("change", () => {
+            const idx = imageKeys.indexOf(playerTankSelect.value);
+            if (idx >= 0) heroCarouselIndex = idx;
+            updateCarouselPreviews();
+          });
+          enemyTankSelect.addEventListener("change", () => {
+            const idx = imageKeys.indexOf(enemyTankSelect.value);
+            if (idx >= 0) enemyCarouselIndex = idx;
+            updateCarouselPreviews();
+          });
+
+          welcomeWindStrength.addEventListener("input", () => {
+            welcomeWindStrengthValue.textContent = String(welcomeWindStrength.value);
+          });
+          welcomeRainIntensity.addEventListener("input", () => {
+            welcomeRainIntensityValue.textContent = String(welcomeRainIntensity.value);
+          });
+          welcomeBomberBombs.addEventListener("input", () => {
+            welcomeBomberBombsValue.textContent = String(welcomeBomberBombs.value);
+          });
+          welcomeDarkness.addEventListener("input", () => {
+            welcomeDarknessValue.textContent = String(welcomeDarkness.value);
+          });
+          welcomeShotLightRadius.addEventListener("input", () => {
+            welcomeShotLightRadiusValue.textContent = String(welcomeShotLightRadius.value);
+          });
+          welcomeShotLightIntensity.addEventListener("input", () => {
+            welcomeShotLightIntensityValue.textContent = String(welcomeShotLightIntensity.value);
+          });
+          welcomeFlareAfterMisses.addEventListener("input", () => {
+            welcomeFlareAfterMissesValue.textContent = String(welcomeFlareAfterMisses.value);
+          });
+          welcomeFlareRadius.addEventListener("input", () => {
+            welcomeFlareRadiusValue.textContent = String(welcomeFlareRadius.value);
+          });
+          welcomeFlareIntensity.addEventListener("input", () => {
+            welcomeFlareIntensityValue.textContent = String(welcomeFlareIntensity.value);
+          });
+          welcomeFlareMax.addEventListener("input", () => {
+            welcomeFlareMaxValue.textContent = String(welcomeFlareMax.value);
+          });
+
+          welcomeImportBtn.addEventListener("click", () => welcomeImportFile.click());
+          welcomeImportFile.addEventListener("change", async () => {
+            const file = welcomeImportFile.files && welcomeImportFile.files[0];
+            if (!file) return;
+            try {
+              const text = await file.text();
+              const payload = JSON.parse(text);
+              setLoadedCustomLevel(payload);
+              updateStatus("Custom level loaded. Press Start Game.");
+            } catch {
+              setLoadedCustomLevel(null);
+              updateStatus("Could not read that file as JSON.");
+            }
+          });
+
+          angleInput.addEventListener("input", () => {
+            angleValue.textContent = String(angleInput.value);
+            state.player.angle = Number(angleInput.value);
+          });
+          powerInput.addEventListener("input", () => {
+            powerValue.textContent = String(powerInput.value);
+            state.player.power = Number(powerInput.value);
+          });
+          difficultySelect.addEventListener("change", () => {
+            state.difficulty = difficultySelect.value;
+            updateStatus(`Difficulty set to ${state.difficulty}.`);
+          });
+          document.getElementById("startButton").addEventListener("click", () => {
+            startNewMatchFromWelcome(loadMatchConfigFromWelcome());
+          });
+          document.getElementById("fireButton").addEventListener("click", firePlayer);
+          document.getElementById("callBomberBtn").addEventListener("click", callAirBomber);
+          document.getElementById("callFlareBtn").addEventListener("click", callFlare);
+          document.getElementById("nextTurnButton").addEventListener("click", () => {
+            if (!state.activeProjectile) endTurn();
+          });
+          document.getElementById("resetLevelButton").addEventListener("click", () => {
+            state.lockInput = false;
+            resetLevel(false);
+            setMenuOpen(false);
+          });
+          document.getElementById("tutorialButton").addEventListener("click", () => {
+            state.tutorialOn = !state.tutorialOn;
+            if (state.tutorialOn) {
+              state.tutorialStep = 0;
+              showTutorialStep();
+            } else {
+              hideTutorial();
+            }
+          });
+          document.getElementById("hintBtn").addEventListener("click", () => {
+            if (tutorialOverlay.classList.contains("active")) hideTutorial();
+            else showTutorialStep();
+          });
+          document.getElementById("moveLeftBtn").addEventListener("click", () => moveTankShortStep("left"));
+          document.getElementById("moveRightBtn").addEventListener("click", () => moveTankShortStep("right"));
+          shotKindProfileSelect.addEventListener("change", loadSelectedShotProfile);
+          damage100Btn.addEventListener("click", () => {
+            const key = shotKindProfileSelect.value;
+            weaponTuning[key].damageScale = 100;
+            loadSelectedShotProfile();
+            updateStatus("Damage set to 100%.");
+          });
+          blast100Btn.addEventListener("click", () => {
+            const key = shotKindProfileSelect.value;
+            weaponTuning[key].radiusScale = 100;
+            loadSelectedShotProfile();
+            updateStatus("Blast set to 100%.");
+          });
+          canvas.addEventListener("click", (ev) => {
+            if (state.bomberActive && state.turn === "player") {
+              dropBomberPayload();
+              return;
+            }
+            if (state.flarePlane && state.turn === "player") {
+              const r = canvas.getBoundingClientRect();
+              const x = clamp(((ev.clientX - r.left) / r.width) * world.width, 0, world.width);
+              state.flares.push({ x, y: state.flarePlane.y + 18, vy: 0.8, radius: state.night.flareRadius, intensity: state.night.flareIntensity, life: 900 });
+              state.flarePlane = null;
+              updateStatus("Flare dropped.");
+            }
+          });
+          tutorialNext.addEventListener("click", () => {
+            state.tutorialStep += 1;
+            if (state.tutorialStep >= tutorialSteps.length) {
+              hideTutorial();
+              return;
+            }
+            showTutorialStep();
+          });
+          tutorialSkip.addEventListener("click", () => {
+            state.tutorialOn = false;
+            hideTutorial();
+            updateStatus("Tutorial skipped. You can reopen from Show Help.");
+          });
+
+          window.addEventListener("keydown", (ev) => {
+            if (ev.code === "Space") {
+              ev.preventDefault();
+              firePlayer();
+            }
+            if (ev.code === "ArrowUp") {
+              angleInput.value = String(Math.min(85, Number(angleInput.value) + 1));
+              angleInput.dispatchEvent(new Event("input"));
+            }
+            if (ev.code === "ArrowDown") {
+              angleInput.value = String(Math.max(5, Number(angleInput.value) - 1));
+              angleInput.dispatchEvent(new Event("input"));
+            }
+            if (ev.code === "ArrowLeft") {
+              powerInput.value = String(Math.max(20, Number(powerInput.value) - 1));
+              powerInput.dispatchEvent(new Event("input"));
+            }
+            if (ev.code === "ArrowRight") {
+              powerInput.value = String(Math.min(100, Number(powerInput.value) + 1));
+              powerInput.dispatchEvent(new Event("input"));
+            }
+          });
+          window.addEventListener("resize", () => {
+            if (tutorialOverlay.classList.contains("active")) showTutorialStep();
+          });
+        }
+
+        loadImages().then(async () => {
+          await loadCustomLevels();
+          buildSelects();
+          bindUi();
+          loadSelectedShotProfile();
+          resetLevel(true);
+          render();
+
+          loadCustomLevelFromStorage();
+          heroCarouselIndex = Math.max(0, imageKeys.indexOf(playerTankSelect.value));
+          enemyCarouselIndex = Math.max(0, imageKeys.indexOf(enemyTankSelect.value));
+          updateCarouselPreviews();
+          syncWelcomeDetailsToMode();
+          welcomeWindStrengthValue.textContent = String(welcomeWindStrength.value);
+          welcomeRainIntensityValue.textContent = String(welcomeRainIntensity.value);
+          welcomeBomberBombsValue.textContent = String(welcomeBomberBombs.value);
+          welcomeDarknessValue.textContent = String(welcomeDarkness.value);
+          welcomeShotLightRadiusValue.textContent = String(welcomeShotLightRadius.value);
+          welcomeShotLightIntensityValue.textContent = String(welcomeShotLightIntensity.value);
+          welcomeFlareAfterMissesValue.textContent = String(welcomeFlareAfterMisses.value);
+          welcomeFlareRadiusValue.textContent = String(welcomeFlareRadius.value);
+          welcomeFlareIntensityValue.textContent = String(welcomeFlareIntensity.value);
+          welcomeFlareMaxValue.textContent = String(welcomeFlareMax.value);
+          document.getElementById("callFlareBtn").style.display = "none";
+          setWelcomeOpen(true);
+        });
+      })();
+    </script>
+  </body>
+</html>
