@@ -1804,9 +1804,50 @@
           }
         }
 
+        function tankAabb(tank) {
+          return {
+            left: tank.x - tank.width / 2,
+            right: tank.x + tank.width / 2,
+            top: tank.y - tank.height / 2,
+            bottom: tank.y + tank.height / 2
+          };
+        }
+
+        function segmentHitsAabb(x0, y0, x1, y1, rect) {
+          let t0 = 0;
+          let t1 = 1;
+          const dx = x1 - x0;
+          const dy = y1 - y0;
+
+          function clip(p, q) {
+            if (p === 0) return q >= 0;
+            const r = q / p;
+            if (p < 0) {
+              if (r > t1) return false;
+              if (r > t0) t0 = r;
+            } else {
+              if (r < t0) return false;
+              if (r < t1) t1 = r;
+            }
+            return true;
+          }
+
+          if (
+            clip(-dx, x0 - rect.left)
+            && clip(dx, rect.right - x0)
+            && clip(-dy, y0 - rect.top)
+            && clip(dy, rect.bottom - y0)
+          ) {
+            return t0;
+          }
+          return null;
+        }
+
         function updateProjectile() {
           const p = state.activeProjectile;
           if (!p) return;
+          const prevX = p.x;
+          const prevY = p.y;
           p.vy += gravity * 0.18;
           p.vx += state.wind;
           p.x += p.vx;
@@ -1822,6 +1863,22 @@
               feather: 0.7,
               life: 2
             });
+          }
+
+          const shooterSide = state.turn === "player" ? "left" : "right";
+          const targetTank = shooterSide === "left" ? state.enemy : state.player;
+          const hitT = segmentHitsAabb(prevX, prevY, p.x, p.y, tankAabb(targetTank));
+          if (hitT !== null) {
+            const dx = p.x - prevX;
+            const dy = p.y - prevY;
+            const nudge = 0.02;
+            const hitX = prevX + dx * Math.min(1, hitT + nudge);
+            const hitY = prevY + dy * Math.min(1, hitT + nudge);
+            explode(hitX, hitY, p.weapon, shooterSide);
+            state.activeProjectile = null;
+            checkWinLose();
+            endTurn();
+            return;
           }
 
           if (p.x < 0 || p.x >= world.width || p.y >= world.height) {
