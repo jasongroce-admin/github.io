@@ -1,0 +1,942 @@
+﻿{
+    "version":  1,
+    "updatedAt":  "2026-04-23T07:02:32",
+    "assets":  [
+                   {
+                       "key":  "scifi_alien_base_792x276",
+                       "file":  "scifi_alien_base_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi alien base 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_alien_firebasewithufos",
+                       "file":  "scifi_alien_firebasewithufos.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi alien firebasewithufos",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_alien_plant",
+                       "file":  "scifi_alien_plant.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi alien plant",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_alien_tree",
+                       "file":  "scifi_alien_tree.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi alien tree",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet_crimson_wide_792x276",
+                       "file":  "scifi_background_alienplanet_crimson_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet crimson wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet_fierylava_wide_792x276",
+                       "file":  "scifi_background_alienplanet_fierylava_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet fierylava wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet_orangedesert_wide_792x276",
+                       "file":  "scifi_background_alienplanet_orangedesert_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet orangedesert wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet_purplered_wide_792x276",
+                       "file":  "scifi_background_alienplanet_purplered_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet purplered wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet_redvolcano_wide_792x276",
+                       "file":  "scifi_background_alienplanet_redvolcano_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet redvolcano wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet1_wide_792x276",
+                       "file":  "scifi_background_alienplanet1_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet1 wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_background_alienplanet3_wide_792x276",
+                       "file":  "scifi_background_alienplanet3_wide_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi background alienplanet3 wide 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_home_modular_ring_792x276",
+                       "file":  "scifi_home_modular_ring_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi home modular ring 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_920x416",
+                       "file":  "scifi_ufo_920x416.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo 920x416",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_beam_910x668",
+                       "file":  "scifi_ufo_beam_910x668.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo beam 910x668",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_large_cigar_459x145",
+                       "file":  "scifi_ufo_large_cigar_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo large cigar 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_medium_delta_459x145",
+                       "file":  "scifi_ufo_medium_delta_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo medium delta 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_mothership_792x276",
+                       "file":  "scifi_ufo_mothership_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo mothership 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_ufo_small_saucer_459x145",
+                       "file":  "scifi_ufo_small_saucer_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi ufo small saucer 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_armoredtransport_459x145",
+                       "file":  "scifi_vehicle_armoredtransport_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle armoredtransport 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_cargohauler_792x276",
+                       "file":  "scifi_vehicle_cargohauler_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle cargohauler 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_fighter_459x145",
+                       "file":  "scifi_vehicle_fighter_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle fighter 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_flyingpod_459x145",
+                       "file":  "scifi_vehicle_flyingpod_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle flyingpod 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_hoverbike_459x145",
+                       "file":  "scifi_vehicle_hoverbike_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle hoverbike 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_hovercar_compact_459x145",
+                       "file":  "scifi_vehicle_hovercar_compact_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle hovercar compact 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_mechwarrior_heavy_792x276",
+                       "file":  "scifi_vehicle_mechwarrior_heavy_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle mechwarrior heavy 792x276",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "scifi_vehicle_mechwarrior_light_459x145",
+                       "file":  "scifi_vehicle_mechwarrior_light_459x145.webp",
+                       "title":  "$args[0].Value.ToUpper()cifi vehicle mechwarrior light 459x145",
+                       "category":  "scifi",
+                       "tags":  [
+                                    "scifi"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicle_boro_tanker_685x289",
+                       "file":  "vehicle_boro_tanker_685x289.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicle boro tanker 685x289",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicle_boro_tanker_rightside_685x289",
+                       "file":  "vehicle_boro_tanker_rightside_685x289.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicle boro tanker rightside 685x289",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicle_semi_tank_700x283",
+                       "file":  "vehicle_semi_tank_700x283.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicle semi tank 700x283",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicle_semi_tank_rightside_700x283",
+                       "file":  "vehicle_semi_tank_rightside_700x283.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicle semi tank rightside 700x283",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_tank_heavy_792x276",
+                       "file":  "vehicles_tank_heavy_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles tank heavy 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_tank_light_792x276",
+                       "file":  "vehicles_tank_light_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles tank light 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_tank_wrecked_792x276",
+                       "file":  "vehicles_tank_wrecked_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles tank wrecked 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_assault_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_assault_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic assault 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_command_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_command_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic command 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_hover1_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_hover1_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic hover1 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_mechhybrid_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_mechhybrid_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic mechhybrid 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "vehicles_vehicle_tank_futuristic_recon_792x276",
+                       "file":  "vehicles_vehicle_tank_futuristic_recon_792x276.webp",
+                       "title":  "$args[0].Value.ToUpper()ehicles vehicle tank futuristic recon 792x276",
+                       "category":  "vehicles",
+                       "tags":  [
+                                    "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   }
+               ]
+}

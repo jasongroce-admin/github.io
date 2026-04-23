@@ -25,7 +25,7 @@
       }
       .game-root {
         display: grid;
-        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+        grid-template-columns: 1fr;
         gap: 14px;
       }
       .panel {
@@ -33,8 +33,49 @@
         background: var(--panel-bg);
         padding: 12px;
       }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: min(330px, 92vw);
+        height: 100dvh;
+        overflow: auto;
+        z-index: 80;
+        transform: translateX(-104%);
+        transition: transform 180ms ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
       .sidebar h2, .sidebar h3 {
         margin: 0;
+      }
+      .sidebar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .menu-close {
+        border: 1px solid #3f6b96;
+        background: #10263c;
+        color: #fff;
+        width: 36px;
+        height: 36px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .menu-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 8, 15, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease;
+        z-index: 70;
+      }
+      .menu-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
       }
       .sidebar h2 {
         font-size: 1.12rem;
@@ -106,6 +147,60 @@
         flex-wrap: wrap;
         gap: 8px;
       }
+      .bottom-gauges {
+        border: 1px solid #29587e;
+        background: linear-gradient(180deg, rgba(5,15,26,0.95), rgba(8,21,37,0.95));
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+      .menu-launch {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 35;
+        border: 1px solid #3b6791;
+        background: linear-gradient(180deg, #1f5f9b, #16456f);
+        color: #fff;
+        min-height: 34px;
+        min-width: 88px;
+        font-weight: 700;
+      }
+      .gauge-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .gauge-cell {
+        border: 1px solid #2a4f74;
+        background: #0a1a2b;
+        padding: 6px 8px;
+        display: grid;
+        gap: 4px;
+      }
+      .gauge-cell label {
+        font-size: 0.76rem;
+        color: #9fc6eb;
+      }
+      .gauge-cell input, .gauge-cell select, .gauge-cell button {
+        width: 100%;
+      }
+      .gauge-cell input, .gauge-cell select {
+        border: 1px solid #3b6791;
+        background: #081523;
+        color: #fff;
+        min-height: 32px;
+      }
+      .gauge-cell button {
+        border: 1px solid #3b6791;
+        background: linear-gradient(180deg, #236db4, #184c7d);
+        color: #fff;
+        min-height: 34px;
+        font-weight: 700;
+      }
+      .gauge-cell button.alt {
+        background: linear-gradient(180deg, #c77010, #8a4d08);
+      }
       .game-wrap {
         position: relative;
         border: 1px solid #2f577f;
@@ -142,7 +237,7 @@
         font-size: 0.9rem;
       }
       .arrow-hint {
-        position: absolute;
+        position: fixed;
         font-size: 24px;
         color: #ffb74d;
         font-weight: 700;
@@ -166,11 +261,22 @@
         margin-top: 8px;
       }
       @media (max-width: 1200px) {
-        .game-root { grid-template-columns: 1fr; }
         .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       }
       @media (max-width: 800px) {
         .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gauge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .bottom-gauges {
+          position: sticky;
+          bottom: 0;
+          z-index: 50;
+        }
+      }
+      @media (max-width: 560px) {
+        .gauge-grid { grid-template-columns: 1fr; }
+        .sidebar .menu-grid {
+          grid-template-columns: 1fr 1fr;
+        }
       }
     </style>
   </head>
@@ -189,8 +295,11 @@
       </header>
 
       <section class="panel game-root">
-        <aside class="sidebar">
-          <h2>Tanks and More Tank</h2>
+        <aside class="sidebar" id="mainSidebar">
+          <div class="sidebar-head">
+            <h2>Tanks and More Tank</h2>
+            <button class="menu-close" id="menuCloseBtn" aria-label="Close menu">X</button>
+          </div>
           <div class="legend">Scorched-earth style artillery with 15 levels, evolving AI, and unlockable weapons.</div>
 
           <h3>Match Setup</h3>
@@ -217,31 +326,15 @@
             </div>
           </div>
 
-          <h3>Shot Control</h3>
-          <div class="menu-grid">
-            <div class="menu-row">
-              <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
-              <input id="angleInput" type="range" min="-5" max="185" step="1" value="45">
-            </div>
-            <div class="menu-row">
-              <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
-              <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
-            </div>
-            <div class="menu-row">
-              <label for="weaponSelect">Weapon</label>
-              <select id="weaponSelect"></select>
-            </div>
-          </div>
-
           <h3>Actions</h3>
           <div class="menu-grid">
             <div class="menu-row"><button id="startButton">Start Match</button></div>
-            <div class="menu-row"><button id="fireButton" class="alt">Fire</button></div>
             <div class="menu-row"><button id="nextTurnButton">Force Next Turn</button></div>
             <div class="menu-row"><button id="resetLevelButton">Retry Level</button></div>
             <div class="menu-row"><button id="tutorialButton">Toggle Tutorial</button></div>
           </div>
         </aside>
+        <div class="menu-backdrop" id="menuBackdrop"></div>
 
         <div class="right-col">
           <div class="hud">
@@ -252,19 +345,74 @@
             <div class="item"><span class="k">Enemy HP</span><span class="v" id="hudEnemyHp">100 / 100</span></div>
             <div class="item"><span class="k">Score</span><span class="v" id="hudScore">0</span></div>
           </div>
-          <div class="toolbar">
-            <button id="moveLeftBtn">Pre-Round Move Left</button>
-            <button id="moveRightBtn">Pre-Round Move Right</button>
-            <button id="hintBtn" class="alt">Show Help</button>
-          </div>
           <div class="game-wrap">
+            <button class="menu-launch" id="menuToggleBtn">Menu</button>
             <canvas id="gameCanvas" width="1400" height="788" aria-label="Tanks battle arena"></canvas>
             <div class="overlay-help" id="tutorialOverlay">
               <h3>Tutorial</h3>
               <p id="tutorialText"></p>
-              <button id="tutorialNext">Next</button>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="tutorialNext">Next</button>
+                <button id="tutorialSkip">Skip Tutorial</button>
+              </div>
             </div>
             <div class="arrow-hint" id="arrowHint">--&gt;</div>
+          </div>
+          <div class="bottom-gauges">
+            <div class="gauge-grid">
+              <div class="gauge-cell">
+                <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
+                <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+              </div>
+              <div class="gauge-cell">
+                <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
+                <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
+              </div>
+              <div class="gauge-cell">
+                <label for="weaponSelect">Weapon</label>
+                <select id="weaponSelect"></select>
+              </div>
+              <div class="gauge-cell">
+                <label for="shotKindProfileSelect">Shot Kind Profile</label>
+                <select id="shotKindProfileSelect">
+                  <option value="shell">Shell</option>
+                  <option value="heavy">Heavy</option>
+                  <option value="cluster">Cluster</option>
+                  <option value="napalm">Napalm</option>
+                  <option value="rail">Rail</option>
+                  <option value="quantum">Quantum</option>
+                  <option value="bomber">Bomber</option>
+                </select>
+              </div>
+              <div class="gauge-cell">
+                <label for="shotDamageScaleInput">Damage % (<span id="shotDamageScaleValue">100</span>)</label>
+                <input id="shotDamageScaleInput" type="range" min="50" max="250" step="1" value="100">
+              </div>
+              <div class="gauge-cell">
+                <label for="shotRadiusScaleInput">Blast % (<span id="shotRadiusScaleValue">100</span>)</label>
+                <input id="shotRadiusScaleInput" type="range" min="50" max="250" step="1" value="100">
+              </div>
+              <div class="gauge-cell">
+                <label>Movement</label>
+                <button id="moveLeftBtn">Move Left</button>
+              </div>
+              <div class="gauge-cell">
+                <label>Movement</label>
+                <button id="moveRightBtn">Move Right</button>
+              </div>
+            </div>
+            <div class="gauge-grid">
+              <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
+              <div class="gauge-cell">
+                <label for="bomberDirectionSelect">Air Bomber Direction</label>
+                <select id="bomberDirectionSelect">
+                  <option value="ltr">Left to Right</option>
+                  <option value="rtl">Right to Left</option>
+                </select>
+              </div>
+              <div class="gauge-cell"><label>Special</label><button id="callBomberBtn">Call Air Bomber</button></div>
+              <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
+            </div>
           </div>
           <div class="legend" id="statusLine">
             Select your tank, choose enemy tank, set angle/power, then fire. Easy mode shows a longer dotted aim guide.
@@ -288,6 +436,12 @@
         const playerTankSelect = document.getElementById("playerTankSelect");
         const enemyTankSelect = document.getElementById("enemyTankSelect");
         const playerNameInput = document.getElementById("playerNameInput");
+        const bomberDirectionSelect = document.getElementById("bomberDirectionSelect");
+        const shotKindProfileSelect = document.getElementById("shotKindProfileSelect");
+        const shotDamageScaleInput = document.getElementById("shotDamageScaleInput");
+        const shotRadiusScaleInput = document.getElementById("shotRadiusScaleInput");
+        const shotDamageScaleValue = document.getElementById("shotDamageScaleValue");
+        const shotRadiusScaleValue = document.getElementById("shotRadiusScaleValue");
 
         const hud = {
           level: document.getElementById("hudLevel"),
@@ -301,7 +455,12 @@
         const tutorialOverlay = document.getElementById("tutorialOverlay");
         const tutorialText = document.getElementById("tutorialText");
         const tutorialNext = document.getElementById("tutorialNext");
+        const tutorialSkip = document.getElementById("tutorialSkip");
         const arrowHint = document.getElementById("arrowHint");
+        const mainSidebar = document.getElementById("mainSidebar");
+        const menuBackdrop = document.getElementById("menuBackdrop");
+        const menuToggleBtn = document.getElementById("menuToggleBtn");
+        const menuCloseBtn = document.getElementById("menuCloseBtn");
 
         const imageKeys = [
           "vehicles_tank_heavy_792x276.webp",
@@ -336,6 +495,10 @@
           "scifi_vehicle_mechwarrior_heavy_792x276.webp": "Atlas Walker",
           "scifi_vehicle_mechwarrior_light_459x145.webp": "Viper Walker"
         };
+        const baseFacingRightByImage = {
+          "vehicle_boro_tanker_685x289.webp": true,
+          "vehicle_semi_tank_700x283.webp": true
+        };
 
         const weapons = [
           { key: "shell", name: "120mm Shell", unlock: 1, speed: 11, radius: 42, damage: 34, color: "#ffc66d", trail: "#ffe7ba" },
@@ -359,6 +522,7 @@
         };
 
         const images = new Map();
+        const extraImages = new Map();
         const state = {
           level: 1,
           rounds: 1,
@@ -369,7 +533,15 @@
           activeProjectile: null,
           particles: [],
           craters: [],
+          airBombs: [],
+          bomberActive: null,
+          bomberTurnPendingEnd: false,
+          airBomberCharges: 1,
           terrain: [],
+          mountainsFar: [],
+          mountainsNear: [],
+          customLevelsBySlot: {},
+          levelDecor: [],
           player: null,
           enemy: null,
           preMoveUsed: false,
@@ -379,6 +551,10 @@
           lockInput: false,
           firstMatchStarted: false
         };
+        const weaponTuning = {};
+        ["shell","heavy","cluster","napalm","rail","quantum","bomber"].forEach((k) => {
+          weaponTuning[k] = { damageScale: 100, radiusScale: 100 };
+        });
 
         const gravity = 0.18;
         const world = {
@@ -387,6 +563,16 @@
           floorMax: canvas.height - 80,
           floorMin: canvas.height * 0.43
         };
+
+        function ensureImageLoaded(fileName) {
+          if (!fileName) return null;
+          if (images.has(fileName)) return images.get(fileName);
+          if (extraImages.has(fileName)) return extraImages.get(fileName);
+          const img = new Image();
+          img.src = `./images/${fileName}`;
+          extraImages.set(fileName, img);
+          return img;
+        }
 
         function loadImages() {
           return Promise.all(imageKeys.map((file) => new Promise((resolve) => {
@@ -430,6 +616,25 @@
           }
         }
 
+        function loadSelectedShotProfile() {
+          const key = shotKindProfileSelect.value;
+          const tune = weaponTuning[key] || { damageScale: 100, radiusScale: 100 };
+          shotDamageScaleInput.value = String(tune.damageScale);
+          shotRadiusScaleInput.value = String(tune.radiusScale);
+          shotDamageScaleValue.textContent = String(tune.damageScale);
+          shotRadiusScaleValue.textContent = String(tune.radiusScale);
+        }
+
+        function getTunedWeapon(weapon) {
+          const base = weapon || weapons[0];
+          const tune = weaponTuning[base.key] || { damageScale: 100, radiusScale: 100 };
+          return {
+            ...base,
+            damage: Number(base.damage) * (Number(tune.damageScale) / 100),
+            radius: Number(base.radius) * (Number(tune.radiusScale) / 100)
+          };
+        }
+
         function terrainHeightAt(x) {
           const i = Math.max(0, Math.min(world.width - 1, Math.round(x)));
           return state.terrain[i] || world.floorMax;
@@ -438,15 +643,38 @@
         function generateTerrain() {
           state.terrain = new Array(world.width);
           const seed = Math.random() * 9000;
+          let ridgeShift = 0;
+          let cliffBias = 0;
           for (let x = 0; x < world.width; x += 1) {
             const n1 = Math.sin((x + seed) / 110) * 44;
             const n2 = Math.sin((x + seed * 0.41) / 53) * 12;
             const n3 = Math.sin((x + seed * 0.83) / 250) * 63;
-            let h = world.floorMax - 180 + n1 + n2 + n3;
+            if (x % 80 === 0) ridgeShift += (Math.random() * 2 - 1) * 18;
+            if (x % 210 === 0) cliffBias += (Math.random() > 0.5 ? 1 : -1) * (24 + Math.random() * 38);
+            cliffBias *= 0.997;
+            let h = world.floorMax - 180 + n1 + n2 + n3 + ridgeShift + cliffBias;
             if (state.level > 8) h -= Math.sin((x + seed) / 28) * 16;
             h = Math.max(world.floorMin, Math.min(world.floorMax, h));
             state.terrain[x] = h;
           }
+          generateMountainBackdrop(seed);
+        }
+
+        function generateMountainBackdrop(seed) {
+          state.mountainsFar = [];
+          state.mountainsNear = [];
+          for (let x = -120; x < world.width + 220; x += 70) {
+            const h = 120 + Math.abs(Math.sin((x + seed) * 0.009)) * 120 + Math.random() * 55;
+            state.mountainsFar.push({ x, w: 190 + Math.random() * 120, h });
+          }
+          for (let x = -90; x < world.width + 180; x += 56) {
+            const h = 80 + Math.abs(Math.sin((x + seed) * 0.014)) * 98 + Math.random() * 46;
+            state.mountainsNear.push({ x, w: 120 + Math.random() * 90, h });
+          }
+        }
+
+        function imageBaseFacesRight(imageKey) {
+          return !!baseFacingRightByImage[imageKey];
         }
 
         function resolveTankSize(imgKey) {
@@ -475,7 +703,12 @@
             width: size.width,
             height: size.height,
             moveLeft: -26,
-            moveRight: 26
+            moveRight: 26,
+            moveTargetX: x,
+            moveDir: 0,
+            moving: false,
+            renderFacing: 1,
+            worldFacingDir: side === "left" ? 1 : -1
           };
         }
 
@@ -490,14 +723,35 @@
           state.activeProjectile = null;
           state.particles = [];
           state.craters = [];
+          state.airBombs = [];
+          state.bomberActive = null;
+          state.bomberTurnPendingEnd = false;
+          state.airBomberCharges = Math.min(3, 1 + Math.floor((state.level - 1) / 4));
           state.preMoveUsed = false;
           state.preMoveAllowance = 0;
           state.lockInput = false;
 
           generateTerrain();
+          state.levelDecor = [];
+          const custom = state.customLevelsBySlot[state.level];
+          let heroX = 170;
+          let enemyX = world.width - 170;
+          if (custom) {
+            if (Array.isArray(custom.terrain) && custom.terrain.length >= world.width * 0.6) {
+              state.terrain = custom.terrain.slice(0, world.width).map((n) => Math.max(world.floorMin, Math.min(world.height - 20, Number(n || world.floorMax))));
+              while (state.terrain.length < world.width) { state.terrain.push(state.terrain[state.terrain.length - 1]); }
+            }
+            heroX = Number(custom.heroSpawn?.x || heroX);
+            enemyX = Number(custom.enemySpawn?.x || enemyX);
+            state.levelDecor = Array.isArray(custom.entities) ? custom.entities : [];
+          }
           const hpScale = 100 + (state.level - 1) * 7;
           state.player = createTank("left", playerTankSelect.value, hpScale);
           state.enemy = createTank("right", enemyTankSelect.value, hpScale + 10 + Math.floor(state.level * 2.2));
+          state.player.x = Math.max(40, Math.min(world.width - 40, heroX));
+          state.enemy.x = Math.max(40, Math.min(world.width - 40, enemyX));
+          state.player.y = terrainHeightAt(state.player.x) - state.player.height / 2;
+          state.enemy.y = terrainHeightAt(state.enemy.x) - state.enemy.height / 2;
           refreshWeaponMenu();
           updateHud();
           updateStatus(`Level ${state.level} ready. ${state.turn === "player" ? "Your turn." : "Enemy turn."}`);
@@ -525,8 +779,27 @@
           statusLine.textContent = text;
         }
 
+        function resolveBomberIfDone() {
+          if (!state.bomberTurnPendingEnd) return;
+          if (state.bomberActive) return;
+          if (state.airBombs.length > 0) return;
+          state.bomberTurnPendingEnd = false;
+          endTurn();
+        }
+
+        function setMenuOpen(open) {
+          mainSidebar.classList.toggle("open", open);
+          menuBackdrop.classList.toggle("open", open);
+        }
+
         function ensureGrounded(tank) {
-          const ground = terrainHeightAt(tank.x) - tank.height / 2;
+          updateTankMovement(tank);
+          const wheelSpan = Math.max(20, tank.width * 0.34);
+          const groundLeft = terrainHeightAt(tank.x - wheelSpan);
+          const groundMid = terrainHeightAt(tank.x);
+          const groundRight = terrainHeightAt(tank.x + wheelSpan);
+          const groundSurface = Math.min(groundLeft, groundMid, groundRight);
+          const ground = groundSurface - tank.height / 2;
           if (tank.y < ground - 1) {
             tank.vy += gravity;
             tank.y += tank.vy;
@@ -536,7 +809,30 @@
           }
         }
 
+        function updateTankMovement(tank) {
+          if (!tank.moving) return;
+          const dx = tank.moveTargetX - tank.x;
+          if (Math.abs(dx) <= 0.7) {
+            tank.x = tank.moveTargetX;
+            tank.moving = false;
+            tank.moveDir = 0;
+            return;
+          }
+          const step = Math.sign(dx) * Math.min(2.8, Math.abs(dx));
+          tank.x += step;
+          tank.moveDir = Math.sign(step);
+        }
+
+        function updateTankFacing(tank, target) {
+          const towardEnemy = target.x >= tank.x ? 1 : -1;
+          const worldDir = towardEnemy;
+          tank.worldFacingDir = worldDir;
+          const baseSign = imageBaseFacesRight(tank.imageKey) ? 1 : -1;
+          tank.renderFacing = baseSign * worldDir;
+        }
+
         function drawTerrain() {
+          drawBackdropMountains();
           ctx.beginPath();
           ctx.moveTo(0, world.height);
           for (let x = 0; x < world.width; x += 1) {
@@ -551,30 +847,92 @@
           ctx.fillStyle = grad;
           ctx.fill();
 
-          ctx.strokeStyle = "rgba(0,0,0,0.2)";
-          for (let x = 0; x < world.width; x += 14) {
+          ctx.strokeStyle = "rgba(209,154,90,0.22)";
+          for (let x = 0; x < world.width; x += 9) {
             const top = state.terrain[x];
             ctx.beginPath();
             ctx.moveTo(x, top);
-            ctx.lineTo(x + 8, top + 8);
+            ctx.lineTo(x + 7, top + 6);
+            ctx.stroke();
+          }
+
+          ctx.strokeStyle = "rgba(18,8,2,0.45)";
+          for (let y = world.floorMin + 15; y < world.height; y += 18) {
+            ctx.beginPath();
+            for (let x = 0; x < world.width; x += 14) {
+              const groundY = state.terrain[x];
+              if (y > groundY + 8) {
+                const wave = Math.sin((x + y) * 0.03) * 3;
+                if (x === 0) ctx.moveTo(x, y + wave);
+                else ctx.lineTo(x, y + wave);
+              }
+            }
             ctx.stroke();
           }
         }
 
-        function drawTank(tank, isEnemy) {
+        function drawDecorEntities() {
+          state.levelDecor.forEach((e) => {
+            const x = Number(e.x || 0);
+            const img = ensureImageLoaded(e.file || `${e.key || ""}.webp`);
+            const scale = Number(e.scale || 1);
+            const baseW = (img && img.complete && img.naturalWidth > 0 ? img.naturalWidth : 140) * 0.22 * scale;
+            const baseH = (img && img.complete && img.naturalHeight > 0 ? img.naturalHeight : 90) * 0.22 * scale;
+            const autoGroundLock = /tank|vehicle|scifi_vehicle/i.test(`${e.key || ""} ${e.file || ""}`);
+            const groundLock = e.groundLock !== undefined ? !!e.groundLock : autoGroundLock;
+            const groundClearance = Number(e.groundClearance || 0);
+            const y = groundLock
+              ? terrainHeightAt(x) - baseH / 2 - groundClearance
+              : terrainHeightAt(x) - Number(e.offsetY || 45);
+            const rotation = Number(e.rotation || 0) * Math.PI / 180;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            if (img && img.complete) {
+              ctx.drawImage(img, -baseW / 2, -baseH / 2, baseW, baseH);
+            } else {
+              ctx.fillStyle = e.isEnemy ? "rgba(176,66,66,0.7)" : "rgba(63,122,186,0.7)";
+              ctx.fillRect(-baseW / 2, -baseH / 2, baseW, baseH);
+            }
+            ctx.restore();
+          });
+        }
+
+        function drawBackdropMountains() {
+          const farColor = "rgba(43, 66, 95, 0.42)";
+          const nearColor = "rgba(66, 92, 126, 0.5)";
+          state.mountainsFar.forEach((m) => {
+            ctx.beginPath();
+            ctx.moveTo(m.x, world.floorMin + 80);
+            ctx.lineTo(m.x + m.w * 0.5, world.floorMin + 80 - m.h);
+            ctx.lineTo(m.x + m.w, world.floorMin + 80);
+            ctx.closePath();
+            ctx.fillStyle = farColor;
+            ctx.fill();
+          });
+          state.mountainsNear.forEach((m) => {
+            ctx.beginPath();
+            ctx.moveTo(m.x, world.floorMin + 124);
+            ctx.lineTo(m.x + m.w * 0.46, world.floorMin + 124 - m.h);
+            ctx.lineTo(m.x + m.w, world.floorMin + 124);
+            ctx.closePath();
+            ctx.fillStyle = nearColor;
+            ctx.fill();
+          });
+        }
+
+        function drawTank(tank) {
           const img = images.get(tank.imageKey);
           const left = tank.x - tank.width / 2;
           const top = tank.y - tank.height / 2;
           if (img) {
             ctx.save();
             ctx.translate(tank.x, tank.y);
-            if (isEnemy) {
-              ctx.scale(-1, 1);
-            }
+            ctx.scale(tank.renderFacing, 1);
             ctx.drawImage(img, -tank.width / 2, -tank.height / 2, tank.width, tank.height);
             ctx.restore();
           } else {
-            ctx.fillStyle = isEnemy ? "#7a1010" : "#13608f";
+            ctx.fillStyle = tank.side === "right" ? "#7a1010" : "#13608f";
             ctx.fillRect(left, top, tank.width, tank.height);
           }
 
@@ -591,9 +949,9 @@
           if (!lenMultiplier || state.turn !== "player" || state.activeProjectile) return;
           const tank = state.player;
           const angle = Number(angleInput.value) * Math.PI / 180;
-          const facing = 1;
+          const facing = tank.worldFacingDir;
           const speed = Number(powerInput.value) * 0.18;
-          const start = getMuzzle(tank, false);
+          const start = getMuzzle(tank);
           ctx.save();
           ctx.setLineDash([4, 7]);
           ctx.strokeStyle = "rgba(255,255,255,0.55)";
@@ -616,22 +974,24 @@
           ctx.restore();
         }
 
-        function getMuzzle(tank, isEnemy) {
-          const fromRight = isEnemy;
-          const offsetX = tank.width * 0.41 * (fromRight ? -1 : 1);
+        function getMuzzle(tank) {
+          const offsetX = tank.width * 0.41 * tank.worldFacingDir;
           const offsetY = -tank.height * 0.12;
           return { x: tank.x + offsetX, y: tank.y + offsetY };
         }
 
-        function launchShot(fromTank, toEnemy, weaponKey, angleDeg, powerPct) {
-          const weapon = weapons.find((w) => w.key === weaponKey) || weapons[0];
-          const angle = angleDeg * Math.PI / 180;
+        function launchShot(fromTank, weaponKey, angleDeg, powerPct, forcedDir) {
+          const baseWeapon = weapons.find((w) => w.key === weaponKey) || weapons[0];
+          const weapon = getTunedWeapon(baseWeapon);
+          const clampedArc = Math.max(5, Math.min(85, angleDeg));
+          const angle = clampedArc * Math.PI / 180;
           const speed = weapon.speed * (powerPct / 60);
-          const muzzle = getMuzzle(fromTank, !toEnemy);
+          const muzzle = getMuzzle(fromTank);
+          const shotDir = forcedDir || fromTank.worldFacingDir || 1;
           state.activeProjectile = {
             x: muzzle.x,
             y: muzzle.y,
-            vx: Math.cos(angle) * speed * (toEnemy ? 1 : -1),
+            vx: Math.cos(angle) * speed * shotDir,
             vy: -Math.sin(angle) * speed,
             weapon
           };
@@ -716,7 +1076,7 @@
 
           state.particles.push({ x: p.x, y: p.y, vx: 0, vy: 0, life: 7, color: p.weapon.trail });
 
-          if (p.x < 0 || p.x >= world.width || p.y >= world.height || p.y < 0) {
+          if (p.x < 0 || p.x >= world.width || p.y >= world.height) {
             state.activeProjectile = null;
             endTurn();
             return;
@@ -770,6 +1130,112 @@
             ctx.stroke();
             ctx.globalAlpha = 1;
           });
+          state.airBombs.forEach((b) => {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffd25f";
+            ctx.fill();
+            ctx.strokeStyle = "#8f5c0d";
+            ctx.stroke();
+          });
+        }
+
+        function callAirBomber() {
+          if (state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (state.bomberActive || state.bomberTurnPendingEnd) {
+            updateStatus("Air bomber already in progress. Click the sky path to drop bombs.");
+            return;
+          }
+          if (state.airBomberCharges <= 0) {
+            updateStatus("No air bomber charges left this level.");
+            return;
+          }
+          const dir = bomberDirectionSelect.value === "rtl" ? -1 : 1;
+          const startX = dir === 1 ? -90 : world.width + 90;
+          state.bomberActive = {
+            x: startX,
+            y: 124,
+            dir,
+            speed: 4.6,
+            dropsLeft: 3,
+            trace: []
+          };
+          state.airBomberCharges -= 1;
+          state.bomberTurnPendingEnd = true;
+          updateStatus("Air bomber inbound. Click as it flies to drop bombs.");
+        }
+
+        function dropBomberPayload() {
+          const b = state.bomberActive;
+          if (!b || b.dropsLeft <= 0) return;
+          const bombBase = { key: "bomber", radius: 74, damage: 78, color: "#ff7643", trail: "#ffd8bf" };
+          const bombWeapon = getTunedWeapon(bombBase);
+          state.airBombs.push({
+            x: b.x,
+            y: b.y + 12,
+            vx: b.dir * 0.3,
+            vy: 0.9,
+            weapon: bombWeapon
+          });
+          b.dropsLeft -= 1;
+          updateStatus(`Bomber payload dropped (${3 - b.dropsLeft}/3).`);
+        }
+
+        function updateBomberAndBombs() {
+          if (state.bomberActive) {
+            const b = state.bomberActive;
+            b.trace.push({ x: b.x, y: b.y });
+            if (b.trace.length > 80) b.trace.shift();
+            b.x += b.dir * b.speed;
+            if ((b.dir === 1 && b.x > world.width + 100) || (b.dir === -1 && b.x < -100)) {
+              state.bomberActive = null;
+            }
+          }
+
+          for (let i = state.airBombs.length - 1; i >= 0; i -= 1) {
+            const bomb = state.airBombs[i];
+            bomb.vy += gravity * 0.22;
+            bomb.x += bomb.vx;
+            bomb.y += bomb.vy;
+            if (bomb.x < 0 || bomb.x >= world.width || bomb.y >= world.height) {
+              state.airBombs.splice(i, 1);
+              continue;
+            }
+            const ty = terrainHeightAt(bomb.x);
+            if (bomb.y >= ty) {
+              explode(bomb.x, ty, bomb.weapon, "left");
+              state.airBombs.splice(i, 1);
+              checkWinLose();
+            }
+          }
+          resolveBomberIfDone();
+        }
+
+        function drawBomber() {
+          const b = state.bomberActive;
+          if (!b) return;
+          if (b.trace.length > 1) {
+            ctx.save();
+            ctx.setLineDash([5, 7]);
+            ctx.strokeStyle = "rgba(255,208,120,0.65)";
+            ctx.beginPath();
+            ctx.moveTo(b.trace[0].x, b.trace[0].y);
+            for (let i = 1; i < b.trace.length; i += 1) {
+              ctx.lineTo(b.trace[i].x, b.trace[i].y);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          if (b.dir === -1) ctx.scale(-1, 1);
+          ctx.fillStyle = "#d2e9ff";
+          ctx.fillRect(-26, -6, 52, 12);
+          ctx.fillStyle = "#9bb8d8";
+          ctx.fillRect(-16, -14, 28, 8);
+          ctx.fillStyle = "#ff9440";
+          ctx.fillRect(-8, 5, 16, 3);
+          ctx.restore();
         }
 
         function checkWinLose() {
@@ -803,16 +1269,18 @@
         function moveTankShortStep(direction) {
           if (state.turn !== "player" || state.preMoveAllowance <= 0 || state.activeProjectile) return;
           const shift = direction === "left" ? state.player.moveLeft : state.player.moveRight;
-          state.player.x = Math.max(50, Math.min(world.width - 50, state.player.x + shift));
+          state.player.moveTargetX = Math.max(50, Math.min(world.width - 50, state.player.x + shift));
+          state.player.moving = true;
+          state.player.moveDir = direction === "left" ? -1 : 1;
           state.preMoveAllowance -= 1;
           state.preMoveUsed = true;
-          ensureGrounded(state.player);
           updateStatus("Pre-round move applied.");
         }
 
         function endTurn() {
           if (state.lockInput) return;
           if (state.turn === "player") {
+            if (state.bomberTurnPendingEnd) return;
             state.turn = "enemy";
             updateHud();
             setTimeout(aiTakeTurn, 700);
@@ -821,6 +1289,9 @@
             state.rounds += 1;
             state.preMoveUsed = false;
             applyPreRoundMove();
+            if (state.rounds % 4 === 0) {
+              state.airBomberCharges = Math.min(3, state.airBomberCharges + 1);
+            }
             updateHud();
             updateStatus("Your turn.");
           }
@@ -831,19 +1302,23 @@
           const profile = aiProfiles[state.difficulty];
           const dx = state.player.x - state.enemy.x;
           const dy = state.player.y - state.enemy.y;
+          const aiDir = dx >= 0 ? 1 : -1;
+          state.enemy.worldFacingDir = aiDir;
+          const baseSign = imageBaseFacesRight(state.enemy.imageKey) ? 1 : -1;
+          state.enemy.renderFacing = baseSign * aiDir;
           const distance = Math.max(140, Math.abs(dx));
           const levelBuff = Math.max(0, (state.level - 1) * 0.35);
-          const angleBase = dx > 0 ? 50 : 130;
+          const angleBase = 50;
           const error = Math.max(0.8, profile.baseError - levelBuff) * (Math.random() * 2 - 1);
           const powerError = Math.max(0.7, profile.powerError - levelBuff * 0.6) * (Math.random() * 2 - 1);
 
           let guessPower = 42 + (distance / world.width) * 42 + Math.abs(dy) * profile.lead;
           guessPower = Math.max(25, Math.min(98, guessPower + powerError));
-          const aiAngle = Math.max(10, Math.min(170, angleBase + error));
+          const aiAngle = Math.max(8, Math.min(85, angleBase + error));
 
           const unlocked = weapons.filter((w) => state.level >= w.unlock);
           const best = unlocked[Math.min(unlocked.length - 1, Math.floor((state.level - 1) / 3))];
-          launchShot(state.enemy, false, best.key, aiAngle, guessPower);
+          launchShot(state.enemy, best.key, aiAngle, guessPower, aiDir);
           updateStatus(`${tankTitles[state.enemy.imageKey] || "Enemy"} fired ${best.name}.`);
           updateHud();
         }
@@ -855,7 +1330,7 @@
             updateStatus("That weapon is not unlocked yet.");
             return;
           }
-          launchShot(state.player, true, chosen.key, Number(angleInput.value), Number(powerInput.value));
+          launchShot(state.player, chosen.key, Number(angleInput.value), Number(powerInput.value));
           updateStatus(`${playerNameInput.value || "Player"} fired ${chosen.name}.`);
         }
 
@@ -877,21 +1352,49 @@
         function render() {
           drawSky();
           drawTerrain();
+          drawDecorEntities();
           ensureGrounded(state.player);
           ensureGrounded(state.enemy);
-          drawTank(state.player, false);
-          drawTank(state.enemy, true);
+          updateTankFacing(state.player, state.enemy);
+          updateTankFacing(state.enemy, state.player);
+          drawTank(state.player);
+          drawTank(state.enemy);
           drawAimGuide();
           updateProjectile();
+          updateBomberAndBombs();
           updateParticles();
+          drawBomber();
           drawProjectiles();
           requestAnimationFrame(render);
         }
 
+        async function loadCustomLevels() {
+          state.customLevelsBySlot = {};
+          try {
+            const manifestRes = await fetch("./levels/level-manifest.json", { cache: "no-store" });
+            if (!manifestRes.ok) return;
+            const manifest = await manifestRes.json();
+            const levels = Array.isArray(manifest.levels) ? manifest.levels : [];
+            for (const item of levels) {
+              try {
+                if (!item?.file) continue;
+                const res = await fetch(`./levels/${item.file}`, { cache: "no-store" });
+                if (!res.ok) continue;
+                const payload = await res.json();
+                const lvl = payload.level || payload;
+                const slot = Number(item.slot || lvl.slot || 0);
+                if (slot >= 1 && slot <= 99) {
+                  state.customLevelsBySlot[slot] = lvl;
+                }
+              } catch {}
+            }
+          } catch {}
+        }
+
         const tutorialSteps = [
-          "Welcome to Tanks and More Tank. First choose your Primary Tank and Enemy Tank on the left.",
+          "Welcome to Tanks and More Tank. First choose your Primary Tank and Enemy Tank in Match Setup.",
           "Set Angle and Power, then press Fire. Easy mode shows a long dotted aiming helper.",
-          "Every few rounds you can move a short distance before firing. Use move buttons above the arena.",
+          "Every few rounds you can move a short distance before firing. Use move controls in the bottom gauges.",
           "Unlock better weapons as levels increase. Destroy enemy tanks to advance all 15 levels."
         ];
 
@@ -901,17 +1404,13 @@
           tutorialOverlay.classList.add("active");
           arrowHint.classList.add("active");
           if (state.tutorialStep === 0) {
-            arrowHint.style.left = "10px";
-            arrowHint.style.top = "84px";
+            pointArrowAt("menuToggleBtn");
           } else if (state.tutorialStep === 1) {
-            arrowHint.style.left = "10px";
-            arrowHint.style.top = "260px";
+            pointArrowAt("angleInput");
           } else if (state.tutorialStep === 2) {
-            arrowHint.style.left = "12px";
-            arrowHint.style.top = "382px";
+            pointArrowAt("moveLeftBtn");
           } else {
-            arrowHint.style.left = "12px";
-            arrowHint.style.top = "332px";
+            pointArrowAt("fireButton");
           }
         }
 
@@ -920,7 +1419,20 @@
           arrowHint.classList.remove("active");
         }
 
+        function pointArrowAt(targetId) {
+          const el = document.getElementById(targetId);
+          if (!el) return;
+          const r = el.getBoundingClientRect();
+          const left = Math.max(8, r.left - 36);
+          const top = Math.max(8, r.top + Math.min(12, r.height * 0.35));
+          arrowHint.style.left = `${left}px`;
+          arrowHint.style.top = `${top}px`;
+        }
+
         function bindUi() {
+          menuToggleBtn.addEventListener("click", () => setMenuOpen(true));
+          menuCloseBtn.addEventListener("click", () => setMenuOpen(false));
+          menuBackdrop.addEventListener("click", () => setMenuOpen(false));
           angleInput.addEventListener("input", () => {
             angleValue.textContent = String(angleInput.value);
             state.player.angle = Number(angleInput.value);
@@ -937,14 +1449,17 @@
             state.firstMatchStarted = true;
             state.lockInput = false;
             resetLevel(true);
+            setMenuOpen(false);
           });
           document.getElementById("fireButton").addEventListener("click", firePlayer);
+          document.getElementById("callBomberBtn").addEventListener("click", callAirBomber);
           document.getElementById("nextTurnButton").addEventListener("click", () => {
             if (!state.activeProjectile) endTurn();
           });
           document.getElementById("resetLevelButton").addEventListener("click", () => {
             state.lockInput = false;
             resetLevel(false);
+            setMenuOpen(false);
           });
           document.getElementById("tutorialButton").addEventListener("click", () => {
             state.tutorialOn = !state.tutorialOn;
@@ -961,6 +1476,22 @@
           });
           document.getElementById("moveLeftBtn").addEventListener("click", () => moveTankShortStep("left"));
           document.getElementById("moveRightBtn").addEventListener("click", () => moveTankShortStep("right"));
+          shotKindProfileSelect.addEventListener("change", loadSelectedShotProfile);
+          shotDamageScaleInput.addEventListener("input", () => {
+            const key = shotKindProfileSelect.value;
+            weaponTuning[key].damageScale = Number(shotDamageScaleInput.value);
+            shotDamageScaleValue.textContent = String(shotDamageScaleInput.value);
+          });
+          shotRadiusScaleInput.addEventListener("input", () => {
+            const key = shotKindProfileSelect.value;
+            weaponTuning[key].radiusScale = Number(shotRadiusScaleInput.value);
+            shotRadiusScaleValue.textContent = String(shotRadiusScaleInput.value);
+          });
+          canvas.addEventListener("click", () => {
+            if (state.bomberActive && state.turn === "player") {
+              dropBomberPayload();
+            }
+          });
           tutorialNext.addEventListener("click", () => {
             state.tutorialStep += 1;
             if (state.tutorialStep >= tutorialSteps.length) {
@@ -969,6 +1500,11 @@
             }
             showTutorialStep();
           });
+          tutorialSkip.addEventListener("click", () => {
+            state.tutorialOn = false;
+            hideTutorial();
+            updateStatus("Tutorial skipped. You can reopen from Show Help.");
+          });
 
           window.addEventListener("keydown", (ev) => {
             if (ev.code === "Space") {
@@ -976,11 +1512,11 @@
               firePlayer();
             }
             if (ev.code === "ArrowUp") {
-              angleInput.value = String(Math.min(185, Number(angleInput.value) + 1));
+              angleInput.value = String(Math.min(85, Number(angleInput.value) + 1));
               angleInput.dispatchEvent(new Event("input"));
             }
             if (ev.code === "ArrowDown") {
-              angleInput.value = String(Math.max(-5, Number(angleInput.value) - 1));
+              angleInput.value = String(Math.max(5, Number(angleInput.value) - 1));
               angleInput.dispatchEvent(new Event("input"));
             }
             if (ev.code === "ArrowLeft") {
@@ -992,11 +1528,16 @@
               powerInput.dispatchEvent(new Event("input"));
             }
           });
+          window.addEventListener("resize", () => {
+            if (tutorialOverlay.classList.contains("active")) showTutorialStep();
+          });
         }
 
-        loadImages().then(() => {
+        loadImages().then(async () => {
+          await loadCustomLevels();
           buildSelects();
           bindUi();
+          loadSelectedShotProfile();
           resetLevel(true);
           render();
         });
