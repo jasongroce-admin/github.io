@@ -1435,8 +1435,8 @@
             width: size.width,
             height: size.height,
             groundSink,
-            moveLeft: -26,
-            moveRight: 26,
+            moveLeft: -18,
+            moveRight: 18,
             moveTargetX: x,
             moveDir: 0,
             moving: false,
@@ -1462,7 +1462,7 @@
           state.bomberTurnPendingEnd = false;
           state.airBomberCharges = Math.min(3, 1 + Math.floor((state.level - 1) / 4));
           state.preMoveUsed = false;
-          state.preMoveAllowance = 0;
+          state.preMoveAllowance = 1;
           state.lockInput = false;
 
           generateTerrain();
@@ -1504,7 +1504,7 @@
           state.enemy.y = terrainHeightAt(state.enemy.x) - state.enemy.height / 2 + Number(state.enemy.groundSink || 0);
           refreshWeaponMenu();
           updateHud();
-          updateStatus(`Level ${state.level} ready. ${state.turn === "player" ? "Your turn." : "Enemy turn."}`);
+          updateStatus(`Level ${state.level} ready. You may reposition one short step before firing.`);
 
           if (state.level === 1 && state.tutorialOn && !state.firstMatchStarted) {
             state.tutorialStep = 0;
@@ -2326,12 +2326,12 @@
             state.turn = "player";
             state.rounds += 1;
             state.preMoveUsed = false;
-            applyPreRoundMove();
+            state.preMoveAllowance = 1;
             if (state.rounds % 4 === 0) {
               state.airBomberCharges = Math.min(3, state.airBomberCharges + 1);
             }
             updateHud();
-            updateStatus("Your turn.");
+            updateStatus("Your turn. You may reposition one short step before firing.");
           }
         }
 
