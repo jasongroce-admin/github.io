@@ -149,19 +149,13 @@
       }
       .bottom-gauges {
         border: 1px solid #29587e;
-        background: linear-gradient(180deg, rgba(5,15,26,0.95), rgba(8,21,37,0.95));
+        background: linear-gradient(180deg, rgba(5,15,26,0.92), rgba(8,21,37,0.92));
         padding: 10px;
         display: grid;
         gap: 8px;
-        position: absolute;
-        left: 0;
-        right: 0;
+        position: sticky;
         bottom: 0;
-        z-index: 45;
-        border-left: 0;
-        border-right: 0;
-        border-bottom: 0;
-        background: linear-gradient(180deg, rgba(5,15,26,0.32), rgba(8,21,37,0.96));
+        z-index: 60;
         backdrop-filter: blur(6px);
       }
       .menu-launch {
@@ -216,7 +210,6 @@
         border: 1px solid #2f577f;
         background: #040b14;
         overflow: hidden;
-        --controls-h: 188px;
       }
       .hud.hud-overlay {
         position: absolute;
@@ -231,24 +224,49 @@
       .hud.hud-overlay .item {
         background: rgba(10, 26, 43, 0.7);
       }
-      .tuning-overlay {
+      .hud-action {
+        border: 1px solid #2a4f74;
+        background: rgba(10, 26, 43, 0.7);
+        padding: 6px 8px;
+        display: grid;
+        gap: 2px;
+        align-content: start;
+        text-align: left;
+        cursor: pointer;
+        color: #fff;
+        font-family: inherit;
+      }
+      .hud-action .k { display: block; color: var(--muted); font-size: 0.72rem; }
+      .hud-action .v { display: block; font-size: 0.96rem; font-weight: 800; }
+
+      .air-popover {
         position: absolute;
         right: 12px;
-        bottom: calc(var(--controls-h) + 12px);
-        display: grid;
-        gap: 8px;
-        z-index: 36;
-        pointer-events: auto;
+        top: 72px;
+        width: min(320px, calc(100% - 24px));
+        border: 1px solid #2a4f74;
+        background: rgba(8, 21, 37, 0.92);
+        padding: 10px;
+        z-index: 55;
+        display: none;
       }
-      .tuning-overlay button {
-        border: 1px solid #3b6791;
-        background: rgba(8, 21, 35, 0.72);
+      .air-popover.open { display: block; }
+      .air-popover .row { display: grid; gap: 4px; margin-bottom: 8px; }
+      .air-popover label { font-size: 0.8rem; color: var(--muted); }
+      .air-popover select, .air-popover button {
+        width: 100%;
+        border: 1px solid #375e86;
+        background: #09192a;
         color: #fff;
         min-height: 34px;
-        padding: 6px 10px;
+        padding: 4px 6px;
+      }
+      .air-popover button {
+        background: linear-gradient(180deg, #236db4, #184c7d);
         font-weight: 800;
         cursor: pointer;
       }
+      .air-popover button.alt { background: linear-gradient(180deg, #c77010, #8a4d08); }
       #gameCanvas {
         width: 100%;
         max-width: 1400px;
@@ -481,7 +499,6 @@
       @media (max-width: 800px) {
         .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .gauge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .game-wrap { --controls-h: 250px; }
         .menu-launch { top: 176px; }
         .overlay-help { top: 176px; }
       }
@@ -491,7 +508,6 @@
           grid-template-columns: 1fr 1fr;
         }
         .welcome-grid { grid-template-columns: 1fr; }
-        .game-wrap { --controls-h: 330px; }
       }
     </style>
   </head>
@@ -755,11 +771,20 @@
               <div class="item"><span class="k">HP</span><span class="v" id="hudHp">100 / 100</span></div>
               <div class="item"><span class="k">Enemy HP</span><span class="v" id="hudEnemyHp">100 / 100</span></div>
               <div class="item"><span class="k">Score</span><span class="v" id="hudScore">0</span></div>
+              <button class="hud-action" type="button" id="airSupportBtn"><span class="k">Air</span><span class="v">Support</span></button>
             </div>
             <button class="menu-launch" id="menuToggleBtn">Menu</button>
-            <div class="tuning-overlay" aria-label="Default shot tuning">
-              <button type="button" id="damage100Btn">Damage 100%</button>
-              <button type="button" id="blast100Btn">Blast 100%</button>
+            <div class="air-popover" id="airSupportPopover" aria-label="Air support">
+              <div class="row">
+                <label for="bomberDirectionSelect">Bomber Direction</label>
+                <select id="bomberDirectionSelect">
+                  <option value="ltr">Left to Right</option>
+                  <option value="rtl">Right to Left</option>
+                </select>
+              </div>
+              <div class="row"><button type="button" class="alt" id="callBomberBtn">Call Air Bomber</button></div>
+              <div class="row"><button type="button" id="callFlareBtn">Drop Flare</button></div>
+              <div class="row"><button type="button" id="airSupportCloseBtn">Close</button></div>
             </div>
             <canvas id="gameCanvas" width="1400" height="788" aria-label="Tanks battle arena"></canvas>
             <div class="overlay-help" id="tutorialOverlay">
@@ -771,49 +796,46 @@
               </div>
             </div>
             <div class="arrow-hint" id="arrowHint">--&gt;</div>
-
-            <div class="bottom-gauges" aria-label="Game controls">
-              <div class="gauge-grid">
-                <div class="gauge-cell">
-                  <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
-                  <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
-                </div>
-                <div class="gauge-cell">
-                  <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
-                  <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
-                </div>
-                <div class="gauge-cell">
-                  <label for="weaponSelect">Weapon</label>
-                  <select id="weaponSelect"></select>
-                </div>
-                <div class="gauge-cell">
-                  <label for="shotKindProfileSelect">Shot Kind Profile</label>
-                  <select id="shotKindProfileSelect">
-                    <option value="shell">Shell</option>
-                    <option value="heavy">Heavy</option>
-                    <option value="cluster">Cluster</option>
-                    <option value="napalm">Napalm</option>
-                    <option value="rail">Rail</option>
-                    <option value="quantum">Quantum</option>
-                    <option value="bomber">Bomber</option>
-                  </select>
+          </div>
+          <div class="bottom-gauges" aria-label="Game controls">
+            <div class="gauge-grid">
+              <div class="gauge-cell">
+                <label for="angleInput">Angle (<span id="angleValue">45</span>deg)</label>
+                <input id="angleInput" type="range" min="5" max="85" step="1" value="45">
+              </div>
+              <div class="gauge-cell">
+                <label for="powerInput">Power (<span id="powerValue">63</span>%)</label>
+                <input id="powerInput" type="range" min="20" max="100" step="1" value="63">
+              </div>
+              <div class="gauge-cell">
+                <label for="weaponSelect">Weapon</label>
+                <select id="weaponSelect"></select>
+              </div>
+              <div class="gauge-cell">
+                <label for="shotKindProfileSelect">Shot Kind Profile</label>
+                <select id="shotKindProfileSelect">
+                  <option value="shell">Shell</option>
+                  <option value="heavy">Heavy</option>
+                  <option value="cluster">Cluster</option>
+                  <option value="napalm">Napalm</option>
+                  <option value="rail">Rail</option>
+                  <option value="quantum">Quantum</option>
+                  <option value="bomber">Bomber</option>
+                </select>
+              </div>
+              <div class="gauge-cell">
+                <label>Tuning</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                  <button type="button" id="damage100Btn">Damage 100%</button>
+                  <button type="button" id="blast100Btn">Blast 100%</button>
                 </div>
               </div>
-              <div class="gauge-grid">
-                <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
-                <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
-                <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
-                <div class="gauge-cell">
-                  <label for="bomberDirectionSelect">Air Bomber Direction</label>
-                  <select id="bomberDirectionSelect">
-                    <option value="ltr">Left to Right</option>
-                    <option value="rtl">Right to Left</option>
-                  </select>
-                </div>
-                <div class="gauge-cell"><label>Special</label><button id="callBomberBtn">Call Air Bomber</button></div>
-                <div class="gauge-cell"><label>Night</label><button id="callFlareBtn">Drop Flare</button></div>
-                <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
-              </div>
+            </div>
+            <div class="gauge-grid">
+              <div class="gauge-cell"><label>Fire</label><button id="fireButton" class="alt">Fire</button></div>
+              <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
+              <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
+              <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
             </div>
           </div>
           <div class="legend" id="statusLine">
@@ -861,6 +883,9 @@
         const menuBackdrop = document.getElementById("menuBackdrop");
         const menuToggleBtn = document.getElementById("menuToggleBtn");
         const menuCloseBtn = document.getElementById("menuCloseBtn");
+        const airSupportBtn = document.getElementById("airSupportBtn");
+        const airSupportPopover = document.getElementById("airSupportPopover");
+        const airSupportCloseBtn = document.getElementById("airSupportCloseBtn");
 
         const welcomeOverlay = document.getElementById("welcomeOverlay");
         const welcomeCard = document.getElementById("welcomeCard");
@@ -1465,6 +1490,11 @@
         function setMenuOpen(open) {
           mainSidebar.classList.toggle("open", open);
           menuBackdrop.classList.toggle("open", open);
+          if (open) airSupportPopover.classList.remove("open");
+        }
+
+        function setAirSupportOpen(open) {
+          airSupportPopover.classList.toggle("open", open);
         }
 
         function ensureGrounded(tank) {
@@ -2306,6 +2336,17 @@
           menuToggleBtn.addEventListener("click", () => setMenuOpen(true));
           menuCloseBtn.addEventListener("click", () => setMenuOpen(false));
           menuBackdrop.addEventListener("click", () => setMenuOpen(false));
+          airSupportBtn.addEventListener("click", () => {
+            setMenuOpen(false);
+            setAirSupportOpen(!airSupportPopover.classList.contains("open"));
+          });
+          airSupportCloseBtn.addEventListener("click", () => setAirSupportOpen(false));
+          document.addEventListener("pointerdown", (ev) => {
+            if (!airSupportPopover.classList.contains("open")) return;
+            const t = ev.target;
+            if (t === airSupportBtn || airSupportPopover.contains(t)) return;
+            setAirSupportOpen(false);
+          }, true);
 
           document.querySelectorAll('input[name="gameMode"]').forEach((el) => {
             el.addEventListener("change", () => {
@@ -2470,6 +2511,10 @@
           });
 
           window.addEventListener("keydown", (ev) => {
+            if (ev.code === "Escape" && airSupportPopover.classList.contains("open")) {
+              setAirSupportOpen(false);
+              return;
+            }
             if (ev.code === "Space") {
               ev.preventDefault();
               firePlayer();
