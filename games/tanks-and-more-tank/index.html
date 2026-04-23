@@ -313,6 +313,23 @@
         box-shadow: 0 30px 80px rgba(0,0,0,0.45);
         padding: 14px;
       }
+      .welcome-card[data-step="1"] .welcome-grid { display: none; }
+      .welcome-card[data-step="1"] .welcome-actions { display: none; }
+      .welcome-card[data-step="2"] #welcomeTankGallery { display: none; }
+      .welcome-card[data-step="2"] #welcomeWeatherDetails { display: none; }
+      .welcome-card[data-step="2"] #welcomeNightDetails { display: none; }
+      .welcome-card[data-step="2"] .welcome-actions { display: none; }
+      .welcome-card[data-step="3"] #welcomeModeList { display: none; }
+      .welcome-card[data-step="3"] .welcome-actions { display: grid; }
+      .welcome-nav {
+        display: none;
+        margin-top: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .welcome-card[data-step="1"] #welcomeNav1 { display: grid; }
+      .welcome-card[data-step="2"] #welcomeNav2 { display: grid; }
+      .welcome-card[data-step="3"] #welcomeNav3 { display: grid; }
       .welcome-head {
         display: flex;
         align-items: start;
@@ -485,7 +502,7 @@
       </header>
 
       <div class="welcome-overlay" id="welcomeOverlay" aria-hidden="true">
-        <div class="welcome-card" role="dialog" aria-modal="true" aria-label="Tanks welcome menu">
+        <div class="welcome-card" id="welcomeCard" data-step="1" role="dialog" aria-modal="true" aria-label="Tanks welcome menu">
           <div class="welcome-head">
             <div>
               <h2>Welcome to Tanks and More Tank</h2>
@@ -496,7 +513,7 @@
 
           <div class="welcome-grid">
             <div>
-              <div class="mode-list" role="radiogroup" aria-label="Game mode">
+              <div class="mode-list" id="welcomeModeList" role="radiogroup" aria-label="Game mode">
                 <div class="mode-item">
                   <label>
                     <input type="radio" name="gameMode" value="leveled">
@@ -519,8 +536,8 @@
                   <label>
                     <input type="radio" name="gameMode" value="custom">
                     <div>
-                      <div class="title">Custom (Builder)</div>
-                      <div class="desc">Import a `.tanklevel.json` exported from the builder. Perfect for sharing levels.</div>
+                      <div class="title">Custom Rules</div>
+                      <div class="desc">Customize wind, rain, and air support before generating an auto map.</div>
                     </div>
                   </label>
                 </div>
@@ -535,7 +552,7 @@
                 </div>
               </div>
 
-              <details class="welcome-details" open>
+              <details class="welcome-details" id="welcomeTankGallery" open>
                 <summary>Tank Gallery</summary>
                 <div class="welcome-form">
                   <div class="row">
@@ -571,7 +588,7 @@
             </div>
 
             <div>
-              <details class="welcome-details" open>
+              <details class="welcome-details" id="welcomeWeatherDetails" open>
                 <summary>Weather & Air Support</summary>
                 <div class="welcome-form">
                   <div class="row">
@@ -647,21 +664,12 @@
                 </div>
               </details>
 
-              <details class="welcome-details" id="welcomeCustomDetails">
-                <summary>Custom Level (Builder)</summary>
+              <details class="welcome-details" open>
+                <summary>Builder</summary>
                 <div class="welcome-form">
                   <div class="row">
-                    <label>Open Builder</label>
+                    <label>Open Tank Level Builder (new tab)</label>
                     <a class="menu-link" href="./tools/tank-level-builder.html" target="_blank" rel="noreferrer">Open Tank Level Builder</a>
-                  </div>
-                  <div class="row">
-                    <label>Import `.tanklevel.json`</label>
-                    <button type="button" id="welcomeImportBtn">Choose File…</button>
-                    <input class="hidden-file" id="welcomeImportFile" type="file" accept=".json,.tanklevel.json">
-                  </div>
-                  <div class="row">
-                    <label>Loaded Custom Level</label>
-                    <div id="welcomeCustomSummary" style="color:#bfe0ff; font-weight:800;">None loaded</div>
                   </div>
                 </div>
               </details>
@@ -671,6 +679,19 @@
                 <button class="ghost" type="button" id="welcomeDefaultsBtn">Play Defaults</button>
               </div>
             </div>
+          </div>
+
+          <div class="welcome-nav" id="welcomeNav1">
+            <button class="alt" type="button" id="welcomeContinueBtn">Continue</button>
+            <button class="ghost" type="button" id="welcomeSkipBtn">Skip Welcome</button>
+          </div>
+          <div class="welcome-nav" id="welcomeNav2">
+            <button class="ghost" type="button" id="welcomeBackBtn">Back</button>
+            <button class="alt" type="button" id="welcomeNextBtn">Next</button>
+          </div>
+          <div class="welcome-nav" id="welcomeNav3">
+            <button class="ghost" type="button" id="welcomeBackBtn2">Back</button>
+            <button class="alt" type="button" id="welcomeStartBtn2">Start</button>
           </div>
         </div>
       </div>
@@ -833,14 +854,19 @@
         const menuCloseBtn = document.getElementById("menuCloseBtn");
 
         const welcomeOverlay = document.getElementById("welcomeOverlay");
+        const welcomeCard = document.getElementById("welcomeCard");
         const welcomeCloseBtn = document.getElementById("welcomeCloseBtn");
         const welcomeStartBtn = document.getElementById("welcomeStartBtn");
         const welcomeDefaultsBtn = document.getElementById("welcomeDefaultsBtn");
-        const welcomeCustomDetails = document.getElementById("welcomeCustomDetails");
+        const welcomeContinueBtn = document.getElementById("welcomeContinueBtn");
+        const welcomeSkipBtn = document.getElementById("welcomeSkipBtn");
+        const welcomeBackBtn = document.getElementById("welcomeBackBtn");
+        const welcomeNextBtn = document.getElementById("welcomeNextBtn");
+        const welcomeBackBtn2 = document.getElementById("welcomeBackBtn2");
+        const welcomeStartBtn2 = document.getElementById("welcomeStartBtn2");
         const welcomeNightDetails = document.getElementById("welcomeNightDetails");
-        const welcomeImportBtn = document.getElementById("welcomeImportBtn");
-        const welcomeImportFile = document.getElementById("welcomeImportFile");
-        const welcomeCustomSummary = document.getElementById("welcomeCustomSummary");
+        const welcomeTankGallery = document.getElementById("welcomeTankGallery");
+        const welcomeWeatherDetails = document.getElementById("welcomeWeatherDetails");
 
         const heroPrevBtn = document.getElementById("heroPrevBtn");
         const heroNextBtn = document.getElementById("heroNextBtn");
@@ -962,7 +988,6 @@
           levelDecor: [],
           player: null,
           enemy: null,
-          customLevelEnvOverride: null,
           preMoveUsed: false,
           preMoveAllowance: 0,
           tutorialOn: true,
@@ -1054,9 +1079,20 @@
           if (isOpen) {
             welcomeOverlay.classList.add("open");
             welcomeOverlay.setAttribute("aria-hidden", "false");
+            if (welcomeCard) welcomeCard.dataset.step = "1";
           } else {
             welcomeOverlay.classList.remove("open");
             welcomeOverlay.setAttribute("aria-hidden", "true");
+          }
+        }
+
+        function setWelcomeStep(step) {
+          if (!welcomeCard) return;
+          const s = String(clamp(Number(step) || 1, 1, 3));
+          welcomeCard.dataset.step = s;
+          if (s === "3") {
+            updateCarouselPreviews();
+            syncWelcomeDetailsToMode();
           }
         }
 
@@ -1067,14 +1103,12 @@
 
         function syncWelcomeDetailsToMode() {
           const mode = selectedWelcomeMode();
-          welcomeCustomDetails.style.display = mode === "custom" ? "block" : "none";
           welcomeNightDetails.style.display = mode === "night" ? "block" : "none";
           document.getElementById("callFlareBtn").style.display = mode === "night" ? "inline-block" : "none";
         }
 
         let heroCarouselIndex = 0;
         let enemyCarouselIndex = 1;
-        let loadedCustomLevel = null;
         function updateCarouselPreviews() {
           const heroKey = imageKeys[clamp(heroCarouselIndex, 0, imageKeys.length - 1)];
           const enemyKey = imageKeys[clamp(enemyCarouselIndex, 0, imageKeys.length - 1)];
@@ -1121,7 +1155,7 @@
             wind,
             rain: { enabled: rainOn, intensity: rainIntensity },
             bomber: { mode: bomberMode, bombsPerCall },
-            night: { enabled: mode === "night", darkness, shotLightRadius, shotLightIntensity, flareAfterMisses, flareRadius, flareIntensity, flareMax }
+            night: { enabled: mode === "night", darkness: mode === "night" ? darkness : 0, shotLightRadius, shotLightIntensity, flareAfterMisses, flareRadius, flareIntensity, flareMax }
           };
         }
 
@@ -1132,7 +1166,7 @@
           state.rain.intensity = Number(cfg.rain?.intensity || 0);
 
           state.night.enabled = !!cfg.night?.enabled;
-          state.night.darkness = Number(cfg.night?.darkness ?? 0.86);
+          state.night.darkness = state.night.enabled ? Number(cfg.night?.darkness ?? 0.86) : 0;
           state.night.shotLightRadius = Number(cfg.night?.shotLightRadius ?? 170);
           state.night.shotLightIntensity = Number(cfg.night?.shotLightIntensity ?? 0.85);
           state.night.flareAfterMisses = Number(cfg.night?.flareAfterMisses ?? 3);
@@ -1155,9 +1189,6 @@
           if (state.mode === "leveled") {
             state.endlessAutoLevels = false;
             state.totalLevels = 15;
-          } else if (state.mode === "custom") {
-            state.endlessAutoLevels = false;
-            state.totalLevels = 1;
           } else {
             state.endlessAutoLevels = true;
             state.totalLevels = 15;
@@ -1209,61 +1240,12 @@
           };
         }
 
-        function setLoadedCustomLevel(payload) {
-          try {
-            const lvl = payload?.level || payload;
-            if (!lvl || !Array.isArray(lvl.terrain)) throw new Error("Invalid level payload.");
-            loadedCustomLevel = payload;
-            localStorage.setItem("tanks.customLevelPayload.v1", JSON.stringify(payload));
-            const title = String(lvl.title || "Custom Level");
-            const slot = Number(lvl.slot || 1);
-            welcomeCustomSummary.textContent = `${title} (slot ${slot})`;
-            welcomeCustomSummary.style.color = "#bfe0ff";
-          } catch {
-            loadedCustomLevel = null;
-            try { localStorage.removeItem("tanks.customLevelPayload.v1"); } catch {}
-            welcomeCustomSummary.textContent = "Invalid custom level file.";
-            welcomeCustomSummary.style.color = "#ffb2b2";
-          }
-        }
-
-        function loadCustomLevelFromStorage() {
-          try {
-            const raw = localStorage.getItem("tanks.customLevelPayload.v1");
-            if (!raw) return;
-            const payload = JSON.parse(raw);
-            setLoadedCustomLevel(payload);
-          } catch {}
-        }
+        // Custom levels are built in the separate builder tool.
 
         function startNewMatchFromWelcome(cfg) {
           applyMatchConfig(cfg);
-          state.customLevelEnvOverride = null;
-
-          if (state.mode === "custom") {
-            const payload = loadedCustomLevel || (() => {
-              try {
-                const raw = localStorage.getItem("tanks.customLevelPayload.v1");
-                return raw ? JSON.parse(raw) : null;
-              } catch {
-                return null;
-              }
-            })();
-
-            if (!payload) {
-              updateStatus("Custom mode selected. Import a `.tanklevel.json` first.");
-              setMenuOpen(true);
-              return;
-            }
-            const lvl = payload.level || payload;
-            state.customLevelsBySlot = { 1: lvl };
-            state.customLevelEnvOverride = levelEnvironmentFromPayload(lvl);
-            state.level = 1;
-            state.rounds = 1;
-          } else {
-            state.level = 1;
-            state.rounds = 1;
-          }
+          state.level = 1;
+          state.rounds = 1;
 
           state.score = 0;
           state.turn = "player";
@@ -1413,8 +1395,12 @@
           }
 
           const envFromLevel = custom ? levelEnvironmentFromPayload(custom) : null;
-          const envOverride = state.customLevelEnvOverride || envFromLevel;
+          const envOverride = envFromLevel;
           if (envOverride) applyEnvironmentOverrides(envOverride);
+          if (!envOverride && state.mode !== "night") {
+            state.night.enabled = false;
+            state.night.darkness = 0;
+          }
           if (!state.night.enabled) {
             state.flares = [];
             state.flarePlane = null;
@@ -2318,6 +2304,21 @@
             });
           });
           welcomeCloseBtn.addEventListener("click", () => setWelcomeOpen(false));
+          welcomeContinueBtn.addEventListener("click", () => setWelcomeStep(2));
+          welcomeSkipBtn.addEventListener("click", () => {
+            setWelcomeOpen(false);
+            startNewMatchFromWelcome(loadMatchConfigFromWelcome());
+          });
+          welcomeBackBtn.addEventListener("click", () => setWelcomeStep(1));
+          welcomeNextBtn.addEventListener("click", () => {
+            syncWelcomeDetailsToMode();
+            setWelcomeStep(3);
+          });
+          welcomeBackBtn2.addEventListener("click", () => setWelcomeStep(2));
+          welcomeStartBtn2.addEventListener("click", () => {
+            syncWelcomeDetailsToMode();
+            startNewMatchFromWelcome(loadMatchConfigFromWelcome());
+          });
           welcomeDefaultsBtn.addEventListener("click", () => {
             const auto = document.querySelector('input[name="gameMode"][value="auto"]');
             if (auto) auto.checked = true;
@@ -2376,20 +2377,7 @@
             welcomeFlareMaxValue.textContent = String(welcomeFlareMax.value);
           });
 
-          welcomeImportBtn.addEventListener("click", () => welcomeImportFile.click());
-          welcomeImportFile.addEventListener("change", async () => {
-            const file = welcomeImportFile.files && welcomeImportFile.files[0];
-            if (!file) return;
-            try {
-              const text = await file.text();
-              const payload = JSON.parse(text);
-              setLoadedCustomLevel(payload);
-              updateStatus("Custom level loaded. Press Start Game.");
-            } catch {
-              setLoadedCustomLevel(null);
-              updateStatus("Could not read that file as JSON.");
-            }
-          });
+          // Builder is opened via link (no in-game import in this flow).
 
           angleInput.addEventListener("input", () => {
             angleValue.textContent = String(angleInput.value);
@@ -2506,8 +2494,6 @@
           loadSelectedShotProfile();
           resetLevel(true);
           render();
-
-          loadCustomLevelFromStorage();
           heroCarouselIndex = Math.max(0, imageKeys.indexOf(playerTankSelect.value));
           enemyCarouselIndex = Math.max(0, imageKeys.indexOf(enemyTankSelect.value));
           updateCarouselPreviews();
