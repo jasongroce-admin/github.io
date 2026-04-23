@@ -688,7 +688,8 @@
         function createTank(side, imgKey, hp) {
           const size = resolveTankSize(imgKey);
           const x = side === "left" ? 170 : world.width - 170;
-          const y = terrainHeightAt(x) - size.height / 2;
+          const groundSink = size.height * 0.14;
+          const y = terrainHeightAt(x) - size.height / 2 + groundSink;
           return {
             side,
             x,
@@ -702,6 +703,7 @@
             imageKey: imgKey,
             width: size.width,
             height: size.height,
+            groundSink,
             moveLeft: -26,
             moveRight: 26,
             moveTargetX: x,
@@ -750,8 +752,8 @@
           state.enemy = createTank("right", enemyTankSelect.value, hpScale + 10 + Math.floor(state.level * 2.2));
           state.player.x = Math.max(40, Math.min(world.width - 40, heroX));
           state.enemy.x = Math.max(40, Math.min(world.width - 40, enemyX));
-          state.player.y = terrainHeightAt(state.player.x) - state.player.height / 2;
-          state.enemy.y = terrainHeightAt(state.enemy.x) - state.enemy.height / 2;
+          state.player.y = terrainHeightAt(state.player.x) - state.player.height / 2 + Number(state.player.groundSink || 0);
+          state.enemy.y = terrainHeightAt(state.enemy.x) - state.enemy.height / 2 + Number(state.enemy.groundSink || 0);
           refreshWeaponMenu();
           updateHud();
           updateStatus(`Level ${state.level} ready. ${state.turn === "player" ? "Your turn." : "Enemy turn."}`);
@@ -799,7 +801,7 @@
           const groundMid = terrainHeightAt(tank.x);
           const groundRight = terrainHeightAt(tank.x + wheelSpan);
           const groundSurface = Math.min(groundLeft, groundMid, groundRight);
-          const ground = groundSurface - tank.height / 2;
+          const ground = groundSurface - tank.height / 2 + Number(tank.groundSink || 0);
           if (tank.y < ground - 1) {
             tank.vy += gravity;
             tank.y += tank.vy;
