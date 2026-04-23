@@ -1005,6 +1005,16 @@
           return { particleLife: 10, particleSize: 3, lightLife: 9, lightIntensityMult: 1.0, radiusMult: 1.0 };
         }
 
+        function weaponVfxProfile(weapon) {
+          const key = weapon?.key || "shell";
+          if (key === "heavy") return { sparks: 56, smokes: 22, smokeLife: [40, 78], smokeSize: [10, 22], smokeColors: ["rgba(24,18,10,0.55)", "rgba(70,42,20,0.45)", "rgba(30,24,20,0.55)"] };
+          if (key === "cluster") return { sparks: 30, smokes: 34, smokeLife: [44, 92], smokeSize: [10, 24], smokeColors: ["rgba(18,22,42,0.45)", "rgba(120,120,170,0.35)", "rgba(25,25,35,0.55)"] };
+          if (key === "napalm") return { sparks: 38, smokes: 34, smokeLife: [52, 110], smokeSize: [12, 28], smokeColors: ["rgba(30,10,6,0.6)", "rgba(88,34,16,0.5)", "rgba(24,16,12,0.6)"] };
+          if (key === "rail") return { sparks: 24, smokes: 12, smokeLife: [26, 56], smokeSize: [8, 18], smokeColors: ["rgba(30,60,70,0.32)", "rgba(10,24,28,0.45)"] };
+          if (key === "quantum") return { sparks: 50, smokes: 22, smokeLife: [50, 96], smokeSize: [10, 26], smokeColors: ["rgba(45,10,60,0.45)", "rgba(20,40,70,0.35)", "rgba(8,8,18,0.55)"] };
+          return { sparks: 42, smokes: 18, smokeLife: [36, 70], smokeSize: [9, 20], smokeColors: ["rgba(20,18,14,0.5)", "rgba(38,32,26,0.45)"] };
+        }
+
         const guides = {
           easy: 0.55,
           medium: 0.22,
@@ -1769,7 +1779,7 @@
           }
         }
 
-        function explode(x, y, weapon, source) {
+        function explode(x, y, weapon, source, directHitTank) {
           const radius = weapon.radius;
           const centerY = Math.min(world.height - 1, Math.max(0, y));
           state.craters.push({ x, y: centerY, radius, life: 26, color: weapon.color });
@@ -1791,11 +1801,12 @@
             const hpBefore = tank.hp;
             const dx = tank.x - x;
             const dy = tank.y - y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (tank === directHitTank) dist = 0;
             if (dist <= radius * 1.3) {
-              const falloff = Math.max(0.15, 1 - dist / (radius * 1.3));
+              const falloff = tank === directHitTank ? 1 : Math.max(0.15, 1 - dist / (radius * 1.3));
               let dmg = weapon.damage * falloff;
-              if (weapon.piercing && dist < radius * 0.65) dmg *= 1.28;
+              if (weapon.piercing && (tank === directHitTank || dist < radius * 0.65)) dmg *= 1.28;
               tank.hp -= dmg;
               if (tank.side !== source) state.score += Math.round(dmg * 1.8);
               if (tank.side === source) state.score -= Math.round(dmg * 0.8);
@@ -1828,10 +1839,11 @@
             }
           }
 
-          for (let i = 0; i < 42; i += 1) {
+          const palette = weaponExplosionPalette(weapon);
+          const vfx = weaponVfxProfile(weapon);
+          for (let i = 0; i < vfx.sparks; i += 1) {
             const a = Math.random() * Math.PI * 2;
             const s = Math.random() * 4 + 1;
-            const palette = weaponExplosionPalette(weapon);
             state.particles.push({
               x,
               y,
@@ -1839,7 +1851,26 @@
               vy: Math.sin(a) * s - 2.2,
               life: 24 + Math.random() * 20,
               color: palette[i % palette.length],
-              size: 3 + Math.random() * 2
+              size: 2.5 + Math.random() * 3.2,
+              kind: "spark"
+            });
+          }
+
+          for (let i = 0; i < vfx.smokes; i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 0.35 + Math.random() * 1.2;
+            const size = vfx.smokeSize[0] + Math.random() * (vfx.smokeSize[1] - vfx.smokeSize[0]);
+            const life = vfx.smokeLife[0] + Math.random() * (vfx.smokeLife[1] - vfx.smokeLife[0]);
+            const smokeColor = vfx.smokeColors[i % vfx.smokeColors.length];
+            state.particles.push({
+              x: x + Math.cos(a) * (radius * 0.25),
+              y: y + Math.sin(a) * (radius * 0.18),
+              vx: Math.cos(a) * s,
+              vy: Math.sin(a) * s - 0.5,
+              life,
+              color: smokeColor,
+              size,
+              kind: "smoke"
             });
           }
 
@@ -1876,7 +1907,16 @@
             const a = Math.random() * Math.PI * 2;
             const s = Math.random() * 2 + 0.8;
             const palette = weaponExplosionPalette(weapon);
-            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.1, life: 10 + Math.random() * 14, color: palette[(i + 1) % palette.length], size: 2 + Math.random() * 2 });
+            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.1, life: 10 + Math.random() * 14, color: palette[(i + 1) % palette.length], size: 2 + Math.random() * 2, kind: "spark" });
+          }
+          const vfx = weaponVfxProfile(weapon);
+          for (let i = 0; i < Math.max(6, Math.round(vfx.smokes * 0.25)); i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 0.25 + Math.random() * 0.8;
+            const size = 7 + Math.random() * 14;
+            const life = 26 + Math.random() * 44;
+            const smokeColor = vfx.smokeColors[i % vfx.smokeColors.length];
+            state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, life, color: smokeColor, size, kind: "smoke" });
           }
         }
 
@@ -1952,7 +1992,7 @@
             const nudge = 0.02;
             const hitX = prevX + dx * Math.min(1, hitT + nudge);
             const hitY = prevY + dy * Math.min(1, hitT + nudge);
-            explode(hitX, hitY, p.weapon, shooterSide);
+            explode(hitX, hitY, p.weapon, shooterSide, targetTank);
             state.activeProjectile = null;
             checkWinLose();
             endTurn();
@@ -1975,7 +2015,7 @@
 
           const terrainY = terrainHeightAt(p.x);
           if (p.y >= terrainY) {
-            explode(p.x, terrainY, p.weapon, state.turn === "player" ? "left" : "right");
+            explode(p.x, terrainY, p.weapon, state.turn === "player" ? "left" : "right", null);
             state.activeProjectile = null;
             checkWinLose();
             endTurn();
@@ -1986,7 +2026,13 @@
           for (let i = state.particles.length - 1; i >= 0; i -= 1) {
             const p = state.particles[i];
             p.life -= 1;
-            p.vy += 0.08;
+            if (p.kind === "smoke") {
+              p.vx *= 0.96;
+              p.vy *= 0.96;
+              p.vy -= 0.03;
+            } else {
+              p.vy += 0.08;
+            }
             p.x += p.vx;
             p.y += p.vy;
             if (p.life <= 0) state.particles.splice(i, 1);
@@ -2034,11 +2080,20 @@
             ctx.restore();
           }
           state.particles.forEach((p) => {
-            ctx.globalAlpha = Math.max(0.2, p.life / 35);
             ctx.fillStyle = p.color;
             const sz = Math.max(1.5, Number(p.size || 3));
-            ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
-            ctx.globalAlpha = 1;
+            if (p.kind === "smoke") {
+              ctx.save();
+              ctx.globalAlpha = clamp(Number(p.life || 0) / 90, 0.06, 0.65);
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, sz * 0.5, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            } else {
+              ctx.globalAlpha = Math.max(0.2, Number(p.life || 0) / 35);
+              ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
+              ctx.globalAlpha = 1;
+            }
           });
           state.fires.forEach((f) => {
             const t = clamp(Number(f.life || 0) / 220, 0, 1);
@@ -2176,7 +2231,7 @@
             }
             const ty = terrainHeightAt(bomb.x);
             if (bomb.y >= ty) {
-              explode(bomb.x, ty, bomb.weapon, "left");
+              explode(bomb.x, ty, bomb.weapon, "left", null);
               state.airBombs.splice(i, 1);
               checkWinLose();
             }
