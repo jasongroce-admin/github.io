@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updatedAt":  "2026-04-23T07:02:32",
+    "updatedAt":  "2026-04-24T13:53:52",
     "assets":  [
                    {
                        "key":  "scifi_alien_base_792x276",
@@ -921,6 +921,281 @@
                        "category":  "vehicles",
                        "tags":  [
                                     "vehicles"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_civilian_front_standing_459x200",
+                       "file":  "misc_human_civilian_front_standing_459x200.webp",
+                       "title":  "Civilian Front Standing 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_civilian_running_right_pose2_459x200",
+                       "file":  "misc_human_civilian_running_right_pose2_459x200.webp",
+                       "title":  "Civilian Running Right Pose2 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_civilian_side_standing_right_459x200",
+                       "file":  "misc_human_civilian_side_standing_right_459x200.webp",
+                       "title":  "Civilian Side Standing Right 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_female_civilian_front_standing_459x200",
+                       "file":  "misc_human_female_civilian_front_standing_459x200.webp",
+                       "title":  "Female Civilian Front Standing 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_female_civilian_running_right_pose1_459x200",
+                       "file":  "misc_human_female_civilian_running_right_pose1_459x200.webp",
+                       "title":  "Female Civilian Running Right Pose1 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_female_civilian_running_right_pose2_459x200",
+                       "file":  "misc_human_female_civilian_running_right_pose2_459x200.webp",
+                       "title":  "Female Civilian Running Right Pose2 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_female_civilian_side_standing_right_459x200",
+                       "file":  "misc_human_female_civilian_side_standing_right_459x200.webp",
+                       "title":  "Female Civilian Side Standing Right 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_firefighter_front_standing_459x200",
+                       "file":  "misc_human_firefighter_front_standing_459x200.webp",
+                       "title":  "Firefighter Front Standing 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_firefighter_running_right_pose1_459x200",
+                       "file":  "misc_human_firefighter_running_right_pose1_459x200.webp",
+                       "title":  "Firefighter Running Right Pose1 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_firefighter_running_right_pose2_459x200",
+                       "file":  "misc_human_firefighter_running_right_pose2_459x200.webp",
+                       "title":  "Firefighter Running Right Pose2 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
+                                ],
+                       "defaultProperties":  {
+                                                 "scale":  1,
+                                                 "health":  100,
+                                                 "speed":  0,
+                                                 "isEnemy":  false,
+                                                 "canFoam":  true,
+                                                 "canLaser":  true,
+                                                 "weaponType":  "shell",
+                                                 "fireRate":  0,
+                                                 "damage":  32,
+                                                 "radius":  42,
+                                                 "pathTrace":  false,
+                                                 "pathDirection":  "ltr",
+                                                 "bomberCallIn":  false
+                                             }
+                   },
+                   {
+                       "key":  "misc_human_firefighter_side_standing_right_459x200",
+                       "file":  "misc_human_firefighter_side_standing_right_459x200.webp",
+                       "title":  "Firefighter Side Standing Right 459X200",
+                       "category":  "human",
+                       "tags":  [
+                                    "human",
+                                    "misc_human"
                                 ],
                        "defaultProperties":  {
                                                  "scale":  1,
