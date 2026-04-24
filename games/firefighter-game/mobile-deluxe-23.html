@@ -1430,6 +1430,21 @@ button:hover { filter: brightness(1.2); }
             <button id="builderUploadImageBtn" type="button">Upload PNG</button>
             <button id="builderCaptureImageBtn" type="button">Camera Snap</button>
           </div>
+          <div class="builder-mini-actions" style="margin-top:6px;">
+            <label for="builderUploadCategory" style="font-size:12px;min-width:102px;">Upload Category</label>
+            <select id="builderUploadCategory">
+              <option value="uploaded">Uploaded</option>
+              <option value="human">Human</option>
+              <option value="vehicles">Vehicles</option>
+              <option value="military">Military</option>
+              <option value="animals">Animals</option>
+              <option value="buildings">Buildings</option>
+              <option value="nature">Nature</option>
+              <option value="props">Props</option>
+              <option value="scifi">Sci-Fi</option>
+              <option value="misc">Misc</option>
+            </select>
+          </div>
         </div>
         <div class="builder-field">
           <label for="builderAssetSearch">Search Images</label>
@@ -1441,6 +1456,7 @@ button:hover { filter: brightness(1.2); }
           <option value="all">All</option>
           <option value="vehicles">Vehicles</option>
           <option value="military">Military</option>
+          <option value="human">Human</option>
           <option value="animals">Animals</option>
           <option value="buildings">Buildings</option>
           <option value="nature">Nature</option>
@@ -2503,6 +2519,17 @@ const SPRITE_FILES = {
   vehicles_vehicle_tank_futuristic_assault_792x276: 'vehicles_vehicle_tank_futuristic_assault_792x276.webp',
   vehicles_vehicle_tank_futuristic_command_792x276: 'vehicles_vehicle_tank_futuristic_command_792x276.webp',
   vehicles_vehicle_tank_futuristic_hover1_792x276: 'vehicles_vehicle_tank_futuristic_hover1_792x276.webp',
+  misc_human_civilian_front_standing_459x200: 'misc_human_civilian_front_standing_459x200.webp',
+  misc_human_civilian_running_right_pose2_459x200: 'misc_human_civilian_running_right_pose2_459x200.webp',
+  misc_human_civilian_side_standing_right_459x200: 'misc_human_civilian_side_standing_right_459x200.webp',
+  misc_human_female_civilian_front_standing_459x200: 'misc_human_female_civilian_front_standing_459x200.webp',
+  misc_human_female_civilian_running_right_pose1_459x200: 'misc_human_female_civilian_running_right_pose1_459x200.webp',
+  misc_human_female_civilian_running_right_pose2_459x200: 'misc_human_female_civilian_running_right_pose2_459x200.webp',
+  misc_human_female_civilian_side_standing_right_459x200: 'misc_human_female_civilian_side_standing_right_459x200.webp',
+  misc_human_firefighter_front_standing_459x200: 'misc_human_firefighter_front_standing_459x200.webp',
+  misc_human_firefighter_running_right_pose1_459x200: 'misc_human_firefighter_running_right_pose1_459x200.webp',
+  misc_human_firefighter_running_right_pose2_459x200: 'misc_human_firefighter_running_right_pose2_459x200.webp',
+  misc_human_firefighter_side_standing_right_459x200: 'misc_human_firefighter_side_standing_right_459x200.webp',
 };
 
 const SPRITE_BASE_PATH = 'images/';
@@ -2704,6 +2731,17 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'vehicles_vehicle_tank_futuristic_assault_792x276.webp',
   'vehicles_vehicle_tank_futuristic_command_792x276.webp',
   'vehicles_vehicle_tank_futuristic_hover1_792x276.webp',
+  'misc_human_civilian_front_standing_459x200.webp',
+  'misc_human_civilian_running_right_pose2_459x200.webp',
+  'misc_human_civilian_side_standing_right_459x200.webp',
+  'misc_human_female_civilian_front_standing_459x200.webp',
+  'misc_human_female_civilian_running_right_pose1_459x200.webp',
+  'misc_human_female_civilian_running_right_pose2_459x200.webp',
+  'misc_human_female_civilian_side_standing_right_459x200.webp',
+  'misc_human_firefighter_front_standing_459x200.webp',
+  'misc_human_firefighter_running_right_pose1_459x200.webp',
+  'misc_human_firefighter_running_right_pose2_459x200.webp',
+  'misc_human_firefighter_side_standing_right_459x200.webp',
 ];
 
 function normalizeSpriteToken(value) {
@@ -3974,6 +4012,7 @@ let waterCapacity = 100;
 let waterCurrent = 100;
 let currentDifficultyTuning = null;
 const MUTUAL_AID_BUTTON_RECT = { x: 856, y: 18, w: 140, h: 38 };
+const TANKER_TIMER_RECT = { x: 732, y: 18, w: 118, h: 38 };
 const EARLY_REFILL_PENALTY_POINTS = 250;
 let earlyRefillWarningAccepted = false;
 let builderState = null;
@@ -4060,6 +4099,7 @@ const BUILDER_UI = {
   tornadoReturnPercent: document.getElementById('builderTornadoReturnPercent'),
   assetSearch: document.getElementById('builderAssetSearch'),
   assetCategory: document.getElementById('builderAssetCategory'),
+  uploadCategory: document.getElementById('builderUploadCategory'),
   assetCountNote: document.getElementById('builderAssetCountNote'),
   assetList: document.getElementById('builderAssetList'),
   addLakeBtn: document.getElementById('builderAddLakeBtn'),
@@ -6109,7 +6149,7 @@ function builderGetAssets() {
   const seenFiles = new Set();
   const usedKeys = new Set();
   const assets = [];
-  const addAsset = (key, file, isCustom = false) => {
+  const addAsset = (key, file, isCustom = false, customCategory = 'uploaded') => {
     const lower = String(file || '').toLowerCase();
     if (!lower) return;
     const signature = `${isCustom ? 'custom:' : 'file:'}${lower}`;
@@ -6125,9 +6165,12 @@ function builderGetAssets() {
     if (!isCustom && !SPRITE_FILES[finalKey]) {
       SPRITE_FILES[finalKey] = file;
     }
-    assets.push({ key: finalKey, file, isCustom: !!isCustom });
+    assets.push({ key: finalKey, file, isCustom: !!isCustom, customCategory: isCustom ? String(customCategory || 'uploaded').toLowerCase() : undefined });
   };
-  Object.keys(SPRITE_FILES).forEach((key) => addAsset(key, SPRITE_FILES[key], !!CUSTOM_SPRITE_DATA[key]));
+  Object.keys(SPRITE_FILES).forEach((key) => {
+    const customInfo = CUSTOM_SPRITE_DATA[key];
+    addAsset(key, SPRITE_FILES[key], !!customInfo, customInfo?.category || 'uploaded');
+  });
   // Always include discovered images directly in the asset library (defensive against cached/partial SPRITE_FILES).
   try {
     if (Array.isArray(DISCOVERED_SPRITE_FILENAMES)) {
@@ -6139,10 +6182,11 @@ function builderGetAssets() {
 
 function getAssetCategory(asset) {
   if (!asset) return 'misc';
-  if (asset.isCustom) return 'uploaded';
+  if (asset.isCustom) return String(asset.customCategory || 'uploaded').toLowerCase();
   const key = String(asset.key || '').toLowerCase();
   const file = String(asset.file || '').toLowerCase();
   const text = `${key} ${file}`;
+  if (/(human|person|people|character|char|hero|pilot|crew|soldier|npc|civilian|man|woman|boy|girl|firefighter|worker|resident)/.test(text) || /human_/.test(text) || /character_/.test(text)) return 'human';
   if (/(military|tank|jet|fighter|armored|mech|drone|missile)/.test(text) || /military_/.test(text)) return 'military';
   if (/(^|\\s)(scifi|alien|ufo|space)\\b/.test(text) || /scifi_/.test(text)) return 'scifi';
   if (/(horse|dog|cat|cow|pig|sheep|chicken|goat|bird|robin|cardinal|bluebird|animal)/.test(text) || /animal_/.test(text)) return 'animals';
@@ -6156,6 +6200,7 @@ function getAssetCategory(asset) {
 function getCategoryLabel(cat) {
   if (cat === 'vehicles') return 'Vehicles';
   if (cat === 'military') return 'Military';
+  if (cat === 'human') return 'Human';
   if (cat === 'animals') return 'Animals';
   if (cat === 'buildings') return 'Buildings';
   if (cat === 'nature') return 'Nature';
@@ -6165,8 +6210,9 @@ function getCategoryLabel(cat) {
   return 'Misc';
 }
 
-function registerCustomSprite(key, dataUrl, originalName = '') {
-  CUSTOM_SPRITE_DATA[key] = { dataUrl, originalName: originalName || key };
+function registerCustomSprite(key, dataUrl, originalName = '', category = 'uploaded') {
+  const normalizedCategory = String(category || 'uploaded').toLowerCase();
+  CUSTOM_SPRITE_DATA[key] = { dataUrl, originalName: originalName || key, category: normalizedCategory };
   SPRITE_FILES[key] = originalName || `${key}.png`;
   const img = new Image();
   img.onload = () => { SPRITE_READY[key] = true; };
@@ -6179,10 +6225,11 @@ function builderAddUploadedImage(file) {
   const reader = new FileReader();
   reader.onload = () => {
     const key = `user_${Date.now()}_${Math.floor(Math.random() * 99999)}`;
-    registerCustomSprite(key, String(reader.result || ''), file.name || `${key}.png`);
+    const selectedCategory = String(BUILDER_UI.uploadCategory?.value || 'uploaded').toLowerCase();
+    registerCustomSprite(key, String(reader.result || ''), file.name || `${key}.png`, selectedCategory);
     builderRenderAssetList();
     builderPendingSpriteKey = key;
-    builderSetStatus(`Uploaded ${file.name || 'custom image'}. Tap canvas once to place.`);
+    builderSetStatus(`Uploaded ${file.name || 'custom image'} to ${getCategoryLabel(selectedCategory)}. Tap canvas once to place.`);
   };
   reader.readAsDataURL(file);
 }
@@ -6230,7 +6277,7 @@ function builderRenderAssetList() {
     BUILDER_UI.assetCountNote.textContent = `Assets: ${total} (images: ${discoveredCount})`;
   }
 
-  const order = ['vehicles', 'military', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
+  const order = ['vehicles', 'military', 'human', 'animals', 'buildings', 'nature', 'props', 'scifi', 'uploaded', 'misc'];
   const grouped = new Map();
   assets.forEach((asset) => {
     const cat = asset.category || 'misc';
@@ -6530,7 +6577,7 @@ function builderImportPackageFromText(text) {
     Object.keys(parsed.customSprites).forEach((key) => {
       const info = parsed.customSprites[key];
       if (!info?.dataUrl) return;
-      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`);
+      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`, info.category || 'uploaded');
     });
   }
   builderLoadFromLevel(parsed.level);
@@ -6588,7 +6635,8 @@ function builderBuildSubmissionPayload() {
     if (CUSTOM_SPRITE_DATA[key]) {
       customSprites[key] = {
         dataUrl: CUSTOM_SPRITE_DATA[key].dataUrl,
-        originalName: CUSTOM_SPRITE_DATA[key].originalName || SPRITE_FILES[key] || `${key}.png`
+        originalName: CUSTOM_SPRITE_DATA[key].originalName || SPRITE_FILES[key] || `${key}.png`,
+        category: String(CUSTOM_SPRITE_DATA[key].category || 'uploaded').toLowerCase()
       };
     }
   });
@@ -18187,7 +18235,7 @@ if (hashLevelPackage?.level) {
     Object.keys(hashLevelPackage.customSprites).forEach((key) => {
       const info = hashLevelPackage.customSprites[key];
       if (!info?.dataUrl) return;
-      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`);
+      registerCustomSprite(key, info.dataUrl, info.originalName || `${key}.png`, info.category || 'uploaded');
     });
   }
   const normalizedLevel = normalizeBuilderLevel(hashLevelPackage.level);
@@ -18843,7 +18891,7 @@ function loadLevel(lvl, options = {}) {
   levelElapsedMs = 0;
   lastFrameTime = 0;
   const tankerTiming = getTankerSupportSchedule(lvl, difficulty);
-  nextTankerSupportAt = tankerTiming.firstAt;
+  nextTankerSupportAt = isManualKvfdRefillMode() ? 0 : tankerTiming.firstAt;
   tankerSupport = null;
   const boroTiming = getBoroTankerSupportSchedule(lvl, difficulty);
   nextBoroTankerAt = boroTiming.firstAt;
@@ -20077,6 +20125,12 @@ function handleStart(e) {
     return;
   }
   if (gameState === 'playing') { 
+    if (isPointInRect(mouseX, mouseY, TANKER_TIMER_RECT)) {
+      if (isManualKvfdRefillMode()) {
+        startKvfdManualRefill();
+        return;
+      }
+    }
     if (isPointInRect(mouseX, mouseY, MUTUAL_AID_BUTTON_RECT)) {
       if (triggerMutualAidRefill()) return;
     }
@@ -20653,6 +20707,53 @@ function startTankerSupport() {
   };
 }
 
+function isManualKvfdRefillMode() {
+  return difficulty >= 2;
+}
+
+function getManualKvfdCooldownMs() {
+  return difficulty >= 3 ? 45000 : 30000;
+}
+
+function getKvfdApproachDirFromTruck() {
+  return truck.x < (canvas.width * 0.5) ? -1 : 1;
+}
+
+function getKvfdTargetX(layout, approachDir) {
+  if (approachDir < 0) {
+    return Math.min(canvas.width - layout.w - 28, truck.x + TANKER_FOLLOW_OFFSET_X);
+  }
+  return Math.max(24, Math.min(canvas.width - layout.w - 24, truck.x - (layout.w - 72)));
+}
+
+function startKvfdManualRefill() {
+  if (!isManualKvfdRefillMode() || tankerSupport || gameState !== 'playing') return false;
+  if (!fireSpots.some((s) => s.health > 0)) return false;
+  if (levelElapsedMs < nextTankerSupportAt) return false;
+  const layout = ENTITY_LAYOUT.semiTankRight;
+  const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
+  const approachDir = getKvfdApproachDirFromTruck();
+  tankerSupport = {
+    x: approachDir < 0 ? canvas.width + TANKER_ENTRY_X : -layout.w - TANKER_EXIT_BUFFER_X,
+    y: TANKER_LANE_Y - layout.h,
+    w: layout.w,
+    h: layout.h,
+    facing: approachDir < 0 ? -1 : 1,
+    state: 'arrive',
+    speed: 4.2,
+    targetX: getKvfdTargetX(layout, approachDir),
+    followOffset: TANKER_FOLLOW_OFFSET_X,
+    holdMs: tankerTiming.hold,
+    holdUntil: 0,
+    attachHoldUntil: 0,
+    source: 'manual',
+    moveDir: approachDir,
+    departDir: 0
+  };
+  nextTankerSupportAt = levelElapsedMs + getManualKvfdCooldownMs();
+  return true;
+}
+
 function isSupportTruckConnected(support, activeState) {
   if (!support || support.state !== activeState) return false;
   const truckPoint = getTruckNozzlePoint();
@@ -20664,30 +20765,48 @@ function updateTankerSupport(dt) {
   if (!tankerSupport) return;
   const step = Math.max(0.2, dt / 16.67);
   tankerSupport.y = TANKER_LANE_Y - tankerSupport.h;
+  const moveDir = Number(tankerSupport.moveDir || -1);
   if (tankerSupport.state === 'arrive') {
-    tankerSupport.x -= tankerSupport.speed * step;
-    tankerSupport.facing = -1;
-    tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
-    if (tankerSupport.x <= tankerSupport.targetX) {
+    tankerSupport.x += (moveDir * tankerSupport.speed * step);
+    tankerSupport.facing = moveDir < 0 ? -1 : 1;
+    tankerSupport.targetX = getKvfdTargetX(tankerSupport, moveDir);
+    const arrived = moveDir < 0 ? (tankerSupport.x <= tankerSupport.targetX) : (tankerSupport.x >= tankerSupport.targetX);
+    if (arrived) {
       tankerSupport.x = tankerSupport.targetX;
       tankerSupport.state = 'refill';
       tankerSupport.holdUntil = levelElapsedMs + tankerSupport.holdMs;
     }
   } else if (tankerSupport.state === 'refill') {
-    tankerSupport.facing = -1;
-    tankerSupport.targetX = Math.min(canvas.width - tankerSupport.w - 28, truck.x + tankerSupport.followOffset);
+    tankerSupport.facing = moveDir < 0 ? -1 : 1;
+    tankerSupport.targetX = getKvfdTargetX(tankerSupport, moveDir);
     tankerSupport.x += (tankerSupport.targetX - tankerSupport.x) * Math.min(0.18, 0.06 * step);
     if (isTankerRefillEnabled() && isSupportTruckConnected(tankerSupport, 'refill')) addWater(Math.max(0, dt) * 0.0125);
     if (levelElapsedMs >= tankerSupport.holdUntil) {
+      if (isManualKvfdRefillMode() || tankerSupport.source === 'manual') {
+        const centerX = tankerSupport.x + (tankerSupport.w * 0.5);
+        const leftDist = centerX;
+        const rightDist = canvas.width - centerX;
+        tankerSupport.departDir = leftDist <= rightDist ? -1 : 1;
+      } else {
+        tankerSupport.departDir = 1;
+      }
       tankerSupport.state = 'depart';
     }
   } else if (tankerSupport.state === 'depart') {
-    tankerSupport.facing = 1;
-    tankerSupport.x += (tankerSupport.speed + 0.8) * step;
-    if (tankerSupport.x > canvas.width + TANKER_EXIT_BUFFER_X) {
+    const departDir = Number(tankerSupport.departDir || 1);
+    tankerSupport.facing = departDir < 0 ? -1 : 1;
+    tankerSupport.x += departDir * (tankerSupport.speed + 0.8) * step;
+    const exited = departDir > 0
+      ? tankerSupport.x > canvas.width + TANKER_EXIT_BUFFER_X
+      : tankerSupport.x < -tankerSupport.w - TANKER_EXIT_BUFFER_X;
+    if (exited) {
       tankerSupport = null;
-      const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
-      nextTankerSupportAt = levelElapsedMs + tankerTiming.repeat;
+      if (!isManualKvfdRefillMode()) {
+        const tankerTiming = getTankerSupportSchedule(currentLevel, difficulty);
+        nextTankerSupportAt = levelElapsedMs + tankerTiming.repeat;
+      } else {
+        nextTankerSupportAt = Math.max(nextTankerSupportAt, levelElapsedMs);
+      }
     }
   }
 }
@@ -20889,16 +21008,20 @@ function isPointInRect(x, y, rect) {
 
 function drawMutualAidButton() {
   if (gameState !== 'playing') return;
-  const timerRect = { x: 732, y: 18, w: 118, h: 38 };
+  const timerRect = TANKER_TIMER_RECT;
+  const manualMode = isManualKvfdRefillMode();
   ctx.save();
   const countdownMs = Math.max(0, nextTankerSupportAt - levelElapsedMs);
+  const refillReady = manualMode && !tankerSupport && countdownMs <= 0;
   const timerLabel = tankerSupport
     ? 'Tanker On Scene'
-    : `Tanker ${(countdownMs / 1000).toFixed(1)}s`;
-  ctx.fillStyle = '#2f5f95';
+    : (manualMode
+      ? (refillReady ? 'Refill Ready' : `Refill ${(countdownMs / 1000).toFixed(1)}s`)
+      : `Tanker ${(countdownMs / 1000).toFixed(1)}s`);
+  ctx.fillStyle = refillReady ? '#2f7d2f' : '#2f5f95';
   fillRoundedRect(timerRect.x, timerRect.y, timerRect.w, timerRect.h, 10);
-  ctx.strokeStyle = '#7ea5cf';
-  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = refillReady ? '#b9f1bb' : '#7ea5cf';
+  ctx.lineWidth = refillReady ? 2 : 1.6;
   strokeRoundedRect(timerRect.x, timerRect.y, timerRect.w, timerRect.h, 10);
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 12px Arial';
@@ -23140,7 +23263,7 @@ function loop() {
   updateTruckFlight(dt, baseLevels[currentLevel - 1] || {});
   if (gameState === 'playing' && pendingDispatchLevel === null) {
     levelElapsedMs += dt;
-    if (!tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
+    if (!isManualKvfdRefillMode() && !tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
       startTankerSupport();
     }
     const levelData = baseLevels[currentLevel - 1] || {};
@@ -23486,6 +23609,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
