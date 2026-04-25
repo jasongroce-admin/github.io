@@ -25181,6 +25181,55 @@ function initEnemyRaid(levelData) {
     }
   }
   if (!profiles.length) {
+    const isScifiCombatLevel = levelData?.fireTruckTheme === 'scifi' || levelData?.primaryAttackMode === 'laser';
+    if (isScifiCombatLevel) {
+      const fallbackKeys = [
+        'scifi_ufo_small_saucer_459x145',
+        'scifi_ufo_medium_delta_459x145',
+        'scifi_vehicle_fighter_459x145',
+        'scifi_vehicle_hovercar_compact_459x145',
+        'scifi_vehicle_hoverbike_459x145',
+        'scifi_vehicle_armoredtransport_459x145'
+      ]
+        .map((key) => resolveSpriteKey(key))
+        .filter(Boolean);
+      const fallbackCount = Math.max(4, clamp(Number(levelData?.enemyRaid?.targetCount ?? levelData?.enemyTargetCount ?? 6), 1, 18));
+      for (let i = 0; i < fallbackCount; i++) {
+        const spriteKey = fallbackKeys.length ? fallbackKeys[i % fallbackKeys.length] : '';
+        if (!spriteKey) continue;
+        const keyText = String(spriteKey || '').toLowerCase();
+        const flightEnabled = /(ufo|saucer|delta|cigar|mothership|fighter|flying|pod|jet|drone)/.test(keyText);
+        profiles.push({
+          spriteKey,
+          spawnDirection: 'both',
+          scaleMin: clamp(Number(levelData?.enemyRaid?.scaleMin ?? 0.2), 0.1, 3),
+          scaleMax: Math.max(0.2, clamp(Number(levelData?.enemyRaid?.scaleMax ?? 0.36), 0.1, 3)),
+          sourceScale: 1,
+          targetId: 'primaryVehicle',
+          laserEnabled: true,
+          bombEnabled: true,
+          aggressiveEnabled: true,
+          fightBackEnabled: false,
+          aggressiveSkill: clamp(Number(levelData?.enemyRaid?.aggressiveSkill ?? 1.2), 0.2, 2.8),
+          flightEnabled,
+          flightSpeed: flightEnabled ? 2.55 : 2.05,
+          laserDamage: clamp(Number(levelData?.enemyRaid?.laserDamage ?? 8), 1, 30),
+          laserCooldownMs: clamp(Number(levelData?.enemyRaid?.laserCooldownMs ?? 480), 40, 3000),
+          bombDamage: clamp(Number(levelData?.enemyRaid?.bombDamage ?? 14), 1, 80),
+          bombCooldownMs: clamp(Number(levelData?.enemyRaid?.bombCooldownMs ?? 1100), 120, 5000),
+          allowLaserDamage: true,
+          enemySpawnMinDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMinDelayMs ?? 220), 80, 5000),
+          enemySpawnMaxDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? 900), 120, 10000),
+          enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.laserColor || '')) ? String(levelData.enemyRaid.laserColor) : '#ff5772',
+          enemyBombType: (levelData?.enemyRaid?.bombType === 'plasma' || levelData?.enemyRaid?.bombType === 'mine') ? levelData.enemyRaid.bombType : 'bomb',
+          enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.bombColor || '')) ? String(levelData.enemyRaid.bombColor) : '#ffa047',
+          spawnYMin: flightEnabled ? 94 : (FIRETRUCK_LANE_Y - 22),
+          spawnYMax: flightEnabled ? 500 : (FIRETRUCK_LANE_Y + 14)
+        });
+      }
+    }
+  }
+  if (!profiles.length) {
     enemyRaidState = null;
     enemyLaserShots = [];
     enemyBombShots = [];
