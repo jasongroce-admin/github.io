@@ -9,15 +9,25 @@
   ];
 
   const STORAGE_KEY = "tibertron2000-save-v1";
+  const DIFFICULTY_KEY = "tibertron2000-difficulty-v1";
   const COCKPIT_LAYOUT_KEY = "tibertron2000-cockpit-layout-v1";
   const COCKPIT_LAYOUT_LOCK_KEY = "tibertron2000-cockpit-layout-lock-v1";
   const MAX_LEVEL = 10;
   const PLAYER_WIDTH = 92;
   const PLAYER_HEIGHT = 50;
+  const SPACE_HERO_WIDTH = 128;
+  const SPACE_HERO_HEIGHT = 64;
   const SHOT_COOLDOWN = 0.18;
   const ENEMY_SIZE_MULT = 1.3;
   const BUGGY_MAX_HEALTH = 100;
   const BUGGY_HIT_IFRAMES = 0.42;
+  const SPACE_HERO_SPRITE = "images/vehicles/starfighter_side_512x256.webp";
+  const SPACE_HERO_FACES_RIGHT = true;
+  const DIFFICULTY_PROFILES = {
+    easy: { label: "Easy", enemyHpMult: 0.9, enemyCountMult: 0.9, enemySpeedMult: 0.88, enemyFireMult: 0.86, scoreMult: 0.85 },
+    normal: { label: "Normal", enemyHpMult: 1, enemyCountMult: 1, enemySpeedMult: 1, enemyFireMult: 1, scoreMult: 1 },
+    hard: { label: "Hard", enemyHpMult: 1.2, enemyCountMult: 1.3, enemySpeedMult: 1.22, enemyFireMult: 1.2, scoreMult: 1.3 }
+  };
   const GOAL_BUILDING_SPRITES = {
     mineral: [
       "images/scifi/scifi_alien_base_792x276.webp",
@@ -83,6 +93,10 @@
   const returnShipBtn = document.getElementById("returnShipBtn");
   const restartCheckpointBtn = document.getElementById("restartCheckpointBtn");
   const toDashboardBtn = document.getElementById("toDashboardBtn");
+  const touchControls = document.getElementById("touchControls");
+  const missionLegend = document.getElementById("missionLegend");
+  const mobileStick = document.getElementById("mobileStick");
+  const mobileStickKnob = document.getElementById("mobileStickKnob");
   const fireFab = document.getElementById("fireFab");
   const deathOverlay = document.getElementById("deathOverlay");
   const deathMessage = document.getElementById("deathMessage");
@@ -97,14 +111,16 @@
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  const inputState = { left: false, right: false, jump: false, boost: false, fire: false };
+  const inputState = { left: false, right: false, jump: false, boost: false, fire: false, superThrust: false };
   const imageCache = new Map();
 
   const runtime = {
     active: false,
+    mode: "buggy",
     mission: null,
     resource: null,
     player: null,
+    space: null,
     cameraX: 0,
     runCollected: 0,
     dead: false,
@@ -118,6 +134,8 @@
     fireCooldown: 0,
     effects: [],
     aim: { x: 0, y: 0, active: false },
+    spaceMuzzleIndex: 0,
+    weapon: { rank: 1, title: "MK-1", spaceDamage: 1, buggyDamage: 1, fireRateMult: 1, projectileSpeedMult: 1 },
     health: BUGGY_MAX_HEALTH,
     maxHealth: BUGGY_MAX_HEALTH,
     damageCooldown: 0,
@@ -131,6 +149,8 @@
     selectedPlanetScreenId: "",
     layoutEditMode: false,
     layoutLocked: false,
+    difficulty: "normal",
+    pendingLanding: null,
     highlightLaunchUntilMs: 0,
     highlightOrbitUntilMs: 0
   };
@@ -153,6 +173,10 @@
     cockpitRightPanel: { left: 78, top: 68, width: 9, height: 12 }
   };
   let cockpitEditState = null;
+  const mobileStickState = {
+    active: false,
+    pointerId: null
+  };
   let cockpitBgLayerIndex = 0;
   let cockpitBgCurrentPath = "";
   let cockpitFireTimer = null;
@@ -552,6 +576,52 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
   }
 
+  function readDifficulty() {
+    try {
+      const raw = String(localStorage.getItem(DIFFICULTY_KEY) || "normal").toLowerCase();
+      return DIFFICULTY_PROFILES[raw] ? raw : "normal";
+    } catch (_) {
+      return "normal";
+    }
+  }
+
+  function writeDifficulty(mode) {
+    const key = DIFFICULTY_PROFILES[mode] ? mode : "normal";
+    dashboardUi.difficulty = key;
+    localStorage.setItem(DIFFICULTY_KEY, key);
+  }
+
+  function getDifficultyProfile() {
+    return DIFFICULTY_PROFILES[dashboardUi.difficulty] || DIFFICULTY_PROFILES.normal;
+  }
+
+  function getTotalStoredResources() {
+    return RESOURCE_LINES.reduce((sum, line) => sum + Math.max(0, safeNumber(saveState?.stored?.[line.id], 0)), 0);
+  }
+
+  function getProgressionScore() {
+    return getTotalStoredResources() + Math.max(0, safeNumber(saveState?.missionsCompleted, 0)) * 220;
+  }
+
+  function getWeaponProfile(line, level) {
+    const lv = clamp(Math.floor(safeNumber(level, 1)), 1, MAX_LEVEL);
+    const lineStored = Math.max(0, safeNumber(saveState?.stored?.[line?.id], 0));
+    const lineReq = Math.max(1, safeNumber(line?.requirement, 300));
+    const storedTier = clamp(Math.floor(lineStored / Math.max(60, lineReq * 0.22)), 0, 5);
+    const arcTier = clamp(Math.floor(safeNumber(saveState?.progress?.[line?.id], 0) / 2), 0, 5);
+    const scoreTier = clamp(Math.floor(getProgressionScore() / 1300), 0, 5);
+    const levelTier = clamp(Math.floor((lv - 1) / 2), 0, 4);
+    const rank = clamp(1 + storedTier + arcTier + Math.floor(scoreTier / 2) + levelTier, 1, 12);
+    return {
+      rank,
+      title: `MK-${rank}`,
+      spaceDamage: 1 + Math.floor(rank / 3),
+      buggyDamage: 1 + Math.floor(rank / 4),
+      fireRateMult: 1 + rank * 0.05,
+      projectileSpeedMult: 1 + rank * 0.045
+    };
+  }
+
   function hashSeed(text) {
     let h = 2166136261;
     for (let i = 0; i < text.length; i += 1) {
@@ -648,18 +718,18 @@
 
     const platformCount = 3 + Math.floor(lv * 0.75);
     for (let i = 0; i < platformCount; i += 1) {
-      const w = 115 + Math.floor(rng() * 170);
+      const w = 120 + Math.floor(rng() * 180);
       const x = 700 + Math.floor(rng() * (length - 1300));
-      const y = 328 + Math.floor(rng() * 100);
-      platforms.push({ x, y, w, h: 12, color: resource.category === "genetic" ? "#568e66" : "#7f8091" });
+      const y = 336 + Math.floor(rng() * 92);
+      platforms.push({ x, y, w, h: 18 + Math.floor(rng() * 8), color: resource.category === "genetic" ? "#6f9868" : "#a28d7c" });
     }
 
     const rockCount = 6 + lv * 2;
     for (let i = 0; i < rockCount; i += 1) {
-      const w = 34 + Math.floor(rng() * 48);
-      const h = 20 + Math.floor(rng() * 34);
+      const w = 36 + Math.floor(rng() * 56);
+      const h = 24 + Math.floor(rng() * 38);
       const x = pickSafeX(680, length - 980);
-      rocks.push({ x, y: baseGround - h, w, h, hp: 1, color: "#996548" });
+      rocks.push({ x, y: baseGround - h, w, h, hp: 1, color: "#7f644f" });
     }
 
     const mineCount = 4 + lv;
@@ -670,7 +740,7 @@
 
     const enemyCount = 3 + lv;
     for (let i = 0; i < enemyCount; i += 1) {
-      const fly = rng() > 0.58;
+      const fly = true;
       const x = pickSafeX(900, length - 1300);
       const patrol = 80 + Math.floor(rng() * 170);
       const type = fly ? "drone" : "crawler";
@@ -850,9 +920,60 @@
     if (!rect.width || !rect.height) return;
     const sx = (clientX - rect.left) * (canvas.width / rect.width);
     const sy = (clientY - rect.top) * (canvas.height / rect.height);
-    runtime.aim.x = runtime.cameraX + sx;
+    runtime.aim.x = runtime.mode === "spaceCombat" ? sx : (runtime.cameraX + sx);
     runtime.aim.y = sy;
     runtime.aim.active = true;
+  }
+
+  function isMobileLikeInput() {
+    return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  }
+
+  function setStickKnob(dx, dy) {
+    if (!mobileStickKnob) return;
+    const max = 34;
+    mobileStickKnob.style.transform = `translate(${Math.round(clamp(dx, -1, 1) * max)}px, ${Math.round(clamp(dy, -1, 1) * max)}px)`;
+  }
+
+  function applyStickAxes(dx, dy) {
+    const dead = 0.22;
+    inputState.left = dx < -dead;
+    inputState.right = dx > dead;
+    inputState.jump = dy < -dead;
+    inputState.boost = dy > dead;
+  }
+
+  function resetStickAxes() {
+    if (!mobileStickState.active) {
+      inputState.left = false;
+      inputState.right = false;
+      inputState.jump = false;
+      inputState.boost = false;
+    }
+    setStickKnob(0, 0);
+  }
+
+  function syncMissionControls() {
+    const missionOpen = missionScreen.classList.contains("open") && runtime.active;
+    const mobileLike = isMobileLikeInput();
+    if (touchControls) {
+      const showLegacy = missionOpen && !mobileLike && runtime.mode !== "spaceCombat";
+      touchControls.style.display = showLegacy ? "grid" : "none";
+    }
+    if (mobileStick) {
+      mobileStick.style.display = missionOpen && mobileLike ? "block" : "none";
+    }
+    if (fireFab) {
+      fireFab.style.display = missionOpen ? "inline-flex" : "none";
+      fireFab.style.right = "14px";
+      fireFab.style.left = "auto";
+    }
+    if (missionLegend) {
+      missionLegend.textContent = runtime.mode === "spaceCombat"
+        ? "Space Assault: Move with joystick or arrows. Aim with pointer and tap Fire. Spacebar = Super Thrust."
+        : "Buggy Run: Left/Right tune speed, Jump to clear craters, and aim with pointer to fire.";
+    }
+    if (!missionOpen || !mobileLike) resetStickAxes();
   }
 
   function spawnExplosion(x, y, color = "#ffb56b") {
@@ -900,11 +1021,201 @@
     };
   }
 
+  function makeSpacePlayer() {
+    return {
+      x: canvas.width * 0.25,
+      y: canvas.height * 0.5,
+      w: SPACE_HERO_WIDTH,
+      h: SPACE_HERO_HEIGHT,
+      vx: 0,
+      vy: 0,
+      facing: 1
+    };
+  }
+
+  function makeSpaceStars(count = 80) {
+    const stars = [];
+    for (let i = 0; i < count; i += 1) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() > 0.8 ? 2 : 1,
+        alpha: 0.2 + Math.random() * 0.75
+      });
+    }
+    return stars;
+  }
+
+  function createSpaceCombatState(mission) {
+    const level = clamp(safeNumber(mission?.level, 1), 1, MAX_LEVEL);
+    const diff = getDifficultyProfile();
+    const progressionTier = clamp(Math.floor(getProgressionScore() / 1400), 0, 8);
+    const killsNeeded = clamp(Math.round((5 + level * 2 + progressionTier) * diff.enemyCountMult), 5, 44);
+    const waveSize = clamp(Math.round((2 + Math.floor(level / 2) + Math.floor(progressionTier / 2)) * diff.enemyCountMult), 2, 8);
+    const waveDelay = clamp((Math.max(0.75, 2.1 - level * 0.08 - progressionTier * 0.05)) / Math.max(0.8, diff.enemyCountMult), 0.55, 2.8);
+    return {
+      level,
+      difficulty: dashboardUi.difficulty,
+      enemyHp: clamp(Math.round((1 + Math.floor(level / 4) + Math.floor(progressionTier / 4)) * diff.enemyHpMult), 1, 6),
+      kills: 0,
+      killsNeeded,
+      waveSize,
+      waveDelay,
+      spawnTimer: 0.5,
+      enemies: [],
+      stars: makeSpaceStars(86),
+      clearTimer: 0,
+      introTimer: 0.85
+    };
+  }
+
+  function getSpaceMuzzlePoints(player) {
+    const px = player?.x || 0;
+    const py = player?.y || 0;
+    const w = player?.w || SPACE_HERO_WIDTH;
+    const h = player?.h || SPACE_HERO_HEIGHT;
+    const facing = (player?.facing || -1) >= 0 ? 1 : -1;
+    const noseX = SPACE_HERO_FACES_RIGHT ? (w * 0.48) : (-w * 0.48);
+    const sideX = SPACE_HERO_FACES_RIGHT ? (w * 0.14) : (-w * 0.14);
+    const localPoints = [
+      { x: noseX, y: -h * 0.14 }, // top barrel
+      { x: noseX, y: h * 0.14 },  // bottom barrel
+      { x: sideX, y: h * 0.02 }   // center side port
+    ];
+    return localPoints.map((p) => ({
+      x: px + (facing >= 0 ? p.x : -p.x),
+      y: py + p.y
+    }));
+  }
+
+  function beginBuggyPhase() {
+    if (!runtime.mission) return;
+    runtime.mode = "buggy";
+    runtime.space = null;
+    runtime.player = makePlayer(90, runtime.mission);
+    runtime.cameraX = 0;
+    runtime.bullets = [];
+    runtime.enemyBullets = [];
+    runtime.effects = [];
+    runtime.fireCooldown = 0;
+    runtime.spaceMuzzleIndex = 0;
+    runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
+    runtime.lastCheckpointX = 90;
+    runtime.lastCheckpointLabel = "Ship Pad";
+    syncMissionControls();
+  }
+
+  function normalizeMissionForRun(mission, line = null) {
+    const clone = cloneSimple(mission || {});
+    clone.collectibles = (clone.collectibles || []).map((item) => ({ ...item, collected: false }));
+    clone.webpAssets = (clone.webpAssets || []).map((asset) => ({ ...asset, collected: false }));
+    const diff = getDifficultyProfile();
+    const progressionTier = clamp(Math.floor(getProgressionScore() / 1700), 0, 6);
+    clone.enemies = (clone.enemies || []).map((enemy, idx) => {
+      const inferredType = inferEnemyTypeFromSprite(enemy?.sprite, enemy?.type || "crawler");
+      const scaledHp = Math.max(1, Math.round(Math.max(1, safeNumber(enemy?.hp, 1)) * diff.enemyHpMult + progressionTier * 0.2));
+      return {
+        ...enemy,
+        hp: scaledHp,
+        type: inferredType,
+        speed: Math.max(0.2, safeNumber(enemy?.speed, 1) * diff.enemySpeedMult),
+        fireDelay: Math.max(0.35, safeNumber(enemy?.fireDelay, 1.5) / diff.enemyFireMult),
+        fireTimer: Math.max(0.2, safeNumber(enemy?.fireTimer, 0.6)),
+        sprite: normalizeEnemySpritePath(enemy?.sprite, inferredType, idx)
+      };
+    });
+    if (line?.id) {
+      clone.title = `${line.name} Mission ${clone.level || 1}`;
+    }
+    return clone;
+  }
+
+  function startBuggyMissionWithPrepared(line, preparedMission, importedMode = false, importedLabel = "") {
+    const mission = normalizeMissionForRun(preparedMission, line);
+    runtime.active = true;
+    runtime.resource = line;
+    runtime.mission = mission;
+    runtime.importedMode = !!importedMode;
+    runtime.importedLabel = importedLabel ? String(importedLabel) : "";
+    runtime.mode = "buggy";
+    runtime.space = null;
+    runtime.weapon = getWeaponProfile(line || {}, mission.level || 1);
+    runtime.player = makePlayer(90, mission);
+    runtime.cameraX = 0;
+    runtime.runCollected = 0;
+    runtime.dead = false;
+    runtime.completed = false;
+    runtime.lastCheckpointX = 90;
+    runtime.lastCheckpointLabel = "Ship Pad";
+    runtime.bullets = [];
+    runtime.enemyBullets = [];
+    runtime.fireCooldown = 0;
+    runtime.effects = [];
+    runtime.spaceMuzzleIndex = 0;
+    runtime.maxHealth = BUGGY_MAX_HEALTH;
+    runtime.health = BUGGY_MAX_HEALTH;
+    runtime.damageCooldown = 0;
+    runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
+    runtime.ticks = 0;
+    dashboardUi.pendingLanding = null;
+    dashboardUi.highlightOrbitUntilMs = 0;
+
+    dashboardScreen.style.display = "none";
+    missionScreen.classList.add("open");
+    deathOverlay.classList.remove("open");
+    completeOverlay.classList.remove("open");
+
+    if (!runtime.raf) {
+      runtime.lastTime = performance.now();
+      runtime.raf = requestAnimationFrame(gameLoop);
+    }
+    syncMissionControls();
+    updateHud();
+  }
+
+  function completeSpaceFlightToOrbit() {
+    const line = runtime.resource;
+    const mission = runtime.mission ? cloneSimple(runtime.mission) : null;
+    if (line?.id && mission) {
+      dashboardUi.pendingLanding = {
+        lineId: line.id,
+        level: mission.level || 1,
+        mission
+      };
+      dashboardUi.selectedLineId = line.id;
+      const cards = getPlanetDashboardCards(getDashboardSortedLines());
+      const selected = cards.find((card) => card?.line?.id === line.id);
+      if (selected) dashboardUi.selectedPlanetScreenId = selected.id;
+    } else {
+      dashboardUi.pendingLanding = null;
+    }
+    runtime.active = false;
+    runtime.dead = false;
+    runtime.completed = false;
+    runtime.mission = null;
+    runtime.space = null;
+    runtime.mode = "buggy";
+    runtime.bullets = [];
+    runtime.enemyBullets = [];
+    runtime.effects = [];
+    runtime.aim.active = false;
+    missionScreen.classList.remove("open");
+    deathOverlay.classList.remove("open");
+    completeOverlay.classList.remove("open");
+    dashboardUi.viewMode = "orbit";
+    dashboardUi.highlightLaunchUntilMs = performance.now() + 5200;
+    dashboardScreen.style.display = "grid";
+    syncMissionControls();
+    renderDashboard();
+  }
+
   function bankRunToShip(includeCompletionBonus) {
     if (!runtime.mission) return 0;
     const mission = runtime.mission;
+    const scoreMult = getDifficultyProfile().scoreMult || 1;
     let amount = Math.max(0, Math.floor(runtime.runCollected));
     if (includeCompletionBonus) amount += Math.max(0, Math.floor(mission.completionBonus || 0));
+    amount = Math.max(0, Math.floor(amount * scoreMult));
 
     if (runtime.resource && !runtime.importedMode) {
       saveState.stored[runtime.resource.id] = Math.max(0, Math.floor((saveState.stored[runtime.resource.id] || 0) + amount));
@@ -922,24 +1233,25 @@
   }
 
   function launchMission(line, level, importedData = null) {
-    const mission = importedData ? missionFromImportedLevel(importedData) : createProceduralMission(line, level);
-    mission.collectibles = mission.collectibles.map((item) => ({ ...item, collected: false }));
-    mission.webpAssets = (mission.webpAssets || []).map((asset) => ({ ...asset, collected: false }));
-    mission.enemies = (mission.enemies || []).map((enemy, idx) => {
-      const inferredType = inferEnemyTypeFromSprite(enemy?.sprite, enemy?.type || "crawler");
-      return {
-        ...enemy,
-        type: inferredType,
-        sprite: normalizeEnemySpritePath(enemy?.sprite, inferredType, idx)
-      };
-    });
+    const sourceMission = importedData ? missionFromImportedLevel(importedData) : createProceduralMission(line, level);
+    const mission = normalizeMissionForRun(sourceMission, line);
 
     runtime.active = true;
     runtime.resource = line;
     runtime.mission = mission;
     runtime.importedMode = !!importedData;
     runtime.importedLabel = importedData ? String(importedData.title || "Imported Builder Level") : "";
-    runtime.player = makePlayer(90, mission);
+    runtime.weapon = getWeaponProfile(line || {}, level || 1);
+    dashboardUi.pendingLanding = null;
+    if (importedData) {
+      runtime.mode = "buggy";
+      runtime.space = null;
+      runtime.player = makePlayer(90, mission);
+    } else {
+      runtime.mode = "spaceCombat";
+      runtime.space = createSpaceCombatState(mission);
+      runtime.player = makeSpacePlayer();
+    }
     runtime.cameraX = 0;
     runtime.runCollected = 0;
     runtime.dead = false;
@@ -953,7 +1265,9 @@
     runtime.maxHealth = BUGGY_MAX_HEALTH;
     runtime.health = BUGGY_MAX_HEALTH;
     runtime.damageCooldown = 0;
-    runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
+    runtime.aim = runtime.mode === "spaceCombat"
+      ? { x: runtime.player.x + 120, y: runtime.player.y, active: false }
+      : { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
     runtime.ticks = 0;
     dashboardUi.highlightOrbitUntilMs = 0;
 
@@ -966,16 +1280,20 @@
       runtime.lastTime = performance.now();
       runtime.raf = requestAnimationFrame(gameLoop);
     }
+    syncMissionControls();
     updateHud();
   }
 
   function returnToDashboard() {
     const hadMission = !!runtime.mission;
+    dashboardUi.pendingLanding = null;
     runtime.active = false;
     runtime.dead = false;
     runtime.completed = false;
     runtime.mission = null;
     runtime.resource = null;
+    runtime.mode = "buggy";
+    runtime.space = null;
     runtime.bullets = [];
     runtime.enemyBullets = [];
     runtime.effects = [];
@@ -983,6 +1301,7 @@
     deathOverlay.classList.remove("open");
     completeOverlay.classList.remove("open");
     missionScreen.classList.remove("open");
+    syncMissionControls();
     dashboardScreen.style.display = "grid";
     if (hadMission) {
       // After a buggy run, guide user to return to orbit.
@@ -999,13 +1318,15 @@
 
   function setRuntimeDead(reason) {
     runtime.dead = true;
-    deathMessage.textContent = reason;
-    deathStats.innerHTML = `
-      <div class="stat"><span class="k">Collected This Run</span><span class="v">${Math.floor(runtime.runCollected)}</span></div>
-      <div class="stat"><span class="k">Last Checkpoint</span><span class="v">${runtime.lastCheckpointLabel}</span></div>
-      <div class="stat"><span class="k">Distance</span><span class="v">${Math.floor(runtime.player.x)}</span></div>
-    `;
-    deathOverlay.classList.add("open");
+    if (deathMessage) deathMessage.textContent = reason;
+    if (deathStats) {
+      deathStats.innerHTML = `
+        <div class="stat"><span class="k">Collected This Run</span><span class="v">${Math.floor(runtime.runCollected)}</span></div>
+        <div class="stat"><span class="k">Last Checkpoint</span><span class="v">${runtime.lastCheckpointLabel}</span></div>
+        <div class="stat"><span class="k">Distance</span><span class="v">${Math.floor(runtime.player.x || 0)}</span></div>
+      `;
+    }
+    if (deathOverlay) deathOverlay.classList.add("open");
   }
 
   function applyBuggyDamage(amount, reason, options = {}) {
@@ -1034,13 +1355,18 @@
 
   function respawnAtCheckpoint() {
     if (!runtime.mission) return;
-    runtime.player = makePlayer(runtime.lastCheckpointX + 8, runtime.mission);
+    if (runtime.mode === "spaceCombat") {
+      runtime.player = makeSpacePlayer();
+    } else {
+      runtime.player = makePlayer(runtime.lastCheckpointX + 8, runtime.mission);
+    }
     runtime.dead = false;
     runtime.bullets = [];
     runtime.enemyBullets = [];
     runtime.effects = [];
     runtime.health = runtime.maxHealth;
     runtime.damageCooldown = 0;
+    runtime.spaceMuzzleIndex = 0;
     deathOverlay.classList.remove("open");
   }
 
@@ -1165,16 +1491,21 @@
     const cards = getPlanetDashboardCards(sorted);
     const selected = getSelectedPlanetCard(cards);
     if (!selected) return;
+    const pending = dashboardUi.pendingLanding;
+    const hasPendingForSelected = !!(pending && pending.lineId === selected.line.id);
     const useLanded = dashboardUi.viewMode === "landed";
     const nextImage = useLanded ? selected.landedPath : selected.spacePath;
     setCockpitUnderlay(nextImage, `${selected.planetName} ${useLanded ? "landed" : "orbit"} cockpit view`);
     if (cockpitMainViewport) {
+      const previewLevel = Math.floor((pending?.level || selected.stats.nextLevel));
+      const weaponPreview = getWeaponProfile(selected.line, previewLevel);
       cockpitMainViewport.style.display = "grid";
       cockpitMainViewport.style.opacity = "1";
       setPanelContentHtml(cockpitMainViewport, `
         <h3>${selected.planetName}</h3>
         <p>${selected.line.name}</p>
-        <p class="statline">${useLanded ? "LANDED" : "ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | L${selected.stats.nextLevel}/10</p>
+        <p class="statline">${useLanded ? "LANDED" : "ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | L${previewLevel}/10</p>
+        <p class="statline">Upgrade Preview: ${weaponPreview.title} (Space x${weaponPreview.spaceDamage} | Buggy x${weaponPreview.buggyDamage})</p>
       `);
     }
     cockpitPlanetPanels.forEach((panel, idx) => {
@@ -1210,8 +1541,8 @@
       } else if (idx === cockpitPlanetPanels.length - 1) {
         setPanelContentHtml(panel, `
           <h3>LAUNCH BUGGY</h3>
-          <p>${selected.line.name}</p>
-          <button id="cockpitLaunchBuggyBtn" class="btn" type="button">Launch</button>
+          <p>${hasPendingForSelected ? "Landing Path Ready" : selected.line.name}</p>
+          <button id="cockpitLaunchBuggyBtn" class="btn" type="button">${hasPendingForSelected ? "Land + Launch" : "Launch"}</button>
         `);
         panel.title = `Launch buggy mission for ${selected.line.name}`;
       } else {
@@ -1227,8 +1558,10 @@
       setPanelContentHtml(cockpitBottomMidPanel, `
         <h3>SPACE MODE</h3>
         <p>Selected: ${selected.planetName} (${useLanded ? "Landed" : "Orbit"})</p>
+        <p class="statline">${hasPendingForSelected ? "Space Route Cleared - You can land now." : "Choose planet, fight in space, then land."}</p>
         <button id="cockpitToggleViewBtn" class="btn ghost" type="button">${useLanded ? "Show Orbit" : "Show Landed"}</button>
-        ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn" type="button">Launch ${selected.line.name}</button>`}
+        ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn" type="button">Fly To ${selected.line.name}</button>`}
+        <button id="cockpitDifficultyBtn" class="btn ghost" type="button">Difficulty: ${getDifficultyProfile().label}</button>
       `);
       const toggleBtn = document.getElementById("cockpitToggleViewBtn");
       if (toggleBtn) {
@@ -1244,6 +1577,16 @@
         launchBtn.addEventListener("click", (event) => {
           event.preventDefault();
           launchSelectedPlanetMission();
+        });
+      }
+      const difficultyBtn = document.getElementById("cockpitDifficultyBtn");
+      if (difficultyBtn) {
+        difficultyBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          const order = ["easy", "normal", "hard"];
+          const idx = Math.max(0, order.indexOf(dashboardUi.difficulty));
+          writeDifficulty(order[(idx + 1) % order.length]);
+          renderDashboard();
         });
       }
     }
@@ -1280,6 +1623,10 @@
         event.preventDefault();
         event.stopPropagation();
         dashboardUi.highlightLaunchUntilMs = 0;
+        if (dashboardUi.pendingLanding && dashboardUi.pendingLanding.lineId === selected.line.id && dashboardUi.pendingLanding.mission) {
+          startBuggyMissionWithPrepared(selected.line, dashboardUi.pendingLanding.mission, false, "");
+          return;
+        }
         launchSelectedPlanetMission();
       });
     }
@@ -1352,10 +1699,13 @@
     }, { required: 0, stored: 0, progress: 0 });
 
     const shortage = Math.max(0, totals.required - totals.stored);
+    const playerScore = Math.floor(getProgressionScore());
     dashboardSummary.innerHTML = `
       <div class="stat"><span class="k">Stored Payload</span><span class="v">${Math.floor(totals.stored)}</span></div>
       <div class="stat"><span class="k">Total Required</span><span class="v">${totals.required}</span></div>
       <div class="stat"><span class="k">Remaining Shortage</span><span class="v" style="color:${shortage > 0 ? "#ffd27e" : "#8df7ae"}">${Math.floor(shortage)}</span></div>
+      <div class="stat"><span class="k">Campaign Score</span><span class="v">${playerScore}</span></div>
+      <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
     `;
 
     const sorted = getDashboardSortedLines();
@@ -1369,17 +1719,34 @@
   function updateHud() {
     if (!runtime.mission) return;
     const mission = runtime.mission;
-    const distance = Math.max(0, Math.floor(runtime.player.x));
+    const distance = Math.max(0, Math.floor(runtime.player.x || 0));
     const cpPct = Math.min(100, Math.floor((runtime.lastCheckpointX / mission.length) * 100));
     const stored = runtime.resource ? Math.floor(saveState.stored[runtime.resource.id] || 0) : "-";
     const progress = runtime.resource ? `${saveState.progress[runtime.resource.id] || 0}/10` : "custom";
-    const speed = Math.floor(runtime.player.vx);
+    const speed = Math.floor(Math.hypot(runtime.player.vx || 0, runtime.player.vy || 0));
     const hpPct = Math.round((Math.max(0, runtime.health) / Math.max(1, runtime.maxHealth)) * 100);
     const hpColor = hpPct > 65 ? "#8df7ae" : (hpPct > 35 ? "#ffd27e" : "#ff8f97");
+    if (runtime.mode === "spaceCombat") {
+      const s = runtime.space || { kills: 0, killsNeeded: 0, enemies: [] };
+      hud.innerHTML = `
+        <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
+        <div class="stat"><span class="k">Phase</span><span class="v">Space Assault</span></div>
+        <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
+        <div class="stat"><span class="k">UFO Kills</span><span class="v" style="color:#8df7ae">${s.kills}/${s.killsNeeded}</span></div>
+        <div class="stat"><span class="k">Enemies Live</span><span class="v">${(s.enemies || []).filter((e) => e.hp > 0).length}</span></div>
+        <div class="stat"><span class="k">Ship Speed</span><span class="v">${speed}</span></div>
+        <div class="stat"><span class="k">Ship Weapon</span><span class="v">${runtime.weapon?.title || "MK-1"} x${runtime.weapon?.spaceDamage || 1}</span></div>
+        <div class="stat"><span class="k">Stored In Ship</span><span class="v">${stored}</span></div>
+        <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
+        <div class="stat"><span class="k">Hull Integrity</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
+      `;
+      return;
+    }
 
     hud.innerHTML = `
       <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
       <div class="stat"><span class="k">Branch</span><span class="v">${mission.category}</span></div>
+      <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
       <div class="stat"><span class="k">Run Collected</span><span class="v" style="color:#8df7ae">${Math.floor(runtime.runCollected)}</span></div>
       <div class="stat"><span class="k">Stored In Ship</span><span class="v">${stored}</span></div>
       <div class="stat"><span class="k">Speed</span><span class="v">${speed}</span></div>
@@ -1387,6 +1754,7 @@
       <div class="stat"><span class="k">Checkpoint</span><span class="v">${runtime.lastCheckpointLabel}</span></div>
       <div class="stat"><span class="k">Checkpoint %</span><span class="v">${cpPct}%</span></div>
       <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
+      <div class="stat"><span class="k">Buggy Weapon</span><span class="v">${runtime.weapon?.title || "MK-1"} x${runtime.weapon?.buggyDamage || 1}</span></div>
       <div class="stat"><span class="k">Buggy Hull</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
     `;
   }
@@ -1404,6 +1772,21 @@
     ctx.restore();
   }
 
+  function drawBackdropCover(path, driftX = 0, driftY = 0, alpha = 0.35, scale = 1.18) {
+    const img = ensureImage(path);
+    if (!img || !img.complete || img.naturalWidth <= 0 || img.naturalHeight <= 0) return;
+    const drawW = canvas.width * scale;
+    const drawH = canvas.height * scale;
+    const maxX = Math.max(1, drawW - canvas.width);
+    const maxY = Math.max(1, drawH - canvas.height);
+    const ox = -maxX * 0.5 + driftX;
+    const oy = -maxY * 0.5 + driftY;
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(img, ox, oy, drawW, drawH);
+    ctx.restore();
+  }
+
   function drawBackground(mission) {
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "#172f56");
@@ -1412,9 +1795,10 @@
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawParallaxBackdrop(ASSET_LIBRARY.backgrounds[0], 24, 170, 0.08, 0.2);
-    drawParallaxBackdrop(ASSET_LIBRARY.backgrounds[1], 58, 188, 0.14, 0.24);
-    drawParallaxBackdrop(ASSET_LIBRARY.backgrounds[2], 90, 200, 0.22, 0.28);
+    const drift = Math.sin(runtime.ticks * 0.0007) * 18;
+    drawBackdropCover(ASSET_LIBRARY.backgrounds[0], drift * 0.16, 0, 0.50, 1.22);
+    drawBackdropCover(ASSET_LIBRARY.backgrounds[1], drift * -0.24, 10, 0.30, 1.26);
+    drawBackdropCover(ASSET_LIBRARY.backgrounds[2], drift * 0.36, 18, 0.24, 1.34);
 
     const farRidgeY = mission.baseGround - 170;
     const midRidgeY = mission.baseGround - 125;
@@ -1510,6 +1894,155 @@
     }
   }
 
+  function drawSpaceCombat() {
+    const mission = runtime.mission;
+    const player = runtime.player;
+    const space = runtime.space;
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "#070f22");
+    gradient.addColorStop(0.5, "#0b1730");
+    gradient.addColorStop(1, "#050c1b");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    (space?.stars || []).forEach((star) => {
+      ctx.fillStyle = `rgba(195,225,255,${clamp(star.alpha, 0.12, 0.95)})`;
+      ctx.fillRect(star.x, star.y, star.r, star.r);
+    });
+
+    (space?.enemies || []).forEach((enemy) => {
+      if (enemy.hp <= 0) return;
+      const img = enemy.sprite ? ensureImage(enemy.sprite) : null;
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.save();
+        ctx.translate(enemy.x, enemy.y);
+        ctx.rotate(enemy.angle || 0);
+        ctx.drawImage(img, -enemy.w / 2, -enemy.h / 2, enemy.w, enemy.h);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "#c79cff";
+        ctx.fillRect(enemy.x - enemy.w / 2, enemy.y - enemy.h / 2, enemy.w, enemy.h);
+      }
+    });
+
+    const ship = ensureImage(SPACE_HERO_SPRITE);
+    if (ship && ship.complete && ship.naturalWidth > 0) {
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      const facing = (player.facing || -1) >= 0 ? 1 : -1;
+      const shouldFlip = SPACE_HERO_FACES_RIGHT ? (facing < 0) : (facing >= 0);
+      ctx.scale(shouldFlip ? -1 : 1, 1);
+      const thrustPulse = 0.65 + Math.sin(runtime.ticks * 0.015) * 0.25 + (inputState.superThrust ? 0.35 : 0);
+      const flareLen = player.w * (0.22 + thrustPulse * 0.22);
+      const rearX = (SPACE_HERO_FACES_RIGHT ? -1 : 1) * (player.w * 0.44);
+      const exhaustDir = SPACE_HERO_FACES_RIGHT ? -1 : 1;
+      const topY = -player.h * 0.16;
+      const botY = player.h * 0.16;
+      const drawThruster = (y) => {
+        ctx.fillStyle = "rgba(70, 236, 255, 0.75)";
+        ctx.beginPath();
+        ctx.moveTo(rearX, y - 4);
+        ctx.lineTo(rearX + exhaustDir * flareLen, y);
+        ctx.lineTo(rearX, y + 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "rgba(185, 252, 255, 0.92)";
+        ctx.beginPath();
+        ctx.moveTo(rearX + 2, y - 2);
+        ctx.lineTo(rearX + exhaustDir * flareLen * 0.6, y);
+        ctx.lineTo(rearX + 2, y + 2);
+        ctx.closePath();
+        ctx.fill();
+      };
+      drawThruster(topY);
+      drawThruster(botY);
+      ctx.drawImage(ship, -player.w / 2, -player.h / 2, player.w, player.h);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = "#9dd6ff";
+      ctx.fillRect(player.x - player.w / 2, player.y - player.h / 2, player.w, player.h);
+    }
+
+    runtime.enemyBullets.forEach((b) => {
+      ctx.fillStyle = "#ff8f97";
+      ctx.fillRect(b.x - 3, b.y - 3, 6, 6);
+    });
+    runtime.bullets.forEach((b) => {
+      if (b.kind === "aim") {
+        const nx = Number(b.vx || 0);
+        const ny = Number(b.vy || 0);
+        const len = Math.hypot(nx, ny) || 1;
+        const tx = b.x - (nx / len) * 14;
+        const ty = b.y - (ny / len) * 14;
+        ctx.save();
+        ctx.strokeStyle = "rgba(130, 220, 255, 0.98)";
+        ctx.shadowColor = "#84d6ff";
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 2.8;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "#ffd178";
+        ctx.fillRect(b.x - 3, b.y - 3, 6, 6);
+      }
+    });
+    runtime.effects.forEach((fx) => {
+      const alpha = clamp(fx.life / fx.maxLife, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fx.color;
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, fx.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,240,220,0.85)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    const muzzlePoints = getSpaceMuzzlePoints(player);
+    const muzzle = muzzlePoints[runtime.spaceMuzzleIndex % Math.max(1, muzzlePoints.length)] || { x: player.x, y: player.y };
+    const aimX = runtime.aim.active ? runtime.aim.x : (muzzle.x + 180);
+    const aimY = runtime.aim.active ? runtime.aim.y : (muzzle.y - 12);
+    ctx.strokeStyle = "rgba(140, 207, 255, 0.52)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(muzzle.x, muzzle.y);
+    ctx.lineTo(aimX, aimY);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(170, 225, 255, 0.85)";
+    ctx.beginPath();
+    ctx.arc(aimX, aimY, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(aimX - 10, aimY);
+    ctx.lineTo(aimX + 10, aimY);
+    ctx.moveTo(aimX, aimY - 10);
+    ctx.lineTo(aimX, aimY + 10);
+    ctx.stroke();
+
+    if (space?.introTimer > 0) {
+      ctx.save();
+      ctx.globalAlpha = clamp(space.introTimer / 0.85, 0, 1);
+      ctx.fillStyle = "rgba(8,18,38,0.72)";
+      ctx.fillRect(canvas.width * 0.22, 22, canvas.width * 0.56, 46);
+      ctx.fillStyle = "#c9ebff";
+      ctx.font = "bold 18px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(`Space Assault: Clear ${space.killsNeeded} UFOs to reach orbit`, canvas.width * 0.5, 52);
+      ctx.textAlign = "left";
+      ctx.restore();
+    }
+
+    ctx.fillStyle = "#d9ecff";
+    ctx.font = "13px system-ui";
+    ctx.fillText(`${mission.title} | Space Entry`, 14, 22);
+  }
+
   function drawMission() {
     const mission = runtime.mission;
     const player = runtime.player;
@@ -1556,15 +2089,34 @@
     mission.platforms.forEach((p) => {
       const sx = p.x - runtime.cameraX;
       if (sx + p.w < 0 || sx > canvas.width) return;
-      ctx.fillStyle = p.color || "#7f8091";
-      ctx.fillRect(sx, p.y, p.w, p.h);
+      const topY = p.y + Math.sin((p.x + runtime.ticks) * 0.014) * 1.2;
+      const g = ctx.createLinearGradient(0, topY, 0, topY + p.h + 18);
+      g.addColorStop(0, p.color || "#9d8f82");
+      g.addColorStop(1, "rgba(76,66,58,0.95)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(sx, topY + p.h * 0.9);
+      ctx.lineTo(sx + p.w * 0.08, topY + p.h * 0.18);
+      ctx.lineTo(sx + p.w * 0.38, topY + p.h * 0.05);
+      ctx.lineTo(sx + p.w * 0.7, topY + p.h * 0.22);
+      ctx.lineTo(sx + p.w, topY + p.h * 0.82);
+      ctx.lineTo(sx + p.w * 0.94, topY + p.h + 16);
+      ctx.lineTo(sx + p.w * 0.08, topY + p.h + 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(210,194,178,0.34)";
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
     });
 
     mission.rocks.forEach((rock) => {
       if (rock.hp <= 0) return;
       const sx = rock.x - runtime.cameraX;
       if (sx + rock.w < 0 || sx > canvas.width) return;
-      ctx.fillStyle = rock.color || "#8f7b68";
+      const rg = ctx.createLinearGradient(0, rock.y, 0, rock.y + rock.h);
+      rg.addColorStop(0, "rgba(192,154,125,0.98)");
+      rg.addColorStop(1, rock.color || "#7f644f");
+      ctx.fillStyle = rg;
       ctx.beginPath();
       ctx.moveTo(sx, rock.y + rock.h);
       ctx.lineTo(sx + rock.w * 0.12, rock.y + rock.h * 0.38);
@@ -1576,6 +2128,12 @@
       ctx.fill();
       ctx.strokeStyle = "rgba(229, 205, 177, 0.3)";
       ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(62,44,32,0.45)";
+      ctx.beginPath();
+      ctx.moveTo(sx + rock.w * 0.24, rock.y + rock.h * 0.62);
+      ctx.lineTo(sx + rock.w * 0.47, rock.y + rock.h * 0.34);
+      ctx.lineTo(sx + rock.w * 0.66, rock.y + rock.h * 0.66);
       ctx.stroke();
     });
 
@@ -1770,21 +2328,193 @@
     ctx.fillText(`Checkpoint: ${runtime.lastCheckpointLabel}`, 14, 22);
   }
 
+  function spawnSpaceWave() {
+    const space = runtime.space;
+    if (!space) return;
+    const missionLevel = clamp(safeNumber(runtime.mission?.level, 1), 1, MAX_LEVEL);
+    const droneSprites = ASSET_LIBRARY.enemySprites?.drone || [];
+    const diff = getDifficultyProfile();
+    const toSpawn = Math.min(space.waveSize, Math.max(0, space.killsNeeded - space.kills - space.enemies.filter((e) => e.hp > 0).length));
+    for (let i = 0; i < toSpawn; i += 1) {
+      const t = toSpawn <= 1 ? 0.5 : i / (toSpawn - 1);
+      const y = 90 + t * (canvas.height - 190) + (Math.random() * 36 - 18);
+      const w = 94 + Math.random() * 38;
+      const h = w * 0.35;
+      const x = canvas.width + 120 + Math.random() * 180;
+      const speed = (110 + missionLevel * 12 + Math.random() * 70) * diff.enemySpeedMult;
+      space.enemies.push({
+        x,
+        y,
+        w,
+        h,
+        vx: -speed,
+        vy: Math.random() * 34 - 17,
+        hp: Math.max(1, Math.floor(space.enemyHp || 1)),
+        fireDelay: Math.max(0.4, (1.3 + Math.random() * 1.1) / diff.enemyFireMult),
+        fireTimer: 0.3 + Math.random() * 0.8,
+        turnTimer: 1.7 + Math.random() * 1.6,
+        targetY: y + (Math.random() * 120 - 60),
+        angle: 0,
+        sprite: droneSprites.length ? droneSprites[Math.floor(Math.random() * droneSprites.length)] : enemySpriteForType("drone")
+      });
+    }
+  }
+
+  function updateSpaceCombat(dt) {
+    const space = runtime.space;
+    const player = runtime.player;
+    if (!space || !player) return;
+    runtime.damageCooldown = Math.max(0, runtime.damageCooldown - dt);
+    space.introTimer = Math.max(0, space.introTimer - dt);
+
+    const ax = (inputState.right ? 1 : 0) - (inputState.left ? 1 : 0);
+    const ay = (inputState.boost ? 1 : 0) - (inputState.jump ? 1 : 0);
+    const accel = inputState.superThrust ? 1600 : (inputState.fire ? 1220 : 980);
+    player.vx += ax * accel * dt;
+    player.vy += ay * accel * dt;
+    player.vx *= Math.pow(0.012, dt);
+    player.vy *= Math.pow(0.012, dt);
+    const maxVX = inputState.superThrust ? 680 : 560;
+    const maxVY = inputState.superThrust ? 620 : 500;
+    player.vx = clamp(player.vx, -maxVX, maxVX);
+    player.vy = clamp(player.vy, -maxVY, maxVY);
+
+    player.x += player.vx * dt;
+    player.y += player.vy * dt;
+    player.x = clamp(player.x, player.w * 0.48, canvas.width - player.w * 0.48);
+    player.y = clamp(player.y, player.h * 0.46, canvas.height - player.h * 0.46);
+
+    if (Math.abs(player.vx) > 7) {
+      player.facing = player.vx >= 0 ? 1 : -1;
+    }
+
+    const starDriftX = player.vx * dt * 0.22;
+    const starDriftY = player.vy * dt * 0.22;
+    space.stars.forEach((star) => {
+      star.x -= starDriftX * (star.r > 1 ? 1.5 : 1);
+      star.y -= starDriftY * (star.r > 1 ? 1.5 : 1);
+      if (star.x < -4) star.x = canvas.width + 2;
+      if (star.x > canvas.width + 4) star.x = -2;
+      if (star.y < -4) star.y = canvas.height + 2;
+      if (star.y > canvas.height + 4) star.y = -2;
+    });
+
+    const activeEnemies = space.enemies.filter((enemy) => enemy.hp > 0);
+    if (space.kills + activeEnemies.length < space.killsNeeded) {
+      space.spawnTimer -= dt;
+      if (space.spawnTimer <= 0) {
+        spawnSpaceWave();
+        space.spawnTimer = space.waveDelay;
+      }
+    }
+
+    space.enemies.forEach((enemy) => {
+      if (enemy.hp <= 0) return;
+      enemy.turnTimer -= dt;
+      if (enemy.turnTimer <= 0 || enemy.y < 64 || enemy.y > canvas.height - 64) {
+        enemy.turnTimer = 1.2 + Math.random() * 1.7;
+        enemy.targetY = clamp(74 + Math.random() * (canvas.height - 148), 74, canvas.height - 74);
+        enemy.vy = clamp((enemy.targetY - enemy.y) * 0.7, -120, 120);
+      }
+      enemy.x += enemy.vx * dt;
+      enemy.y += enemy.vy * dt;
+      enemy.angle = Math.atan2(enemy.vy, enemy.vx) - Math.PI;
+      enemy.fireTimer -= dt;
+      if (enemy.fireTimer <= 0 && enemy.x < canvas.width + enemy.w) {
+        enemy.fireTimer = enemy.fireDelay;
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const len = Math.hypot(dx, dy) || 1;
+        runtime.enemyBullets.push({
+          x: enemy.x,
+          y: enemy.y,
+          vx: (dx / len) * (240 + Math.random() * 70),
+          vy: (dy / len) * (240 + Math.random() * 70),
+          life: 2.1
+        });
+      }
+      if (enemy.x < -enemy.w - 80) {
+        enemy.x = canvas.width + 40 + Math.random() * 120;
+      }
+    });
+
+    runtime.enemyBullets = runtime.enemyBullets.filter((b) => {
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.life -= dt;
+      if (b.life <= 0) return false;
+      if (b.x < -30 || b.x > canvas.width + 30 || b.y < -40 || b.y > canvas.height + 40) return false;
+      if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, { x: player.x - player.w * 0.44, y: player.y - player.h * 0.42, w: player.w * 0.88, h: player.h * 0.84 })) {
+        applyBuggyDamage(6, "Enemy UFO fire tore through your hull.", { color: "#ff9cd0" });
+        return false;
+      }
+      return true;
+    });
+
+    runtime.bullets = runtime.bullets.filter((b) => {
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.life -= dt;
+      if (b.life <= 0) return false;
+      if (b.x < -80 || b.x > canvas.width + 80 || b.y < -80 || b.y > canvas.height + 80) return false;
+      for (let i = 0; i < space.enemies.length; i += 1) {
+        const enemy = space.enemies[i];
+        if (enemy.hp <= 0) continue;
+        const hitRect = { x: enemy.x - enemy.w * 0.45, y: enemy.y - enemy.h * 0.45, w: enemy.w * 0.9, h: enemy.h * 0.9 };
+        if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, hitRect)) {
+          enemy.hp -= Math.max(1, safeNumber(b.damage, 1));
+          spawnExplosion(enemy.x, enemy.y, "#d8a6ff");
+          if (enemy.hp <= 0) {
+            space.kills += 1;
+            spawnExplosion(enemy.x, enemy.y, "#a8eeff");
+            spawnExplosion(enemy.x + 8, enemy.y - 6, "#8bd3ff");
+          }
+          return false;
+        }
+      }
+      return true;
+    });
+
+    space.enemies = space.enemies.filter((enemy) => enemy.hp > 0 || enemy.x > -enemy.w - 140);
+    if (space.kills >= space.killsNeeded && space.enemies.every((enemy) => enemy.hp <= 0)) {
+      space.clearTimer += dt;
+      if (space.clearTimer >= 0.8) {
+        completeSpaceFlightToOrbit();
+      }
+    }
+  }
+
   function shoot() {
     if (!runtime.active || runtime.dead || runtime.completed) return;
     if (runtime.fireCooldown > 0) return;
-    runtime.fireCooldown = SHOT_COOLDOWN;
+    const weapon = runtime.weapon || { fireRateMult: 1, projectileSpeedMult: 1, buggyDamage: 1, spaceDamage: 1 };
+    const baseCooldown = runtime.mode === "spaceCombat" ? 0.085 : SHOT_COOLDOWN;
+    runtime.fireCooldown = baseCooldown / Math.max(0.55, weapon.fireRateMult || 1);
     const p = runtime.player;
-    const muzzleX = p.x + p.w * 0.74;
-    const muzzleY = p.y + p.h * 0.42;
-    const targetX = runtime.aim.active ? runtime.aim.x : (muzzleX + 300);
+    let muzzleX = p.x + p.w * 0.74;
+    let muzzleY = p.y + p.h * 0.42;
+    if (runtime.mode === "spaceCombat") {
+      const points = getSpaceMuzzlePoints(p);
+      const index = runtime.spaceMuzzleIndex % Math.max(1, points.length);
+      const muzzle = points[index] || points[0] || { x: p.x, y: p.y };
+      runtime.spaceMuzzleIndex = (index + 1) % Math.max(1, points.length);
+      muzzleX = muzzle.x;
+      muzzleY = muzzle.y;
+    }
+    const targetX = runtime.aim.active ? runtime.aim.x : (muzzleX + (runtime.mode === "spaceCombat" ? 180 : 300));
     const targetY = runtime.aim.active ? runtime.aim.y : (muzzleY - 20);
     let dx = targetX - muzzleX;
     let dy = targetY - muzzleY;
     const len = Math.hypot(dx, dy) || 1;
     dx /= len;
     dy /= len;
-    runtime.bullets.push({ x: muzzleX, y: muzzleY, vx: dx * 760, vy: dy * 760, kind: "aim", life: 1.7 });
+    const speedBase = runtime.mode === "spaceCombat" ? 1280 : 760;
+    const speed = speedBase * Math.max(0.8, weapon.projectileSpeedMult || 1);
+    const damage = runtime.mode === "spaceCombat"
+      ? Math.max(1, Math.floor(weapon.spaceDamage || 1))
+      : Math.max(1, Math.floor(weapon.buggyDamage || 1));
+    const life = runtime.mode === "spaceCombat" ? 0.42 : 1.7;
+    runtime.bullets.push({ x: muzzleX, y: muzzleY, vx: dx * speed, vy: dy * speed, damage, kind: "aim", life });
   }
 
   function updateBullets(dt) {
@@ -1820,7 +2550,7 @@
         const enemy = mission.enemies[i];
         if (enemy.hp <= 0) continue;
         if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, enemy)) {
-          enemy.hp -= 1;
+          enemy.hp -= Math.max(1, safeNumber(b.damage, 1));
           if (enemy.hp <= 0) spawnExplosion(enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5, enemy.type === "drone" ? "#d8a6ff" : "#ffb279");
           return false;
         }
@@ -2004,14 +2734,22 @@
     if (!runtime.dead && !runtime.completed) {
       runtime.fireCooldown = Math.max(0, runtime.fireCooldown - dt);
       if (inputState.fire) shoot();
-      updatePhysics(dt);
-      updateEnemies(dt);
-      updateBullets(dt);
-      handleCollisionsAndInteractions();
+      if (runtime.mode === "spaceCombat") {
+        updateSpaceCombat(dt);
+      } else {
+        updatePhysics(dt);
+        updateEnemies(dt);
+        updateBullets(dt);
+        handleCollisionsAndInteractions();
+      }
     }
     updateEffects(dt);
 
-    drawMission();
+    if (runtime.mode === "spaceCombat") {
+      drawSpaceCombat();
+    } else {
+      drawMission();
+    }
     updateHud();
   }
 
@@ -2021,6 +2759,48 @@
     inputState.jump = false;
     inputState.boost = false;
     inputState.fire = false;
+    inputState.superThrust = false;
+    resetStickAxes();
+  }
+
+  function bindMobileStick() {
+    if (!mobileStick) return;
+    const begin = (event) => {
+      event.preventDefault();
+      mobileStickState.active = true;
+      mobileStickState.pointerId = event.pointerId;
+      mobileStick.setPointerCapture?.(event.pointerId);
+      move(event);
+    };
+    const move = (event) => {
+      if (!mobileStickState.active) return;
+      if (mobileStickState.pointerId != null && event.pointerId !== mobileStickState.pointerId) return;
+      const rect = mobileStick.getBoundingClientRect();
+      const cx = rect.left + rect.width * 0.5;
+      const cy = rect.top + rect.height * 0.5;
+      const dxPx = event.clientX - cx;
+      const dyPx = event.clientY - cy;
+      const max = Math.max(18, Math.min(rect.width, rect.height) * 0.38);
+      const mag = Math.hypot(dxPx, dyPx) || 1;
+      const clamped = Math.min(max, mag);
+      const nx = (dxPx / mag) * (clamped / max);
+      const ny = (dyPx / mag) * (clamped / max);
+      setStickKnob(nx, ny);
+      applyStickAxes(nx, ny);
+    };
+    const end = (event) => {
+      if (mobileStickState.pointerId != null && event.pointerId !== mobileStickState.pointerId) return;
+      mobileStickState.active = false;
+      mobileStickState.pointerId = null;
+      resetStickAxes();
+    };
+    if (window.PointerEvent) {
+      mobileStick.addEventListener("pointerdown", begin, { passive: false });
+      mobileStick.addEventListener("pointermove", move, { passive: false });
+      mobileStick.addEventListener("pointerup", end, { passive: false });
+      mobileStick.addEventListener("pointercancel", end, { passive: false });
+      mobileStick.addEventListener("lostpointercapture", end);
+    }
   }
 
   function bindControl(button, key) {
@@ -2053,8 +2833,10 @@
       bindControl(btn, btn.getAttribute("data-ctl"));
     });
     if (fireFab) bindControl(fireFab, "fire");
+    bindMobileStick();
     if (window.PointerEvent) document.addEventListener("pointerup", releaseAllInputs);
     window.addEventListener("blur", releaseAllInputs);
+    window.addEventListener("resize", syncMissionControls);
 
     canvas.addEventListener("mousemove", (event) => {
       setAimFromClient(event.clientX, event.clientY);
@@ -2082,7 +2864,12 @@
       if (event.repeat) return;
       if (event.code === "ArrowLeft" || event.code === "KeyA") inputState.left = true;
       if (event.code === "ArrowRight" || event.code === "KeyD") inputState.right = true;
-      if (event.code === "Space" || event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = true;
+      if (event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = true;
+      if (event.code === "KeyS" || event.code === "ArrowDown") inputState.boost = true;
+      if (event.code === "Space") {
+        if (runtime.mode === "spaceCombat") inputState.superThrust = true;
+        else inputState.jump = true;
+      }
       if (event.code === "ShiftLeft" || event.code === "ShiftRight") inputState.boost = true;
       if (event.code === "KeyF" || event.code === "KeyX") {
         inputState.fire = true;
@@ -2093,7 +2880,12 @@
     window.addEventListener("keyup", (event) => {
       if (event.code === "ArrowLeft" || event.code === "KeyA") inputState.left = false;
       if (event.code === "ArrowRight" || event.code === "KeyD") inputState.right = false;
-      if (event.code === "Space" || event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = false;
+      if (event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = false;
+      if (event.code === "KeyS" || event.code === "ArrowDown") inputState.boost = false;
+      if (event.code === "Space") {
+        inputState.superThrust = false;
+        if (runtime.mode !== "spaceCombat") inputState.jump = false;
+      }
       if (event.code === "ShiftLeft" || event.code === "ShiftRight") inputState.boost = false;
       if (event.code === "KeyF" || event.code === "KeyX") inputState.fire = false;
     });
@@ -2214,7 +3006,9 @@
   }
 
   function boot() {
+    dashboardUi.difficulty = readDifficulty();
     ensureImage(ASSET_LIBRARY.moonBuggy.path);
+    ensureImage(SPACE_HERO_SPRITE);
     ASSET_LIBRARY.backgrounds.forEach((path) => ensureImage(path));
     Object.values(ASSET_LIBRARY.enemySprites).flat().forEach((path) => ensureImage(path));
     DASHBOARD_PLANETS.forEach((planet) => {
@@ -2233,6 +3027,7 @@
     writeCockpitLockState(dashboardUi.layoutLocked);
     setCockpitEditMode(false);
     bindEvents();
+    syncMissionControls();
     renderDashboard();
     runtime.lastTime = performance.now();
   }
