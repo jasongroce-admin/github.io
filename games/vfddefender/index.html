@@ -22602,6 +22602,10 @@ function startGame(diff, startLevel = null) {
 
 function getTankerSupportSchedule(level, diff) {
   const levelData = baseLevels[level - 1] || {};
+  // No tanker support trucks during sci-fi combat missions.
+  if (isScifiTruckActive(levelData)) {
+    return { firstAt: 1e12, repeat: 1e12, hold: 0 };
+  }
   if (levelData?.tankerSchedule) {
     return {
       firstAt: clamp(Number(levelData.tankerSchedule.firstAt ?? 15000), 3000, 120000),
@@ -22636,6 +22640,10 @@ function getTankerSupportSchedule(level, diff) {
 
 function getBoroTankerSupportSchedule(level, diff) {
   const levelData = baseLevels[level - 1] || {};
+  // No bonus tanker support during sci-fi combat missions.
+  if (isScifiTruckActive(levelData)) {
+    return { firstAt: 1e12, repeat: 1e12, hold: 0 };
+  }
   if (levelData?.boroSchedule) {
     return {
       firstAt: clamp(Number(levelData.boroSchedule.firstAt ?? 28000), 6000, 180000),
@@ -22783,6 +22791,17 @@ function initLevel9EventState(levelData, preparedSpots) {
       ];
     }
   }
+  // If a spot doesn't have health, it will never burn (health=0), so give the
+  // tornado-ignited bus a real burn budget.
+  resolvedBusSpots = (resolvedBusSpots || []).map((spot) => {
+    const base = Number.isFinite(Number(spot?.health)) && Number(spot.health) > 0
+      ? Number(spot.health)
+      : (spot?.roof ? 340 : 420);
+    const max = Number.isFinite(Number(spot?.maxHealth)) && Number(spot.maxHealth) > 0
+      ? Number(spot.maxHealth)
+      : (spot?.roof ? 520 : 640);
+    return { ...spot, health: base, maxHealth: max };
+  });
   let resolvedSchoolSpots = schoolSpots;
   let resolvedSchoolIgniteX = 808;
   if (schoolIdx >= 0) {
@@ -22798,6 +22817,16 @@ function initLevel9EventState(levelData, preparedSpots) {
       }
     }
   }
+  // Same as the bus: ensure school ignition creates active fire spots.
+  resolvedSchoolSpots = (resolvedSchoolSpots || []).map((spot) => {
+    const base = Number.isFinite(Number(spot?.health)) && Number(spot.health) > 0
+      ? Number(spot.health)
+      : (spot?.roof ? 420 : 520);
+    const max = Number.isFinite(Number(spot?.maxHealth)) && Number(spot.maxHealth) > 0
+      ? Number(spot.maxHealth)
+      : (spot?.roof ? 640 : 820);
+    return { ...spot, health: base, maxHealth: max };
+  });
   fireSpots = [];
   pendingTornadoFireSpotsByKey = new Map();
   playerControlsEnabled = false;
@@ -25231,6 +25260,9 @@ function getBoroTankerSpriteKey(facing) {
 }
 
 function startTankerSupport() {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (isScifiTruckActive(levelData)) return;
+  if (!isTankerRefillEnabled(levelData)) return;
   if (tankerSupport) return;
   const layout = ENTITY_LAYOUT.semiTankRight;
   const targetX = Math.min(canvas.width - layout.w - 28, truck.x + TANKER_FOLLOW_OFFSET_X);
@@ -25377,6 +25409,9 @@ function drawTankerSupport() {
 }
 
 function startBoroTankerSupport(source = 'scheduled') {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (isScifiTruckActive(levelData)) return;
+  if (!isTankerRefillEnabled(levelData)) return;
   if (boroTankerSupport) return;
   const layout = ENTITY_LAYOUT.boroTankerRight;
   const timing = getBoroTankerSupportSchedule(currentLevel, difficulty);
@@ -26663,14 +26698,16 @@ function initEnemyRaid(levelData) {
     }
   }
   if (isScifiCombatLevel) {
-    const ufoOnly = profiles.filter((p) => /(ufo|saucer|delta|cigar|mothership)/.test(String(p?.spriteKey || '').toLowerCase()));
+    // Sci-fi flight missions: keep the enemy pool airborne-only (but allow larger UFO/spacecraft variants too).
+    const ufoOnly = profiles.filter((p) => /(ufo|saucer|delta|cigar|mothership|ring|cargohauler)/.test(String(p?.spriteKey || '').toLowerCase()));
     profiles.length = 0;
     profiles.push(...ufoOnly);
     if (!profiles.length) {
       const fallbackUfos = [
         resolveSpriteKey('scifi_ufo_small_saucer_459x145'),
         resolveSpriteKey('scifi_ufo_medium_delta_459x145'),
-        resolveSpriteKey('scifi_ufo_large_cigar_459x145')
+        resolveSpriteKey('scifi_ufo_large_cigar_459x145'),
+        resolveSpriteKey('scifi_ufo_mothership_792x276')
       ].filter(Boolean);
       const fallbackCount = Math.max(4, clamp(Number(levelData?.enemyRaid?.targetCount ?? levelData?.enemyTargetCount ?? 6), 1, 18));
       for (let i = 0; i < fallbackCount; i++) {
