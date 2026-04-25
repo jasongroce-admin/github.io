@@ -16,6 +16,29 @@ body { margin:0; background:#000; font-family:Arial, sans-serif; overflow:hidden
 body .content { width: 100vw; max-width: none; margin: 0; padding: 0; }
 #gameContainer { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; padding-top: 0 !important; z-index: 1; }
 canvas { display: block; max-width: 100%; max-height: 100%; image-rendering: crisp-edges; }
+#bootLoadingScreen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #dff4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.24s ease;
+}
+#bootLoadingScreen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+#bootLoadingScreen .boot-loading-text {
+  font-size: clamp(18px, 2.2vw, 26px);
+  letter-spacing: 0.06em;
+  font-weight: 800;
+  color: #8fd3ff;
+}
 body.builder-active #gameContainer {
   left: var(--builder-left-active-width);
   right: var(--builder-right-active-width);
@@ -178,6 +201,336 @@ button:hover { filter: brightness(1.2); }
   margin: 0;
 }
 
+#missionStoryScreen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.86);
+  z-index: 1240;
+  pointer-events: auto;
+}
+#missionStoryCard {
+  width: min(860px, calc(100vw - 28px));
+  max-height: calc(100dvh - 30px);
+  overflow: auto;
+  border-radius: 16px;
+  border: 2px solid rgba(141, 196, 247, 0.82);
+  background: linear-gradient(180deg, rgba(14, 28, 48, 0.98), rgba(5, 12, 20, 0.98));
+  box-shadow: 0 20px 56px rgba(0,0,0,0.62);
+  color: #e6f3ff;
+  padding: 18px 18px 16px;
+}
+#missionStoryCard h2 {
+  margin: 0 0 10px 0;
+  color: #99d0ff;
+  font-size: 30px;
+}
+#missionStoryCard p {
+  margin: 8px 0;
+  line-height: 1.45;
+  font-size: 16px;
+  color: #d7e8fa;
+}
+#missionStoryDonate {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(124, 185, 242, 0.5);
+  background: rgba(9, 32, 58, 0.55);
+}
+#missionStoryActions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+#missionStoryStartBtn, #missionStoryBackBtn {
+  width: auto;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+#missionStoryStartBtn {
+  background: #1f7d47;
+}
+#missionStoryBackBtn {
+  background: #375f8f;
+  border: 1px solid rgba(190, 221, 255, 0.72);
+}
+
+#level1GuideOverlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 8, 16, 0.82);
+  z-index: 1450;
+  pointer-events: auto;
+}
+#level1GuideCard {
+  width: min(920px, calc(100vw - 26px));
+  max-height: calc(100dvh - 30px);
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(10, 22, 40, 0.98), rgba(5, 11, 20, 0.98));
+  border: 2px solid rgba(124, 186, 245, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 20px 58px rgba(0,0,0,0.62);
+  padding: 16px 16px 12px;
+  color: #e7f4ff;
+}
+#level1GuideHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#level1GuideHead h2 {
+  margin: 0;
+  font-size: 27px;
+  color: #9dd6ff;
+  letter-spacing: 0.3px;
+}
+#level1GuideClose {
+  width: auto;
+  margin: 0;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(44, 88, 136, 0.88);
+  border: 1px solid rgba(204, 230, 255, 0.82);
+  color: #eff8ff;
+  font-weight: 800;
+  font-size: 14px;
+}
+#level1GuideBody {
+  margin: 8px 0 10px;
+  color: #d5ebff;
+  font-size: 16px;
+  line-height: 1.42;
+}
+#level1GuideVisual {
+  height: 272px;
+  border-radius: 14px;
+  border: 1px solid rgba(141, 199, 249, 0.5);
+  background: radial-gradient(circle at 50% 0%, rgba(28, 78, 126, 0.55), rgba(9, 20, 36, 0.9));
+  box-shadow: inset 0 0 22px rgba(0,0,0,0.42);
+  overflow: hidden;
+  position: relative;
+}
+.guide-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.guide-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  height: 8px;
+  background: #0e0f13;
+}
+.guide-grass {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  background: linear-gradient(180deg, #265a2e, #15341b);
+}
+.guide-truck {
+  position: absolute;
+  width: 225px;
+  height: auto;
+  image-rendering: auto;
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,0.36));
+}
+.guide-firefighter {
+  position: absolute;
+  width: 60px;
+  height: auto;
+  image-rendering: auto;
+  filter: drop-shadow(0 7px 8px rgba(0,0,0,0.38));
+}
+.guide-civilian {
+  position: absolute;
+  width: 56px;
+  height: auto;
+  image-rendering: auto;
+  filter: drop-shadow(0 7px 8px rgba(0,0,0,0.36));
+}
+.guide-house {
+  position: absolute;
+  right: 50px;
+  bottom: 44px;
+  width: 220px;
+  opacity: 0.9;
+}
+.guide-hose-link {
+  position: absolute;
+  height: 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #323232, #575757);
+}
+.guide-nozzle-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #d7d7d7;
+  box-shadow: 0 0 10px rgba(255,255,255,0.45);
+}
+.guide-spray {
+  position: absolute;
+  transform-origin: left center;
+  border-radius: 6px;
+  opacity: 0.88;
+}
+.guide-spray.wide {
+  left: 422px;
+  top: 118px;
+  width: 150px;
+  height: 40px;
+  background: linear-gradient(90deg, rgba(168,230,255,0.95), rgba(66,179,255,0.25));
+  clip-path: polygon(0 44%, 100% 0, 100% 100%);
+  animation: guideWidePulse 1.25s ease-in-out infinite;
+}
+.guide-spray.tight {
+  left: 422px;
+  top: 166px;
+  width: 215px;
+  height: 16px;
+  background: linear-gradient(90deg, rgba(186,234,255,0.96), rgba(71,172,255,0.24));
+  clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 65%);
+  animation: guideTightPulse 1.25s ease-in-out infinite;
+}
+.guide-arrow-lbl {
+  position: absolute;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.25px;
+  color: #ffe27a;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.guide-arrow-lbl.top {
+  font-size: 14px;
+}
+.guide-arrow {
+  position: absolute;
+  width: 66px;
+  height: 3px;
+  background: #ffe272;
+  box-shadow: 0 0 8px rgba(255,240,160,0.6);
+}
+.guide-arrow::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: -4px;
+  border-left: 10px solid #ffe272;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+.guide-help {
+  position: absolute;
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffe68d;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  animation: guideHelpBlink 0.6s steps(1, end) infinite;
+}
+.guide-btn-chip {
+  position: absolute;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(161, 215, 255, 0.82);
+  background: rgba(12, 58, 105, 0.84);
+  color: #e8f5ff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.33);
+  animation: guideChipPulse 0.9s ease-in-out infinite alternate;
+}
+.guide-truck-move {
+  animation: guideTruckMove 2.1s ease-in-out infinite alternate;
+}
+.guide-firefighter-run {
+  animation: guideRunnerMove 1.8s linear infinite alternate;
+}
+#level1GuideFooter {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#level1GuideDots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#level1GuideDots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(182, 216, 247, 0.35);
+}
+#level1GuideDots .dot.active {
+  background: #7cc8ff;
+  box-shadow: 0 0 10px rgba(124, 200, 255, 0.75);
+}
+#level1GuideNextWrap {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+#level1GuideNextBtn, #level1GuideDoneBtn {
+  width: auto;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(205, 231, 255, 0.8);
+  color: #eff8ff;
+  font-weight: 800;
+}
+#level1GuideNextBtn {
+  background: #2f5f93;
+}
+#level1GuideNextBtn:disabled {
+  background: #4f5f73;
+  border-color: rgba(214, 223, 236, 0.4);
+  color: #dbe5ef;
+}
+#level1GuideDoneBtn {
+  background: #17824f;
+}
+@keyframes guideWidePulse {
+  from { transform: scaleX(0.76); opacity: 0.7; }
+  to { transform: scaleX(1.04); opacity: 0.95; }
+}
+@keyframes guideTightPulse {
+  from { transform: scaleX(0.78); opacity: 0.7; }
+  to { transform: scaleX(1.07); opacity: 0.95; }
+}
+@keyframes guideHelpBlink {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0.6; transform: translateY(-2px); }
+}
+@keyframes guideChipPulse {
+  from { box-shadow: 0 8px 18px rgba(0,0,0,0.33); transform: scale(1); }
+  to { box-shadow: 0 0 0 8px rgba(107, 179, 243, 0.18); transform: scale(1.03); }
+}
+@keyframes guideTruckMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(48px); }
+}
+@keyframes guideRunnerMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(-106px); }
+}
+
 #codeGate {
   position: absolute;
   inset: 0;
@@ -253,7 +606,7 @@ button:hover { filter: brightness(1.2); }
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 10px;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -287,9 +640,7 @@ button:hover { filter: brightness(1.2); }
 }
 #firefighterMountBtn {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 76px;
+  bottom: 66px;
   z-index: 1001;
   width: auto;
   min-width: 142px;
@@ -299,6 +650,7 @@ button:hover { filter: brightness(1.2); }
   background: rgba(5, 38, 76, 0.9);
   border: 1px solid rgba(168, 219, 255, 0.65);
   box-shadow: 0 8px 18px rgba(0,0,0,0.42);
+  transition: left 0.16s ease, bottom 0.16s ease, opacity 0.16s ease;
 }
 #firefighterMountBtn:disabled {
   cursor: not-allowed;
@@ -1416,6 +1768,10 @@ button:hover { filter: brightness(1.2); }
 </head>
 <body>
 
+<div id="bootLoadingScreen" aria-live="polite" aria-label="Loading assets">
+  <div class="boot-loading-text">Welcome to the Game</div>
+</div>
+
 <div id="landscapeMessage">Please rotate your device to <strong>Landscape</strong> mode<br>for the best experience</div>
 <header class="site-header">
   <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools & Projects</span></a>
@@ -2075,28 +2431,40 @@ button:hover { filter: brightness(1.2); }
           <input id="builderLayerEnemyCount" type="number" min="1" max="30" step="1" value="1">
         </div>
         <div class="builder-field movement-zone">
-          <label for="builderLayerEnemySpawnDirection">Enemy Arrival Direction</label>
+          <label for="builderLayerEnemySpawnDirection">Spawn Side (Relative To Truck)</label>
           <select id="builderLayerEnemySpawnDirection">
-            <option value="both">Both Sides</option>
-            <option value="left">Left Only</option>
-            <option value="right">Right Only</option>
+            <option value="both">Auto Mix (Both)</option>
+            <option value="left">From Left Side</option>
+            <option value="right">From Right Side</option>
           </select>
         </div>
         <div class="builder-field movement-zone">
-          <label for="builderLayerEnemySpawnMinDelayMs">Enemy Spawn Min Delay (ms)</label>
+          <label for="builderLayerEnemySpawnMinDelayMs">Wave Delay Min (ms)</label>
           <input id="builderLayerEnemySpawnMinDelayMs" type="number" min="80" max="5000" step="20" value="300">
         </div>
         <div class="builder-field movement-zone">
-          <label for="builderLayerEnemySpawnMaxDelayMs">Enemy Spawn Max Delay (ms)</label>
+          <label for="builderLayerEnemySpawnMaxDelayMs">Wave Delay Max (ms)</label>
           <input id="builderLayerEnemySpawnMaxDelayMs" type="number" min="120" max="10000" step="20" value="1200">
         </div>
         <div class="builder-field movement-zone">
-          <label for="builderLayerEnemyScaleMin">Enemy Size Min</label>
+          <label for="builderLayerEnemyScaleMin">Near Size Min (On-Screen)</label>
           <input id="builderLayerEnemyScaleMin" type="number" min="0.1" max="3" step="0.05" value="0.55">
         </div>
         <div class="builder-field movement-zone">
-          <label for="builderLayerEnemyScaleMax">Enemy Size Max</label>
+          <label for="builderLayerEnemyScaleMax">Near Size Max (On-Screen)</label>
           <input id="builderLayerEnemyScaleMax" type="number" min="0.1" max="3" step="0.05" value="1.1">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemySpawnFarScale">Far Spawn Size (Distance Illusion)</label>
+          <input id="builderLayerEnemySpawnFarScale" type="number" min="0.0005" max="0.2" step="0.0005" value="0.001">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyHoverMinMs">Hover Pause Min (ms)</label>
+          <input id="builderLayerEnemyHoverMinMs" type="number" min="100" max="5000" step="20" value="620">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyHoverMaxMs">Hover Pause Max (ms)</label>
+          <input id="builderLayerEnemyHoverMaxMs" type="number" min="120" max="8000" step="20" value="1650">
         </div>
         <div class="builder-field weapon-zone">
           <label for="builderLayerFightBackEnabled">Fight Back If Attacked</label>
@@ -2384,7 +2752,7 @@ button:hover { filter: brightness(1.2); }
   </div>
 </div>
   
-  <div id="overlay">
+<div id="overlay">
   <div id="titleScreen" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.85);">
     <h1 style="font-size:58px; margin:0 0 20px 0; color:#FF0; text-shadow: 0 0 20px #FF0, 0 0 40px #FF8800, 4px 4px 0 #000, -3px -3px 0 #000;">KENNARD FIRE DEFENDER DELUXE</h1>
     <p style="font-size:26px; margin:0 0 40px 0; color:#FFDD88;">Choose Your Rank</p>
@@ -2393,6 +2761,23 @@ button:hover { filter: brightness(1.2); }
       <button id="titleMemberBtn" class="difficulty-btn" onclick="startGame(2)">MEMBER</button>
       <button id="titleCaptainBtn" class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
       <button id="titleBuilderBtn" class="secondary-btn" onclick="builderOpen()">LEVEL BUILDER</button>
+    </div>
+  </div>
+</div>
+
+<div id="missionStoryScreen" aria-hidden="true">
+  <div id="missionStoryCard">
+    <h2>Why This Game Exists</h2>
+    <p>This game was created to bring fun and entertainment to our community while sharing important fire-safety reminders between levels. It was also made with the intent of raising funds for new tools, equipment upgrades, and ultimately building a modern fire station that will better serve our growing community for the next 100 years. The Kennard Volunteer Fire Department was founded in 1924, and after a powerful tornado devastated much of our town in 1974, destroying the school and requiring the town hall and fire station to be rebuilt, we have continued to grow. Over the decades our needs have grown too, and today’s significantly larger and longer fire trucks no longer fit inside our current station.</p>
+    <div id="missionStoryDonate">
+      <p style="margin-top:0;"><strong>If you would like to support the Kennard Volunteer Fire Department:</strong></p>
+      <p>Email: <strong>vfd@kennardin.com</strong></p>
+      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>“For Volunteer Fire Department”</strong> in the memo.</p>
+    </div>
+    <p style="margin-bottom:0;">Thank you for playing and helping keep our volunteers strong.<br>Enjoy the game! - Jason Groce - Kennard, Indiana</p>
+    <div id="missionStoryActions">
+      <button id="missionStoryBackBtn" type="button">Back</button>
+      <button id="missionStoryStartBtn" type="button">Continue To Game</button>
     </div>
   </div>
 </div>
@@ -2440,6 +2825,24 @@ button:hover { filter: brightness(1.2); }
       <p class="dispatch-note" id="dispatchNote">Tap "Let's Roll" or wait a moment and we'll send you in automatically.</p>
     <div class="dispatch-actions">
       <button id="dispatchGoBtn" class="difficulty-btn" onclick="dismissDispatchScreen()">Let's Roll</button>
+    </div>
+  </div>
+</div>
+
+<div id="level1GuideOverlay" aria-hidden="true">
+  <div id="level1GuideCard">
+    <div id="level1GuideHead">
+      <h2 id="level1GuideTitle">How To Fight Fires</h2>
+      <button id="level1GuideClose" type="button">Skip Guide</button>
+    </div>
+    <p id="level1GuideBody">Learn hose spray, truck controls, and rescue mechanics.</p>
+    <div id="level1GuideVisual"></div>
+    <div id="level1GuideFooter">
+      <div id="level1GuideDots"></div>
+      <div id="level1GuideNextWrap">
+        <button id="level1GuideNextBtn" type="button">Next</button>
+        <button id="level1GuideDoneBtn" type="button" style="display:none;">Start Level</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2628,6 +3031,7 @@ const SPRITE_FILES = {
   misc_human_firefighter_side_standing_right_459x200: 'misc_human_firefighter_side_standing_right_459x200.webp',
   misc_human_civilian_running_right_pose3_784x1168: 'misc_human_civilian_running_right_pose3_784x1168.webp',
   misc_human_civilian_running_right_pose4_784x1168: 'misc_human_civilian_running_right_pose4_784x1168.webp',
+  scifi_kvfd_ufo_fighter_side_512x256: 'scifi_kvfd_ufo_fighter_side_512x256.webp',
 };
 
 const SPRITE_BASE_PATH = 'images/';
@@ -2842,6 +3246,7 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'misc_human_firefighter_side_standing_right_459x200.webp',
   'misc_human_civilian_running_right_pose3_784x1168.webp',
   'misc_human_civilian_running_right_pose4_784x1168.webp',
+  'scifi_kvfd_ufo_fighter_side_512x256.webp',
 ];
 
 function normalizeSpriteToken(value) {
@@ -3174,6 +3579,22 @@ function drawSpriteFitted(key, x, y, w, h, alignBottom = false) {
 
 function preloadLevelSprites(lvl) {
   const needed = new Set(['engineLeft', 'engineRight', 'spaceEngineLeft', 'spaceEngineRight', 'semiTankLeft', 'semiTankRight', 'boroTankerLeft', 'boroTankerRight']);
+  const addAnimatedActorKeys = (modelKey, mode = 'civilian') => {
+    const resolved = resolveSpriteKey(String(modelKey || ''));
+    if (!resolved) return;
+    needed.add(resolved);
+    if (mode === 'firefighter') {
+      const ffAnim = buildFirefighterAnimationSet(resolved);
+      if (ffAnim.stand) needed.add(ffAnim.stand);
+      (ffAnim.runFrames || []).forEach((k) => { if (k) needed.add(k); });
+      return;
+    }
+    const civAnim = buildCivilianAnimationSet(resolved);
+    if (civAnim.stand) needed.add(civAnim.stand);
+    (civAnim.runFrames || []).forEach((k) => { if (k) needed.add(k); });
+  };
+  addAnimatedActorKeys(getDefaultCivilianModelKey(), 'civilian');
+  addAnimatedActorKeys(getDefaultFirefighterModelKey(), 'firefighter');
   if (lvl === 7) {
     needed.add('horseEatLeft');
     needed.add('horseEatRight');
@@ -3189,8 +3610,8 @@ function preloadLevelSprites(lvl) {
     if (ent.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) {
       needed.add(ent.spriteKey);
     }
-    if (ent?.civilianModelKey && SPRITE_FILES[ent.civilianModelKey]) needed.add(ent.civilianModelKey);
-    if (ent?.civilianFirefighterModelKey && SPRITE_FILES[ent.civilianFirefighterModelKey]) needed.add(ent.civilianFirefighterModelKey);
+    if (ent?.civilianModelKey) addAnimatedActorKeys(ent.civilianModelKey, 'civilian');
+    if (ent?.civilianFirefighterModelKey) addAnimatedActorKeys(ent.civilianFirefighterModelKey, 'firefighter');
     if (ent.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
     const catalogSpec = getCatalogSpec(ent.type);
     if (catalogSpec) needed.add(catalogSpec.sprite);
@@ -3245,6 +3666,65 @@ function preloadLevelSprites(lvl) {
   if (lvl === FINAL_LEVEL) { needed.add('ufo'); needed.add('ufoBeam'); }
   unloadSpritesExcept(needed);
   ensureSpritesLoaded([...needed]);
+}
+
+const BOOT_LOAD_MIN_MS = 900;
+const BOOT_LOAD_MAX_MS = 5200;
+let bootLoadStartedAt = 0;
+let bootLoadDone = false;
+
+function isSpriteReadyNow(key) {
+  const resolved = resolveSpriteKey(String(key || ''));
+  if (!resolved) return true;
+  if (!SPRITE_FILES[resolved] && !CUSTOM_SPRITE_DATA[resolved]) return true;
+  return !!SPRITE_READY[resolved];
+}
+
+function hideBootLoadingScreen(force = false) {
+  if (bootLoadDone && !force) return;
+  bootLoadDone = true;
+  const boot = document.getElementById('bootLoadingScreen');
+  if (!boot) return;
+  boot.classList.add('hidden');
+  setTimeout(() => {
+    boot.style.display = 'none';
+  }, 260);
+}
+
+function beginBootLoadingScreen() {
+  const boot = document.getElementById('bootLoadingScreen');
+  if (boot) {
+    boot.style.display = 'flex';
+    boot.classList.remove('hidden');
+  }
+  bootLoadStartedAt = performance.now();
+  preloadLevelSprites(1);
+
+  const defaultCiv = buildCivilianAnimationSet(getDefaultCivilianModelKey());
+  const defaultFf = buildFirefighterAnimationSet(getDefaultFirefighterModelKey());
+  const warmupKeys = new Set([
+    'engineRight',
+    'engineLeft',
+    'houseTall',
+    'treeOakRealistic',
+    defaultCiv.stand,
+    ...(defaultCiv.runFrames || []),
+    defaultFf.stand,
+    ...(defaultFf.runFrames || [])
+  ].filter(Boolean));
+  ensureSpritesLoaded([...warmupKeys]);
+
+  const poll = () => {
+    if (bootLoadDone) return;
+    const elapsed = performance.now() - bootLoadStartedAt;
+    const ready = [...warmupKeys].every((key) => isSpriteReadyNow(key));
+    if ((ready && elapsed >= BOOT_LOAD_MIN_MS) || elapsed >= BOOT_LOAD_MAX_MS) {
+      hideBootLoadingScreen();
+      return;
+    }
+    requestAnimationFrame(poll);
+  };
+  requestAnimationFrame(poll);
 }
 
 const GRASS_Y = 480;
@@ -4107,6 +4587,12 @@ let timeCueUntilMs = 0;
 let hasShownFirefighterMoveCue = false;
 let firefighterCueUntilMs = 0;
 let hoseExperimentState = { showMountHintUntilMs: 0 };
+let hoseCrewCarryMode = 'hidden';
+let level1GuidePending = false;
+let level1GuideShownThisRun = false;
+let level1GuideOpen = false;
+let level1GuideStep = 0;
+let pendingStartConfig = null;
 let levelHorseEvent = null;
 let tornadoCompleted = false;
 let tornadoState = null;
@@ -4115,6 +4601,10 @@ let enemyRaidState = null;
 let enemyLaserShots = [];
 let enemyBombShots = [];
 let playerRocketShots = [];
+let spaceStarfield = [];
+let spaceStarPanX = 0;
+let spaceStarPanY = 0;
+let enemyCrashFx = [];
 let waterCapacity = 100;
 let waterCurrent = 100;
 let currentDifficultyTuning = null;
@@ -4325,6 +4815,9 @@ const BUILDER_UI = {
   layerEnemySpawnMaxDelayMs: document.getElementById('builderLayerEnemySpawnMaxDelayMs'),
   layerEnemyScaleMin: document.getElementById('builderLayerEnemyScaleMin'),
   layerEnemyScaleMax: document.getElementById('builderLayerEnemyScaleMax'),
+  layerEnemySpawnFarScale: document.getElementById('builderLayerEnemySpawnFarScale'),
+  layerEnemyHoverMinMs: document.getElementById('builderLayerEnemyHoverMinMs'),
+  layerEnemyHoverMaxMs: document.getElementById('builderLayerEnemyHoverMaxMs'),
   layerFightBackEnabled: document.getElementById('builderLayerFightBackEnabled'),
   layerFlightEnabled: document.getElementById('builderLayerFlightEnabled'),
   layerFlightSpeed: document.getElementById('builderLayerFlightSpeed'),
@@ -4951,6 +5444,9 @@ function builderSyncLevelOptionVisibility() {
     'builderLayerEnemySpawnMaxDelayMs',
     'builderLayerEnemyScaleMin',
     'builderLayerEnemyScaleMax',
+    'builderLayerEnemySpawnFarScale',
+    'builderLayerEnemyHoverMinMs',
+    'builderLayerEnemyHoverMaxMs',
     'builderLayerFightBackEnabled',
     'builderLayerFlightEnabled',
     'builderLayerFlightSpeed',
@@ -4980,6 +5476,9 @@ function builderSyncLevelOptionVisibility() {
     'builderLayerEnemySpawnMaxDelayMs',
     'builderLayerEnemyScaleMin',
     'builderLayerEnemyScaleMax',
+    'builderLayerEnemySpawnFarScale',
+    'builderLayerEnemyHoverMinMs',
+    'builderLayerEnemyHoverMaxMs',
     'builderLayerFightBackEnabled',
     'builderLayerFlightEnabled',
     'builderLayerFlightSpeed',
@@ -5193,6 +5692,9 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.layerEnemySpawnMaxDelayMs) BUILDER_UI.layerEnemySpawnMaxDelayMs.value = String(clamp(Number(selected?.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
   if (BUILDER_UI.layerEnemyScaleMin) BUILDER_UI.layerEnemyScaleMin.value = String(clamp(Number(selected?.enemyScaleMin ?? 0.55), 0.1, 3));
   if (BUILDER_UI.layerEnemyScaleMax) BUILDER_UI.layerEnemyScaleMax.value = String(clamp(Number(selected?.enemyScaleMax ?? 1.1), 0.1, 3));
+  if (BUILDER_UI.layerEnemySpawnFarScale) BUILDER_UI.layerEnemySpawnFarScale.value = String(clamp(Number(selected?.enemySpawnFarScale ?? 0.001), 0.0005, 0.2));
+  if (BUILDER_UI.layerEnemyHoverMinMs) BUILDER_UI.layerEnemyHoverMinMs.value = String(clamp(Number(selected?.enemyHoverMinMs ?? 620), 100, 5000));
+  if (BUILDER_UI.layerEnemyHoverMaxMs) BUILDER_UI.layerEnemyHoverMaxMs.value = String(clamp(Number(selected?.enemyHoverMaxMs ?? 1650), 120, 8000));
   if (BUILDER_UI.layerFightBackEnabled) BUILDER_UI.layerFightBackEnabled.value = selected?.fightBackEnabled ? '1' : '0';
   if (BUILDER_UI.layerFlightEnabled) BUILDER_UI.layerFlightEnabled.value = selected?.flightEnabled ? '1' : '0';
   if (BUILDER_UI.layerFlightSpeed) BUILDER_UI.layerFlightSpeed.value = String(clamp(Number(selected?.flightSpeed ?? 2.4), 0.5, 8));
@@ -5834,6 +6336,9 @@ function builderResetSelectedDefaults() {
   ent.enemySpawnMaxDelayMs = 1200;
   ent.enemyScaleMin = 0.55;
   ent.enemyScaleMax = 1.1;
+  ent.enemySpawnFarScale = 0.001;
+  ent.enemyHoverMinMs = 620;
+  ent.enemyHoverMaxMs = 1650;
   ent.fightBackEnabled = false;
   ent.flightEnabled = false;
   ent.flightSpeed = 2.4;
@@ -5997,6 +6502,9 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnMaxDelayMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
+    '#builderLayerEnemySpawnFarScale',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerFightBackEnabled',
     '#builderLayerEnemyLaserColor',
     '#builderLayerEnemyBombType',
@@ -6066,6 +6574,9 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnMaxDelayMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
+    '#builderLayerEnemySpawnFarScale',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerFightBackEnabled',
     '#builderLayerEnemyLaserColor',
     '#builderLayerEnemyBombType',
@@ -6122,6 +6633,9 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnMaxDelayMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
+    '#builderLayerEnemySpawnFarScale',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerFightBackEnabled',
     '#builderLayerFlightEnabled',
     '#builderLayerFlightSpeed',
@@ -7471,6 +7985,22 @@ function getYear2043WaveTotal(levelData, level = currentLevel) {
   return Number.isFinite(raw) ? clamp(raw, 1, 14) : clamp(fallback, 1, 14);
 }
 
+function getRaidTruckSide(levelData = null) {
+  const data = levelData || baseLevels[currentLevel - 1] || {};
+  const configured = data?.truckSide === 'right' ? 'right' : (data?.truckSide === 'left' ? 'left' : null);
+  const rect = getTruckDrawRect();
+  if (rect) {
+    const centerX = rect.x + rect.w * 0.5;
+    return centerX >= (canvas.width * 0.5) ? 'right' : 'left';
+  }
+  return configured || 'left';
+}
+
+function getScifiOppositeSpawnDirection(levelData = null) {
+  const side = getRaidTruckSide(levelData);
+  return side === 'left' ? 'right' : 'left';
+}
+
 function registerTruckImpactDamage(amount, source = 'impact') {
   if (!isYear2043Level(currentLevel)) return;
   const delta = clamp(Number(amount || 0), 0, 90);
@@ -7493,8 +8023,23 @@ function markRaidAttackerDestroyed(ent, reason = 'down', popupX = null, popupY =
   const cy = Number.isFinite(Number(popupY)) ? Number(popupY) : (rect ? rect.y + rect.h * 0.5 : Number(ent.baseY || GRASS_Y));
   const keyText = String(ent?.spriteKey || ent?.enemyModelKey || ent?.type || '').toLowerCase();
   const isUfo = /(ufo|saucer|delta|cigar|mothership)/.test(keyText);
+  const isScifiEnemy = /(ufo|saucer|delta|cigar|mothership|scifi|alien|space|hover|fighter|pod|mech|armored)/.test(keyText);
   createSmoke(cx, cy);
   createFireParticles(cx, cy, isUfo ? 8.5 : 5.4, isUfo ? 1.45 : 1.05, { big: true });
+  if (isScifiEnemy) {
+    enemyCrashFx.push({
+      kind: 'blast',
+      spriteKey: resolveSpriteKey(String(ent?.spriteKey || '')) || '',
+      x: cx,
+      y: cy,
+      vx: 0,
+      vy: 0,
+      rot: 0,
+      rotVel: (Math.random() < 0.5 ? -1 : 1) * (0.05 + Math.random() * 0.09),
+      phase: 'boom',
+      ttlMs: 460
+    });
+  }
   if (reason === 'collision') {
     addPointPopup(cx, cy - 6, 'RAMMED!', '#ffaf7a', 64);
   } else if (isUfo) {
@@ -7715,6 +8260,12 @@ function updateTruckFlight(dt, levelData = null) {
     return;
   }
   const elapsed = Math.max(0, Number(dt || 0));
+  if (isScifiTruckActive(level) && isPrimaryLaserMode(level)) {
+    const step = Math.max(0.2, elapsed / 16.67);
+    const vInput = clamp(Number(truckFlightInput || 0), -1, 1);
+    truck.y = clamp((truck.y ?? FIRETRUCK_LANE_Y) - (vInput * 7.4 * step), 54, 532);
+    return;
+  }
   const moving = Math.abs(Number(truckDrive || 0)) > 0.06;
   const boostRate = moving ? 0.00145 : -0.0011;
   truckFlightBoost = clamp(truckFlightBoost + (boostRate * elapsed), 0, 1);
@@ -8406,22 +8957,13 @@ function buildYear2043Levels() {
   ];
   const laserColors = ['#62ccff', '#74b9ff', '#59deff', '#9ca8ff', '#6cf0ff', '#7ac4ff', '#83f3ff'];
   const airModelSets = [
-    ['scifi_ufo_small_saucer_459x145', 'scifi_vehicle_fighter_459x145', 'scifi_vehicle_flyingpod_459x145'],
-    ['scifi_ufo_medium_delta_459x145', 'scifi_vehicle_fighter_459x145', 'scifi_vehicle_flyingpod_459x145'],
-    ['scifi_ufo_small_saucer_459x145', 'scifi_ufo_medium_delta_459x145', 'scifi_vehicle_fighter_459x145'],
-    ['scifi_ufo_large_cigar_459x145', 'scifi_vehicle_fighter_459x145', 'scifi_vehicle_flyingpod_459x145'],
-    ['scifi_ufo_medium_delta_459x145', 'scifi_ufo_large_cigar_459x145', 'scifi_vehicle_fighter_459x145'],
+    ['scifi_ufo_small_saucer_459x145', 'scifi_ufo_medium_delta_459x145'],
+    ['scifi_ufo_medium_delta_459x145', 'scifi_ufo_large_cigar_459x145'],
     ['scifi_ufo_small_saucer_459x145', 'scifi_ufo_medium_delta_459x145', 'scifi_ufo_large_cigar_459x145'],
-    ['scifi_ufo_large_cigar_459x145', 'scifi_ufo_medium_delta_459x145', 'scifi_vehicle_fighter_459x145']
-  ];
-  const groundModelSets = [
-    ['scifi_vehicle_hovercar_compact_459x145', 'scifi_vehicle_hoverbike_459x145'],
-    ['scifi_vehicle_armoredtransport_459x145', 'scifi_vehicle_hovercar_compact_459x145'],
-    ['scifi_vehicle_hoverbike_459x145', 'scifi_vehicle_armoredtransport_459x145'],
-    ['scifi_vehicle_mechwarrior_light_459x145', 'scifi_vehicle_hovercar_compact_459x145'],
-    ['scifi_vehicle_armoredtransport_459x145', 'scifi_vehicle_mechwarrior_light_459x145'],
-    ['scifi_vehicle_mechwarrior_light_459x145', 'scifi_vehicle_armoredtransport_459x145', 'scifi_vehicle_hoverbike_459x145'],
-    ['scifi_vehicle_cargohauler_792x276', 'scifi_vehicle_mechwarrior_light_459x145']
+    ['scifi_ufo_large_cigar_459x145', 'scifi_ufo_small_saucer_459x145'],
+    ['scifi_ufo_medium_delta_459x145', 'scifi_ufo_large_cigar_459x145', 'scifi_ufo_small_saucer_459x145'],
+    ['scifi_ufo_small_saucer_459x145', 'scifi_ufo_medium_delta_459x145', 'scifi_ufo_large_cigar_459x145'],
+    ['scifi_ufo_large_cigar_459x145', 'scifi_ufo_medium_delta_459x145']
   ];
   return YEAR2043_BACKDROPS.map((bgKey, idx) => {
     const targetCount = 4 + idx;
@@ -8434,8 +8976,8 @@ function buildYear2043Levels() {
     const scifiScaleMax = 0.22;
     return {
       name: levelNames[idx],
-      safetyTip: 'Future tactics: keep moving, target fast fliers first, then clear ground pushers before they reach the truck.',
-      dispatchBody: `Dispatch to Unit Prime: entering ${levelNames[idx]}. Hostile air and ground waves detected from the eastern corridor.`,
+      safetyTip: 'Future tactics: keep moving, target fast UFOs first, and dodge incoming plasma fire.',
+      dispatchBody: `Dispatch to Unit Prime: entering ${levelNames[idx]}. Hostile UFO waves detected from deep space.`,
       dispatchClearBody: `Dispatch confirms ${levelNames[idx]} is secure. Route to the next corridor is open.`,
       timeOfDay: 8,
       truckSide: 'left',
@@ -8443,6 +8985,7 @@ function buildYear2043Levels() {
       primaryVehicleSprite: 'spaceEngineRight',
       primaryVehicleFacingBase: 'right',
       primaryVehicleScale: scifiScale,
+      primaryVehicleFlight: true,
       primaryAttackMode: 'laser',
       primaryLaserTankerRefill: false,
       primaryLaserColor: laserColors[idx],
@@ -8465,9 +9008,9 @@ function buildYear2043Levels() {
         laserColor: '#ff6c7a',
         bombType: idx >= 4 ? 'plasma' : 'bomb',
         bombColor: idx >= 4 ? '#ffad64' : '#ff9d55',
-        modelKeys: [...airModelSets[idx], ...groundModelSets[idx]],
+        modelKeys: [...airModelSets[idx]],
         airModelKeys: airModelSets[idx],
-        groundModelKeys: groundModelSets[idx],
+        groundModelKeys: [],
         aggressiveSkill: skillScale
       },
       entities: []
@@ -19920,6 +20463,9 @@ function normalizeBuilderEntity(ent, idx = 0) {
       enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
       enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
       enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+      enemySpawnFarScale: clamp(Number(ent.enemySpawnFarScale ?? 0.001), 0.0005, 0.2),
+      enemyHoverMinMs: clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000),
+      enemyHoverMaxMs: clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000),
       fightBackEnabled: !!ent.fightBackEnabled,
       laserEnabled: !!ent.laserEnabled,
       laserDamage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
@@ -20008,6 +20554,9 @@ function normalizeBuilderEntity(ent, idx = 0) {
     enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
     enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
     enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+    enemySpawnFarScale: clamp(Number(ent.enemySpawnFarScale ?? 0.001), 0.0005, 0.2),
+    enemyHoverMinMs: clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000),
+    enemyHoverMaxMs: clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000),
     fightBackEnabled: !!ent.fightBackEnabled,
     laserEnabled: !!ent.laserEnabled,
     laserDamage: clamp(Number(ent.laserDamage ?? 8), 1, 30),
@@ -20137,6 +20686,9 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
   const primaryAttackMode = typeof level.primaryAttackMode === 'string'
     ? (level.primaryAttackMode === 'laser' ? 'laser' : 'water')
     : ((fireTruckTheme === 'scifi' || !!primaryVehicleSprite) ? 'laser' : 'water');
+  const primaryVehicleFlight = typeof level.primaryVehicleFlight === 'boolean'
+    ? level.primaryVehicleFlight
+    : (fireTruckTheme === 'scifi' || primaryAttackMode === 'laser');
   const hoseTeamEnabled = typeof level.hoseTeamEnabled === 'boolean'
     ? level.hoseTeamEnabled
     : (fireTruckTheme !== 'scifi');
@@ -20156,7 +20708,7 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
     truckSide,
     fireTruckTheme,
     primaryVehicleSprite,
-    primaryVehicleFlight: !!level.primaryVehicleFlight,
+    primaryVehicleFlight,
     primaryAttackMode,
     hoseTeamEnabled,
     primaryLaserTankerRefill,
@@ -20405,11 +20957,11 @@ function applyDefaultCivilianEmitterMix() {
   const maleModel = resolveSpriteKey('misc_human_civilian_side_standing_right_459x200') || getDefaultCivilianModelKey();
   const femaleModel = resolveSpriteKey('misc_human_female_civilian_side_standing_right_459x200') || getDefaultCivilianModelKey();
   const ffModel = resolveSpriteKey('misc_human_firefighter_side_standing_right_459x200') || getDefaultFirefighterModelKey();
+  const maxBaseLevel = Math.min(FINAL_LEVEL, baseLevels.length);
   for (let lvl = 1; lvl <= Math.min(FINAL_LEVEL, baseLevels.length); lvl++) {
     const level = baseLevels[lvl - 1];
     if (!level || !Array.isArray(level.entities) || lvl === FINAL_LEVEL) continue;
-    if (level.entities.some((ent) => ent?.civilianSpawnEnabled)) continue;
-    if ((lvl % 2) === 0) continue;
+    if (isYear2043Level(lvl) || isScifiTruckActive(level)) continue;
     const candidates = level.entities
       .map((ent, idx) => ({ ent, idx }))
       .filter(({ ent }) => {
@@ -20417,20 +20969,34 @@ function applyDefaultCivilianEmitterMix() {
         return /(house|home|cottage|school|garage|shed|barn|sedan|pickup|truck|bus|vehicle|tractor)/.test(text);
       });
     if (!candidates.length) continue;
-    const target = candidates[0].ent;
-    target.civilianSpawnEnabled = true;
-    target.civilianSpawnCount = (lvl % 5 === 0) ? 2 : 1;
-    target.civilianSpawnDelayMs = 1400 + (lvl * 60);
-    target.civilianSpawnIntervalMs = 1500;
-    target.civilianRunMode = 'both';
-    target.civilianRunDirection = Number(target.x || 0) < (canvas.width * 0.5) ? 'right' : 'left';
-    target.civilianRunSpeed = 2.2;
-    target.civilianRunDurationMs = 14000;
-    target.civilianBonusPoints = 14;
-    target.civilianDoorSide = Number(target.x || 0) < (canvas.width * 0.5) ? 'right' : 'left';
-    target.civilianModelKey = (lvl % 4 === 1) ? femaleModel : maleModel;
-    target.civilianFirefighterModelKey = ffModel;
-    target.civilianWaitForFire = true;
+    const existingEnabled = candidates.filter(({ ent }) => !!ent?.civilianSpawnEnabled).length;
+    const desiredEmitters = Math.min(candidates.length, (lvl % 6 === 0 || lvl > Math.round(maxBaseLevel * 0.6)) ? 2 : 1);
+    const needed = Math.max(0, desiredEmitters - existingEnabled);
+    if (needed <= 0) continue;
+    const sortedCandidates = [...candidates].sort((a, b) => {
+      const scoreA = ((lvl * 43) + (a.idx * 17)) % 97;
+      const scoreB = ((lvl * 43) + (b.idx * 17)) % 97;
+      return scoreA - scoreB;
+    });
+    let added = 0;
+    sortedCandidates.forEach(({ ent }, pickIdx) => {
+      if (added >= needed) return;
+      if (ent?.civilianSpawnEnabled) return;
+      ent.civilianSpawnEnabled = true;
+      ent.civilianSpawnCount = (lvl % 8 === 0 || pickIdx === 1) ? 2 : 1;
+      ent.civilianSpawnDelayMs = clamp(1100 + (lvl * 55) + (pickIdx * 500), 500, 120000);
+      ent.civilianSpawnIntervalMs = clamp(1200 + ((pickIdx % 2) * 250), 600, 60000);
+      ent.civilianRunMode = 'both';
+      ent.civilianRunDirection = Number(ent.x || 0) < (canvas.width * 0.5) ? 'right' : 'left';
+      ent.civilianRunSpeed = 2.2 + ((pickIdx % 2) * 0.25);
+      ent.civilianRunDurationMs = 14000;
+      ent.civilianBonusPoints = 14 + (pickIdx * 2);
+      ent.civilianDoorSide = Number(ent.x || 0) < (canvas.width * 0.5) ? 'right' : 'left';
+      ent.civilianModelKey = ((lvl + pickIdx) % 2 === 0) ? femaleModel : maleModel;
+      ent.civilianFirefighterModelKey = ffModel;
+      ent.civilianWaitForFire = true;
+      added += 1;
+    });
   }
 }
 
@@ -20568,7 +21134,11 @@ function getLevelPrimaryVehicleSprite(levelData) {
 function getLevelPrimaryVehicleScale(levelData) {
   const hasReplacementSprite = !!resolveSpriteKey(levelData?.primaryVehicleSprite || '');
   const defaultScale = hasReplacementSprite ? 0.5 : 1;
-  return clamp(Number(levelData?.primaryVehicleScale ?? defaultScale), 0, 2.6);
+  let scale = clamp(Number(levelData?.primaryVehicleScale ?? defaultScale), 0, 2.6);
+  if (isScifiTruckActive(levelData || baseLevels[currentLevel - 1] || {})) {
+    scale *= 0.8;
+  }
+  return clamp(scale, 0, 2.6);
 }
 
 function getLevelPrimaryVehicleFacingBase(levelData) {
@@ -20596,6 +21166,9 @@ function isScifiTruckActive(levelData = null) {
 
 function isPrimaryFlightModeActive(levelData = null) {
   const level = levelData || baseLevels[currentLevel - 1] || {};
+  if (isScifiTruckActive(level) && (level?.primaryAttackMode === 'laser' || !level?.primaryAttackMode)) {
+    return true;
+  }
   return !!level?.primaryVehicleFlight;
 }
 
@@ -20635,7 +21208,7 @@ function setTruckDrive(value) {
   const normalized = Math.max(-1, Math.min(1, value));
   if (isFirefighterControlActive()) {
     rescueState.firefighter.vx = normalized;
-    if (Math.abs(normalized) > 0.05) rescueState.firefighter.facing = normalized > 0 ? 1 : -1;
+    if (Math.abs(normalized) > 0.16) rescueState.firefighter.facing = normalized > 0 ? 1 : -1;
     updateThumbKnob(normalized);
     truckDrive = 0;
     return;
@@ -20719,6 +21292,10 @@ function buildCivilianAnimationSet(baseModelKey) {
   const female = /female|woman|girl/.test(lower);
   const preferMaleStandSide = resolveSpriteKey('misc_human_civilian_side_standing_right_459x200');
   const preferMaleRun2 = resolveSpriteKey('misc_human_civilian_running_right_pose2_459x200');
+  const preferMaleRun3 = resolveSpriteKey('misc_human_civilian_running_right_pose3')
+    || resolveSpriteKey('misc_human_civilian_running_right_pose3_459x200');
+  const preferMaleRun4 = resolveSpriteKey('misc_human_civilian_running_right_pose4')
+    || resolveSpriteKey('misc_human_civilian_running_right_pose4_459x200');
   const preferMaleFront = resolveSpriteKey('misc_human_civilian_front_standing_459x200');
   const preferFemaleStandSide = resolveSpriteKey('misc_human_female_civilian_side_standing_right_459x200');
   const preferFemaleRun1 = resolveSpriteKey('misc_human_female_civilian_running_right_pose1_459x200');
@@ -20748,7 +21325,7 @@ function buildCivilianAnimationSet(baseModelKey) {
   );
   const preferredRunFrames = female
     ? [preferFemaleRun1, preferFemaleRun2].filter((k) => !!k && pool.includes(k))
-    : [preferMaleRun2].filter((k) => !!k && pool.includes(k));
+    : [preferMaleRun2, preferMaleRun3, preferMaleRun4].filter((k) => !!k && pool.includes(k));
   const run1 = preferredRunFrames[0] || pickCivilianSpriteKey(
     pool,
     [/running_right_pose1/, /running_pose1/, /run.*pose1/, /running/],
@@ -20827,19 +21404,22 @@ function getFirefighterRect() {
   if (!ff || ff.mode === 'hidden') return null;
   const modelKey = resolveSpriteKey(String(ff.modelKey || '')) || getDefaultFirefighterModelKey();
   const size = getBuilderSpriteBaseSize(modelKey || '');
-  const h = clamp(size.h * 0.72, 84, 176);
-  const w = clamp(size.w * 0.50, 42, 124);
-  const groundY = clamp(FIRETRUCK_LANE_Y + 2, GRASS_Y - 6, FIRETRUCK_LANE_Y + 10);
+  const h = clamp(size.h * 0.56, 66, 136);
+  const w = clamp(size.w * 0.39, 32, 98);
+  const groundY = clamp(FIRETRUCK_LANE_Y + 1, GRASS_Y - 8, FIRETRUCK_LANE_Y + 6);
   const x = clamp(ff.x - w * 0.5, 6, canvas.width - w - 6);
   return { x, y: groundY - h, w, h };
 }
 
 function getCivilianRect(civilian) {
   if (!civilian) return null;
-  const modelKey = resolveSpriteKey(String(civilian.displayModelKey || civilian.modelKey || '')) || getDefaultCivilianModelKey();
+  const modelKey = resolveSpriteKey(String(civilian.baseModelKey || civilian.standModelKey || civilian.modelKey || '')) || getDefaultCivilianModelKey();
   const size = getBuilderSpriteBaseSize(modelKey || '');
-  const h = clamp(size.h * 0.50, 56, 118);
-  const w = clamp(size.w * 0.36, 28, 90);
+  const isFemale = /female_civilian/i.test(String(modelKey || ''));
+  const hScale = isFemale ? 0.46 : 0.42;
+  const wScale = isFemale ? 0.33 : 0.30;
+  const h = clamp(size.h * hScale, 50, 108);
+  const w = clamp(size.w * wScale, 24, 82);
   const laneGroundY = clamp(FIRETRUCK_LANE_Y + 2, GRASS_Y - 6, FIRETRUCK_LANE_Y + 10);
   const bob = Math.sin((civilian.bobMs || 0) / 160) * 1.8;
   return { x: civilian.x - w * 0.5, y: laneGroundY - h + bob, w, h };
@@ -20964,9 +21544,9 @@ function spawnCivilianFromEmitter(emitter, levelData) {
   if (!box) return false;
   const door = getCivilianDoorSpawn(ent, box);
   const targetDir = getCivilianTargetDirection(ent, door.x);
-  const runMode = (ent.civilianRunMode === 'direction' || ent.civilianRunMode === 'both') ? ent.civilianRunMode : 'pingpong';
+  const runMode = 'pingpong';
   const runSpeed = clamp(Number(ent.civilianRunSpeed ?? 2.3), 0.4, 7);
-  const runDurationMs = clamp(Number(ent.civilianRunDurationMs ?? 11000), 500, 120000);
+  const runDurationMs = difficulty <= 1 ? 15000 : (difficulty >= 3 ? 7000 : 10000);
   const roam = clamp(Math.max(90, box.w * 1.05), 90, 280);
   const civModel = resolveSpriteKey(String(ent.civilianModelKey || '')) || getDefaultCivilianModelKey();
   const ffModel = resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || getDefaultFirefighterModelKey();
@@ -20996,6 +21576,7 @@ function spawnCivilianFromEmitter(emitter, levelData) {
     standModelKey: anim.stand || civModel,
     runModelKeys: (anim.runFrames || [civModel]).filter(Boolean),
     displayModelKey: anim.stand || civModel,
+    baseModelKey: anim.stand || civModel,
     runFrameTickMs: 0,
     firefighterModelKey: ffModel,
     bonusPoints: clamp(Number(ent.civilianBonusPoints ?? 12), 0, 300),
@@ -21057,8 +21638,8 @@ function updateCivilianRescue(dt, levelData) {
     ff.runFrameTickMs = (ff.runFrameTickMs || 0) + Math.max(0, Number(dt || 0));
     if (ff.mode === 'active') {
       ff.x = clamp(ff.x + ff.vx * 3.1 * step, 16, canvas.width - 16);
-      if (Math.abs(ff.vx) > 0.05) ff.facing = ff.vx > 0 ? 1 : -1;
-      const moving = Math.abs(ff.vx) > 0.08;
+      if (Math.abs(ff.vx) > 0.16) ff.facing = ff.vx > 0 ? 1 : -1;
+      const moving = Math.abs(ff.vx) > 0.16;
       if (moving) {
         const runFrames = Array.isArray(ff.runModelKeys) && ff.runModelKeys.length
           ? ff.runModelKeys
@@ -21081,7 +21662,7 @@ function updateCivilianRescue(dt, levelData) {
         ff.x = homeX;
         ff.mode = 'hidden';
       } else {
-        ff.facing = move >= 0 ? 1 : -1;
+        if (Math.abs(move) > 0.08) ff.facing = move >= 0 ? 1 : -1;
       }
       const runFrames = Array.isArray(ff.runModelKeys) && ff.runModelKeys.length
         ? ff.runModelKeys
@@ -21105,7 +21686,9 @@ function updateCivilianRescue(dt, levelData) {
     const isUfoTarget = !!(ufoRaid?.abduction?.active && ufoRaid.abduction.targetCivilianId === civ.id);
     if (!civ.exiting && civ.elapsedMs >= civ.durationMs) {
       civ.exiting = true;
-      civ.exitDir = civ.targetDir || (civ.x < canvas.width * 0.5 ? -1 : 1);
+      const distLeft = Math.max(0, civ.x);
+      const distRight = Math.max(0, canvas.width - civ.x);
+      civ.exitDir = distLeft <= distRight ? -1 : 1;
     }
     if (isUfoTarget) {
       moveDir = 0;
@@ -21163,6 +21746,9 @@ function updateCivilianRescue(dt, levelData) {
       if (touchedByWater && civ.onFire) {
         civ.onFire = false;
         civ.onFireMs = 0;
+        const superBonus = Math.max(20, Math.round((Number(civ.bonusPoints || 12) * 2.5)));
+        awardGameplayPoints(superBonus);
+        addPointPopup(civRect.x + civRect.w * 0.5, civRect.y - 22, `+${superBonus} HERO`, '#8ff7ff', 74);
         addPointPopup(civRect.x + civRect.w * 0.5, civRect.y - 10, 'CIVILIAN EXTINGUISHED', '#9be3ff', 62);
       }
       if (!civ.onFire) {
@@ -21179,7 +21765,8 @@ function updateCivilianRescue(dt, levelData) {
             break;
           }
         }
-        if (nearFlame && Math.random() < 0.0035 * step) {
+        const igniteChance = difficulty <= 1 ? 0.0036 : (difficulty >= 3 ? 0.0060 : 0.0048);
+        if (nearFlame && Math.random() < igniteChance * step) {
           civ.onFire = true;
           civ.onFireMs = 0;
           addPointPopup(civRect.x + civRect.w * 0.5, civRect.y - 8, 'CIVILIAN ON FIRE!', '#ffb079', 68);
@@ -21229,7 +21816,13 @@ function drawFacingActorSprite(modelKey, rect, facing = 1) {
     ctx.scale(-1, 1);
     ctx.translate(-cx, 0);
   }
-  const drawn = key ? drawSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true) : false;
+  // Keep actor animation frames visually consistent: draw into one fixed box
+  // so run/stand/flip frames do not pop big/small between images.
+  const drawn = key ? drawSprite(key, rect.x, rect.y, rect.w, rect.h) : false;
+  if (!drawn && key) {
+    ctx.restore();
+    return;
+  }
   if (!drawn) {
     ctx.fillStyle = '#f5f5f5';
     ctx.fillRect(rect.x + rect.w * 0.32, rect.y + rect.h * 0.20, rect.w * 0.36, rect.h * 0.44);
@@ -21265,8 +21858,8 @@ function drawCivilianRescue() {
   const ff = rescueState.firefighter;
   const ffRect = getFirefighterRect();
   if (ff && ffRect && ff.mode !== 'hidden') {
-    if (Number(ff.vx || 0) > 0.03) ff.facing = 1;
-    else if (Number(ff.vx || 0) < -0.03) ff.facing = -1;
+    if (Number(ff.vx || 0) > 0.16) ff.facing = 1;
+    else if (Number(ff.vx || 0) < -0.16) ff.facing = -1;
     drawFacingActorSprite(ff.displayModelKey || ff.standModelKey || ff.modelKey || getDefaultFirefighterModelKey(), ffRect, ff.facing || 1);
     if (levelElapsedMs < firefighterCueUntilMs) {
       const pulse = 0.35 + ((Math.sin(levelElapsedMs / 120) + 1) * 0.5) * 0.45;
@@ -21287,13 +21880,28 @@ function drawCivilianRescue() {
 
 function initBlackBoxTruckLevels() {
   const totalLevels = baseLevels.length;
-  const pool = Array.from({ length: totalLevels }, (_, i) => i + 1).filter((n) => n !== 6 && n !== FINAL_LEVEL);
+  const pool = Array.from({ length: totalLevels }, (_, i) => i + 1).filter((lvl) => {
+    if (lvl < 1 || lvl > FINAL_LEVEL) return false;
+    if (lvl === FINAL_LEVEL) return false;
+    if (isYear2043Level(lvl)) return false;
+    const levelData = baseLevels[lvl - 1] || {};
+    if (isScifiTruckActive(levelData)) return false;
+    return true;
+  });
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  const extraCount = difficulty >= 3 ? 3 : 2; // Hard: 4 total appearances, Easy/Med: 3 total appearances.
-  blackBoxTruckLevels = new Set([6, ...pool.slice(0, extraCount)].sort((a, b) => a - b));
+  blackBoxTruckLevels = new Set(pool.slice(0, Math.min(4, pool.length)).sort((a, b) => a - b));
+}
+
+function canUseBlackBoxOnLevel(levelData, level = currentLevel) {
+  const lvl = Number(level || 0);
+  if (lvl < 1 || lvl > FINAL_LEVEL) return false;
+  if (lvl === FINAL_LEVEL) return false;
+  if (isYear2043Level(lvl)) return false;
+  if (isScifiTruckActive(levelData || baseLevels[lvl - 1] || {})) return false;
+  return true;
 }
 
 function getDifficultyTuning(diff, level, spotCount = 0) {
@@ -21532,6 +22140,147 @@ function showTitleScreen() {
   updateLevelSkipHud();
 }
 
+const LEVEL1_GUIDE_STEPS = [
+  {
+    title: 'Hose Spray Mechanics',
+    body: 'Drag close to the nozzle for a wide spray (short reach). Aim farther away for a tight stream that reaches deeper fire.',
+    visual: 'hose'
+  },
+  {
+    title: 'Get In / Out Of Truck',
+    body: 'Press "Press To Enter Truck" when the firefighter is near the door. Use arrows to move either the truck or hose firefighter.',
+    visual: 'mount'
+  },
+  {
+    title: 'Rescue Civilians For Bonus',
+    body: 'When civilians run out and yell HELP, use arrows to run the firefighter to them, then return to the truck for bonus points.',
+    visual: 'rescue'
+  },
+  {
+    title: 'Truck Movement',
+    body: 'Use left and right arrows at the bottom edge to position your truck and hose lane before fire spreads.',
+    visual: 'drive'
+  }
+];
+
+function getLevel1GuideVisualHtml(kind) {
+  if (kind === 'mount') {
+    return `
+      <div class="guide-scene">
+        <img class="guide-truck" style="left:130px; bottom:35px;" src="images/vehicle_engine_680x322.webp" alt="truck">
+        <img class="guide-firefighter guide-firefighter-run" style="left:355px; bottom:40px;" src="images/misc_human_firefighter_running_right_pose1_459x200.webp" alt="firefighter">
+        <div class="guide-btn-chip" style="left:432px; bottom:44px;">Press To Enter Truck</div>
+        <div class="guide-arrow" style="left:488px; top:102px; transform: rotate(118deg); width:54px;"></div>
+        <div class="guide-arrow-lbl" style="left:550px; top:82px;">Enter / Exit</div>
+        <div class="guide-road"></div>
+        <div class="guide-grass"></div>
+      </div>
+    `;
+  }
+  if (kind === 'rescue') {
+    return `
+      <div class="guide-scene">
+        <img class="guide-house" src="images/building_house_2flr_784x613.webp" alt="house">
+        <img class="guide-truck" style="left:94px; bottom:35px;" src="images/vehicle_engine_680x322.webp" alt="truck">
+        <img class="guide-firefighter guide-firefighter-run" style="left:270px; bottom:40px;" src="images/misc_human_firefighter_running_right_pose1_459x200.webp" alt="firefighter">
+        <img class="guide-civilian" style="right:186px; bottom:40px; animation: guideRunnerMove 1.5s linear infinite alternate;" src="images/misc_human_female_civilian_running_right_pose1_459x200.webp" alt="civilian">
+        <div class="guide-help" style="right:194px; top:72px;">HELP!</div>
+        <div class="guide-arrow" style="left:372px; top:128px; width:164px;"></div>
+        <div class="guide-arrow-lbl" style="left:392px; top:104px;">Run To Civilian</div>
+        <div class="guide-arrow" style="left:306px; top:152px; width:120px; transform: rotate(180deg);"></div>
+        <div class="guide-arrow-lbl" style="left:132px; top:170px;">Return To Truck = Bonus</div>
+        <div class="guide-btn-chip" style="left:278px; top:56px; background:rgba(19,95,48,0.85); border-color:rgba(154,240,190,0.86);">+BONUS</div>
+        <div class="guide-road"></div>
+        <div class="guide-grass"></div>
+      </div>
+    `;
+  }
+  if (kind === 'drive') {
+    return `
+      <div class="guide-scene">
+        <img class="guide-truck guide-truck-move" style="left:178px; bottom:35px;" src="images/vehicle_engine_680x322.webp" alt="truck">
+        <div class="guide-btn-chip" style="left:334px; bottom:42px;">◀</div>
+        <div class="guide-btn-chip" style="left:410px; bottom:42px;">▶</div>
+        <div class="guide-btn-chip" style="left:486px; bottom:42px;">Press To Enter Truck</div>
+        <div class="guide-arrow" style="left:470px; top:70px; transform: rotate(98deg); width:58px;"></div>
+        <div class="guide-arrow-lbl" style="left:518px; top:48px;">Move Truck</div>
+        <div class="guide-road"></div>
+        <div class="guide-grass"></div>
+      </div>
+    `;
+  }
+  return `
+    <div class="guide-scene">
+      <img class="guide-truck" style="left:92px; bottom:36px;" src="images/vehicle_engine_680x322.webp" alt="truck">
+      <img class="guide-firefighter" style="left:360px; bottom:44px;" src="images/misc_human_firefighter_side_standing_right_459x200.webp" alt="hose firefighter">
+      <div class="guide-hose-link" style="left:256px; top:176px; width:112px;"></div>
+      <div class="guide-nozzle-dot" style="left:367px; top:173px;"></div>
+      <div class="guide-spray wide" style="left:388px; top:118px; width:176px; height:44px;"></div>
+      <div class="guide-spray tight" style="left:388px; top:178px; width:246px; height:15px;"></div>
+      <div class="guide-arrow-lbl" style="left:576px; top:96px;">Drag Near = Wide / Short</div>
+      <div class="guide-arrow-lbl" style="left:620px; top:166px;">Drag Far = Tight / Long</div>
+      <div class="guide-arrow" style="left:540px; top:108px; width:26px; transform: rotate(180deg);"></div>
+      <div class="guide-arrow" style="left:590px; top:176px; width:24px;"></div>
+      <div class="guide-road"></div>
+      <div class="guide-grass"></div>
+    </div>
+  `;
+}
+
+function renderLevel1GuideStep() {
+  const step = LEVEL1_GUIDE_STEPS[clamp(level1GuideStep, 0, LEVEL1_GUIDE_STEPS.length - 1)];
+  const titleEl = document.getElementById('level1GuideTitle');
+  const bodyEl = document.getElementById('level1GuideBody');
+  const visualEl = document.getElementById('level1GuideVisual');
+  const dotsEl = document.getElementById('level1GuideDots');
+  const nextBtn = document.getElementById('level1GuideNextBtn');
+  const doneBtn = document.getElementById('level1GuideDoneBtn');
+  if (!step || !titleEl || !bodyEl || !visualEl || !dotsEl || !nextBtn || !doneBtn) return;
+  titleEl.textContent = step.title;
+  bodyEl.textContent = step.body;
+  visualEl.innerHTML = getLevel1GuideVisualHtml(step.visual);
+  dotsEl.innerHTML = LEVEL1_GUIDE_STEPS.map((_, idx) => `<span class="dot${idx === level1GuideStep ? ' active' : ''}"></span>`).join('');
+  const last = level1GuideStep >= LEVEL1_GUIDE_STEPS.length - 1;
+  nextBtn.style.display = last ? 'none' : 'inline-block';
+  doneBtn.style.display = last ? 'inline-block' : 'none';
+}
+
+function closeLevel1Guide() {
+  const overlay = document.getElementById('level1GuideOverlay');
+  if (!overlay) return;
+  level1GuideOpen = false;
+  overlay.style.display = 'none';
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function showLevel1Guide() {
+  if (difficulty >= 3 || currentLevel !== 1 || level1GuideOpen || level1GuideShownThisRun) return;
+  const overlay = document.getElementById('level1GuideOverlay');
+  if (!overlay) return;
+  level1GuideOpen = true;
+  level1GuideShownThisRun = true;
+  level1GuideStep = 0;
+  isSpraying = false;
+  isLaserFiring = false;
+  isRocketFiring = false;
+  setTruckDrive(0);
+  renderLevel1GuideStep();
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function queueLevel1GuideForLevel(lvl) {
+  level1GuidePending = (lvl === 1 && difficulty <= 2 && !level1GuideShownThisRun);
+}
+
+function tryShowQueuedLevel1Guide() {
+  if (!level1GuidePending) return;
+  if (gameState !== 'playing') return;
+  if (pendingDispatchLevel !== null) return;
+  level1GuidePending = false;
+  showLevel1Guide();
+}
+
 function dismissDispatchScreen(fromAuto = false) {
   const dispatchLevel = pendingDispatchLevel;
   const screen = document.getElementById('dispatchScreen');
@@ -21545,12 +22294,36 @@ function dismissDispatchScreen(fromAuto = false) {
     dispatchAutoAdvance = null;
   }
   pendingDispatchLevel = null;
-  if (dispatchLevel === 3) showLevel3MoveCue();
   if (dispatchLevel === 6) showLevel6TimeCue();
+  tryShowQueuedLevel1Guide();
 }
 
-function startGame(diff, startLevel = null) {
+function showMissionStoryScreen(diff, startLevel = null) {
+  pendingStartConfig = { diff, startLevel };
+  const screen = document.getElementById('missionStoryScreen');
+  if (!screen) return;
+  screen.style.display = 'flex';
+  screen.setAttribute('aria-hidden', 'false');
+}
+
+function hideMissionStoryScreen() {
+  const screen = document.getElementById('missionStoryScreen');
+  if (!screen) return;
+  screen.style.display = 'none';
+  screen.setAttribute('aria-hidden', 'true');
+}
+
+function beginGameFromMissionStory() {
+  const cfg = pendingStartConfig || { diff: 1, startLevel: null };
+  const diff = clamp(Number(cfg.diff || 1), 1, 3);
+  const startLevel = cfg.startLevel == null ? null : Number(cfg.startLevel);
   difficulty = diff;
+  hideMissionStoryScreen();
+  pendingStartConfig = null;
+  hoseCrewCarryMode = 'hidden';
+  level1GuidePending = false;
+  level1GuideShownThisRun = false;
+  closeLevel1Guide();
   resetYear2043State();
   hasShownFirefighterMoveCue = false;
   firefighterCueUntilMs = 0;
@@ -21563,6 +22336,10 @@ function startGame(diff, startLevel = null) {
   const chosen = startLevel == null ? requestedStartLevel : startLevel;
   requestedStartLevel = Math.max(1, Math.min(getMaxLevel(), Math.floor(chosen)));
   loadLevel(requestedStartLevel);
+}
+
+function startGame(diff, startLevel = null) {
+  showMissionStoryScreen(diff, startLevel);
 }
 
 function getTankerSupportSchedule(level, diff) {
@@ -21872,6 +22649,10 @@ function loadLevel(lvl, options = {}) {
   truck.y = FIRETRUCK_LANE_Y;
   truck.minX = lane.minX;
   truck.maxX = lane.maxX;
+  if (isPrimaryFlightModeActive(levelData)) {
+    truck.minX = 22;
+    truck.maxX = 1178;
+  }
   truck.renderScale = clamp(Number(requiredTruckLayer?.scale || 1), 0.7, 1.8);
   truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
   truckFlightBoost = 0;
@@ -21886,7 +22667,7 @@ function loadLevel(lvl, options = {}) {
       || getDefaultFirefighterModelKey()
     );
     ff.mode = 'hidden';
-    ff.autoMounted = false;
+    ff.autoMounted = hoseCrewCarryMode !== 'active';
     ff.x = getFirefighterTruckHomeX();
     ff.vx = 0;
     ff.facing = truckFacing >= 0 ? 1 : -1;
@@ -22118,16 +22899,18 @@ function loadLevel(lvl, options = {}) {
   particles = [];
   pointPopups = [];
   gameState = 'playing';
+  queueLevel1GuideForLevel(lvl);
   updateLevelSkipHud();
   if (skipDispatch) {
-    if (lvl === 3) setTimeout(() => showLevel3MoveCue(), 250);
     if (lvl === 6) setTimeout(() => showLevel6TimeCue(), 250);
+    setTimeout(() => tryShowQueuedLevel1Guide(), 180);
   }
   if (isHoseTeamEnabled(levelData, lvl)) {
     setTimeout(() => updateFirefighterMountButton(), 40);
   }
   const customBlackBox = levelData?.blackBoxPlan;
-  if (customBlackBox?.enabled && (customBlackBox?.alwaysShow === true || blackBoxTruckLevels.has(lvl))) {
+  const allowBlackBoxThisLevel = canUseBlackBoxOnLevel(levelData, lvl);
+  if (allowBlackBoxThisLevel && customBlackBox?.enabled && (customBlackBox?.alwaysShow === true || blackBoxTruckLevels.has(lvl))) {
     blackBoxTruckPlan = {
       stage: 'waiting',
       firstAt: clamp(Number(customBlackBox.firstAt ?? 7200), 1200, 40000),
@@ -22135,12 +22918,14 @@ function loadLevel(lvl, options = {}) {
       firstDir: Number(customBlackBox.firstDir) < 0 ? -1 : 1,
       returnAt: null
     };
-  } else if (blackBoxTruckLevels.has(lvl) && customBlackBox?.enabled !== false) {
+  } else if (allowBlackBoxThisLevel && blackBoxTruckLevels.has(lvl) && customBlackBox?.enabled !== false) {
     // Surprise moment: one round-trip (out and back) at a random time.
     const firstAt = 4500 + Math.random() * 6500;
     const returnDelay = 2200 + Math.random() * 2400;
     const firstDir = Math.random() < 0.5 ? 1 : -1;
     blackBoxTruckPlan = { stage: 'waiting', firstAt, returnDelay, firstDir, returnAt: null };
+  } else {
+    blackBoxTruckPlan = null;
   }
   document.getElementById('levelCompleteScreen').style.display = 'none';
   document.getElementById('levelCompleteScreen').classList.remove('show');
@@ -22222,6 +23007,7 @@ function nextLevel() {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
     if (currentLevel < getMaxLevel()) {
+      captureHoseCarryModeFromCurrentState();
       if (isYear2043Level(currentLevel) && isYear2043Level(currentLevel + 1)) {
         year2043State.truckDamage = Math.max(0, Number(year2043State.truckDamage || 0) - 18);
       }
@@ -22240,6 +23026,7 @@ function redoLevel() {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach(b => b.classList.remove('show'));
     score = levelStartScore;
+    captureHoseCarryModeFromCurrentState();
     loadLevel(currentLevel);
   }, 400);
 }
@@ -22264,12 +23051,22 @@ function endAfterAbduction() {
   playGameAgain();
 }
 
+function captureHoseCarryModeFromCurrentState() {
+  const ff = rescueState?.firefighter;
+  if (!ff || !isHoseTeamEnabled(baseLevels[currentLevel - 1] || {}, currentLevel)) {
+    hoseCrewCarryMode = 'hidden';
+    return;
+  }
+  hoseCrewCarryMode = ff.mode === 'active' ? 'active' : 'hidden';
+}
+
 function startHoseExperiment() {
   const screen = document.getElementById('levelCompleteScreen');
   screen.classList.remove('show');
   setTimeout(() => {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach((b) => b.classList.remove('show'));
+    captureHoseCarryModeFromCurrentState();
     loadLevel(HOSE_EXPERIMENT_LEVEL);
     updateLevelSkipHud();
   }, 450);
@@ -22281,6 +23078,7 @@ function startYear2043Preview() {
   setTimeout(() => {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach((b) => b.classList.remove('show'));
+    captureHoseCarryModeFromCurrentState();
     year2043State.previewUnlocked = true;
     year2043State.inCampaign = true;
     year2043State.levelKills = 0;
@@ -23326,6 +24124,7 @@ function getPos(e) {
 function handleStart(e) { 
   e.preventDefault(); 
   getPos(e); 
+  if (level1GuideOpen) return;
   if (gameState === 'builder') {
     builderStartPointer(mouseX, mouseY);
     return;
@@ -23358,12 +24157,18 @@ function handleStart(e) {
 function handleMove(e) {
   e.preventDefault();
   getPos(e);
+  if (level1GuideOpen) return;
   if (gameState === 'builder') {
     builderMovePointer(mouseX, mouseY);
   }
 }
 function handleEnd(e) {
   e.preventDefault();
+  if (level1GuideOpen) {
+    isSpraying = false;
+    isLaserFiring = false;
+    return;
+  }
   if (gameState === 'builder') {
     builderEndPointer();
     return;
@@ -23432,6 +24237,30 @@ document.getElementById('levelSkipSelect')?.addEventListener('change', (e) => {
     : Number(String(`${valRaw} ${selectedText}`).match(/\d+/)?.[0] || requestedStartLevel);
   const val = Number.isFinite(parsed) ? parsed : Number(requestedStartLevel || 1);
   jumpToLevel(val);
+});
+
+document.getElementById('level1GuideClose')?.addEventListener('click', () => closeLevel1Guide());
+document.getElementById('level1GuideDoneBtn')?.addEventListener('click', () => closeLevel1Guide());
+document.getElementById('level1GuideNextBtn')?.addEventListener('click', () => {
+  level1GuideStep = Math.min(LEVEL1_GUIDE_STEPS.length - 1, level1GuideStep + 1);
+  renderLevel1GuideStep();
+});
+document.getElementById('level1GuideOverlay')?.addEventListener('click', (event) => {
+  if (event.target?.id === 'level1GuideOverlay') closeLevel1Guide();
+});
+document.getElementById('missionStoryStartBtn')?.addEventListener('click', () => beginGameFromMissionStory());
+document.getElementById('missionStoryBackBtn')?.addEventListener('click', () => {
+  hideMissionStoryScreen();
+  pendingStartConfig = null;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('titleScreen').style.display = 'flex';
+});
+document.getElementById('missionStoryScreen')?.addEventListener('click', (event) => {
+  if (event.target?.id !== 'missionStoryScreen') return;
+  hideMissionStoryScreen();
+  pendingStartConfig = null;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('titleScreen').style.display = 'flex';
 });
 
 // Show the tester level-skip controls immediately (title screen too).
@@ -23594,10 +24423,14 @@ function getSpotExtinguishScore(spot) {
   return Math.max(8, pts);
 }
 
+function getHoseAttachPoint() {
+  return getFirefighterHoseHandPoint() || getTruckNozzlePoint();
+}
+
 function getClampedHoseEnd() {
-  const nozzle = getHoseSprayOriginPoint();
-  const attachX = nozzle.x;
-  const attachY = nozzle.y;
+  const attach = getHoseAttachPoint();
+  const attachX = attach.x;
+  const attachY = attach.y;
   const dx = mouseX - attachX;
   const dy = mouseY - attachY;
   const dist = Math.hypot(dx, dy);
@@ -23608,13 +24441,32 @@ function getClampedHoseEnd() {
 }
 
 function createWaterParticles() {
+  const levelData = baseLevels[currentLevel - 1] || {};
   const origin = getHoseSprayOriginPoint();
   const tip = getClampedHoseEnd();
+  const attachPoint = getHoseAttachPoint();
   const firefighterMode = !!(isHoseTeamEnabled() && rescueState?.firefighter?.mode === 'active');
+  const laserMode = isActiveLaserCombatMode(levelData);
   const originX = origin.x;
   const originY = origin.y;
-  const impact = getFirstWaterImpactPoint(originX, originY, tip.x, tip.y);
-  const target = impact || tip;
+  let targetX = tip.x;
+  let targetY = tip.y;
+  if (!laserMode && !firefighterMode) {
+    targetX = mouseX;
+    targetY = mouseY;
+    let aimDx = targetX - originX;
+    let aimDy = targetY - originY;
+    let aimLen = Math.hypot(aimDx, aimDy);
+    if (aimLen < 2) {
+      aimDx = originX - attachPoint.x;
+      aimDy = originY - attachPoint.y;
+      aimLen = Math.hypot(aimDx, aimDy) || 1;
+      targetX = originX + (aimDx / aimLen) * 90;
+      targetY = originY + (aimDy / aimLen) * 90;
+    }
+  }
+  const impact = getFirstWaterImpactPoint(originX, originY, targetX, targetY);
+  const target = impact || { x: targetX, y: targetY };
   const dx = target.x - originX;
   const dy = target.y - originY;
   const len = Math.hypot(dx, dy) || 1;
@@ -23626,11 +24478,14 @@ function createWaterParticles() {
   // Near nozzle drag: wide/short. Far drag: tight/long.
   const stretchFactor = Math.min(tip.length / getTruckHoseLengthLimit(), 1);
   const closeBoost = Math.pow(1 - stretchFactor, 1.15);
-  const spreadBase = (firefighterMode ? 31 : 28) * (0.28 + closeBoost);
+  const spreadBase = (firefighterMode ? 31 : 34) * (0.30 + closeBoost);
   const hitReduction = impact ? 0.45 : 1;
   const waterSpeed = ((5.2 + stretchFactor * 20.2) + (firefighterMode ? 2.2 : 0)) * hitReduction;
-  const numStreams = impact ? 3 : (stretchFactor > 0.72 ? 5 : 11);
+  const numStreams = impact ? 3 : (stretchFactor > 0.78 ? 5 : (closeBoost > 0.55 ? 15 : 11));
   const gravityBias = firefighterMode ? 0.45 : 2.2;
+  const foamChance = firefighterMode ? 0.0 : (0.25 + closeBoost * 0.55);
+  const particleLifeBase = impact ? 14 : (firefighterMode ? 38 : (30 + closeBoost * 10));
+  const particleSizeBase = 2.6 + closeBoost * (firefighterMode ? 0.2 : 0.9);
 
   for (let s = 0; s < numStreams; s++) {
     const lateral = (Math.random() - 0.5) * spreadBase;
@@ -23643,9 +24498,9 @@ function createWaterParticles() {
       particles.push(new Particle(
         startX + dirX * jitter, startY + dirY * jitter,
         vx * (0.9 + Math.random() * 0.12), vy * (0.9 + Math.random() * 0.12),
-        (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF'),
-        (impact ? 14 : (firefighterMode ? 38 : 30)) + Math.random() * 8,
-        2.6 + Math.random() * 1.4,
+        (Math.random() < foamChance ? '#d9f4ff' : (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF')),
+        particleLifeBase + Math.random() * 8,
+        particleSizeBase + Math.random() * 1.4,
         'water'
       ));
     }
@@ -23686,8 +24541,10 @@ function pulseScifiLaser(dt, levelData) {
   const nowMs = performance.now();
   const laserColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.primaryLaserColor || '')) ? String(levelData.primaryLaserColor) : '#4bb8ff';
 
-  const beamWidth = 3.2 + Math.sin(nowMs * 0.045) * 1.6;
+  const beamWidth = 2.8 + Math.sin(nowMs * 0.045) * 1.1;
   ctx.save();
+  ctx.setLineDash([12, 15]);
+  ctx.lineDashOffset = -((nowMs * 0.24) % 27);
   ctx.strokeStyle = laserColor;
   ctx.shadowColor = laserColor;
   ctx.shadowBlur = 18;
@@ -23696,15 +24553,17 @@ function pulseScifiLaser(dt, levelData) {
   ctx.moveTo(beamStartX, beamStartY);
   ctx.lineTo(beamEndX, beamEndY);
   ctx.stroke();
-  ctx.strokeStyle = 'rgba(210,239,255,0.97)';
-  ctx.lineWidth = 1.3;
+  ctx.setLineDash([3, 14]);
+  ctx.lineDashOffset = -((nowMs * 0.44) % 17);
+  ctx.strokeStyle = 'rgba(210,239,255,0.98)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(beamStartX, beamStartY);
   ctx.lineTo(beamEndX, beamEndY);
   ctx.stroke();
   ctx.restore();
 
-  if (nowMs - lastLaserPulseAt < 75) return;
+  if (nowMs - lastLaserPulseAt < 55) return;
   lastLaserPulseAt = nowMs;
 
   fireSpots.forEach((spot) => {
@@ -23728,7 +24587,11 @@ function pulseScifiLaser(dt, levelData) {
     if (!hit) return;
     ent._laserHealth = Number.isFinite(ent._laserHealth) ? ent._laserHealth : getRaidEnemyMaxHealth(ent);
     if (ent.fightBackEnabled) ent._enemyProvokedUntil = performance.now() + 6000;
-    ent._laserHealth -= Math.max(4, (dt || 16.67) * 0.18);
+    ent._slowUntilMs = Number(levelElapsedMs || 0) + 760;
+    ent._slowFactor = 0.50;
+    ent._laserHealth -= Math.max(6, (dt || 16.67) * 0.24);
+    createBonusStars(hit.x, hit.y, 2);
+    createFireParticles(hit.x, hit.y, 1.7, 0.5);
     if (ent._laserHealth <= 0) {
       markRaidAttackerDestroyed(ent, 'laser', rect.x + rect.w * 0.5, rect.y + rect.h * 0.4);
     }
@@ -23909,6 +24772,13 @@ function getFirstWaterImpactPoint(aX, aY, bX, bY) {
 function getTruckNozzlePoint() {
   const rect = getTruckDrawRect();
   const levelData = baseLevels[currentLevel - 1] || {};
+  const laserMode = isActiveLaserCombatMode(levelData);
+  if (laserMode) {
+    // Sci-fi laser should originate from the turret barrel tip.
+    const xRatio = truckFacing >= 0 ? 0.60 : 0.40;
+    const yRatio = 0.22;
+    return { x: rect.x + rect.w * xRatio, y: rect.y + rect.h * yRatio };
+  }
   const primarySprite = getLevelPrimaryVehicleSprite(levelData);
   const xRatio = primarySprite ? (truckFacing > 0 ? 0.84 : 0.16) : (truckFacing > 0 ? 0.74 : 0.30);
   const yRatio = primarySprite ? 0.45 : 0.29;
@@ -23916,6 +24786,8 @@ function getTruckNozzlePoint() {
 }
 
 function getFirefighterHoseHandPoint() {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (isActiveLaserCombatMode(levelData)) return null;
   if (!isHoseTeamEnabled() || rescueState?.firefighter?.mode !== 'active') return null;
   const ffRect = getFirefighterRect();
   const ff = rescueState?.firefighter;
@@ -23927,7 +24799,59 @@ function getFirefighterHoseHandPoint() {
 }
 
 function getHoseSprayOriginPoint() {
-  return getFirefighterHoseHandPoint() || getTruckNozzlePoint();
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (isActiveLaserCombatMode(levelData)) return getTruckNozzlePoint();
+  const firefighterHand = getFirefighterHoseHandPoint();
+  if (firefighterHand) return firefighterHand;
+  const hoseEnd = getClampedHoseEnd();
+  return { x: hoseEnd.x, y: hoseEnd.y };
+}
+
+function drawScifiTruckThrusters(levelData = null) {
+  const data = levelData || baseLevels[currentLevel - 1] || {};
+  if (!isScifiTruckActive(data) || !isPrimaryFlightModeActive(data)) return;
+  const altitude = clamp((FIRETRUCK_LANE_Y - getTruckY()) / 170, 0, 1);
+  if (altitude <= 0.02) return;
+  const rect = getTruckDrawRect();
+  const rearDir = truckFacing >= 0 ? -1 : 1;
+  const pulse = 0.65 + (Math.sin(levelElapsedMs / 110) * 0.35);
+  const flameLen = (26 + (altitude * 54)) * pulse;
+  const rearX = rearDir < 0 ? (rect.x + rect.w * 0.08) : (rect.x + rect.w * 0.92);
+  const rearY = rect.y + rect.h * 0.56;
+  const underY = rect.y + rect.h * 0.95;
+  const underOffsets = [0.28, 0.48, 0.68];
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const rearGrad = ctx.createLinearGradient(rearX, rearY, rearX + (rearDir * flameLen), rearY);
+  rearGrad.addColorStop(0, 'rgba(150,255,248,0.95)');
+  rearGrad.addColorStop(0.45, 'rgba(78,214,255,0.86)');
+  rearGrad.addColorStop(1, 'rgba(10,120,200,0.06)');
+  ctx.fillStyle = rearGrad;
+  ctx.beginPath();
+  ctx.moveTo(rearX, rearY - 6);
+  ctx.lineTo(rearX + (rearDir * flameLen), rearY);
+  ctx.lineTo(rearX, rearY + 6);
+  ctx.closePath();
+  ctx.fill();
+  underOffsets.forEach((ratio) => {
+    const x = rect.x + rect.w * ratio;
+    const grad = ctx.createLinearGradient(x, underY, x, underY + flameLen * 0.72);
+    grad.addColorStop(0, 'rgba(150,255,248,0.95)');
+    grad.addColorStop(0.42, 'rgba(76,224,255,0.88)');
+    grad.addColorStop(1, 'rgba(4,116,188,0.06)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(x - 6, underY);
+    ctx.lineTo(x, underY + flameLen * 0.72);
+    ctx.lineTo(x + 6, underY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(160,255,245,0.92)';
+    ctx.beginPath();
+    ctx.arc(x, underY, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
 }
 
 function getTankerSpriteKey(facing) {
@@ -24462,6 +25386,53 @@ function drawBackground() {
   grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
   const levelData = baseLevels[currentLevel - 1] || {};
+  const scifiSpaceMode = isScifiTruckActive(levelData) && isPrimaryLaserMode(levelData);
+  if (scifiSpaceMode) {
+    if (!spaceStarfield.length) {
+      for (let i = 0; i < 180; i++) {
+        spaceStarfield.push({
+          x: Math.random() * 1200,
+          y: Math.random() * 600,
+          size: Math.random() < 0.15 ? 2 : 1,
+          depth: 0.35 + Math.random() * 1.05,
+          tw: Math.random() * Math.PI * 2
+        });
+      }
+    }
+    spaceStarPanX += -Number(truckDrive || 0) * 2.2;
+    spaceStarPanY += Number(truckFlightInput || 0) * 2.2;
+    const sgrad = ctx.createLinearGradient(0, 0, 0, 600);
+    sgrad.addColorStop(0, '#02040c');
+    sgrad.addColorStop(0.55, '#090f24');
+    sgrad.addColorStop(1, '#050915');
+    ctx.fillStyle = sgrad;
+    ctx.fillRect(0, 0, 1200, 600);
+    let spaceBackdropKey = resolveSpriteKey(String(levelData.backgroundSpriteKey || ''));
+    if (!spaceBackdropKey && isYear2043Level(currentLevel)) {
+      const idx = clamp(currentLevel - YEAR2043_START_LEVEL, 0, YEAR2043_BACKDROPS.length - 1);
+      spaceBackdropKey = resolveSpriteKey(String(YEAR2043_BACKDROPS[idx] || ''));
+    }
+    if (spaceBackdropKey) {
+      ensureSpritesLoaded([spaceBackdropKey]);
+      const driftX = (spaceStarPanX * 0.18);
+      const driftY = (spaceStarPanY * 0.14);
+      ctx.save();
+      ctx.globalAlpha = 0.50;
+      drawSpriteFitted(spaceBackdropKey, -90 + driftX, -16 + driftY, 1320, 430, false);
+      ctx.globalAlpha = 0.22;
+      drawSpriteFitted(spaceBackdropKey, -40 + driftX * 0.5, 18 + driftY * 0.6, 1280, 390, false);
+      ctx.restore();
+    }
+    spaceStarfield.forEach((s, idx) => {
+      const x = ((s.x + spaceStarPanX * s.depth) % 1220 + 1220) % 1220 - 10;
+      const y = ((s.y + spaceStarPanY * s.depth) % 620 + 620) % 620 - 10;
+      const pulse = 0.45 + ((Math.sin((levelElapsedMs / 420) + s.tw + (idx * 0.013)) + 1) * 0.5) * 0.55;
+      const alpha = 0.28 + pulse * 0.72;
+      ctx.fillStyle = `rgba(200,225,255,${alpha})`;
+      ctx.fillRect(x, y, s.size, s.size);
+    });
+    return;
+  }
   let backdropKey = resolveSpriteKey(String(levelData.backgroundSpriteKey || ''));
   if (!backdropKey && isYear2043Level(currentLevel)) {
     const idx = clamp(currentLevel - YEAR2043_START_LEVEL, 0, YEAR2043_BACKDROPS.length - 1);
@@ -25181,6 +26152,9 @@ function initEnemyRaid(levelData) {
   const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
   const profiles = [];
   const formationSpecs = [];
+  const isScifiCombatLevel = levelData?.fireTruckTheme === 'scifi' || levelData?.primaryAttackMode === 'laser';
+  const scifiNearScale = clamp(Number(levelData?.enemyRaid?.scaleMax ?? 0.20), 0.17, 0.22);
+  const scifiFarScale = clamp(Number(levelData?.enemyRaid?.spawnFarScale ?? 0.001), 0.0005, 0.02);
   entities.forEach((ent) => {
     if (!ent || ent.type !== 'builderSprite' || !ent.enemyEnabled) return;
     const spriteKey = resolveSpriteKey(String(ent.enemyModelKey || ent.spriteKey || ''));
@@ -25189,9 +26163,12 @@ function initEnemyRaid(levelData) {
     for (let i = 0; i < count; i++) {
       profiles.push({
         spriteKey,
-        spawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
-        scaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
-        scaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+        spawnDirection: isScifiCombatLevel
+          ? getScifiOppositeSpawnDirection(levelData)
+          : ((ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both'),
+        scaleMin: isScifiCombatLevel ? scifiNearScale : clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
+        scaleMax: isScifiCombatLevel ? scifiNearScale : clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
+        spawnFarScale: isScifiCombatLevel ? scifiFarScale : null,
         sourceScale: clamp(Number(ent.scale || 1), 0.1, 3),
         targetId: String(ent.aggressiveTargetId || 'primaryVehicle'),
         laserEnabled: !!ent.laserEnabled,
@@ -25210,7 +26187,9 @@ function initEnemyRaid(levelData) {
         enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
         enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || '')) ? String(ent.enemyLaserColor) : '#ff5772',
         enemyBombType: (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : 'bomb',
-        enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || '')) ? String(ent.enemyBombColor) : '#ffa047'
+        enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyBombColor || '')) ? String(ent.enemyBombColor) : '#ffa047',
+        hoverDelayMinMs: isScifiCombatLevel ? 620 : 260,
+        hoverDelayMaxMs: isScifiCombatLevel ? 1650 : 620
       });
     }
     if (ent.raidFormationEnabled) {
@@ -25248,9 +26227,10 @@ function initEnemyRaid(levelData) {
           : inferredAir;
       profiles.push({
         spriteKey,
-        spawnDirection: legacySpawnDirection,
-        scaleMin: legacyScaleMin,
-        scaleMax: legacyScaleMax,
+        spawnDirection: isScifiCombatLevel ? getScifiOppositeSpawnDirection(levelData) : legacySpawnDirection,
+        scaleMin: isScifiCombatLevel ? scifiNearScale : legacyScaleMin,
+        scaleMax: isScifiCombatLevel ? scifiNearScale : legacyScaleMax,
+        spawnFarScale: isScifiCombatLevel ? scifiFarScale : null,
         sourceScale: 1,
         targetId: 'primaryVehicle',
         laserEnabled: true,
@@ -25271,20 +26251,18 @@ function initEnemyRaid(levelData) {
         enemyBombType: legacyBombType,
         enemyBombColor: legacyBombColor,
         spawnYMin: flightEnabled ? 94 : (FIRETRUCK_LANE_Y - 22),
-        spawnYMax: flightEnabled ? 500 : (FIRETRUCK_LANE_Y + 14)
+        spawnYMax: flightEnabled ? 500 : (FIRETRUCK_LANE_Y + 14),
+        hoverDelayMinMs: isScifiCombatLevel ? 620 : 260,
+        hoverDelayMaxMs: isScifiCombatLevel ? 1650 : 620
       });
     }
   }
   if (!profiles.length) {
-    const isScifiCombatLevel = levelData?.fireTruckTheme === 'scifi' || levelData?.primaryAttackMode === 'laser';
     if (isScifiCombatLevel) {
       const fallbackKeys = [
         'scifi_ufo_small_saucer_459x145',
         'scifi_ufo_medium_delta_459x145',
-        'scifi_vehicle_fighter_459x145',
-        'scifi_vehicle_hovercar_compact_459x145',
-        'scifi_vehicle_hoverbike_459x145',
-        'scifi_vehicle_armoredtransport_459x145'
+        'scifi_ufo_large_cigar_459x145'
       ]
         .map((key) => resolveSpriteKey(key))
         .filter(Boolean);
@@ -25293,12 +26271,13 @@ function initEnemyRaid(levelData) {
         const spriteKey = fallbackKeys.length ? fallbackKeys[i % fallbackKeys.length] : '';
         if (!spriteKey) continue;
         const keyText = String(spriteKey || '').toLowerCase();
-        const flightEnabled = /(ufo|saucer|delta|cigar|mothership|fighter|flying|pod|jet|drone)/.test(keyText);
+        const flightEnabled = /(ufo|saucer|delta|cigar|mothership)/.test(keyText);
         profiles.push({
           spriteKey,
-          spawnDirection: 'both',
-          scaleMin: clamp(Number(levelData?.enemyRaid?.scaleMin ?? 0.2), 0.1, 3),
-          scaleMax: Math.max(0.2, clamp(Number(levelData?.enemyRaid?.scaleMax ?? 0.36), 0.1, 3)),
+          spawnDirection: getScifiOppositeSpawnDirection(levelData),
+          scaleMin: scifiNearScale,
+          scaleMax: scifiNearScale,
+          spawnFarScale: scifiFarScale,
           sourceScale: 1,
           targetId: 'primaryVehicle',
           laserEnabled: true,
@@ -25319,7 +26298,56 @@ function initEnemyRaid(levelData) {
           enemyBombType: (levelData?.enemyRaid?.bombType === 'plasma' || levelData?.enemyRaid?.bombType === 'mine') ? levelData.enemyRaid.bombType : 'bomb',
           enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.bombColor || '')) ? String(levelData.enemyRaid.bombColor) : '#ffa047',
           spawnYMin: flightEnabled ? 94 : (FIRETRUCK_LANE_Y - 22),
-          spawnYMax: flightEnabled ? 500 : (FIRETRUCK_LANE_Y + 14)
+          spawnYMax: flightEnabled ? 500 : (FIRETRUCK_LANE_Y + 14),
+          hoverDelayMinMs: 620,
+          hoverDelayMaxMs: 1650
+        });
+      }
+    }
+  }
+  if (isScifiCombatLevel) {
+    const ufoOnly = profiles.filter((p) => /(ufo|saucer|delta|cigar|mothership)/.test(String(p?.spriteKey || '').toLowerCase()));
+    profiles.length = 0;
+    profiles.push(...ufoOnly);
+    if (!profiles.length) {
+      const fallbackUfos = [
+        resolveSpriteKey('scifi_ufo_small_saucer_459x145'),
+        resolveSpriteKey('scifi_ufo_medium_delta_459x145'),
+        resolveSpriteKey('scifi_ufo_large_cigar_459x145')
+      ].filter(Boolean);
+      const fallbackCount = Math.max(4, clamp(Number(levelData?.enemyRaid?.targetCount ?? levelData?.enemyTargetCount ?? 6), 1, 18));
+      for (let i = 0; i < fallbackCount; i++) {
+        const spriteKey = fallbackUfos.length ? fallbackUfos[i % fallbackUfos.length] : '';
+        if (!spriteKey) continue;
+        profiles.push({
+          spriteKey,
+          spawnDirection: getScifiOppositeSpawnDirection(levelData),
+          scaleMin: scifiNearScale,
+          scaleMax: scifiNearScale,
+          spawnFarScale: scifiFarScale,
+          sourceScale: 1,
+          targetId: 'primaryVehicle',
+          laserEnabled: true,
+          bombEnabled: true,
+          aggressiveEnabled: true,
+          fightBackEnabled: false,
+          aggressiveSkill: clamp(Number(levelData?.enemyRaid?.aggressiveSkill ?? 1.2), 0.2, 2.8),
+          flightEnabled: true,
+          flightSpeed: 2.55,
+          laserDamage: clamp(Number(levelData?.enemyRaid?.laserDamage ?? 8), 1, 30),
+          laserCooldownMs: clamp(Number(levelData?.enemyRaid?.laserCooldownMs ?? 480), 40, 3000),
+          bombDamage: clamp(Number(levelData?.enemyRaid?.bombDamage ?? 14), 1, 80),
+          bombCooldownMs: clamp(Number(levelData?.enemyRaid?.bombCooldownMs ?? 1100), 120, 5000),
+          allowLaserDamage: true,
+          enemySpawnMinDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMinDelayMs ?? 220), 80, 5000),
+          enemySpawnMaxDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? 900), 120, 10000),
+          enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.laserColor || '')) ? String(levelData.enemyRaid.laserColor) : '#ff5772',
+          enemyBombType: (levelData?.enemyRaid?.bombType === 'plasma' || levelData?.enemyRaid?.bombType === 'mine') ? levelData.enemyRaid.bombType : 'bomb',
+          enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(levelData?.enemyRaid?.bombColor || '')) ? String(levelData.enemyRaid.bombColor) : '#ffa047',
+          spawnYMin: 94,
+          spawnYMax: 500,
+          hoverDelayMinMs: 620,
+          hoverDelayMaxMs: 1650
         });
       }
     }
@@ -25329,6 +26357,7 @@ function initEnemyRaid(levelData) {
     enemyLaserShots = [];
     enemyBombShots = [];
     playerRocketShots = [];
+    enemyCrashFx = [];
     return;
   }
   const explicitSpawnDirection = (levelData?.enemyRaid?.spawnDirection === 'left' || levelData?.enemyRaid?.spawnDirection === 'right')
@@ -25338,30 +26367,46 @@ function initEnemyRaid(levelData) {
   const leftCount = profiles.filter((p) => p?.spawnDirection === 'left').length;
   const inferredSpawnDirection = rightCount > leftCount ? 'right' : (leftCount > rightCount ? 'left' : 'both');
   let spawnDirection = explicitSpawnDirection || inferredSpawnDirection;
-  if (isYear2043Level(currentLevel)) {
-    const truckSide = levelData?.truckSide === 'right' ? 'right' : 'left';
-    spawnDirection = truckSide === 'left' ? 'right' : 'left';
+  if (isScifiCombatLevel || isYear2043Level(currentLevel)) {
+    spawnDirection = getScifiOppositeSpawnDirection(levelData);
   }
+  profiles.forEach((profile) => {
+    if (!profile) return;
+    profile.spawnDirection = spawnDirection;
+    if (isScifiCombatLevel) {
+      profile.scaleMin = scifiNearScale;
+      profile.scaleMax = scifiNearScale;
+      profile.spawnFarScale = scifiFarScale;
+      profile.hoverDelayMinMs = clamp(Number(profile.hoverDelayMinMs ?? 620), 300, 2500);
+      profile.hoverDelayMaxMs = Math.max(
+        profile.hoverDelayMinMs,
+        clamp(Number(profile.hoverDelayMaxMs ?? 1650), profile.hoverDelayMinMs, 4200)
+      );
+    }
+  });
   const spawnMinDelayMs = clamp(
-    Number(levelData?.enemyRaid?.spawnMinDelayMs ?? Math.min(...profiles.map((p) => Number(p.enemySpawnMinDelayMs || 300)))),
+    Number(levelData?.enemyRaid?.spawnMinDelayMs ?? (isScifiCombatLevel ? 760 : Math.min(...profiles.map((p) => Number(p.enemySpawnMinDelayMs || 300))))),
     80,
     5000
   );
   const spawnMaxDelayMs = Math.max(
     spawnMinDelayMs,
     clamp(
-      Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? Math.max(...profiles.map((p) => Number(p.enemySpawnMaxDelayMs || 1200)))),
+      Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? (isScifiCombatLevel ? 1680 : Math.max(...profiles.map((p) => Number(p.enemySpawnMaxDelayMs || 1200))))),
       120,
       10000
     )
   );
-  const waveBurstMin = clamp(Number(levelData?.enemyRaid?.waveBurstMin ?? 1), 1, 8);
-  const waveBurstMax = Math.max(waveBurstMin, clamp(Number(levelData?.enemyRaid?.waveBurstMax ?? waveBurstMin), 1, 10));
-  const formationChance = clamp(Number(levelData?.enemyRaid?.formationChance ?? 0.72), 0, 1);
+  const waveBurstMin = clamp(Number(levelData?.enemyRaid?.waveBurstMin ?? (isScifiCombatLevel ? 1 : 1)), 1, 8);
+  const waveBurstMax = Math.max(waveBurstMin, clamp(Number(levelData?.enemyRaid?.waveBurstMax ?? (isScifiCombatLevel ? 2 : waveBurstMin)), 1, 10));
+  const formationChance = clamp(Number(levelData?.enemyRaid?.formationChance ?? (isScifiCombatLevel ? 0.45 : 0.72)), 0, 1);
+  const baseTargetCount = isScifiCombatLevel
+    ? clamp(Number(levelData?.enemyRaid?.targetCount ?? Math.min(5, profiles.length)), 3, 6)
+    : Math.max(1, profiles.length);
   enemyRaidState = {
     profiles,
-    targetCount: profiles.length,
-    baseTargetCount: Math.max(1, profiles.length),
+    targetCount: baseTargetCount,
+    baseTargetCount,
     spawnDirection,
     attackOrder: levelData?.enemyRaid?.attackOrder === 'sequence' ? 'sequence' : (formationSpecs.length ? 'sequence' : 'random'),
     spawnMinDelayMs,
@@ -25377,6 +26422,7 @@ function initEnemyRaid(levelData) {
     nextModelIndex: 0,
     formationSpecs,
     attackers: [],
+    isScifiRaid: isScifiCombatLevel,
     _spawnedAny: false,
     spawnAccumulatorMs: 0,
     nextSpawnDelayMs: spawnMinDelayMs,
@@ -25385,9 +26431,11 @@ function initEnemyRaid(levelData) {
   enemyLaserShots = [];
   enemyBombShots = [];
   playerRocketShots = [];
+  enemyCrashFx = [];
 }
 
 function createEnemyRaidClone(spriteKey, options = {}) {
+  const isScifiRaid = !!options.isScifiRaid;
   const spawnLeft = options.spawnDirection === 'left'
     ? true
     : options.spawnDirection === 'right'
@@ -25403,11 +26451,15 @@ function createEnemyRaidClone(spriteKey, options = {}) {
   const sourceScale = clamp(Number(options.sourceScale ?? 1), 0.1, 3);
   const minScale = clamp(Number(options.scaleMin ?? 0.55), 0.1, 3);
   const maxScale = Math.max(minScale, clamp(Number(options.scaleMax ?? 1.1), 0.1, 3));
-  const scale = clamp(sourceScale + ((Math.random() - 0.5) * 0.18), minScale, maxScale);
+  const nearScale = isScifiRaid ? clamp(maxScale, 0.17, 0.22) : clamp(sourceScale + ((Math.random() - 0.5) * 0.18), minScale, maxScale);
+  const farScale = isScifiRaid
+    ? clamp(Number(options.spawnFarScale ?? 0.001), 0.0005, 0.02)
+    : clamp(nearScale * (0.72 + Math.random() * 0.16), minScale * 0.5, nearScale);
+  const scale = isScifiRaid ? farScale : nearScale;
   const spawnX = Number.isFinite(Number(options.x))
     ? Number(options.x)
-    : (spawnLeft ? -220 : 1420);
-  return normalizeBuilderEntity({
+    : (spawnLeft ? -260 : 1460);
+  const clone = normalizeBuilderEntity({
     type: 'builderSprite',
     spriteKey,
     x: spawnX,
@@ -25434,6 +26486,20 @@ function createEnemyRaidClone(spriteKey, options = {}) {
     enemyBombType: (options.enemyBombType === 'plasma' || options.enemyBombType === 'mine') ? options.enemyBombType : 'bomb',
     enemyBombColor: /^#[0-9a-fA-F]{6}$/.test(String(options.enemyBombColor || '')) ? String(options.enemyBombColor) : '#ffa047'
   });
+  if (clone) {
+    clone._raidIsScifi = isScifiRaid;
+    clone._raidNearScale = nearScale;
+    clone._raidFarScale = farScale;
+    clone._raidSpawnX = spawnX;
+    clone._raidSpawnY = y;
+    clone._raidSpawnDirection = spawnLeft ? 'left' : 'right';
+    clone._raidPhase = isScifiRaid ? 'approach' : 'attack';
+    clone._raidHoverUntilMs = 0;
+    clone._raidHoverX = null;
+    clone._raidHoverY = null;
+    clone._raidDiveCount = 0;
+  }
+  return clone;
 }
 
 function getRaidFormationOffsets(pattern, count) {
@@ -25503,7 +26569,11 @@ function spawnEnemyRaidAttacker(spriteKey = '', options = {}) {
     spawnYMax: options.spawnYMax ?? profile?.spawnYMax,
     enemyLaserColor: options.enemyLaserColor ?? profile?.enemyLaserColor ?? enemyRaidState.laserColor,
     enemyBombType: options.enemyBombType ?? profile?.enemyBombType ?? enemyRaidState.bombType,
-    enemyBombColor: options.enemyBombColor ?? profile?.enemyBombColor ?? enemyRaidState.bombColor
+    enemyBombColor: options.enemyBombColor ?? profile?.enemyBombColor ?? enemyRaidState.bombColor,
+    spawnFarScale: options.spawnFarScale ?? profile?.spawnFarScale,
+    isScifiRaid: options.isScifiRaid ?? enemyRaidState.isScifiRaid,
+    hoverDelayMinMs: options.hoverDelayMinMs ?? profile?.hoverDelayMinMs,
+    hoverDelayMaxMs: options.hoverDelayMaxMs ?? profile?.hoverDelayMaxMs
   });
   if (!clone) return false;
   clone._raidSpawned = true;
@@ -25628,19 +26698,64 @@ function getEnemyRaidTargetRect(ent, levelData) {
 
 function updateEnemyRaid(dt, levelData) {
   if (!enemyRaidState || gameState !== 'playing' || !playerControlsEnabled) return;
+  if (pendingDispatchLevel !== null || level1GuideOpen) return;
   updateYear2043WaveProgress();
   ensureEnemyRaidCount(dt);
   const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
   const truckRect = getTruckDrawRect();
+  const raidIsScifi = !!enemyRaidState.isScifiRaid;
+  const nowMs = Number(levelElapsedMs || 0);
   enemyRaidState.attackers.forEach((ent) => {
     if (!ent || ent._laserDestroyed) return;
     if (!Number.isFinite(Number(ent._seed))) ent._seed = Math.random() * 100000;
     if (!Number.isFinite(Number(ent._raidBaseScale))) ent._raidBaseScale = clamp(Number(ent.scale || 1), 0.15, 3);
     const targetRect = getEnemyRaidTargetRect(ent, levelData);
     const skill = clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5);
-    const speed = clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8) * skill * 0.45;
+    const slowed = nowMs < Number(ent._slowUntilMs || 0);
+    const slowFactor = slowed ? clamp(Number(ent._slowFactor || 0.58), 0.34, 1) : 1;
+    const speed = clamp(Number(ent.flightSpeed ?? 2.4), 0.5, 8) * skill * 0.45 * slowFactor;
     let tx = targetRect.x + targetRect.w * 0.5 + (Math.sin((levelElapsedMs + (ent._seed || 0)) / 620) * 120);
     let ty = clamp((targetRect.y + targetRect.h * 0.2) - 80 + Math.sin((levelElapsedMs + (ent._seed || 0)) / 540) * 40, 90, 490);
+    if (raidIsScifi || ent._raidIsScifi) {
+      if (!ent._raidPhase) ent._raidPhase = 'approach';
+      if (!Number.isFinite(Number(ent._raidSpawnX))) ent._raidSpawnX = Number(ent.x || (enemyRaidState.spawnDirection === 'left' ? -260 : 1460));
+      const fromLeft = String(ent._raidSpawnDirection || enemyRaidState.spawnDirection || 'right') === 'left';
+      const hoverBaseX = fromLeft ? (canvas.width * 0.74) : (canvas.width * 0.26);
+      const hoverBaseY = ent.flightEnabled
+        ? clamp(130 + Math.sin((nowMs + (ent._seed || 0)) / 520) * 84, 96, 390)
+        : clamp(FIRETRUCK_LANE_Y - 8 + Math.sin((nowMs + (ent._seed || 0)) / 420) * 22, FIRETRUCK_LANE_Y - 30, FIRETRUCK_LANE_Y + 18);
+      if (ent._raidPhase === 'approach') {
+        tx = hoverBaseX + Math.sin((nowMs + (ent._seed || 0)) / 640) * 36;
+        ty = hoverBaseY;
+        const dxHover = Math.abs((ent.x || 0) - tx);
+        const dyHover = Math.abs((ent.baseY || ty) - ty);
+        if (dxHover < 34 && dyHover < 34) {
+          ent._raidPhase = 'hover';
+          ent._raidHoverX = tx;
+          ent._raidHoverY = ty;
+          const hoverMin = clamp(Number(ent.hoverDelayMinMs ?? 620), 220, 2600);
+          const hoverMax = Math.max(hoverMin, clamp(Number(ent.hoverDelayMaxMs ?? 1650), hoverMin, 4200));
+          ent._raidHoverUntilMs = nowMs + hoverMin + Math.random() * (hoverMax - hoverMin);
+        }
+      } else if (ent._raidPhase === 'hover') {
+        tx = Number(ent._raidHoverX ?? hoverBaseX) + Math.sin((nowMs + (ent._seed || 0)) / 260) * 24;
+        ty = clamp(Number(ent._raidHoverY ?? hoverBaseY) + Math.sin((nowMs + (ent._seed || 0)) / 340) * 18, 90, 500);
+        if (nowMs >= Number(ent._raidHoverUntilMs || 0)) {
+          ent._raidPhase = 'attack';
+        }
+      } else if (ent._raidPhase === 'attack') {
+        tx = targetRect.x + targetRect.w * 0.5 + Math.sin((nowMs + (ent._seed || 0)) / 210) * 44;
+        ty = clamp((targetRect.y + targetRect.h * (ent.flightEnabled ? 0.34 : 0.62)) + Math.sin((nowMs + (ent._seed || 0)) / 240) * 22, 92, 520);
+        const closeToTruck = Math.abs((ent.x || 0) - (targetRect.x + targetRect.w * 0.5)) < 95;
+        if (closeToTruck) {
+          ent._raidPhase = 'retreat';
+          ent._raidDiveCount = Number(ent._raidDiveCount || 0) + 1;
+        }
+      } else if (ent._raidPhase === 'retreat') {
+        tx = fromLeft ? -340 : 1540;
+        ty = clamp((ent.baseY ?? hoverBaseY) - (ent.flightEnabled ? 1.8 : 0.7) * step, 84, 520);
+      }
+    }
     if (ent._formationLockMs > 0) {
       ent._formationLockMs -= Math.max(0, Number(dt || 0));
       tx += Number(ent._formationOffsetX || 0);
@@ -25648,11 +26763,24 @@ function updateEnemyRaid(dt, levelData) {
     }
     ent.x = clamp((ent.x || 0) + clamp(tx - (ent.x || 0), -speed * 5, speed * 5), -260, 1560);
     if (ent.flightEnabled) ent.baseY = clamp((ent.baseY ?? ty) + clamp(ty - (ent.baseY ?? ty), -speed * 2.2, speed * 2.2), 90, 520);
-    const distToTruck = Math.abs((targetRect.x + targetRect.w * 0.5) - (ent.x || 0));
-    const depthT = 1 - clamp(distToTruck / 1050, 0, 1);
-    const pulse = Math.sin((levelElapsedMs + (ent._seed || 0)) / 430) * 0.05;
-    const depthAmp = ent.flightEnabled ? 0.26 : 0.18;
-    ent.scale = clamp(ent._raidBaseScale * (1 + (depthT * depthAmp) + pulse), 0.12, 3);
+    if (raidIsScifi || ent._raidIsScifi) {
+      const nearScale = clamp(Number(ent._raidNearScale || 0.2), 0.17, 0.22);
+      const farScale = clamp(Number(ent._raidFarScale || 0.001), 0.0005, 0.02);
+      const spawnX = Number(ent._raidSpawnX || (String(ent._raidSpawnDirection || enemyRaidState.spawnDirection) === 'left' ? -260 : 1460));
+      const targetX = targetRect.x + targetRect.w * 0.5;
+      const travelSpan = Math.max(320, Math.abs(targetX - spawnX));
+      const travelDone = clamp(Math.abs((ent.x || 0) - spawnX) / travelSpan, 0, 1);
+      const pulse = Math.sin((levelElapsedMs + (ent._seed || 0)) / 280) * 0.008;
+      const phaseBoost = ent._raidPhase === 'hover' ? 0.1 : (ent._raidPhase === 'attack' ? 0.18 : 0);
+      const t = clamp(travelDone + phaseBoost, 0, 1);
+      ent.scale = clamp(farScale + ((nearScale - farScale) * t) + pulse, 0.001, 0.24);
+    } else {
+      const distToTruck = Math.abs((targetRect.x + targetRect.w * 0.5) - (ent.x || 0));
+      const depthT = 1 - clamp(distToTruck / 1050, 0, 1);
+      const pulse = Math.sin((levelElapsedMs + (ent._seed || 0)) / 430) * 0.05;
+      const depthAmp = ent.flightEnabled ? 0.26 : 0.18;
+      ent.scale = clamp(ent._raidBaseScale * (1 + (depthT * depthAmp) + pulse), 0.12, 3);
+    }
     const entRect = getEntityBounds(ent);
     if (entRect && rectsOverlap(entRect, truckRect)) {
       const hitDamage = ent.flightEnabled ? (6 + skill * 2.2) : (9 + skill * 2.6);
@@ -25665,9 +26793,10 @@ function updateEnemyRaid(dt, levelData) {
     }
     if (!ent._enemyLaserCdMs) ent._enemyLaserCdMs = 0;
     ent._enemyLaserCdMs -= Math.max(0, dt || 0);
-    const nowMs = performance.now();
-    const provoked = !!ent.fightBackEnabled && Number(ent._enemyProvokedUntil || 0) > nowMs;
-    const canShoot = !!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && (!!ent.aggressiveEnabled || provoked);
+    const nowPerf = performance.now();
+    const provoked = !!ent.fightBackEnabled && Number(ent._enemyProvokedUntil || 0) > nowPerf;
+    const phaseCanFire = !(raidIsScifi || ent._raidIsScifi) || ent._raidPhase === 'hover' || ent._raidPhase === 'attack';
+    const canShoot = !!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && phaseCanFire && (!!ent.aggressiveEnabled || provoked);
     if (canShoot) {
       const bounds = getEntityBounds(ent);
       if (bounds) {
@@ -25689,11 +26818,12 @@ function updateEnemyRaid(dt, levelData) {
           color: ent.enemyLaserColor || enemyRaidState.laserColor || '#ff5772'
         });
       }
-      ent._enemyLaserCdMs = clamp(Number(ent.laserCooldownMs ?? 520), 40, 3000) / skill;
+      const cooldownMult = (raidIsScifi || ent._raidIsScifi) ? 1.18 : 1;
+      ent._enemyLaserCdMs = (clamp(Number(ent.laserCooldownMs ?? 520), 40, 3000) / skill) * cooldownMult;
     }
     if (!ent._enemyBombCdMs) ent._enemyBombCdMs = 0;
     ent._enemyBombCdMs -= Math.max(0, dt || 0);
-    const canBomb = !!ent.bombEnabled && ent._enemyBombCdMs <= 0 && (!!ent.aggressiveEnabled || provoked);
+    const canBomb = !!ent.bombEnabled && ent._enemyBombCdMs <= 0 && phaseCanFire && (!!ent.aggressiveEnabled || provoked);
     if (canBomb) {
       const bounds = getEntityBounds(ent);
       if (bounds) {
@@ -25723,6 +26853,7 @@ function updateEnemyRaid(dt, levelData) {
 
 function updateEnemyLaserShots(dt) {
   if ((!enemyLaserShots.length && !enemyBombShots.length) || gameState !== 'playing') return;
+  if (pendingDispatchLevel !== null || level1GuideOpen) return;
   const truckRect = getTruckDrawRect();
   const ms = Math.max(0, Number(dt || 0));
   enemyLaserShots.forEach((shot) => {
@@ -25776,7 +26907,72 @@ function updateEnemyLaserShots(dt) {
   enemyBombShots = enemyBombShots.filter((shot) => shot.ttlMs > 0);
 }
 
+function updateEnemyCrashFx(dt) {
+  if (!enemyCrashFx.length || gameState !== 'playing') return;
+  const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
+  const laneY = clamp(FIRETRUCK_LANE_Y - 2, ROAD_LANE_Y - 6, GRASS_Y + 8);
+  enemyCrashFx.forEach((fx) => {
+    if (!fx || Number(fx.ttlMs || 0) <= 0) return;
+    fx.ttlMs = Math.max(0, Number(fx.ttlMs || 0) - Math.max(0, Number(dt || 0)));
+    if (fx.phase === 'fall') {
+      fx.vy = Number(fx.vy || 0) + (0.15 * step);
+      fx.x = Number(fx.x || 0) + Number(fx.vx || 0) * step * 2.8;
+      fx.y = Number(fx.y || 0) + Number(fx.vy || 0) * step * 2.8;
+      fx.rot = Number(fx.rot || 0) + Number(fx.rotVel || 0) * step * 2.2;
+      if (fx.y >= laneY) {
+        fx.y = laneY;
+        fx.phase = 'boom';
+        fx.ttlMs = Math.max(Number(fx.ttlMs || 0), 580);
+        createSmoke(fx.x, fx.y);
+        createFireParticles(fx.x, fx.y, 8.6, 1.35, { big: true });
+        addPointPopup(fx.x, fx.y - 12, 'CRASH!', '#ffc48e', 58);
+      }
+    } else {
+      fx.rot = Number(fx.rot || 0) + Number(fx.rotVel || 0) * step;
+    }
+  });
+  enemyCrashFx = enemyCrashFx.filter((fx) => fx && Number(fx.ttlMs || 0) > 0);
+}
+
 function drawEnemyRaidOverlays() {
+  enemyCrashFx.forEach((fx) => {
+    if (!fx || Number(fx.ttlMs || 0) <= 0) return;
+    const alpha = clamp(Number(fx.ttlMs || 0) / (fx.phase === 'fall' ? 1550 : 580), 0, 1);
+    const x = Number(fx.x || 0);
+    const y = Number(fx.y || 0);
+    if (fx.phase === 'fall') {
+      const w = 66;
+      const h = 28;
+      const key = resolveSpriteKey(String(fx.spriteKey || ''));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(x, y);
+      ctx.rotate(Number(fx.rot || 0));
+      const sprite = key ? SPRITES[key] : null;
+      if (key && SPRITE_READY[key] && sprite && sprite.width && sprite.height) {
+        ctx.drawImage(sprite, -w * 0.5, -h * 0.5, w, h);
+      } else {
+        ctx.fillStyle = 'rgba(156, 214, 255, 0.95)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w * 0.45, h * 0.38, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = 'rgba(255,150,82,0.92)';
+      ctx.beginPath();
+      ctx.arc(x, y, 8 + (1 - alpha) * 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,236,172,0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 14 + (1 - alpha) * 28, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  });
   enemyLaserShots.forEach((shot) => {
     const x1 = Number(shot._prevX ?? shot.x);
     const y1 = Number(shot._prevY ?? shot.y);
@@ -26381,8 +27577,6 @@ function knockDownUfoCraft(side) {
   if (!ufoRaid || ufoRaid.phase === 'crash') return;
   const craft = getUfoRaidCraftRect(ufoRaid, side);
   if (!craft) return;
-  const otherSide = side === 'left' ? 'right' : 'left';
-  const other = getUfoRaidCraftRect(ufoRaid, otherSide);
   const centerX = craft.x + craft.w * 0.5;
   ufoRaid.phase = 'crash';
   ufoRaid.timer = 0;
@@ -26403,11 +27597,8 @@ function knockDownUfoCraft(side) {
     ignitePulseMs: 0,
     exitDir: centerX < canvas.width * 0.5 ? -1 : 1
   };
-  ufoRaid.flee = other ? {
-    x: other.x,
-    y: other.y,
-    dir: otherSide === 'left' ? -1 : 1
-  } : null;
+  // Do not spawn or keep any secondary UFO once one is shot down by water.
+  ufoRaid.flee = null;
   addPointPopup(centerX, craft.y - 8, 'UFO DOWN!', '#8fe9ff', 64);
 }
 
@@ -26497,10 +27688,6 @@ function updateUfoAbductionRaid(raid, dt, step) {
 function updateUfoCrashRaid(raid, dt, step) {
   const crash = raid?.crash;
   if (!crash) return false;
-  if (raid.flee) {
-    raid.flee.x += raid.flee.dir * 4.6 * step;
-    raid.flee.y -= 0.9 * step;
-  }
   if (!crash.grounded) {
     crash.vy += 0.23 * step;
     crash.x += crash.vx * step;
@@ -26527,17 +27714,10 @@ function updateUfoCrashRaid(raid, dt, step) {
       crash.ignitePulseMs = 0;
       igniteNearbyFireSpots(crash.x + 70, GRASS_Y - 8, 126, 0.18);
     }
-    const fleeGone = !raid.flee || raid.flee.x < -260 || raid.flee.x > canvas.width + 260 || raid.flee.y < -180;
-    if (crash.burnMs > 2600 && fleeGone) {
-      raid.phase = 'exit';
-      raid.leftX = crash.exitDir < 0 ? (crash.x - 130) : (crash.x + 18);
-      raid.rightX = crash.exitDir < 0 ? (crash.x + 32) : (crash.x + 190);
-      raid.y = crash.y - 10;
-      raid.flashUntil = performance.now() + 220;
-      raid.exitScale = 1;
-      raid.crash = null;
-      raid.flee = null;
-      raid.timer = 0;
+    if (crash.burnMs > 2600) {
+      // End raid after crash/explosion; no new UFO or exit pass should appear.
+      ufoRaid = null;
+      return true;
     }
   }
   return true;
@@ -26545,6 +27725,7 @@ function updateUfoCrashRaid(raid, dt, step) {
 
 function updateUfoRaid(dt) {
   if (!ufoRaid || currentLevel !== FINAL_LEVEL) return;
+  if (pendingDispatchLevel !== null || level1GuideOpen) return;
   const step = Math.max(0.25, dt / 16.67);
   if (updateUfoAbductionRaid(ufoRaid, dt, step)) return;
   if (ufoRaid.phase === 'crash' && updateUfoCrashRaid(ufoRaid, dt, step)) return;
@@ -26678,7 +27859,6 @@ function drawUfoRaid() {
     ctx.translate(-cx, -cy);
     drawUfo(crash.x, crash.y, false);
     ctx.restore();
-    if (ufoRaid.flee) drawUfo(ufoRaid.flee.x, ufoRaid.flee.y, false);
     return;
   }
   if (ufoRaid.abduction?.active) {
@@ -26866,22 +28046,38 @@ function syncThumbStickVisibility() {
 }
 
 function dockHudControlsToCanvasEdge() {
-  const rect = canvas?.getBoundingClientRect?.();
-  if (!rect || rect.height <= 0) return;
-  const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
-  const gapBelowCanvas = Math.max(0, viewportH - rect.bottom);
-  // Slight negative overlap to sit controls on the game edge instead of deep in letterbox.
-  const overlapPx = 14;
-  const baseBottom = Math.max(8, Math.round(gapBelowCanvas - overlapPx));
+  const canvasRect = canvas?.getBoundingClientRect?.() || { bottom: window.innerHeight };
+  const bottomInset = Math.max(0, Math.round(window.innerHeight - canvasRect.bottom));
+  const baseBottom = bottomInset + 2;
 
   const controls = document.getElementById('truckControls');
   if (controls) controls.style.bottom = `${baseBottom}px`;
 
   const mountBtn = document.getElementById('firefighterMountBtn');
-  if (mountBtn) mountBtn.style.bottom = `${baseBottom + 70}px`;
+  if (mountBtn) mountBtn.style.bottom = `${baseBottom + 4}px`;
 
   const stick = document.getElementById('thumbStick');
   if (stick) stick.style.bottom = `${baseBottom}px`;
+
+  positionFirefighterMountButtonByTruckSide();
+}
+
+function positionFirefighterMountButtonByTruckSide() {
+  const btn = document.getElementById('firefighterMountBtn');
+  const controls = document.getElementById('truckControls');
+  if (!btn || !controls || btn.style.display === 'none') return;
+  const controlsRect = controls.getBoundingClientRect();
+  const truckRect = getTruckDrawRect();
+  const truckCenterX = truckRect ? (truckRect.x + truckRect.w * 0.5) : Number(truck?.x || canvas.width * 0.5);
+  const truckOnRight = truckCenterX > canvas.width * 0.5;
+  const gap = 10;
+  const btnW = Math.max(132, Math.round(btn.getBoundingClientRect().width || 152));
+  let leftPx = truckOnRight
+    ? controlsRect.right + gap
+    : controlsRect.left - btnW - gap;
+  leftPx = clamp(leftPx, 8, Math.max(8, window.innerWidth - btnW - 8));
+  btn.style.transform = 'none';
+  btn.style.left = `${Math.round(leftPx)}px`;
 }
 
 function clearMoveCue() {
@@ -27006,16 +28202,18 @@ function updateFirefighterMountButton() {
   const doorX = getFirefighterTruckHomeX();
   const nearDoor = Math.abs((ff.x || 0) - doorX) <= 64;
   if (ff.mode === 'active') {
-    btn.textContent = nearDoor ? 'Get In Truck' : 'Move To Door To Get In';
+    btn.textContent = nearDoor ? 'Press To Enter Truck' : 'Move To Door To Enter';
     btn.style.display = 'block';
     btn.disabled = !nearDoor;
     btn.style.opacity = nearDoor ? '1' : '0.72';
   } else {
-    btn.textContent = 'Get Firefighter Out';
+    btn.textContent = 'Press To Exit Truck';
     btn.style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
   }
+  dockHudControlsToCanvasEdge();
+  positionFirefighterMountButtonByTruckSide();
 }
 
 function toggleFirefighterMountState() {
@@ -27032,11 +28230,13 @@ function toggleFirefighterMountState() {
       return;
     }
     ff.mode = 'hidden';
+    hoseCrewCarryMode = 'hidden';
     ff.vx = 0;
     setTruckDrive(0);
     addPointPopup(doorX, FIRETRUCK_LANE_Y - 72, 'IN TRUCK', '#9be6ff', 56);
   } else {
     ff.mode = 'active';
+    hoseCrewCarryMode = 'active';
     ff.x = doorX;
     ff.vx = 0;
     ff.facing = truckFacing >= 0 ? 1 : -1;
@@ -27101,6 +28301,11 @@ function stopTruckDrive() {
 }
 
 window.addEventListener('keydown', (e) => {
+  if (level1GuideOpen) {
+    if (e.key === 'Escape' || e.key === 'Esc') closeLevel1Guide();
+    e.preventDefault();
+    return;
+  }
   if (gameState === 'builder') {
     const ent = getBuilderEntityById(builderSelectedId);
     const tag = String(document.activeElement?.tagName || '').toLowerCase();
@@ -27158,6 +28363,12 @@ window.addEventListener('keydown', (e) => {
   }
 }, true);
 window.addEventListener('keyup', (e) => {
+  if (level1GuideOpen) {
+    setTruckDrive(0);
+    truckFlightInput = 0;
+    isRocketFiring = false;
+    return;
+  }
   if (gameState === 'builder') return;
   if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
     e.preventDefault();
@@ -27180,6 +28391,13 @@ function loop() {
     builderDrawHelpers();
     requestAnimationFrame(loop);
     return;
+  }
+  if (level1GuideOpen) {
+    setTruckDrive(0);
+    truckFlightInput = 0;
+    isSpraying = false;
+    isLaserFiring = false;
+    isRocketFiring = false;
   }
   if (playerControlsEnabled && !isFirefighterControlActive()) {
     truck.x += truckDrive * truck.speed;
@@ -27275,9 +28493,14 @@ if (false && currentLevel === 11) drawPlacementGrid();
     ctx.stroke();
   }
   drawTimeSelectorCue();
+  const scifiSpaceMode = isScifiTruckActive(data) && isPrimaryLaserMode(data);
 
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
     if (ent?._laserDestroyed) return;
+    if (scifiSpaceMode && ent?.type === 'builderSprite') {
+      const key = String(ent?.spriteKey || ent?.enemyModelKey || '').toLowerCase();
+      if (key && !/(ufo|saucer|delta|cigar|mothership)/.test(key)) return;
+    }
     if (ent.type === 'requiredFireTruck') {
       const oldScale = truck.renderScale || 1;
       truck.renderScale = clamp(Number(ent.scale || 1), 0.7, 1.8);
@@ -27362,17 +28585,20 @@ if (false && currentLevel === 11) drawPlacementGrid();
     });
   }
 
-  // Solid road lane matched to the firetruck's movement range and level.
-  const truckLayout = ENTITY_LAYOUT.engine;
-  const truckScale = getTruckRenderScale();
-  const roadStartX = Math.max(0, (truck.minX + truckLayout.x * truckScale) - 34);
-  const roadEndX = Math.min(1200, (truck.maxX + (truckLayout.x + truckLayout.w) * truckScale) + 34);
-  const roadW = Math.max(80, roadEndX - roadStartX);
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
+  if (!scifiSpaceMode) {
+    // Solid road lane matched to the firetruck's movement range and level.
+    const truckLayout = ENTITY_LAYOUT.engine;
+    const truckScale = getTruckRenderScale();
+    const roadStartX = Math.max(0, (truck.minX + truckLayout.x * truckScale) - 34);
+    const roadEndX = Math.min(1200, (truck.maxX + (truckLayout.x + truckLayout.w) * truckScale) + 34);
+    const roadW = Math.max(80, roadEndX - roadStartX);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
+  }
   drawCivilianRescue();
 
   if (!(data.entities || []).some((ent) => ent?.type === 'requiredFireTruck')) drawSideFireTruck(data);
+  drawScifiTruckThrusters(data);
   drawTruckDamageFireOverlay(data);
   drawUfoPreview();
   drawUfoRaid();
@@ -27385,12 +28611,13 @@ if (false && currentLevel === 11) drawPlacementGrid();
   if (truckVisible && hoseReady) {
     const tip = getClampedHoseEnd();
     const laserMode = isActiveLaserCombatMode(data);
+    const scifiStubMode = laserMode;
     ctx.strokeStyle = laserMode ? '#3ba8ff' : '#333333';
     ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = laserMode ? '#6bc3ff' : '#111';
     const truckPoint = getTruckNozzlePoint();
     const sprayPoint = getHoseSprayOriginPoint();
     const firefighterHand = getFirefighterHoseHandPoint();
-    if (firefighterHand) {
+    if (firefighterHand && !scifiStubMode) {
       ctx.save();
       ctx.strokeStyle = laserMode ? '#3289d8' : '#3a3a3a';
       ctx.lineWidth = 9;
@@ -27409,10 +28636,32 @@ if (false && currentLevel === 11) drawPlacementGrid();
     const hoseFacing = firefighterHand
       ? ((rescueState?.firefighter?.facing || truckFacing) >= 0 ? 1 : -1)
       : (truckFacing >= 0 ? 1 : -1);
-    if (!firefighterHand) {
+    if (scifiStubMode) {
+      const dirX = tip.x - truckPoint.x;
+      const dirY = tip.y - truckPoint.y;
+      const len = Math.hypot(dirX, dirY) || 1;
+      const nx = truckPoint.x + (dirX / len) * 22;
+      const ny = truckPoint.y + (dirY / len) * 22;
+      ctx.save();
+      ctx.strokeStyle = '#5dd7ff';
+      ctx.shadowColor = '#7cf1ff';
+      ctx.shadowBlur = 11;
+      ctx.lineWidth = 8;
       ctx.beginPath();
-      ctx.moveTo(sprayPoint.x, sprayPoint.y);
-      ctx.quadraticCurveTo(sprayPoint.x + (hoseFacing * 86), sprayPoint.y - 132, tip.x, tip.y);
+      ctx.moveTo(truckPoint.x, truckPoint.y);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+      ctx.fillStyle = '#b6f0ff';
+      ctx.beginPath();
+      ctx.arc(truckPoint.x, truckPoint.y, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#d8f9ff';
+      ctx.fillRect(nx - 2.5, ny - 2.5, 5, 5);
+      ctx.restore();
+    } else if (!firefighterHand) {
+      ctx.beginPath();
+      ctx.moveTo(truckPoint.x, truckPoint.y);
+      ctx.quadraticCurveTo(truckPoint.x + (hoseFacing * 86), truckPoint.y - 132, sprayPoint.x, sprayPoint.y);
       ctx.stroke();
     }
     ctx.shadowBlur = 0;
@@ -27429,8 +28678,11 @@ if (false && currentLevel === 11) drawPlacementGrid();
       ctx.fillStyle = laserMode ? '#dbf2ff' : '#c9c9c9';
       ctx.fillRect(nx - 2, ny - 2, 4, 4);
     } else {
-      ctx.fillStyle = laserMode ? '#1f7dff' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
-      ctx.fillStyle = laserMode ? '#b7e3ff' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+      // Keep tip marker only for water hose mode; sci-fi laser has no nozzle marker.
+      if (!laserMode) {
+        ctx.fillStyle = '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+        ctx.fillStyle = '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+      }
     }
   }
 
@@ -27596,10 +28848,12 @@ if (builderOpenRequestedFromHash) {
   }, 40);
 }
 
+beginBootLoadingScreen();
 loop();
 </script>
 </body>
 </html>
+
 
 
 
