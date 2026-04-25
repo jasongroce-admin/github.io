@@ -112,6 +112,9 @@
   const ctx = canvas.getContext("2d");
 
   const inputState = { left: false, right: false, jump: false, boost: false, fire: false, superThrust: false };
+  const keyboardInputState = { left: false, right: false, jump: false, boost: false, fire: false, superThrust: false };
+  const touchInputState = { left: false, right: false, jump: false, boost: false, fire: false, superThrust: false };
+  const pressedKeyCodes = new Set();
   const imageCache = new Map();
 
   const runtime = {
@@ -929,6 +932,40 @@
     return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
   }
 
+  function mergeInputStates() {
+    inputState.left = !!(keyboardInputState.left || touchInputState.left);
+    inputState.right = !!(keyboardInputState.right || touchInputState.right);
+    inputState.jump = !!(keyboardInputState.jump || touchInputState.jump);
+    inputState.boost = !!(keyboardInputState.boost || touchInputState.boost);
+    inputState.fire = !!(keyboardInputState.fire || touchInputState.fire);
+    inputState.superThrust = !!(keyboardInputState.superThrust || touchInputState.superThrust);
+  }
+
+  function syncKeyboardInputFromPressedKeys() {
+    const goLeft = pressedKeyCodes.has("ArrowLeft") || pressedKeyCodes.has("KeyA");
+    const goRight = pressedKeyCodes.has("ArrowRight") || pressedKeyCodes.has("KeyD");
+    const goUp = pressedKeyCodes.has("ArrowUp") || pressedKeyCodes.has("KeyW");
+    const goDown = pressedKeyCodes.has("ArrowDown") || pressedKeyCodes.has("KeyS");
+    const shiftBoost = pressedKeyCodes.has("ShiftLeft") || pressedKeyCodes.has("ShiftRight");
+    const firePressed = pressedKeyCodes.has("KeyF") || pressedKeyCodes.has("KeyX");
+    const spaceHeld = pressedKeyCodes.has("Space");
+
+    keyboardInputState.left = goLeft;
+    keyboardInputState.right = goRight;
+    keyboardInputState.fire = firePressed;
+
+    if (runtime.mode === "spaceCombat") {
+      keyboardInputState.jump = goUp;
+      keyboardInputState.boost = goDown || shiftBoost;
+      keyboardInputState.superThrust = spaceHeld;
+    } else {
+      keyboardInputState.jump = goUp || spaceHeld;
+      keyboardInputState.boost = goDown || shiftBoost;
+      keyboardInputState.superThrust = false;
+    }
+    mergeInputStates();
+  }
+
   function setStickKnob(dx, dy) {
     if (!mobileStickKnob) return;
     const max = 34;
@@ -937,18 +974,20 @@
 
   function applyStickAxes(dx, dy) {
     const dead = 0.22;
-    inputState.left = dx < -dead;
-    inputState.right = dx > dead;
-    inputState.jump = dy < -dead;
-    inputState.boost = dy > dead;
+    touchInputState.left = dx < -dead;
+    touchInputState.right = dx > dead;
+    touchInputState.jump = dy < -dead;
+    touchInputState.boost = dy > dead;
+    mergeInputStates();
   }
 
   function resetStickAxes() {
     if (!mobileStickState.active) {
-      inputState.left = false;
-      inputState.right = false;
-      inputState.jump = false;
-      inputState.boost = false;
+      touchInputState.left = false;
+      touchInputState.right = false;
+      touchInputState.jump = false;
+      touchInputState.boost = false;
+      mergeInputStates();
     }
     setStickKnob(0, 0);
   }
@@ -970,7 +1009,7 @@
     }
     if (missionLegend) {
       missionLegend.textContent = runtime.mode === "spaceCombat"
-        ? "Space Assault: Move with joystick or arrows. Aim with pointer and tap Fire. Spacebar = Super Thrust."
+        ? "Space Assault: Move with joystick or Arrow/WASD keys (diagonals supported). Aim with pointer and tap Fire. Spacebar = Super Thrust."
         : "Buggy Run: Left/Right tune speed, Jump to clear craters, and aim with pointer to fire.";
     }
     if (!missionOpen || !mobileLike) resetStickAxes();
@@ -2730,6 +2769,7 @@
     if (!runtime.active || !runtime.mission) return;
 
     runtime.ticks += 1;
+    if (pressedKeyCodes.size) syncKeyboardInputFromPressedKeys();
 
     if (!runtime.dead && !runtime.completed) {
       runtime.fireCooldown = Math.max(0, runtime.fireCooldown - dt);
@@ -2754,12 +2794,22 @@
   }
 
   function releaseAllInputs() {
-    inputState.left = false;
-    inputState.right = false;
-    inputState.jump = false;
-    inputState.boost = false;
-    inputState.fire = false;
-    inputState.superThrust = false;
+    pressedKeyCodes.clear();
+    keyboardInputState.left = false;
+    keyboardInputState.right = false;
+    keyboardInputState.jump = false;
+    keyboardInputState.boost = false;
+    keyboardInputState.fire = false;
+    keyboardInputState.superThrust = false;
+    touchInputState.left = false;
+    touchInputState.right = false;
+    touchInputState.jump = false;
+    touchInputState.boost = false;
+    touchInputState.fire = false;
+    touchInputState.superThrust = false;
+    mergeInputStates();
+    mobileStickState.active = false;
+    mobileStickState.pointerId = null;
     resetStickAxes();
   }
 
@@ -2806,12 +2856,14 @@
   function bindControl(button, key) {
     const press = (ev) => {
       ev.preventDefault();
-      inputState[key] = true;
+      touchInputState[key] = true;
+      mergeInputStates();
       if (key === "fire") shoot();
     };
     const release = (ev) => {
       ev.preventDefault();
-      inputState[key] = false;
+      touchInputState[key] = false;
+      mergeInputStates();
     };
     if (window.PointerEvent) {
       button.addEventListener("pointerdown", press);
@@ -2834,7 +2886,6 @@
     });
     if (fireFab) bindControl(fireFab, "fire");
     bindMobileStick();
-    if (window.PointerEvent) document.addEventListener("pointerup", releaseAllInputs);
     window.addEventListener("blur", releaseAllInputs);
     window.addEventListener("resize", syncMissionControls);
 
@@ -2861,33 +2912,26 @@
     });
 
     window.addEventListener("keydown", (event) => {
-      if (event.repeat) return;
-      if (event.code === "ArrowLeft" || event.code === "KeyA") inputState.left = true;
-      if (event.code === "ArrowRight" || event.code === "KeyD") inputState.right = true;
-      if (event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = true;
-      if (event.code === "KeyS" || event.code === "ArrowDown") inputState.boost = true;
-      if (event.code === "Space") {
-        if (runtime.mode === "spaceCombat") inputState.superThrust = true;
-        else inputState.jump = true;
-      }
-      if (event.code === "ShiftLeft" || event.code === "ShiftRight") inputState.boost = true;
-      if (event.code === "KeyF" || event.code === "KeyX") {
-        inputState.fire = true;
-        shoot();
-      }
+      const tracked = (
+        event.code === "ArrowLeft" || event.code === "KeyA" ||
+        event.code === "ArrowRight" || event.code === "KeyD" ||
+        event.code === "ArrowUp" || event.code === "KeyW" ||
+        event.code === "ArrowDown" || event.code === "KeyS" ||
+        event.code === "ShiftLeft" || event.code === "ShiftRight" ||
+        event.code === "KeyF" || event.code === "KeyX" ||
+        event.code === "Space"
+      );
+      if (!tracked) return;
+      if (event.code.startsWith("Arrow") || event.code === "Space") event.preventDefault();
+      pressedKeyCodes.add(event.code);
+      syncKeyboardInputFromPressedKeys();
+      if (!event.repeat && (event.code === "KeyF" || event.code === "KeyX")) shoot();
     });
 
     window.addEventListener("keyup", (event) => {
-      if (event.code === "ArrowLeft" || event.code === "KeyA") inputState.left = false;
-      if (event.code === "ArrowRight" || event.code === "KeyD") inputState.right = false;
-      if (event.code === "KeyW" || event.code === "ArrowUp") inputState.jump = false;
-      if (event.code === "KeyS" || event.code === "ArrowDown") inputState.boost = false;
-      if (event.code === "Space") {
-        inputState.superThrust = false;
-        if (runtime.mode !== "spaceCombat") inputState.jump = false;
-      }
-      if (event.code === "ShiftLeft" || event.code === "ShiftRight") inputState.boost = false;
-      if (event.code === "KeyF" || event.code === "KeyX") inputState.fire = false;
+      if (!pressedKeyCodes.has(event.code)) return;
+      pressedKeyCodes.delete(event.code);
+      syncKeyboardInputFromPressedKeys();
     });
 
     returnShipBtn.addEventListener("click", () => {
