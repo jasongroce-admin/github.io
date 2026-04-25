@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Tibertron's Space Buggy Level Builder</title>
+    <link rel="stylesheet" href="../../../assets/css/site.css?v=20260416">
+    <style>
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 20% 12%, #203a67 0%, #081428 44%, #04070f 100%);
+        color: #eaf4ff;
+      }
+      .page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: max(0.8rem, env(safe-area-inset-top)) 0.9rem max(0.9rem, env(safe-area-inset-bottom));
+        display: grid;
+        gap: 0.8rem;
+      }
+      .panel {
+        border: 1px solid rgba(126, 173, 255, 0.3);
+        background: rgba(7, 18, 34, 0.9);
+        border-radius: 16px;
+        padding: 0.8rem;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .btn, button {
+        border: 1px solid rgba(148, 188, 255, 0.55);
+        background: linear-gradient(180deg, #2f7eca, #1d4d7d);
+        color: #fff;
+        border-radius: 10px;
+        min-height: 34px;
+        padding: 0.45rem 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn.alt {
+        background: linear-gradient(180deg, #95743a, #684f24);
+        border-color: rgba(255, 208, 116, 0.65);
+      }
+      .btn.ghost {
+        background: rgba(26, 54, 91, 0.5);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+        gap: 0.8rem;
+      }
+      .stack {
+        display: grid;
+        gap: 0.75rem;
+      }
+      .section {
+        border: 1px solid rgba(126, 173, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.7rem;
+        display: grid;
+        gap: 0.45rem;
+        background: rgba(10, 24, 45, 0.65);
+      }
+      .section h3 {
+        margin: 0;
+        font-size: 0.93rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.42rem;
+      }
+      label {
+        font-size: 0.78rem;
+        color: #a5c8e9;
+        display: grid;
+        gap: 0.2rem;
+      }
+      input, select, textarea {
+        border: 1px solid rgba(140, 179, 241, 0.5);
+        border-radius: 8px;
+        background: rgba(6, 16, 30, 0.9);
+        color: #fff;
+        min-height: 32px;
+        padding: 0.35rem 0.42rem;
+      }
+      textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+      .list {
+        display: grid;
+        gap: 0.35rem;
+        max-height: 190px;
+        overflow: auto;
+      }
+      .item {
+        border: 1px solid rgba(132, 173, 241, 0.25);
+        border-radius: 8px;
+        padding: 0.35rem;
+        background: rgba(6, 17, 31, 0.66);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+      }
+      .preview-wrap {
+        border: 1px solid rgba(127, 170, 239, 0.35);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #071021;
+      }
+      #previewCanvas {
+        width: 100%;
+        display: block;
+      }
+      .help {
+        font-size: 0.82rem;
+        color: #9cc4e7;
+      }
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="panel topbar">
+        <div>
+          <strong>Tibertron's Space Buggy Level Builder</strong>
+          <div class="help">Build JSON mission files with moon buggy hazards, enemies, checkpoints, collectibles, and WebP entities.</div>
+        </div>
+        <div style="display:flex;gap:.45rem;flex-wrap:wrap">
+          <a class="btn ghost" href="../index.html" target="_blank" rel="noreferrer">Open Game</a>
+          <a class="btn ghost" href="../../index.html">Games</a>
+        </div>
+      </header>
+
+      <section class="layout">
+        <div class="stack">
+          <div class="section">
+            <h3>Mission Meta</h3>
+            <div class="grid">
+              <label>Id <input id="metaId" value="custom-mission-1"></label>
+              <label>Title <input id="metaTitle" value="Custom Mission 1"></label>
+              <label>Category
+                <select id="metaCategory">
+                  <option value="mineral">mineral</option>
+                  <option value="genetic">genetic</option>
+                  <option value="custom">custom</option>
+                </select>
+              </label>
+              <label>Resource Id <input id="metaResourceId" value="ferrite"></label>
+              <label>Level <input id="metaLevel" type="number" min="1" max="10" value="1"></label>
+              <label>Length <input id="metaLength" type="number" min="1800" value="6200"></label>
+              <label>Base Ground Y <input id="metaBaseGround" type="number" min="220" max="520" value="452"></label>
+              <label>Completion Bonus <input id="metaCompletionBonus" type="number" min="0" value="28"></label>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Goal</h3>
+            <div class="grid">
+              <label>Label <input id="goalLabel" value="Refinery Tower"></label>
+              <label>Style
+                <select id="goalStyle">
+                  <option value="refinery">refinery</option>
+                  <option value="mountain">mountain</option>
+                  <option value="bio">bio</option>
+                </select>
+              </label>
+              <label>X <input id="goalX" type="number" value="5960"></label>
+              <label>Y <input id="goalY" type="number" value="282"></label>
+              <label>W <input id="goalW" type="number" value="132"></label>
+              <label>H <input id="goalH" type="number" value="170"></label>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Add Geometry Items</h3>
+            <div class="grid">
+              <label>Type
+                <select id="geoType">
+                  <option value="hole">hole</option>
+                  <option value="rock">rock</option>
+                  <option value="mine">mine</option>
+                  <option value="platform">platform</option>
+                  <option value="collectible">collectible</option>
+                  <option value="checkpoint">checkpoint</option>
+                  <option value="enemy">enemy</option>
+                </select>
+              </label>
+              <label>X <input id="geoX" type="number" value="900"></label>
+              <label>Y <input id="geoY" type="number" value="420"></label>
+              <label>W <input id="geoW" type="number" value="90"></label>
+              <label>H <input id="geoH" type="number" value="34"></label>
+              <label>Value/Speed <input id="geoValue" type="number" value="4"></label>
+              <label>Label/Enemy Type <input id="geoLabel" value="Checkpoint"></label>
+            </div>
+            <button id="addGeoBtn" type="button">Add Item</button>
+          </div>
+
+          <div class="section">
+            <h3>WebP Asset Catalog</h3>
+            <div class="grid">
+              <label>Asset Key <input id="assetKey" value="moonBuggy"></label>
+              <label>Label <input id="assetLabel" value="Moon Buggy"></label>
+              <label>Category <input id="assetCategory" value="vehicles"></label>
+              <label>Path (relative) <input id="assetPath" value="images/vehicles/moonbuggy1.webp"></label>
+            </div>
+            <div style="display:flex;gap:.45rem;flex-wrap:wrap">
+              <button id="saveAssetBtn" type="button">Save Catalog Asset</button>
+              <label class="btn alt" style="display:inline-flex;align-items:center;cursor:pointer">
+                Upload WebP
+                <input id="uploadAssetInput" type="file" accept="image/webp" style="display:none">
+              </label>
+            </div>
+            <div id="assetCatalogList" class="list"></div>
+          </div>
+
+          <div class="section">
+            <h3>Add WebP Instance (Includes Prior Property Set)</h3>
+            <div class="grid">
+              <label>Sprite Key <input id="webpSprite" value="moonBuggy"></label>
+              <label>X <input id="webpX" type="number" value="1200"></label>
+              <label>Y <input id="webpY" type="number" value="390"></label>
+              <label>W <input id="webpW" type="number" value="90"></label>
+              <label>H <input id="webpH" type="number" value="56"></label>
+              <label>Rotation <input id="webpRotation" type="number" value="0"></label>
+              <label>Scale <input id="webpScale" type="number" step="0.1" value="1"></label>
+              <label>Health <input id="webpHealth" type="number" value="100"></label>
+              <label>Speed <input id="webpSpeed" type="number" step="0.1" value="0"></label>
+              <label>Weapon Type <input id="webpWeaponType" value="none"></label>
+              <label>Fire Rate <input id="webpFireRate" type="number" step="0.1" value="0"></label>
+              <label>Damage <input id="webpDamage" type="number" step="0.1" value="0"></label>
+              <label>Radius <input id="webpRadius" type="number" step="0.1" value="0"></label>
+              <label>Path Direction <input id="webpPathDirection" value="ltr"></label>
+              <label>Resource Value <input id="webpResourceValue" type="number" value="0"></label>
+              <label>Is Enemy
+                <select id="webpIsEnemy"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Can Foam
+                <select id="webpCanFoam"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Can Laser
+                <select id="webpCanLaser"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Path Trace
+                <select id="webpPathTrace"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Bomber Call In
+                <select id="webpBomberCallIn"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Solid
+                <select id="webpSolid"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+              <label>Collectible
+                <select id="webpCollectible"><option value="false">false</option><option value="true">true</option></select>
+              </label>
+            </div>
+            <button id="addWebpBtn" type="button">Add WebP Instance</button>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="section">
+            <h3>Live Preview</h3>
+            <div class="preview-wrap">
+              <canvas id="previewCanvas" width="980" height="380"></canvas>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Level Contents</h3>
+            <div class="help">Remove items from each list as needed.</div>
+            <div class="grid">
+              <div>
+                <strong>Holes</strong>
+                <div id="holesList" class="list"></div>
+              </div>
+              <div>
+                <strong>Rocks</strong>
+                <div id="rocksList" class="list"></div>
+              </div>
+              <div>
+                <strong>Mines</strong>
+                <div id="minesList" class="list"></div>
+              </div>
+              <div>
+                <strong>Platforms</strong>
+                <div id="platformsList" class="list"></div>
+              </div>
+              <div>
+                <strong>Collectibles</strong>
+                <div id="collectiblesList" class="list"></div>
+              </div>
+              <div>
+                <strong>Checkpoints</strong>
+                <div id="checkpointsList" class="list"></div>
+              </div>
+              <div>
+                <strong>Enemies</strong>
+                <div id="enemiesList" class="list"></div>
+              </div>
+              <div>
+                <strong>WebP Assets</strong>
+                <div id="webpList" class="list"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:.45rem;flex-wrap:wrap">
+              <button id="exportBtn" type="button">Export JSON</button>
+              <label class="btn alt" style="display:inline-flex;align-items:center;cursor:pointer">
+                Import JSON
+                <input id="importInput" type="file" accept="application/json" style="display:none">
+              </label>
+              <button id="clearBtn" class="btn ghost" type="button">Clear Lists</button>
+            </div>
+            <textarea id="jsonPreview" readonly></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="space-buggy-level-builder.js?v=20260424"></script>
+  </body>
+</html>

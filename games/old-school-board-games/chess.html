@@ -68,6 +68,15 @@
         transition: all 0.15s;
       }
 
+      .piece-img {
+        width: 92%;
+        height: 92%;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+      }
+
       .cell.dark  { background: linear-gradient(180deg, #7f5735, #52331d); }
       .cell.light { background: linear-gradient(180deg, #ecd7b2, #d8bb8e); }
 
@@ -96,6 +105,122 @@
         min-height: 3.3rem;
         display: grid;
         align-items: center;
+      }
+
+      .training-help-btn {
+        margin-left: auto;
+      }
+
+      .help-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(4, 8, 18, 0.78);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 1000;
+      }
+
+      .help-modal.open { display: flex; }
+
+      .help-panel {
+        width: min(980px, 96vw);
+        max-height: 88vh;
+        overflow: auto;
+        border-radius: 20px;
+        border: 1px solid rgba(155, 184, 255, 0.4);
+        background: linear-gradient(180deg, rgba(13, 22, 41, 0.98), rgba(6, 13, 26, 0.98));
+        padding: 1rem;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .help-header {
+        display: flex;
+        gap: 0.8rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .help-header h3 { margin: 0; }
+
+      .training-list {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .training-card {
+        border: 1px solid rgba(160, 198, 255, 0.28);
+        border-radius: 14px;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .training-card h4 {
+        margin: 0 0 0.45rem;
+      }
+
+      .training-layout {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .training-layout ul {
+        margin: 0;
+        padding-left: 1.1rem;
+      }
+
+      .demo-wrap {
+        display: grid;
+        gap: 0.4rem;
+      }
+
+      .mini-board {
+        --mini-cell: min(7.8vw, 34px);
+        display: grid;
+        grid-template-columns: repeat(8, var(--mini-cell));
+        gap: 2px;
+        padding: 0.4rem;
+        border-radius: 12px;
+        border: 1px solid rgba(209, 171, 121, 0.42);
+        background: linear-gradient(180deg, rgba(56, 36, 20, 0.95), rgba(25, 16, 9, 0.95));
+        width: fit-content;
+      }
+
+      .mini-cell {
+        width: var(--mini-cell);
+        height: var(--mini-cell);
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+      }
+
+      .mini-piece-img {
+        width: 88%;
+        height: 88%;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .mini-cell.dark  { background: linear-gradient(180deg, #7f5735, #52331d); }
+      .mini-cell.light { background: linear-gradient(180deg, #ecd7b2, #d8bb8e); }
+      .mini-cell.from { box-shadow: inset 0 0 0 2px #59beff; }
+      .mini-cell.target { box-shadow: inset 0 0 0 2px #7dffb1; }
+
+      .help-note {
+        margin: 0;
+        font-size: 0.92rem;
+        opacity: 0.9;
+      }
+
+      @media (min-width: 760px) {
+        .training-layout {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: start;
+        }
       }
 
       @media (min-width: 980px) and (orientation: landscape) {
@@ -130,17 +255,17 @@
           <div class="board-column">
             <div>
               <h1>Chess Deluxe</h1>
-              <p class="subtitle">Play as White against an AI Bot opponent.</p>
+              <p class="subtitle">Play as the Player side against an AI Bot opponent.</p>
             </div>
 
             <div class="turn-strip">
               <div class="turn-tile player active" id="playerTile">
                 <span>You</span>
-                <strong>White pieces</strong>
+                <strong>Player side</strong>
               </div>
               <div class="turn-tile cpu" id="cpuTile">
                 <span>AI Bot</span>
-                <strong>Black pieces</strong>
+                <strong>AI side</strong>
               </div>
             </div>
 
@@ -157,15 +282,21 @@
                   <option value="medium" selected>Medium</option>
                   <option value="hard">Hard</option>
                 </select>
+                <label for="pieceStyle">Piece Style</label>
+                <select id="pieceStyle">
+                  <option value="images" selected>Image Pieces</option>
+                  <option value="classic">Classic Symbols</option>
+                </select>
                 <button class="btn" id="resetBtn" type="button">New Round</button>
+                <button class="btn training-help-btn" id="trainingHelpBtn" type="button">Training Help</button>
               </div>
-              <div class="card status" id="status">Your turn. White moves first.</div>
+              <div class="card status" id="status">Your turn. Player side moves first.</div>
             </div>
 
             <div class="card hud-card">
               <h3>How It Plays</h3>
               <ul class="mini-rules">
-                <li>Tap a white piece to see legal moves (highlighted in green).</li>
+                <li>Tap one of your pieces to see legal moves (highlighted in green).</li>
                 <li>Capturing the king ends the game immediately.</li>
                 <li>Hard mode uses minimax search for stronger play.</li>
               </ul>
@@ -176,18 +307,131 @@
       </section>
     </main>
 
+    <div class="help-modal" id="trainingModal" aria-hidden="true" role="dialog" aria-label="Chess training help">
+      <div class="help-panel">
+        <div class="help-header">
+          <h3>Chess Training</h3>
+          <button class="btn" id="trainingCloseBtn" type="button">Close</button>
+        </div>
+        <p class="help-note">Tap any piece lesson below to review how it moves. Green squares are valid destinations from the blue start square.</p>
+        <div class="training-list" id="trainingList"></div>
+      </div>
+    </div>
+
     <script>
       const boardEl = document.getElementById("board");
       const statusEl = document.getElementById("status");
       const difficultyEl = document.getElementById("difficulty");
+      const pieceStyleEl = document.getElementById("pieceStyle");
       const playerTile = document.getElementById("playerTile");
       const cpuTile = document.getElementById("cpuTile");
       const resetBtn = document.getElementById("resetBtn");
+      const trainingHelpBtn = document.getElementById("trainingHelpBtn");
+      const trainingModal = document.getElementById("trainingModal");
+      const trainingCloseBtn = document.getElementById("trainingCloseBtn");
+      const trainingList = document.getElementById("trainingList");
 
       const SYMBOLS = {
         k:"♚", q:"♛", r:"♜", b:"♝", n:"♞", p:"♟︎",
         K:"♔", Q:"♕", R:"♖", B:"♗", N:"♘", P:"♙"
       };
+
+      const PIECE_IMAGE_BASE = "chess-piece-assets/complete-set/";
+      const PIECE_IMAGE_FILES = {
+        K: "chess_neon_king_greenbg_512x512.webp",
+        Q: "chess_neon_queen_greenbg_512x512.webp",
+        R: "chess_neon_rook_greenbg_512x512.webp",
+        B: "chess_neon_bishop_greenbg_512x512.webp",
+        N: "chess_neon_knight_greenbg_512x512.webp",
+        P: "chess_neon_pawn_greenbg_512x512.webp",
+        k: "chess_neon_opposite_king_full_solidgreen_512x512.webp",
+        q: "chess_neon_opposite_queen_full_solidgreen_512x512.webp",
+        r: "chess_neon_opposite_rook_full_solidgreen_512x512.webp",
+        b: "chess_neon_opposite_bishop_full_solidgreen_512x512.webp",
+        n: "chess_neon_opposite_knight_full_solidgreen_512x512.webp",
+        p: "chess_neon_opposite_pawn_full_solidgreen_512x512.webp"
+      };
+
+      const TRAINING_DATA = [
+        {
+          title: "Pawn",
+          symbol: "P",
+          howTo: [
+            "Moves forward 1 square into an empty square.",
+            "Can move forward 2 squares only from its starting row.",
+            "Captures one square diagonally forward."
+          ],
+          demoTitle: "Pawn movement and diagonal capture",
+          boardPieces: [["P", "e2"], ["p", "d3"], ["p", "f3"]],
+          from: "e2",
+          targets: ["e3", "e4", "d3", "f3"]
+        },
+        {
+          title: "Rook",
+          symbol: "R",
+          howTo: [
+            "Moves any number of squares horizontally or vertically.",
+            "Cannot jump over pieces.",
+            "Stops after capturing the first enemy piece in that line."
+          ],
+          demoTitle: "Rook lines and blockers",
+          boardPieces: [["R", "d4"], ["P", "d6"], ["p", "g4"]],
+          from: "d4",
+          targets: ["d5", "d3", "d2", "d1", "c4", "b4", "a4", "e4", "f4", "g4"]
+        },
+        {
+          title: "Knight",
+          symbol: "N",
+          howTo: [
+            "Moves in an L-shape: 2 in one direction, then 1 perpendicular.",
+            "Can jump over other pieces.",
+            "Captures on its destination square."
+          ],
+          demoTitle: "Knight jump pattern",
+          boardPieces: [["N", "d4"], ["P", "f5"], ["p", "c2"]],
+          from: "d4",
+          targets: ["b5", "b3", "c6", "c2", "e6", "e2", "f3"]
+        },
+        {
+          title: "Bishop",
+          symbol: "B",
+          howTo: [
+            "Moves any number of squares diagonally.",
+            "Cannot jump over pieces.",
+            "Stays on the same color squares the whole game."
+          ],
+          demoTitle: "Bishop diagonal movement",
+          boardPieces: [["B", "d4"], ["P", "f6"], ["p", "b2"]],
+          from: "d4",
+          targets: ["c5", "b6", "a7", "e5", "c3", "b2", "e3", "f2", "g1"]
+        },
+        {
+          title: "Queen",
+          symbol: "Q",
+          howTo: [
+            "Combines rook and bishop movement.",
+            "Moves any number of squares straight or diagonal.",
+            "Cannot jump over pieces."
+          ],
+          demoTitle: "Queen combined lines",
+          boardPieces: [["Q", "d4"], ["P", "d6"], ["p", "g4"], ["p", "b2"]],
+          from: "d4",
+          targets: ["d5", "d3", "d2", "d1", "c4", "b4", "a4", "e4", "f4", "g4", "c5", "b6", "a7", "e5", "c3", "b2", "e3", "f2", "g1"]
+        },
+        {
+          title: "King",
+          symbol: "K",
+          howTo: [
+            "Moves one square in any direction.",
+            "Cannot move onto a square occupied by your own piece.",
+            "Protect your king at all times."
+          ],
+          demoTitle: "King one-square moves",
+          boardPieces: [["K", "e4"], ["P", "e5"], ["p", "d5"], ["p", "f3"]],
+          from: "e4",
+          targets: ["d5", "d4", "d3", "e3", "f3", "f4", "f5"]
+        }
+      ];
 
       let boardState;
       let selected = null;
@@ -209,6 +453,115 @@
       }
 
       function cloneBoard(state) { return state.map(row => row.slice()); }
+
+      function emptyBoard() {
+        return Array.from({ length: 8 }, () => Array(8).fill(""));
+      }
+
+      function posToIndex(pos) {
+        const file = String(pos || "").charCodeAt(0) - 97;
+        const rank = Number(String(pos || "").slice(1));
+        return [8 - rank, file];
+      }
+
+      function createPieceVisual(piece, mini = false) {
+        if (!piece) return null;
+        if (pieceStyleEl && pieceStyleEl.value === "classic") return null;
+        const imageFile = PIECE_IMAGE_FILES[piece];
+        if (!imageFile) return null;
+        const img = document.createElement("img");
+        img.className = mini ? "mini-piece-img" : "piece-img";
+        img.src = `${PIECE_IMAGE_BASE}${imageFile}`;
+        img.alt = `${piece === piece.toUpperCase() ? "Player side" : "AI side"} ${piece.toUpperCase()}`;
+        img.loading = "lazy";
+        img.decoding = "async";
+        return img;
+      }
+
+      function trainingBoardFromPieces(pieces) {
+        const board = emptyBoard();
+        pieces.forEach(([piece, square]) => {
+          const [r, c] = posToIndex(square);
+          if (r >= 0 && r < 8 && c >= 0 && c < 8) board[r][c] = piece;
+        });
+        return board;
+      }
+
+      function miniBoardCellClass(row, col) {
+        return ((row + col) % 2 === 0) ? "light" : "dark";
+      }
+
+      function createMiniBoardNode(example) {
+        const board = trainingBoardFromPieces(example.boardPieces);
+        const targetSet = new Set(example.targets || []);
+        const mini = document.createElement("div");
+        mini.className = "mini-board";
+
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const file = String.fromCharCode(97 + c);
+            const rank = String(8 - r);
+            const square = `${file}${rank}`;
+            const cell = document.createElement("div");
+            cell.className = `mini-cell ${miniBoardCellClass(r, c)}`;
+            if (square === example.from) cell.classList.add("from");
+            if (targetSet.has(square)) cell.classList.add("target");
+            const piece = board[r][c];
+            const visual = createPieceVisual(piece, true);
+            if (visual) {
+              cell.appendChild(visual);
+            } else {
+              cell.textContent = SYMBOLS[piece] || "";
+            }
+            mini.appendChild(cell);
+          }
+        }
+        return mini;
+      }
+
+      function renderTrainingHelp() {
+        trainingList.innerHTML = "";
+        TRAINING_DATA.forEach((entry) => {
+          const card = document.createElement("article");
+          card.className = "training-card";
+
+          const header = document.createElement("h4");
+          header.textContent = `${SYMBOLS[entry.symbol] || ""} ${entry.title}`;
+          card.appendChild(header);
+
+          const layout = document.createElement("div");
+          layout.className = "training-layout";
+
+          const tips = document.createElement("ul");
+          entry.howTo.forEach((tip) => {
+            const li = document.createElement("li");
+            li.textContent = tip;
+            tips.appendChild(li);
+          });
+          layout.appendChild(tips);
+
+          const demoWrap = document.createElement("div");
+          demoWrap.className = "demo-wrap";
+          const label = document.createElement("strong");
+          label.textContent = entry.demoTitle;
+          demoWrap.appendChild(label);
+          demoWrap.appendChild(createMiniBoardNode(entry));
+          layout.appendChild(demoWrap);
+
+          card.appendChild(layout);
+          trainingList.appendChild(card);
+        });
+      }
+
+      function openTrainingHelp() {
+        trainingModal.classList.add("open");
+        trainingModal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeTrainingHelp() {
+        trainingModal.classList.remove("open");
+        trainingModal.setAttribute("aria-hidden", "true");
+      }
 
       function colorOf(piece) {
         if (!piece) return "";
@@ -390,7 +743,13 @@
               cell.classList.add("last-move");
             }
 
-            cell.textContent = SYMBOLS[boardState[r][c]] || "";
+            const piece = boardState[r][c];
+            const visual = createPieceVisual(piece, false);
+            if (visual) {
+              cell.appendChild(visual);
+            } else {
+              cell.textContent = SYMBOLS[piece] || "";
+            }
             cell.addEventListener("click", () => tapCell(r, c));
             boardEl.appendChild(cell);
           }
@@ -408,11 +767,11 @@
       function postMoveCheck(sideJustMoved) {
         const opponent = sideJustMoved === "W" ? "B" : "W";
         if (!hasKing(boardState, opponent)) {
-          endRound(sideJustMoved === "W" ? "You win! Black king captured." : "AI Bot wins. White king captured.");
+          endRound(sideJustMoved === "W" ? "You win! AI king captured." : "AI Bot wins. Your king captured.");
           return true;
         }
         if (allMoves(boardState, opponent).length === 0) {
-          endRound(sideJustMoved === "W" ? "You win. Black has no moves." : "AI Bot wins. White has no moves.");
+          endRound(sideJustMoved === "W" ? "You win. AI side has no moves." : "AI Bot wins. Player side has no moves.");
           return true;
         }
         return false;
@@ -426,7 +785,7 @@
         renderBoard();
 
         statusEl.textContent = current === "W" 
-          ? "Your turn. Select a white piece." 
+          ? "Your turn. Select one of your pieces." 
           : "AI Bot is thinking...";
 
         if (current === "B") {
@@ -438,7 +797,7 @@
         if (roundOver) return;
         const move = cpuChoice();
         if (!move) {
-          endRound("You win. Black has no legal moves.");
+          endRound("You win. AI side has no legal moves.");
           return;
         }
         boardState = applyMove(boardState, move);
@@ -467,9 +826,9 @@
           selected = null;
           finishMove("W");
         } else {
-          // Reselect if clicking another white piece
+          // Reselect if clicking another player-side piece
           selected = colorOf(boardState[row][col]) === "W" ? [row, col] : null;
-          statusEl.textContent = selected ? "Select a highlighted square." : "Your turn. Select a white piece.";
+          statusEl.textContent = selected ? "Select a highlighted square." : "Your turn. Select one of your pieces.";
           renderBoard();
         }
       }
@@ -480,14 +839,35 @@
         current = "W";
         roundOver = false;
         lastMove = null;
-        statusEl.textContent = "Your turn. White moves first.";
+        statusEl.textContent = "Your turn. Player side moves first.";
         setTurnTiles();
         renderBoard();
       }
 
       resetBtn.addEventListener("click", resetRound);
       difficultyEl.addEventListener("change", resetRound);
+      pieceStyleEl.addEventListener("change", () => {
+        try {
+          localStorage.setItem("chessPieceStyle", pieceStyleEl.value);
+        } catch (_) {}
+        renderBoard();
+        renderTrainingHelp();
+      });
+      trainingHelpBtn.addEventListener("click", openTrainingHelp);
+      trainingCloseBtn.addEventListener("click", closeTrainingHelp);
+      trainingModal.addEventListener("click", (event) => {
+        if (event.target === trainingModal) closeTrainingHelp();
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && trainingModal.classList.contains("open")) closeTrainingHelp();
+      });
 
+      try {
+        const savedStyle = localStorage.getItem("chessPieceStyle");
+        if (savedStyle === "classic" || savedStyle === "images") pieceStyleEl.value = savedStyle;
+      } catch (_) {}
+
+      renderTrainingHelp();
       resetRound();
     </script>
   </body>

@@ -1,0 +1,373 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KVFD Level Load Inspector</title>
+  <style>
+    :root {
+      --bg: #081423;
+      --panel: #10243b;
+      --panel-2: #132a46;
+      --ink: #e7f1ff;
+      --muted: #a7bdd8;
+      --good: #39d08a;
+      --warn: #ffca58;
+      --bad: #ff7f7f;
+      --line: rgba(255, 255, 255, 0.16);
+      --accent: #56b3ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #18385b 0%, var(--bg) 55%);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .panel {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    h1, h2, h3 { margin: 0; }
+    .head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .muted { color: var(--muted); }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: end;
+    }
+    label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: grid;
+      gap: 4px;
+    }
+    input, select, button {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      color: var(--ink);
+      background: #0a1b2d;
+    }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    .table-wrap { overflow: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+      background: rgba(7, 17, 30, 0.56);
+      border: 1px solid var(--line);
+    }
+    th, td {
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      padding: 8px;
+      font-size: 0.9rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #10253f;
+      z-index: 1;
+    }
+    .chip {
+      display: inline-block;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .on { color: var(--good); border-color: rgba(57, 208, 138, 0.5); }
+    .off { color: var(--bad); border-color: rgba(255, 127, 127, 0.45); }
+    .maybe { color: var(--warn); border-color: rgba(255, 202, 88, 0.45); }
+    .entity-list {
+      max-width: 460px;
+      font-family: Consolas, Menlo, monospace;
+      font-size: 0.78rem;
+      color: #cde0f5;
+      white-space: normal;
+      line-height: 1.35;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    #status {
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    iframe {
+      width: 100%;
+      height: 68vh;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0f1f32;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="head">
+        <div>
+          <h1>KVFD Level Load Inspector</h1>
+          <p class="muted">Reads live level data from <code>mobile-deluxe-23.html</code>, including source slot overrides, and reports how each level is configured.</p>
+        </div>
+        <div id="status">Loading game data...</div>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <label>Filter
+          <input id="filterText" type="text" placeholder="level name or entity type" />
+        </label>
+        <label>Difficulty (sample)
+          <select id="difficultySelect">
+            <option value="1">Easy</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Hard</option>
+          </select>
+        </label>
+        <label>Special Box Truck
+          <select id="boxFilter">
+            <option value="all">All</option>
+            <option value="on">Only ON</option>
+            <option value="off">Only OFF</option>
+          </select>
+        </label>
+        <button id="refreshBtn" type="button">Rebuild Report</button>
+      </div>
+    </section>
+
+    <section class="panel table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Name</th>
+            <th>Truck Side</th>
+            <th>Primary Vehicle</th>
+            <th>Entities</th>
+            <th>Special Box Truck</th>
+            <th>Sample Spawn (This Seed)</th>
+            <th>Entity Types</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin-bottom: 8px;">Live Preview (Embedded Game)</h2>
+      <p class="muted" style="margin: 0 0 10px 0;">Use <strong>Preview</strong> in the table to launch any level directly in the embedded game.</p>
+      <iframe id="gameFrame" src="./mobile-deluxe-23.html"></iframe>
+    </section>
+  </div>
+
+  <script>
+    const gameFrame = document.getElementById('gameFrame');
+    const rowsEl = document.getElementById('rows');
+    const statusEl = document.getElementById('status');
+    const filterTextEl = document.getElementById('filterText');
+    const difficultyEl = document.getElementById('difficultySelect');
+    const boxFilterEl = document.getElementById('boxFilter');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    let reportRows = [];
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function chip(label, kind) {
+      return `<span class="chip ${kind}">${label}</span>`;
+    }
+
+    function getGameWindow() {
+      return gameFrame?.contentWindow || null;
+    }
+
+    function evalInGame(code) {
+      const win = getGameWindow();
+      if (!win || typeof win.eval !== 'function') {
+        throw new Error('Embedded game window not available.');
+      }
+      return win.eval(code);
+    }
+
+    function sanitize(text) {
+      return String(text || '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[c] || c));
+    }
+
+    function buildReportRows() {
+      const diff = Number(difficultyEl.value || 2);
+      const payload = evalInGame(`(() => {
+        try {
+          difficulty = ${Number.isFinite(diff) ? diff : 2};
+          if (typeof initBlackBoxTruckLevels === 'function') initBlackBoxTruckLevels();
+          const sampleSet = (typeof blackBoxTruckLevels !== 'undefined' && blackBoxTruckLevels && typeof blackBoxTruckLevels.forEach === 'function')
+            ? Array.from(blackBoxTruckLevels)
+            : [];
+          const rows = (baseLevels || []).map((lvl, index) => {
+            const level = index + 1;
+            const entities = Array.isArray(lvl?.entities) ? lvl.entities : [];
+            const customBlack = lvl?.blackBoxPlan || null;
+            const specialOn = customBlack?.enabled !== false;
+            const alwaysShow = customBlack?.alwaysShow === true;
+            const sampleSpawn = specialOn && (alwaysShow || sampleSet.includes(level));
+            const spriteKey = (typeof resolveSpriteKey === 'function')
+              ? resolveSpriteKey(lvl?.primaryVehicleSprite || '')
+              : '';
+            const spriteFile = (typeof SPRITE_FILES !== 'undefined' && spriteKey && SPRITE_FILES && SPRITE_FILES[spriteKey])
+              ? SPRITE_FILES[spriteKey]
+              : '';
+            const entityTypes = Array.from(new Set(entities.map((e) => e?.type).filter(Boolean)));
+            return {
+              level,
+              name: lvl?.name || ('Level ' + level),
+              truckSide: lvl?.truckSide === 'right' ? 'right' : 'left',
+              primaryVehicleSprite: spriteKey || '',
+              primaryVehicleFile: spriteFile || '',
+              entityCount: entities.length,
+              entityTypes,
+              specialOn,
+              alwaysShow,
+              hasBlackEntity: entities.some((e) => e?.type === 'blackBoxTruck'),
+              sampleSpawn
+            };
+          });
+          return {
+            maxLevel: rows.length,
+            finalLevel: (typeof FINAL_LEVEL !== 'undefined') ? FINAL_LEVEL : rows.length,
+            sampleSet,
+            rows
+          };
+        } catch (err) {
+          return { error: String(err?.message || err) };
+        }
+      })()`);
+
+      if (!payload || payload.error) {
+        throw new Error(payload?.error || 'Unknown game payload error.');
+      }
+      return payload;
+    }
+
+    function renderRows() {
+      const q = filterTextEl.value.trim().toLowerCase();
+      const boxMode = boxFilterEl.value;
+      const filtered = reportRows.filter((r) => {
+        const hay = `${r.name} ${(r.entityTypes || []).join(' ')}`.toLowerCase();
+        const matchesText = !q || hay.includes(q) || String(r.level).includes(q);
+        const matchesBox = boxMode === 'all' || (boxMode === 'on' ? r.specialOn : !r.specialOn);
+        return matchesText && matchesBox;
+      });
+
+      rowsEl.innerHTML = '';
+      filtered.forEach((r) => {
+        const tr = document.createElement('tr');
+        const primaryVehicle = r.primaryVehicleSprite
+          ? `<div><code>${sanitize(r.primaryVehicleSprite)}</code></div><div class="muted">${sanitize(r.primaryVehicleFile || 'custom/no-file')}</div>`
+          : '<span class="muted">default engine</span>';
+
+        const special = r.specialOn
+          ? `${chip('ON', 'on')} ${r.alwaysShow ? chip('Always', 'maybe') : ''} ${r.hasBlackEntity ? chip('Placed Entity', 'maybe') : ''}`
+          : chip('OFF', 'off');
+
+        const sample = r.sampleSpawn ? chip('YES', 'on') : chip('NO', 'off');
+        const entityTypes = (r.entityTypes || []).length
+          ? `<div class="entity-list">${sanitize(r.entityTypes.join(', '))}</div>`
+          : '<span class="muted">none</span>';
+
+        tr.innerHTML = `
+          <td><strong>${r.level}</strong></td>
+          <td>${sanitize(r.name)}</td>
+          <td>${sanitize(r.truckSide)}</td>
+          <td>${primaryVehicle}</td>
+          <td>${r.entityCount}</td>
+          <td>${special}</td>
+          <td>${sample}</td>
+          <td>${entityTypes}</td>
+          <td>
+            <div class="actions">
+              <button type="button" data-preview="${r.level}">Preview</button>
+            </div>
+          </td>
+        `;
+        rowsEl.appendChild(tr);
+      });
+    }
+
+    function refreshReport() {
+      try {
+        setStatus('Reading level data from embedded game...');
+        const payload = buildReportRows();
+        reportRows = payload.rows || [];
+        renderRows();
+        setStatus(`Loaded ${reportRows.length} levels. Final level: ${payload.finalLevel}. Sample special box levels: ${payload.sampleSet.join(', ') || 'none'}.`);
+      } catch (err) {
+        setStatus(`Failed to inspect levels: ${err.message || err}`);
+      }
+    }
+
+    rowsEl.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-preview]');
+      if (!btn) return;
+      const level = Number(btn.getAttribute('data-preview') || 1);
+      const diff = Number(difficultyEl.value || 2);
+      try {
+        evalInGame(`(() => {
+          const lvl = Math.max(1, Math.floor(${level}));
+          const d = Math.max(1, Math.min(3, Math.floor(${diff})));
+          if (typeof startGame === 'function') {
+            startGame(d, lvl, true);
+            return true;
+          }
+          if (typeof loadLevel === 'function') {
+            difficulty = d;
+            if (typeof initBlackBoxTruckLevels === 'function') initBlackBoxTruckLevels();
+            loadLevel(lvl, { skipDispatch: true });
+            return true;
+          }
+          return false;
+        })()`);
+        setStatus(`Previewing Level ${level} in embedded game.`);
+      } catch (err) {
+        setStatus(`Could not preview Level ${level}: ${err.message || err}`);
+      }
+    });
+
+    refreshBtn.addEventListener('click', refreshReport);
+    filterTextEl.addEventListener('input', renderRows);
+    boxFilterEl.addEventListener('change', renderRows);
+    difficultyEl.addEventListener('change', refreshReport);
+    gameFrame.addEventListener('load', refreshReport);
+  </script>
+</body>
+</html>

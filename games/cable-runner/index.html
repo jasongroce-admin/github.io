@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Cable Runner | Games</title>
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+    <style>
+      :root {
+        --panel: rgba(7, 12, 20, 0.84);
+        --hud: rgba(12, 18, 29, 0.84);
+      }
+
+      .game-shell {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .game-wrap {
+        position: relative;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        overflow: hidden;
+        background: #04070d;
+      }
+
+      #gameCanvas {
+        display: block;
+        width: 100%;
+        height: min(72vh, 700px);
+        background: radial-gradient(circle at 50% 14%, #1b2b49 0, #07101d 45%, #03060d 90%);
+        touch-action: none;
+      }
+
+      .hud {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.6rem;
+        pointer-events: none;
+      }
+
+      .hud-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(90px, auto));
+        gap: 0.35rem;
+      }
+
+      .hud-card {
+        background: var(--hud);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 11px;
+        padding: 0.35rem 0.5rem;
+        display: grid;
+        gap: 0.1rem;
+      }
+
+      .hud-card span {
+        color: #9cb6df;
+        font-size: 0.72rem;
+      }
+
+      .hud-card strong {
+        font-size: 0.98rem;
+        color: #eaf4ff;
+      }
+
+      .controls {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+      }
+
+      .controls button {
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: var(--panel);
+        color: #fff;
+        font-weight: 700;
+        min-height: 2.6rem;
+        padding: 0.48rem 0.9rem;
+      }
+
+      .touch-ctrl {
+        position: absolute;
+        inset: auto 0 0 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.7rem;
+        pointer-events: none;
+      }
+
+      .touch-ctrl button {
+        pointer-events: auto;
+        width: min(30vw, 130px);
+        min-height: 3rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(7, 12, 20, 0.74);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(rgba(4, 10, 18, 0.2), rgba(4, 10, 18, 0.84));
+      }
+
+      .overlay-card {
+        width: min(92%, 640px);
+        border-radius: 16px;
+        background: rgba(8, 14, 26, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem;
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .wire-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.42rem;
+      }
+
+      .wire-grid button {
+        min-height: 2.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 680px) {
+        #gameCanvas {
+          height: min(66vh, 560px);
+        }
+        .hud-group {
+          grid-template-columns: repeat(2, minmax(70px, auto));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content game-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games</span></a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../../index.html">Home</a>
+          <a class="menu-link active" href="../index.html">Games</a>
+          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+        </nav>
+      </header>
+
+      <section class="panel stack">
+        <h1>Cable Runner</h1>
+        <p class="subtitle">First-person wire technician simulator. Run route segments, avoid hazards, collect spools, and complete junction wiring jobs.</p>
+      </section>
+
+      <section class="game-wrap panel">
+        <canvas id="gameCanvas" width="1200" height="720" aria-label="Cable Runner game canvas"></canvas>
+        <div class="hud">
+          <div class="hud-group">
+            <div class="hud-card"><span>Score</span><strong id="score">0</strong></div>
+            <div class="hud-card"><span>Distance</span><strong id="distance">0m</strong></div>
+          </div>
+          <div class="hud-group">
+            <div class="hud-card"><span>Energy</span><strong id="energy">100%</strong></div>
+            <div class="hud-card"><span>Signal</span><strong id="signal">100%</strong></div>
+          </div>
+        </div>
+
+        <div class="touch-ctrl" aria-label="Touch controls">
+          <button id="leftBtn" type="button">Left</button>
+          <button id="rightBtn" type="button">Right</button>
+        </div>
+
+        <div id="startOverlay" class="overlay">
+          <div class="overlay-card">
+            <h2>Start Shift</h2>
+            <p>Controls: `A / D` or arrow keys, or touch Left/Right. Stay on route, avoid hazards, and trigger junction boxes to complete wire tasks.</p>
+            <button id="startBtn" type="button">Begin Run</button>
+          </div>
+        </div>
+
+        <div id="wiringOverlay" class="overlay hidden">
+          <div class="overlay-card">
+            <h2>Junction Repair</h2>
+            <p id="wirePrompt">Match all wire colors in the right order.</p>
+            <div id="wireGrid" class="wire-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls panel">
+        <div class="controls-row">
+          <button type="button" id="pauseBtn">Pause</button>
+          <button type="button" id="resumeBtn">Resume</button>
+          <button type="button" id="restartBtn">Restart Shift</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreEl = document.getElementById("score");
+        const distanceEl = document.getElementById("distance");
+        const energyEl = document.getElementById("energy");
+        const signalEl = document.getElementById("signal");
+        const startOverlay = document.getElementById("startOverlay");
+        const wiringOverlay = document.getElementById("wiringOverlay");
+        const wireGrid = document.getElementById("wireGrid");
+        const wirePrompt = document.getElementById("wirePrompt");
+
+        const leftBtn = document.getElementById("leftBtn");
+        const rightBtn = document.getElementById("rightBtn");
+        const startBtn = document.getElementById("startBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const resumeBtn = document.getElementById("resumeBtn");
+        const restartBtn = document.getElementById("restartBtn");
+
+        const wireColors = [
+          { key: "red", hex: "#d84a4a" },
+          { key: "blue", hex: "#4d83dc" },
+          { key: "green", hex: "#4aa96d" },
+          { key: "yellow", hex: "#d1b341" }
+        ];
+
+        const state = {
+          running: false,
+          paused: false,
+          inWiring: false,
+          lane: 0,
+          laneVel: 0,
+          worldSpeed: 0.34,
+          score: 0,
+          distance: 0,
+          energy: 100,
+          signal: 100,
+          jobs: 0,
+          objects: [],
+          keys: { left: false, right: false },
+          currentPattern: [],
+          patternStep: 0,
+          gameOver: false
+        };
+
+        function rand(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        function createObject(type) {
+          const lanes = [-1, 0, 1];
+          return {
+            type,
+            lane: lanes[Math.floor(Math.random() * lanes.length)],
+            z: rand(1.1, 1.8)
+          };
+        }
+
+        function seedObjects() {
+          state.objects = [];
+          for (let i = 0; i < 18; i += 1) {
+            const r = Math.random();
+            if (r < 0.14) state.objects.push(createObject("hazard"));
+            else if (r < 0.28) state.objects.push(createObject("spool"));
+            else if (r < 0.34) state.objects.push(createObject("junction"));
+            else state.objects.push(createObject("marker"));
+          }
+          state.objects.sort((a, b) => b.z - a.z);
+        }
+
+        function resetGame() {
+          state.running = false;
+          state.paused = false;
+          state.inWiring = false;
+          state.lane = 0;
+          state.laneVel = 0;
+          state.worldSpeed = 0.34;
+          state.score = 0;
+          state.distance = 0;
+          state.energy = 100;
+          state.signal = 100;
+          state.jobs = 0;
+          state.currentPattern = [];
+          state.patternStep = 0;
+          state.gameOver = false;
+          seedObjects();
+          updateHud();
+          drawFrame();
+        }
+
+        function resizeCanvas() {
+          const ratio = Math.max(1, window.devicePixelRatio || 1);
+          const rect = canvas.getBoundingClientRect();
+          canvas.width = Math.floor(rect.width * ratio);
+          canvas.height = Math.floor(rect.height * ratio);
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+          drawFrame();
+        }
+
+        function project(lane, z, w, h) {
+          const centerX = w * 0.5 + lane * (w * 0.18) / z + state.lane * (w * 0.12);
+          const y = h * 0.82 - (1 / z) * h * 0.58;
+          const size = Math.max(8, (1 / z) * 72);
+          return { x: centerX, y, size };
+        }
+
+        function updateHud() {
+          scoreEl.textContent = Math.floor(state.score);
+          distanceEl.textContent = `${Math.floor(state.distance)}m`;
+          energyEl.textContent = `${Math.max(0, Math.floor(state.energy))}%`;
+          signalEl.textContent = `${Math.max(0, Math.floor(state.signal))}%`;
+        }
+
+        function startWiringTask() {
+          state.inWiring = true;
+          state.paused = true;
+          wiringOverlay.classList.remove("hidden");
+
+          state.currentPattern = Array.from({ length: 4 }, () => wireColors[Math.floor(Math.random() * wireColors.length)].key);
+          state.patternStep = 0;
+          wirePrompt.textContent = `Pattern: ${state.currentPattern.join(" > ")}`;
+          wireGrid.innerHTML = "";
+
+          wireColors.forEach((color) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.style.background = color.hex;
+            btn.textContent = color.key.toUpperCase();
+            btn.addEventListener("click", () => onWirePick(color.key));
+            wireGrid.appendChild(btn);
+          });
+        }
+
+        function finishWiring(success) {
+          wiringOverlay.classList.add("hidden");
+          state.inWiring = false;
+          state.paused = false;
+          if (success) {
+            state.jobs += 1;
+            state.score += 360;
+            state.signal = Math.min(100, state.signal + 20);
+            state.energy = Math.min(100, state.energy + 8);
+            state.worldSpeed += 0.02;
+          } else {
+            state.signal -= 22;
+            state.energy -= 9;
+          }
+        }
+
+        function onWirePick(key) {
+          const expected = state.currentPattern[state.patternStep];
+          if (key === expected) {
+            state.patternStep += 1;
+            if (state.patternStep >= state.currentPattern.length) finishWiring(true);
+          } else finishWiring(false);
+        }
+
+        function update(dt) {
+          if (!state.running || state.paused || state.gameOver) return;
+
+          state.distance += dt * state.worldSpeed * 54;
+          state.score += dt * 11;
+          state.energy -= dt * 1.22;
+          state.signal -= dt * 0.68;
+
+          if (state.keys.left) state.laneVel -= dt * 2.6;
+          if (state.keys.right) state.laneVel += dt * 2.6;
+          state.laneVel *= 0.82;
+          state.lane += state.laneVel;
+          state.lane = Math.max(-1, Math.min(1, state.lane));
+
+          for (const obj of state.objects) obj.z -= dt * state.worldSpeed;
+          for (const obj of state.objects) {
+            if (obj.z <= 0.5) {
+              const laneDiff = Math.abs(obj.lane - state.lane);
+              if (laneDiff < 0.42) {
+                if (obj.type === "hazard") {
+                  state.energy -= 18;
+                  state.signal -= 11;
+                  state.score = Math.max(0, state.score - 45);
+                } else if (obj.type === "spool") {
+                  state.score += 120;
+                  state.energy = Math.min(100, state.energy + 6);
+                } else if (obj.type === "junction" && !state.inWiring) {
+                  startWiringTask();
+                } else if (obj.type === "marker") {
+                  state.score += 10;
+                }
+              }
+              const r = Math.random();
+              obj.type = r < 0.16 ? "hazard" : r < 0.30 ? "spool" : r < 0.38 ? "junction" : "marker";
+              obj.lane = [-1, 0, 1][Math.floor(Math.random() * 3)];
+              obj.z = rand(1.5, 2.8);
+            }
+          }
+
+          if (state.energy <= 0 || state.signal <= 0) {
+            state.gameOver = true;
+            state.running = false;
+            startOverlay.classList.remove("hidden");
+            startOverlay.querySelector("h2").textContent = "Shift Failed";
+            startOverlay.querySelector("p").textContent = `Distance ${Math.floor(state.distance)}m, score ${Math.floor(state.score)}. Tap Begin Run to restart.`;
+          }
+
+          updateHud();
+        }
+
+        function drawObject(obj, w, h) {
+          const p = project(obj.lane, obj.z, w, h);
+          const size = p.size;
+          if (obj.type === "hazard") {
+            ctx.fillStyle = "#bd5d28";
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y - size * 0.65);
+            ctx.lineTo(p.x - size * 0.45, p.y + size * 0.45);
+            ctx.lineTo(p.x + size * 0.45, p.y + size * 0.45);
+            ctx.closePath();
+            ctx.fill();
+          } else if (obj.type === "spool") {
+            ctx.fillStyle = "#d9ab46";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, size * 0.48, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#2e2a18";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, size * 0.17, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (obj.type === "junction") {
+            ctx.fillStyle = "#6ea0d8";
+            ctx.fillRect(p.x - size * 0.5, p.y - size * 0.5, size, size * 0.9);
+            ctx.strokeStyle = "#214163";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(p.x - size * 0.5, p.y - size * 0.5, size, size * 0.9);
+          } else {
+            ctx.fillStyle = "#7f9cc4";
+            ctx.fillRect(p.x - size * 0.22, p.y - size * 0.7, size * 0.44, size * 1.18);
+          }
+        }
+
+        function drawFrame() {
+          const w = canvas.clientWidth;
+          const h = canvas.clientHeight;
+          ctx.clearRect(0, 0, w, h);
+
+          const sky = ctx.createLinearGradient(0, 0, 0, h);
+          sky.addColorStop(0, "#1e3760");
+          sky.addColorStop(0.36, "#0b1b32");
+          sky.addColorStop(1, "#040a14");
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, w, h);
+
+          const roadTopY = h * 0.18;
+          const roadBottomY = h * 0.95;
+          const roadTopW = w * 0.13;
+          const roadBottomW = w * 0.95;
+          const centerX = w * 0.5 + state.lane * w * 0.06;
+
+          ctx.fillStyle = "#151a25";
+          ctx.beginPath();
+          ctx.moveTo(centerX - roadTopW / 2, roadTopY);
+          ctx.lineTo(centerX + roadTopW / 2, roadTopY);
+          ctx.lineTo(centerX + roadBottomW / 2, roadBottomY);
+          ctx.lineTo(centerX - roadBottomW / 2, roadBottomY);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = "rgba(142, 170, 216, 0.4)";
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 18; i += 1) {
+            const t = i / 17;
+            const y = roadTopY + (roadBottomY - roadTopY) * t;
+            const half = roadTopW * 0.5 + ((roadBottomW - roadTopW) * 0.5) * t;
+            ctx.beginPath();
+            ctx.moveTo(centerX - half, y);
+            ctx.lineTo(centerX + half, y);
+            ctx.stroke();
+          }
+
+          const sorted = state.objects.slice().sort((a, b) => b.z - a.z);
+          sorted.forEach((obj) => drawObject(obj, w, h));
+
+          ctx.fillStyle = "rgba(255,255,255,0.06)";
+          ctx.fillRect(0, h * 0.95, w, h * 0.05);
+        }
+
+        let last = performance.now();
+        function loop(now) {
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          update(dt);
+          drawFrame();
+          requestAnimationFrame(loop);
+        }
+
+        function holdButton(button, key, isDown) {
+          const handler = (ev) => {
+            ev.preventDefault();
+            state.keys[key] = isDown;
+          };
+          button.addEventListener("touchstart", handler, { passive: false });
+          button.addEventListener("touchend", () => { state.keys[key] = false; }, { passive: false });
+          button.addEventListener("mousedown", handler);
+          button.addEventListener("mouseup", () => { state.keys[key] = false; });
+          button.addEventListener("mouseleave", () => { state.keys[key] = false; });
+        }
+
+        holdButton(leftBtn, "left", true);
+        holdButton(rightBtn, "right", true);
+
+        window.addEventListener("keydown", (ev) => {
+          if (ev.key === "ArrowLeft" || ev.key.toLowerCase() === "a") state.keys.left = true;
+          if (ev.key === "ArrowRight" || ev.key.toLowerCase() === "d") state.keys.right = true;
+        });
+        window.addEventListener("keyup", (ev) => {
+          if (ev.key === "ArrowLeft" || ev.key.toLowerCase() === "a") state.keys.left = false;
+          if (ev.key === "ArrowRight" || ev.key.toLowerCase() === "d") state.keys.right = false;
+        });
+
+        startBtn.addEventListener("click", () => {
+          if (state.gameOver) resetGame();
+          startOverlay.classList.add("hidden");
+          startOverlay.querySelector("h2").textContent = "Start Shift";
+          startOverlay.querySelector("p").textContent = "Controls: `A / D` or arrow keys, or touch Left/Right. Stay on route, avoid hazards, and trigger junction boxes to complete wire tasks.";
+          state.running = true;
+          state.paused = false;
+        });
+
+        pauseBtn.addEventListener("click", () => {
+          if (!state.inWiring) state.paused = true;
+        });
+
+        resumeBtn.addEventListener("click", () => {
+          if (state.running && !state.inWiring) state.paused = false;
+        });
+
+        restartBtn.addEventListener("click", () => {
+          resetGame();
+          startOverlay.classList.remove("hidden");
+          startOverlay.querySelector("h2").textContent = "Start Shift";
+          startOverlay.querySelector("p").textContent = "Controls: `A / D` or arrow keys, or touch Left/Right. Stay on route, avoid hazards, and trigger junction boxes to complete wire tasks.";
+        });
+
+        window.addEventListener("resize", resizeCanvas);
+        resetGame();
+        resizeCanvas();
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Yard Prep | Utilities</title>
+    <link rel="stylesheet" href="../assets/css/site.css?v=20260416" />
+    <style>
+      :root {
+        --panel: rgba(255, 255, 255, 0.94);
+        --grass: #dff3d6;
+        --grid: rgba(19, 54, 17, 0.1);
+      }
+
+      .yard-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .mode-switch {
+        display: inline-flex;
+        gap: 0.4rem;
+        padding: 0.3rem;
+        border-radius: 14px;
+        background: rgba(18, 44, 18, 0.12);
+      }
+
+      .mode-switch button,
+      .row button,
+      .row select,
+      .row input {
+        min-height: 2.3rem;
+        border-radius: 10px;
+      }
+
+      .mode-switch button,
+      .row button,
+      .row select,
+      .row input[type="number"],
+      .row input[type="text"] {
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        background: #f6fbf4;
+        color: #1c3b21;
+        padding: 0.35rem 0.7rem;
+        font-weight: 700;
+      }
+
+      .mode-switch button.active,
+      .row button.active {
+        background: #1f6f2f;
+        color: #fff;
+        border-color: #194f22;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 390px minmax(0, 1fr);
+        gap: 1rem;
+      }
+
+      .controls {
+        display: grid;
+        gap: 0.65rem;
+        align-content: start;
+      }
+
+      .group {
+        display: grid;
+        gap: 0.45rem;
+        padding: 0.65rem;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--panel);
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.42rem;
+        align-items: center;
+      }
+
+      .label {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #355539;
+      }
+
+      .tiny {
+        font-size: 0.8rem;
+        color: #3b5c3e;
+      }
+
+      .canvas-shell {
+        border-radius: 16px;
+        border: 1px solid rgba(24, 57, 20, 0.25);
+        background: linear-gradient(180deg, #eef8eb, #d7edce);
+        overflow: hidden;
+      }
+
+      .canvas-scroll {
+        overflow: auto;
+        max-height: min(76vh, 760px);
+      }
+
+      #yardCanvas {
+        display: block;
+        touch-action: none;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 1200px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="content yard-shell">
+      <header class="site-header">
+        <a class="brand-lockup" href="../index.html">
+          <strong>Jason Groce</strong>
+          <span>Games, Tools & Projects</span>
+        </a>
+        <nav class="site-menu" aria-label="Primary">
+          <a class="menu-link" href="../index.html">Home</a>
+          <a class="menu-link active" href="index.html">Utilities</a>
+          <a class="menu-link" href="../games/index.html">Games</a>
+        </nav>
+      </header>
+
+      <section class="panel stack">
+        <h1>Yard Prep</h1>
+        <p class="subtitle">Mowing Planner + Deck Builder + Yard Designer. Draw, map-snap, stripe, driveway, print, save, share.</p>
+        <div class="mode-switch">
+          <button id="modeMowing" class="active" type="button">Mowing Planner</button>
+          <button id="modeDeck" type="button">Deck Builder</button>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="controls">
+          <div class="group">
+            <div class="row">
+              <span class="label">Canvas</span>
+              <select id="canvasSize">
+                <option value="normal">Normal</option>
+                <option value="xl">XL Property</option>
+                <option value="xxl">XXL Property</option>
+              </select>
+              <span class="label">Grid</span>
+              <input id="feetPerGrid" type="number" min="1" max="40" value="5" />
+              <span class="tiny">ft/square</span>
+            </div>
+            <div class="row">
+              <label class="label">Anchor size</label>
+              <input id="anchorSize" type="range" min="3" max="10" value="6" />
+              <button id="toggleAnchorsBtn" type="button">Hide Anchors</button>
+            </div>
+            <div class="tiny" id="scaleNote">Each grid square equals 5 feet.</div>
+          </div>
+
+          <div class="group">
+            <div class="row">
+              <input id="addressInput" type="text" placeholder="Address or ZIP" />
+              <button id="openGoogleBtn" type="button">Open Google Map</button>
+            </div>
+            <div class="row">
+              <button id="loadStaticMapBtn" type="button">Load Overhead in Canvas</button>
+              <label class="label">Snap Upload</label>
+              <input id="mapSnapInput" type="file" accept="image/*" />
+            </div>
+            <div class="row">
+              <label class="label">Map opacity</label>
+              <input id="mapOpacity" type="range" min="0" max="1" step="0.05" value="0.45" />
+              <button id="toggleMapBtn" type="button">Hide Snap</button>
+            </div>
+            <div class="tiny">Google maps cannot be directly captured in-browser, so this tool opens Google Maps and lets you snap/upload or load a free overhead reference.</div>
+          </div>
+
+          <div class="group">
+            <div class="row">
+              <button id="toolBoundary" class="active" type="button">Draw Yard</button>
+              <button id="toolHouse" type="button">House</button>
+              <button id="toolTree" type="button">Tree</button>
+              <button id="toolNoGo" type="button">No-Go</button>
+              <button id="toolDriveway" type="button">Driveway</button>
+              <button id="toolThing" type="button">Thing</button>
+              <button id="toolMove" type="button">Move</button>
+            </div>
+            <div class="row">
+              <button id="closeYardBtn" type="button">Close Yard</button>
+              <button id="finishDrivewayBtn" type="button">Finish Driveway</button>
+              <button id="smoothDrivewayBtn" type="button">Smooth Driveway</button>
+              <button id="clearBtn" type="button">Clear</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="row">
+              <span class="label">Yard Line</span><input id="yardColor" type="color" value="#1f4d21" />
+              <span class="label">No-Go Fill</span><input id="noGoColor" type="color" value="#a43c3c" />
+            </div>
+            <div class="row">
+              <span class="label">Driveway Color</span><input id="drivewayColor" type="color" value="#696a70" />
+              <span class="label">Texture</span>
+              <select id="drivewayTexture">
+                <option value="asphalt">Asphalt</option>
+                <option value="gravel">Gravel</option>
+                <option value="paver">Paver</option>
+              </select>
+            </div>
+            <div class="row">
+              <span class="label">Selected size</span><input id="selectedSize" type="range" min="0.5" max="2.5" step="0.1" value="1" />
+              <span class="label">Selected width</span><input id="selectedWidth" type="range" min="4" max="80" value="18" />
+            </div>
+          </div>
+
+          <div id="mowingPanel" class="group">
+            <div class="row">
+              <span class="label">Mower Width</span><input id="mowerWidth" type="number" min="1" max="12" step="0.5" value="3" />
+              <span class="tiny">feet</span>
+            </div>
+            <div class="row">
+              <span class="label">Stripe Color</span><input id="stripeColor" type="color" value="#3a7e3f" />
+              <span class="label">Pattern</span>
+              <select id="patternSelect">
+                <option value="parallel">Parallel</option>
+                <option value="diagonal">Diagonal</option>
+                <option value="crosshatch">Crosshatch</option>
+                <option value="diamond">Diamond</option>
+              </select>
+            </div>
+            <div class="row">
+              <button id="setStartBtn" type="button">Set Start + Direction</button>
+              <button id="applyPatternBtn" type="button">Apply Striping</button>
+            </div>
+          </div>
+
+          <div id="deckPanel" class="group hidden">
+            <div class="row">
+              <span class="label">Deck Width</span><input id="deckWidth" type="number" min="4" max="100" value="18" />
+              <span class="label">Deck Depth</span><input id="deckDepth" type="number" min="4" max="100" value="12" />
+            </div>
+            <div class="row">
+              <span class="label">Board Angle</span><input id="boardAngle" type="range" min="0" max="180" value="20" />
+              <span class="tiny" id="boardAngleLabel">20 deg</span>
+            </div>
+            <div class="row">
+              <span class="label">Board Color</span><input id="deckBoardColor" type="color" value="#9d7348" />
+              <button id="placeDeckBtn" type="button">Place Deck</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="row">
+              <button id="printBtn" type="button">Print</button>
+              <button id="exportPngBtn" type="button">Save PNG</button>
+              <button id="savePlanBtn" type="button">Save Plan</button>
+              <input id="loadPlanInput" type="file" accept=".json,application/json" />
+              <button id="shareBtn" type="button">Send / Share</button>
+            </div>
+          </div>
+        </aside>
+
+        <div class="canvas-shell panel">
+          <div class="canvas-scroll">
+            <canvas id="yardCanvas" width="1300" height="780"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("yardCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const modeMowingBtn = document.getElementById("modeMowing");
+        const modeDeckBtn = document.getElementById("modeDeck");
+        const mowingPanel = document.getElementById("mowingPanel");
+        const deckPanel = document.getElementById("deckPanel");
+
+        const canvasSize = document.getElementById("canvasSize");
+        const feetPerGrid = document.getElementById("feetPerGrid");
+        const scaleNote = document.getElementById("scaleNote");
+        const anchorSize = document.getElementById("anchorSize");
+        const toggleAnchorsBtn = document.getElementById("toggleAnchorsBtn");
+
+        const addressInput = document.getElementById("addressInput");
+        const openGoogleBtn = document.getElementById("openGoogleBtn");
+        const loadStaticMapBtn = document.getElementById("loadStaticMapBtn");
+        const mapSnapInput = document.getElementById("mapSnapInput");
+        const mapOpacity = document.getElementById("mapOpacity");
+        const toggleMapBtn = document.getElementById("toggleMapBtn");
+
+        const toolButtons = {
+          boundary: document.getElementById("toolBoundary"),
+          house: document.getElementById("toolHouse"),
+          tree: document.getElementById("toolTree"),
+          nogo: document.getElementById("toolNoGo"),
+          driveway: document.getElementById("toolDriveway"),
+          thing: document.getElementById("toolThing"),
+          move: document.getElementById("toolMove")
+        };
+        const closeYardBtn = document.getElementById("closeYardBtn");
+        const finishDrivewayBtn = document.getElementById("finishDrivewayBtn");
+        const smoothDrivewayBtn = document.getElementById("smoothDrivewayBtn");
+        const clearBtn = document.getElementById("clearBtn");
+
+        const yardColor = document.getElementById("yardColor");
+        const noGoColor = document.getElementById("noGoColor");
+        const drivewayColor = document.getElementById("drivewayColor");
+        const drivewayTexture = document.getElementById("drivewayTexture");
+        const selectedSize = document.getElementById("selectedSize");
+        const selectedWidth = document.getElementById("selectedWidth");
+
+        const mowerWidth = document.getElementById("mowerWidth");
+        const stripeColor = document.getElementById("stripeColor");
+        const patternSelect = document.getElementById("patternSelect");
+        const setStartBtn = document.getElementById("setStartBtn");
+        const applyPatternBtn = document.getElementById("applyPatternBtn");
+
+        const deckWidth = document.getElementById("deckWidth");
+        const deckDepth = document.getElementById("deckDepth");
+        const boardAngle = document.getElementById("boardAngle");
+        const boardAngleLabel = document.getElementById("boardAngleLabel");
+        const deckBoardColor = document.getElementById("deckBoardColor");
+        const placeDeckBtn = document.getElementById("placeDeckBtn");
+
+        const printBtn = document.getElementById("printBtn");
+        const exportPngBtn = document.getElementById("exportPngBtn");
+        const savePlanBtn = document.getElementById("savePlanBtn");
+        const loadPlanInput = document.getElementById("loadPlanInput");
+        const shareBtn = document.getElementById("shareBtn");
+
+        const sizes = {
+          normal: { w: 1300, h: 780 },
+          xl: { w: 2000, h: 1200 },
+          xxl: { w: 2800, h: 1600 }
+        };
+
+        const state = {
+          mode: "mowing",
+          tool: "boundary",
+          showAnchors: true,
+          boundary: [],
+          boundaryClosed: false,
+          houses: [],
+          trees: [],
+          noGos: [],
+          driveways: [],
+          drivewayDraft: [],
+          things: [],
+          decks: [],
+          stripes: null,
+          startArrow: null,
+          setDirection: false,
+          placingDeck: false,
+          selected: null,
+          drag: null,
+          mapOverlay: { image: null, opacity: Number(mapOpacity.value), visible: true }
+        };
+
+        function pxPerFt() {
+          return 44 / Math.max(1, Number(feetPerGrid.value) || 5);
+        }
+
+        function setCanvasDimensions(key) {
+          const s = sizes[key] || sizes.normal;
+          const ratio = Math.max(1, window.devicePixelRatio || 1);
+          canvas.style.width = `${s.w}px`;
+          canvas.style.height = `${s.h}px`;
+          canvas.width = Math.floor(s.w * ratio);
+          canvas.height = Math.floor(s.h * ratio);
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+          draw();
+        }
+
+        function setMode(mode) {
+          state.mode = mode;
+          modeMowingBtn.classList.toggle("active", mode === "mowing");
+          modeDeckBtn.classList.toggle("active", mode === "deck");
+          mowingPanel.classList.toggle("hidden", mode !== "mowing");
+          deckPanel.classList.toggle("hidden", mode !== "deck");
+        }
+
+        function setTool(tool) {
+          state.tool = tool;
+          Object.entries(toolButtons).forEach(([k, el]) => el.classList.toggle("active", k === tool));
+        }
+
+        function getPos(ev) {
+          const r = canvas.getBoundingClientRect();
+          const p = ev.touches ? ev.touches[0] : ev;
+          return { x: p.clientX - r.left, y: p.clientY - r.top };
+        }
+
+        function clamp(pt) {
+          return {
+            x: Math.max(0, Math.min(parseFloat(canvas.style.width), pt.x)),
+            y: Math.max(0, Math.min(parseFloat(canvas.style.height), pt.y))
+          };
+        }
+
+        function dist(a, b) {
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function pointInPoly(pt, poly) {
+          let inside = false;
+          for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            const xi = poly[i].x;
+            const yi = poly[i].y;
+            const xj = poly[j].x;
+            const yj = poly[j].y;
+            const hit = yi > pt.y !== yj > pt.y && pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi + 0.00001) + xi;
+            if (hit) inside = !inside;
+          }
+          return inside;
+        }
+
+        function chaikin(points, rounds = 2) {
+          let current = points.slice();
+          for (let r = 0; r < rounds; r += 1) {
+            const out = [];
+            for (let i = 0; i < current.length - 1; i += 1) {
+              const p = current[i];
+              const n = current[i + 1];
+              out.push({ x: p.x * 0.75 + n.x * 0.25, y: p.y * 0.75 + n.y * 0.25 });
+              out.push({ x: p.x * 0.25 + n.x * 0.75, y: p.y * 0.25 + n.y * 0.75 });
+            }
+            current = out;
+          }
+          return current;
+        }
+
+        function drawGrid() {
+          const w = parseFloat(canvas.style.width);
+          const h = parseFloat(canvas.style.height);
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--grass");
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid");
+          ctx.lineWidth = 1;
+          const g = 44;
+          for (let x = 0; x <= w; x += g) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+          }
+          for (let y = 0; y <= h; y += g) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+          }
+        }
+
+        function drawMapOverlay() {
+          if (!state.mapOverlay.image || !state.mapOverlay.visible) return;
+          const w = parseFloat(canvas.style.width);
+          const h = parseFloat(canvas.style.height);
+          ctx.save();
+          ctx.globalAlpha = state.mapOverlay.opacity;
+          ctx.drawImage(state.mapOverlay.image, 0, 0, w, h);
+          ctx.restore();
+        }
+
+        function drawBoundary() {
+          if (!state.boundary.length) return;
+          ctx.beginPath();
+          ctx.moveTo(state.boundary[0].x, state.boundary[0].y);
+          for (let i = 1; i < state.boundary.length; i += 1) ctx.lineTo(state.boundary[i].x, state.boundary[i].y);
+          if (state.boundaryClosed) ctx.closePath();
+          if (state.boundaryClosed) {
+            ctx.fillStyle = "rgba(70,148,66,0.18)";
+            ctx.fill();
+          }
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = yardColor.value;
+          ctx.stroke();
+          if (!state.showAnchors) return;
+          const size = Number(anchorSize.value);
+          state.boundary.forEach((p) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.strokeStyle = "#2b4e29";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+        }
+
+        function drawRectItem(item, color, label) {
+          ctx.fillStyle = color;
+          ctx.fillRect(item.x - item.w / 2, item.y - item.h / 2, item.w, item.h);
+          ctx.strokeStyle = "rgba(0,0,0,0.35)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(item.x - item.w / 2, item.y - item.h / 2, item.w, item.h);
+          if (label) {
+            ctx.fillStyle = "#fff";
+            ctx.font = "700 12px system-ui, sans-serif";
+            ctx.fillText(label, item.x - 18, item.y + 4);
+          }
+        }
+
+        function drawTree(tree) {
+          ctx.beginPath();
+          ctx.arc(tree.x, tree.y, tree.r, 0, Math.PI * 2);
+          ctx.fillStyle = "#3d8c44";
+          ctx.fill();
+          ctx.fillStyle = "#5d3e2a";
+          ctx.fillRect(tree.x - 3, tree.y + tree.r * 0.4, 6, 9);
+        }
+
+        function drawDriveway(d) {
+          if (d.points.length < 2) return;
+          ctx.save();
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.strokeStyle = d.color;
+          ctx.lineWidth = d.width;
+          ctx.beginPath();
+          ctx.moveTo(d.points[0].x, d.points[0].y);
+          for (let i = 1; i < d.points.length; i += 1) ctx.lineTo(d.points[i].x, d.points[i].y);
+          ctx.stroke();
+          if (d.texture === "gravel") {
+            ctx.strokeStyle = "rgba(255,255,255,0.28)";
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < d.points.length - 1; i += 2) {
+              ctx.beginPath();
+              ctx.moveTo(d.points[i].x - 4, d.points[i].y - 3);
+              ctx.lineTo(d.points[i].x + 4, d.points[i].y + 3);
+              ctx.stroke();
+            }
+          } else if (d.texture === "paver") {
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.setLineDash([8, 8]);
+            ctx.lineWidth = 1.7;
+            ctx.beginPath();
+            ctx.moveTo(d.points[0].x, d.points[0].y);
+            for (let i = 1; i < d.points.length; i += 1) ctx.lineTo(d.points[i].x, d.points[i].y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          ctx.restore();
+          if (state.showAnchors) {
+            d.points.forEach((p) => {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+              ctx.fillStyle = "#d9e9f7";
+              ctx.fill();
+            });
+          }
+        }
+
+        function drawDeck(d) {
+          drawRectItem(d, "#c89f76");
+          const ang = (d.boardAngle * Math.PI) / 180;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(d.x - d.w / 2, d.y - d.h / 2, d.w, d.h);
+          ctx.clip();
+          ctx.strokeStyle = d.boardColor;
+          ctx.lineWidth = 2;
+          for (let i = -d.w; i <= d.w + d.h; i += 9) {
+            const x1 = d.x + i * Math.cos(ang) - 450 * Math.sin(ang);
+            const y1 = d.y + i * Math.sin(ang) + 450 * Math.cos(ang);
+            const x2 = d.x + i * Math.cos(ang) + 450 * Math.sin(ang);
+            const y2 = d.y + i * Math.sin(ang) - 450 * Math.cos(ang);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        function drawArrow(a, b, color, text) {
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const len = Math.sqrt(dx * dx + dy * dy) || 1;
+          const ux = dx / len;
+          const uy = dy / len;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+          const z = 9;
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(b.x - ux * z - uy * z * 0.65, b.y - uy * z + ux * z * 0.65);
+          ctx.lineTo(b.x - ux * z + uy * z * 0.65, b.y - uy * z - ux * z * 0.65);
+          ctx.closePath();
+          ctx.fillStyle = color;
+          ctx.fill();
+          if (text) {
+            ctx.fillStyle = color;
+            ctx.font = "700 12px system-ui, sans-serif";
+            ctx.fillText(text, a.x + 5, a.y - 5);
+          }
+        }
+
+        function drawStripes() {
+          if (!state.stripes || !state.boundaryClosed || !state.startArrow) return;
+          const { angle, spacing, color, pattern } = state.stripes;
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(state.boundary[0].x, state.boundary[0].y);
+          for (let i = 1; i < state.boundary.length; i += 1) ctx.lineTo(state.boundary[i].x, state.boundary[i].y);
+          ctx.closePath();
+          ctx.clip();
+
+          const w = parseFloat(canvas.style.width);
+          const h = parseFloat(canvas.style.height);
+          const cx = w / 2;
+          const cy = h / 2;
+
+          function stripeSet(ang, alpha, drawOrder) {
+            const v = { x: Math.cos(ang), y: Math.sin(ang) };
+            const p = { x: -v.y, y: v.x };
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = alpha;
+            ctx.lineWidth = Math.max(2, spacing * 0.55);
+            let order = 1;
+            for (let k = -80; k <= 80; k += 1) {
+              const ox = cx + p.x * spacing * k;
+              const oy = cy + p.y * spacing * k;
+              const a = { x: ox - v.x * 3000, y: oy - v.y * 3000 };
+              const b = { x: ox + v.x * 3000, y: oy + v.y * 3000 };
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+              if (drawOrder) {
+                const mark = { x: state.startArrow.start.x + p.x * spacing * (k + 10), y: state.startArrow.start.y + p.y * spacing * (k + 10) };
+                if (pointInPoly(mark, state.boundary)) {
+                  drawArrow(mark, { x: mark.x + v.x * 18, y: mark.y + v.y * 18 }, "#183f1a", String(order));
+                  order += 1;
+                }
+              }
+            }
+          }
+
+          stripeSet(angle, 0.38, true);
+          if (pattern === "diagonal") stripeSet(angle + Math.PI / 10, 0.2, false);
+          if (pattern === "crosshatch") stripeSet(angle + Math.PI / 2, 0.24, false);
+          if (pattern === "diamond") stripeSet(angle + Math.PI / 4, 0.22, false);
+          ctx.restore();
+        }
+
+        function drawDraftDriveway() {
+          if (state.drivewayDraft.length < 2) return;
+          drawDriveway({ points: state.drivewayDraft, width: Number(selectedWidth.value), color: drivewayColor.value, texture: drivewayTexture.value });
+        }
+
+        function drawSelection() {
+          if (!state.selected) return;
+          const s = state.selected;
+          ctx.save();
+          ctx.strokeStyle = "#2a67a5";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 6]);
+          if (s.type === "tree") {
+            const t = state.trees[s.index];
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.r + 8, 0, Math.PI * 2);
+            ctx.stroke();
+          } else if (s.type === "driveway") {
+            const d = state.driveways[s.index];
+            if (d.points.length) {
+              ctx.beginPath();
+              ctx.moveTo(d.points[0].x, d.points[0].y);
+              for (let i = 1; i < d.points.length; i += 1) ctx.lineTo(d.points[i].x, d.points[i].y);
+              ctx.stroke();
+            }
+          } else {
+            const obj = s.type === "house" ? state.houses[s.index] : s.type === "nogo" ? state.noGos[s.index] : s.type === "deck" ? state.decks[s.index] : state.things[s.index];
+            ctx.strokeRect(obj.x - obj.w / 2 - 6, obj.y - obj.h / 2 - 6, obj.w + 12, obj.h + 12);
+          }
+          ctx.restore();
+        }
+
+        function draw() {
+          drawGrid();
+          drawMapOverlay();
+          drawStripes();
+          state.noGos.forEach((n) => drawRectItem(n, `${noGoColor.value}cc`, "NO GO"));
+          state.houses.forEach((h) => drawRectItem(h, "#61666d", "House"));
+          state.trees.forEach(drawTree);
+          state.things.forEach((t) => drawRectItem(t, t.color, "Thing"));
+          state.driveways.forEach(drawDriveway);
+          drawDraftDriveway();
+          state.decks.forEach(drawDeck);
+          drawBoundary();
+          if (state.startArrow) drawArrow(state.startArrow.start, state.startArrow.end, "#0f4b1f", "Start");
+          drawSelection();
+        }
+
+        function hitBoundaryAnchor(pos) {
+          const r = Number(anchorSize.value) + 6;
+          for (let i = 0; i < state.boundary.length; i += 1) if (dist(pos, state.boundary[i]) <= r) return i;
+          return -1;
+        }
+
+        function hitObject(pos) {
+          for (let i = state.decks.length - 1; i >= 0; i -= 1) {
+            const d = state.decks[i];
+            if (Math.abs(pos.x - d.x) <= d.w / 2 && Math.abs(pos.y - d.y) <= d.h / 2) return { type: "deck", index: i };
+          }
+          for (let i = state.houses.length - 1; i >= 0; i -= 1) {
+            const h = state.houses[i];
+            if (Math.abs(pos.x - h.x) <= h.w / 2 && Math.abs(pos.y - h.y) <= h.h / 2) return { type: "house", index: i };
+          }
+          for (let i = state.noGos.length - 1; i >= 0; i -= 1) {
+            const n = state.noGos[i];
+            if (Math.abs(pos.x - n.x) <= n.w / 2 && Math.abs(pos.y - n.y) <= n.h / 2) return { type: "nogo", index: i };
+          }
+          for (let i = state.things.length - 1; i >= 0; i -= 1) {
+            const t = state.things[i];
+            if (Math.abs(pos.x - t.x) <= t.w / 2 && Math.abs(pos.y - t.y) <= t.h / 2) return { type: "thing", index: i };
+          }
+          for (let i = state.trees.length - 1; i >= 0; i -= 1) if (dist(pos, state.trees[i]) <= state.trees[i].r + 8) return { type: "tree", index: i };
+          for (let i = state.driveways.length - 1; i >= 0; i -= 1) {
+            const d = state.driveways[i];
+            for (let j = 0; j < d.points.length; j += 1) if (dist(pos, d.points[j]) <= d.width * 0.45 + 8) return { type: "driveway", index: i };
+          }
+          return null;
+        }
+
+        function insideYard(pos) {
+          return !state.boundaryClosed || pointInPoly(pos, state.boundary);
+        }
+
+        function onDown(ev) {
+          ev.preventDefault();
+          const pos = clamp(getPos(ev));
+
+          if (state.setDirection) {
+            state.startArrow = { start: pos, end: { x: pos.x + 40, y: pos.y } };
+            state.drag = { kind: "startArrow" };
+            return;
+          }
+
+          if (state.placingDeck) {
+            const ppf = pxPerFt();
+            state.decks.push({
+              x: pos.x,
+              y: pos.y,
+              w: Number(deckWidth.value) * ppf,
+              h: Number(deckDepth.value) * ppf,
+              boardAngle: Number(boardAngle.value),
+              boardColor: deckBoardColor.value
+            });
+            state.placingDeck = false;
+            placeDeckBtn.classList.remove("active");
+            draw();
+            return;
+          }
+
+          const anchor = hitBoundaryAnchor(pos);
+          if (anchor >= 0 && (state.tool === "boundary" || state.tool === "move")) {
+            state.drag = { kind: "anchor", index: anchor };
+            state.selected = { type: "boundary", index: anchor };
+            draw();
+            return;
+          }
+
+          if (state.tool === "move") {
+            const hit = hitObject(pos);
+            if (hit) {
+              state.selected = hit;
+              if (hit.type === "driveway") {
+                const d = state.driveways[hit.index];
+                state.drag = { kind: "driveway", index: hit.index, start: pos, snapshot: d.points.map((p) => ({ ...p })) };
+              } else {
+                const obj = hit.type === "tree" ? state.trees[hit.index] : hit.type === "house" ? state.houses[hit.index] : hit.type === "nogo" ? state.noGos[hit.index] : hit.type === "deck" ? state.decks[hit.index] : state.things[hit.index];
+                state.drag = { kind: hit.type, index: hit.index, ox: pos.x - obj.x, oy: pos.y - obj.y };
+              }
+            } else {
+              state.selected = null;
+            }
+            draw();
+            return;
+          }
+
+          if (state.tool === "boundary") {
+            if (!state.boundaryClosed) state.boundary.push(pos);
+            draw();
+            return;
+          }
+
+          if (state.tool === "driveway") {
+            if (insideYard(pos)) state.drivewayDraft.push(pos);
+            draw();
+            return;
+          }
+
+          if (!insideYard(pos)) return;
+          if (state.tool === "house") {
+            const s = pxPerFt() * 16;
+            state.houses.push({ x: pos.x, y: pos.y, w: s * 1.3, h: s * 0.9 });
+          } else if (state.tool === "tree") {
+            state.trees.push({ x: pos.x, y: pos.y, r: Math.max(10, pxPerFt() * 2.2) });
+          } else if (state.tool === "nogo") {
+            const s = pxPerFt() * 9;
+            state.noGos.push({ x: pos.x, y: pos.y, w: s * 1.2, h: s * 1.2 });
+          } else if (state.tool === "thing") {
+            const s = pxPerFt() * 6;
+            state.things.push({ x: pos.x, y: pos.y, w: s, h: s, color: "#4d7aa3" });
+          }
+          draw();
+        }
+
+        function onMove(ev) {
+          if (!state.drag) return;
+          ev.preventDefault();
+          const pos = clamp(getPos(ev));
+          if (state.drag.kind === "anchor") {
+            state.boundary[state.drag.index] = pos;
+          } else if (state.drag.kind === "startArrow" && state.startArrow) {
+            state.startArrow.end = pos;
+          } else if (state.drag.kind === "driveway") {
+            const d = state.driveways[state.drag.index];
+            const dx = pos.x - state.drag.start.x;
+            const dy = pos.y - state.drag.start.y;
+            d.points = state.drag.snapshot.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+          } else {
+            const map = { tree: state.trees, house: state.houses, nogo: state.noGos, deck: state.decks, thing: state.things };
+            const arr = map[state.drag.kind];
+            if (arr) {
+              arr[state.drag.index].x = pos.x - state.drag.ox;
+              arr[state.drag.index].y = pos.y - state.drag.oy;
+            }
+          }
+          draw();
+        }
+
+        function onUp() {
+          if (state.drag && state.drag.kind === "startArrow") {
+            state.setDirection = false;
+            setStartBtn.classList.remove("active");
+          }
+          state.drag = null;
+        }
+
+        function finishDriveway() {
+          if (state.drivewayDraft.length < 2) return;
+          state.driveways.push({
+            points: state.drivewayDraft.map((p) => ({ ...p })),
+            width: Number(selectedWidth.value),
+            color: drivewayColor.value,
+            texture: drivewayTexture.value
+          });
+          state.drivewayDraft = [];
+          draw();
+        }
+
+        function smoothLastDriveway() {
+          if (!state.driveways.length) return;
+          const d = state.driveways[state.driveways.length - 1];
+          if (d.points.length < 3) return;
+          d.points = chaikin(d.points, 2);
+          draw();
+        }
+
+        function closeYard() {
+          if (state.boundary.length >= 3) state.boundaryClosed = true;
+          draw();
+        }
+
+        function clearAll() {
+          state.boundary = [];
+          state.boundaryClosed = false;
+          state.houses = [];
+          state.trees = [];
+          state.noGos = [];
+          state.driveways = [];
+          state.drivewayDraft = [];
+          state.things = [];
+          state.decks = [];
+          state.stripes = null;
+          state.startArrow = null;
+          state.selected = null;
+          draw();
+        }
+
+        function applyPattern() {
+          if (!state.boundaryClosed || !state.startArrow) return;
+          const dx = state.startArrow.end.x - state.startArrow.start.x;
+          const dy = state.startArrow.end.y - state.startArrow.start.y;
+          state.stripes = {
+            angle: Math.atan2(dy, dx),
+            spacing: Math.max(6, Number(mowerWidth.value) * pxPerFt()),
+            color: stripeColor.value,
+            pattern: patternSelect.value
+          };
+          draw();
+        }
+
+        function applySelectedAdjust() {
+          if (!state.selected) return;
+          const scale = Number(selectedSize.value);
+          const width = Number(selectedWidth.value);
+          if (state.selected.type === "tree") {
+            state.trees[state.selected.index].r = Math.max(6, 10 * scale);
+          } else if (state.selected.type === "driveway") {
+            state.driveways[state.selected.index].width = width;
+            state.driveways[state.selected.index].color = drivewayColor.value;
+            state.driveways[state.selected.index].texture = drivewayTexture.value;
+          } else if (state.selected.type === "house") {
+            const h = state.houses[state.selected.index];
+            h.w = Math.max(20, h.w * scale);
+            h.h = Math.max(16, h.h * scale);
+            selectedSize.value = "1";
+          } else if (state.selected.type === "nogo") {
+            const n = state.noGos[state.selected.index];
+            n.w = Math.max(18, n.w * scale);
+            n.h = Math.max(18, n.h * scale);
+            selectedSize.value = "1";
+          } else if (state.selected.type === "deck") {
+            const d = state.decks[state.selected.index];
+            d.w = Math.max(20, d.w * scale);
+            d.h = Math.max(20, d.h * scale);
+            d.boardAngle = Number(boardAngle.value);
+            d.boardColor = deckBoardColor.value;
+            selectedSize.value = "1";
+          } else if (state.selected.type === "thing") {
+            const t = state.things[state.selected.index];
+            t.w = Math.max(10, t.w * scale);
+            t.h = Math.max(10, t.h * scale);
+            selectedSize.value = "1";
+          }
+          draw();
+        }
+
+        async function openGoogleMap() {
+          const q = addressInput.value.trim();
+          if (!q) return;
+          window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, "_blank", "noopener");
+        }
+
+        async function loadOverheadFromAddress() {
+          const q = addressInput.value.trim();
+          if (!q) return;
+          try {
+            const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`;
+            const geo = await fetch(geoUrl, { headers: { Accept: "application/json" } }).then((r) => r.json());
+            if (!geo.length) return;
+            const lat = Number(geo[0].lat);
+            const lon = Number(geo[0].lon);
+            const d = 0.0034;
+            const w = Math.round(parseFloat(canvas.style.width));
+            const h = Math.round(parseFloat(canvas.style.height));
+            const imgUrl = `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&bboxSR=4326&size=${w},${h}&format=png&f=image`;
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+              state.mapOverlay.image = img;
+              state.mapOverlay.visible = true;
+              draw();
+            };
+            img.src = imgUrl;
+          } catch {
+            // silent fail by design
+          }
+        }
+
+        function loadMapSnapFile(file) {
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+              state.mapOverlay.image = img;
+              state.mapOverlay.visible = true;
+              draw();
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function download(filename, href) {
+          const a = document.createElement("a");
+          a.href = href;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+
+        function exportPng() {
+          download("yard-prep-plan.png", canvas.toDataURL("image/png"));
+        }
+
+        function printPlan() {
+          const data = canvas.toDataURL("image/png");
+          const w = window.open("", "_blank");
+          if (!w) return;
+          w.document.write(`<html><head><title>Yard Prep Print</title></head><body style="margin:0"><img src="${data}" style="max-width:100%;display:block;margin:0 auto" /></body></html>`);
+          w.document.close();
+          w.focus();
+          w.print();
+        }
+
+        function savePlan() {
+          const payload = {
+            version: 1,
+            canvas: canvasSize.value,
+            feetPerGrid: Number(feetPerGrid.value),
+            state: {
+              ...state,
+              drag: null,
+              mapOverlay: {
+                imageData: state.mapOverlay.image ? state.mapOverlay.image.src : null,
+                opacity: state.mapOverlay.opacity,
+                visible: state.mapOverlay.visible
+              }
+            }
+          };
+          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+          download("yard-prep-plan.json", URL.createObjectURL(blob));
+        }
+
+        function loadPlan(file) {
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const payload = JSON.parse(reader.result);
+              canvasSize.value = payload.canvas || "normal";
+              feetPerGrid.value = payload.feetPerGrid || 5;
+              const loaded = payload.state || {};
+              Object.assign(state, {
+                ...loaded,
+                drag: null,
+                mapOverlay: { image: null, opacity: loaded.mapOverlay?.opacity ?? 0.45, visible: loaded.mapOverlay?.visible ?? true }
+              });
+              setCanvasDimensions(canvasSize.value);
+              scaleNote.textContent = `Each grid square equals ${feetPerGrid.value} feet.`;
+              if (loaded.mapOverlay?.imageData) {
+                const img = new Image();
+                img.onload = () => {
+                  state.mapOverlay.image = img;
+                  draw();
+                };
+                img.src = loaded.mapOverlay.imageData;
+              } else draw();
+            } catch {
+              // ignore invalid files
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        async function sharePlan() {
+          const text = `Yard Prep design with ${state.trees.length} trees, ${state.decks.length} decks, ${state.driveways.length} driveways.`;
+          if (navigator.share) {
+            try {
+              const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+              const file = blob ? new File([blob], "yard-prep.png", { type: "image/png" }) : null;
+              if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: "Yard Prep Plan", text, files: [file] });
+                return;
+              }
+              await navigator.share({ title: "Yard Prep Plan", text });
+              return;
+            } catch {
+              // fallback below
+            }
+          }
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch {
+            // no-op
+          }
+        }
+
+        modeMowingBtn.addEventListener("click", () => setMode("mowing"));
+        modeDeckBtn.addEventListener("click", () => setMode("deck"));
+        Object.entries(toolButtons).forEach(([k, b]) => b.addEventListener("click", () => setTool(k)));
+
+        canvasSize.addEventListener("change", () => setCanvasDimensions(canvasSize.value));
+        feetPerGrid.addEventListener("input", () => {
+          scaleNote.textContent = `Each grid square equals ${Math.max(1, Number(feetPerGrid.value) || 5)} feet.`;
+          draw();
+        });
+        anchorSize.addEventListener("input", draw);
+        toggleAnchorsBtn.addEventListener("click", () => {
+          state.showAnchors = !state.showAnchors;
+          toggleAnchorsBtn.textContent = state.showAnchors ? "Hide Anchors" : "Show Anchors";
+          draw();
+        });
+
+        openGoogleBtn.addEventListener("click", openGoogleMap);
+        loadStaticMapBtn.addEventListener("click", loadOverheadFromAddress);
+        mapSnapInput.addEventListener("change", (e) => loadMapSnapFile(e.target.files?.[0]));
+        mapOpacity.addEventListener("input", () => {
+          state.mapOverlay.opacity = Number(mapOpacity.value);
+          draw();
+        });
+        toggleMapBtn.addEventListener("click", () => {
+          state.mapOverlay.visible = !state.mapOverlay.visible;
+          toggleMapBtn.textContent = state.mapOverlay.visible ? "Hide Snap" : "Show Snap";
+          draw();
+        });
+
+        closeYardBtn.addEventListener("click", closeYard);
+        finishDrivewayBtn.addEventListener("click", finishDriveway);
+        smoothDrivewayBtn.addEventListener("click", smoothLastDriveway);
+        clearBtn.addEventListener("click", clearAll);
+
+        setStartBtn.addEventListener("click", () => {
+          state.setDirection = !state.setDirection;
+          setStartBtn.classList.toggle("active", state.setDirection);
+        });
+        applyPatternBtn.addEventListener("click", applyPattern);
+
+        placeDeckBtn.addEventListener("click", () => {
+          state.placingDeck = !state.placingDeck;
+          placeDeckBtn.classList.toggle("active", state.placingDeck);
+        });
+        boardAngle.addEventListener("input", () => {
+          boardAngleLabel.textContent = `${boardAngle.value} deg`;
+          if (state.selected?.type === "deck") applySelectedAdjust();
+        });
+        deckBoardColor.addEventListener("input", () => {
+          if (state.selected?.type === "deck") applySelectedAdjust();
+        });
+
+        selectedSize.addEventListener("change", applySelectedAdjust);
+        selectedWidth.addEventListener("input", () => {
+          if (state.selected?.type === "driveway") applySelectedAdjust();
+        });
+        drivewayColor.addEventListener("input", () => {
+          if (state.selected?.type === "driveway") applySelectedAdjust();
+        });
+        drivewayTexture.addEventListener("change", () => {
+          if (state.selected?.type === "driveway") applySelectedAdjust();
+          draw();
+        });
+
+        printBtn.addEventListener("click", printPlan);
+        exportPngBtn.addEventListener("click", exportPng);
+        savePlanBtn.addEventListener("click", savePlan);
+        loadPlanInput.addEventListener("change", (e) => loadPlan(e.target.files?.[0]));
+        shareBtn.addEventListener("click", sharePlan);
+
+        canvas.addEventListener("mousedown", onDown);
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        canvas.addEventListener("touchstart", onDown, { passive: false });
+        canvas.addEventListener("touchmove", onMove, { passive: false });
+        canvas.addEventListener("touchend", onUp, { passive: false });
+
+        setCanvasDimensions("normal");
+        draw();
+      })();
+    </script>
+  </body>
+</html>

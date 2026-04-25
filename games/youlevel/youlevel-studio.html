@@ -2447,6 +2447,69 @@ body {
           <label for="builderAnimalBonusPoints">Animal Bonus Points</label>
           <input id="builderAnimalBonusPoints" type="number" min="0" max="50" step="1" value="0">
         </div>
+        <div class="builder-field">
+          <label for="builderCivilianSpawnEnabled">Civilian Spawn</label>
+          <select id="builderCivilianSpawnEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianSpawnCount">Civilian Count</label>
+          <input id="builderCivilianSpawnCount" type="number" min="1" max="8" step="1" value="1">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianSpawnDelayMs">First Spawn Delay (ms)</label>
+          <input id="builderCivilianSpawnDelayMs" type="number" min="0" max="120000" step="100" value="2500">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianSpawnIntervalMs">Spawn Interval (ms)</label>
+          <input id="builderCivilianSpawnIntervalMs" type="number" min="100" max="60000" step="100" value="1700">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianRunMode">Civilian Run Mode</label>
+          <select id="builderCivilianRunMode">
+            <option value="pingpong">Ping-Pong</option>
+            <option value="direction">Direction Only</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianRunDirection">Run Direction</label>
+          <select id="builderCivilianRunDirection">
+            <option value="nearest">Nearest Edge</option>
+            <option value="right">Right</option>
+            <option value="left">Left</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianDoorSide">Door Side Override</label>
+          <select id="builderCivilianDoorSide">
+            <option value="auto">Auto (Door Side)</option>
+            <option value="right">Right Door</option>
+            <option value="left">Left Door</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianRunSpeed">Run Speed</label>
+          <input id="builderCivilianRunSpeed" type="range" min="0.4" max="7" step="0.1" value="2.3">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianRunDurationMs">Run Duration (ms)</label>
+          <input id="builderCivilianRunDurationMs" type="number" min="500" max="120000" step="100" value="11000">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianBonusPoints">Rescue Bonus Points</label>
+          <input id="builderCivilianBonusPoints" type="number" min="0" max="300" step="1" value="12">
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianModelKey">Civilian Model</label>
+          <select id="builderCivilianModelKey"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderCivilianFirefighterModelKey">Firefighter Model</label>
+          <select id="builderCivilianFirefighterModelKey"></select>
+        </div>
         <div class="builder-field movement-zone">
           <label for="builderLayerEnemyEnabled">Enemy</label>
           <select id="builderLayerEnemyEnabled">
@@ -3583,6 +3646,8 @@ function preloadLevelSprites(lvl) {
     if (ent.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) {
       needed.add(ent.spriteKey);
     }
+    if (ent?.civilianModelKey && SPRITE_FILES[ent.civilianModelKey]) needed.add(ent.civilianModelKey);
+    if (ent?.civilianFirefighterModelKey && SPRITE_FILES[ent.civilianFirefighterModelKey]) needed.add(ent.civilianFirefighterModelKey);
     if (ent.variant && SPRITE_FILES[ent.variant]) needed.add(ent.variant);
     const catalogSpec = getCatalogSpec(ent.type);
     if (catalogSpec) needed.add(catalogSpec.sprite);
@@ -4507,6 +4572,7 @@ let playerRocketShots = [];
 let waterCapacity = 100;
 let waterCurrent = 100;
 let currentDifficultyTuning = null;
+let rescueState = null;
 const MUTUAL_AID_BUTTON_RECT = { x: 856, y: 18, w: 140, h: 38 };
 const EARLY_REFILL_PENALTY_POINTS = 250;
 let earlyRefillWarningAccepted = false;
@@ -4694,6 +4760,18 @@ const BUILDER_UI = {
   animalExitDirection: document.getElementById('builderAnimalExitDirection'),
   animalExitSpeed: document.getElementById('builderAnimalExitSpeed'),
   animalBonusPoints: document.getElementById('builderAnimalBonusPoints'),
+  civilianSpawnEnabled: document.getElementById('builderCivilianSpawnEnabled'),
+  civilianSpawnCount: document.getElementById('builderCivilianSpawnCount'),
+  civilianSpawnDelayMs: document.getElementById('builderCivilianSpawnDelayMs'),
+  civilianSpawnIntervalMs: document.getElementById('builderCivilianSpawnIntervalMs'),
+  civilianRunMode: document.getElementById('builderCivilianRunMode'),
+  civilianRunDirection: document.getElementById('builderCivilianRunDirection'),
+  civilianDoorSide: document.getElementById('builderCivilianDoorSide'),
+  civilianRunSpeed: document.getElementById('builderCivilianRunSpeed'),
+  civilianRunDurationMs: document.getElementById('builderCivilianRunDurationMs'),
+  civilianBonusPoints: document.getElementById('builderCivilianBonusPoints'),
+  civilianModelKey: document.getElementById('builderCivilianModelKey'),
+  civilianFirefighterModelKey: document.getElementById('builderCivilianFirefighterModelKey'),
   layerEnemyEnabled: document.getElementById('builderLayerEnemyEnabled'),
   layerEnemyModelKey: document.getElementById('builderLayerEnemyModelKey'),
   layerEnemyCount: document.getElementById('builderLayerEnemyCount'),
@@ -4917,6 +4995,24 @@ function isAnimalSpriteKey(spriteKey) {
   return /horse|cow|dog|cat|goat|pig|sheep|chicken|animal/.test(text);
 }
 
+function isCivilianSpriteKey(spriteKey) {
+  const text = String(spriteKey || '').toLowerCase();
+  return /civilian|resident|person|human|man|woman|boy|girl/.test(text);
+}
+
+function isFirefighterSpriteKey(spriteKey) {
+  const text = String(spriteKey || '').toLowerCase();
+  return /firefighter|fireman|fire_walker/.test(text);
+}
+
+function isCivilianSpawnEntity(ent) {
+  if (!ent) return false;
+  const type = String(ent.type || '').toLowerCase();
+  if (type === 'buildersprite') return true;
+  const spriteKey = String(getLegacySpriteKeyForBuilder(ent) || ent.spriteKey || '').toLowerCase();
+  return /house|home|shed|garage|school|barn|vehicle|truck|car|bus|van|semi|pickup|sedan|suv|coupe|wagon|hatch|auto/.test(`${type} ${spriteKey}`);
+}
+
 function getBurnZoneTemplateForEntity(ent) {
   if (!ent) return [];
   if (ent.type === 'builderSprite') return BUILDER_DEFAULT_BURN_ZONES.map((z) => [...z]);
@@ -5089,6 +5185,127 @@ function builderSyncAnimalControlsForSelection(selected) {
   if (BUILDER_UI.animalBonusPoints) {
     BUILDER_UI.animalBonusPoints.disabled = !isAnimal;
     BUILDER_UI.animalBonusPoints.value = String(clamp(Number(selected?.waterExitBonusPoints ?? 0), 0, 50));
+  }
+}
+
+function builderPopulateCivilianModelOptions(selected = null) {
+  const civilianSelect = BUILDER_UI.civilianModelKey;
+  const firefighterSelect = BUILDER_UI.civilianFirefighterModelKey;
+  if (!civilianSelect && !firefighterSelect) return;
+
+  const allKeys = [];
+  const seen = new Set();
+  builderGetAssets().forEach((asset) => {
+    const key = resolveSpriteKey(String(asset?.key || ''));
+    if (!key || seen.has(key)) return;
+    if (!SPRITE_FILES[key] && !CUSTOM_SPRITE_DATA[key]) return;
+    const category = getAssetCategory(asset);
+    if (category !== 'human' && !isCivilianSpriteKey(key) && !isFirefighterSpriteKey(key)) return;
+    seen.add(key);
+    allKeys.push(key);
+  });
+  allKeys.sort((a, b) => getAssetDisplayName(a).localeCompare(getAssetDisplayName(b)));
+
+  const civilianDefault = resolveSpriteKey(String(selected?.civilianModelKey || ''))
+    || resolveSpriteKey('misc_human_civilian_running_right_pose2_459x200')
+    || allKeys.find((key) => isCivilianSpriteKey(key))
+    || allKeys[0]
+    || '';
+  const firefighterDefault = resolveSpriteKey(String(selected?.civilianFirefighterModelKey || ''))
+    || resolveSpriteKey('misc_human_firefighter_running_right_pose1_459x200')
+    || allKeys.find((key) => isFirefighterSpriteKey(key))
+    || allKeys[0]
+    || '';
+
+  const refill = (select, current, label) => {
+    if (!select) return;
+    select.innerHTML = '';
+    const auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = label;
+    select.appendChild(auto);
+    allKeys.forEach((key) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = getAssetDisplayName(key);
+      select.appendChild(opt);
+    });
+    const pick = resolveSpriteKey(current || '');
+    if (pick && [...select.options].some((o) => o.value === pick)) select.value = pick;
+    else select.value = '';
+  };
+
+  refill(civilianSelect, civilianDefault, 'Auto Civilian');
+  refill(firefighterSelect, firefighterDefault, 'Auto Firefighter');
+}
+
+function builderSyncCivilianControlsForSelection(selected) {
+  const supported = isCivilianSpawnEntity(selected);
+  const ids = [
+    'builderCivilianSpawnEnabled',
+    'builderCivilianSpawnCount',
+    'builderCivilianSpawnDelayMs',
+    'builderCivilianSpawnIntervalMs',
+    'builderCivilianRunMode',
+    'builderCivilianRunDirection',
+    'builderCivilianDoorSide',
+    'builderCivilianRunSpeed',
+    'builderCivilianRunDurationMs',
+    'builderCivilianBonusPoints',
+    'builderCivilianModelKey',
+    'builderCivilianFirefighterModelKey'
+  ];
+  ids.forEach((id) => builderSetFieldVisibility(id, supported));
+  const spawnOn = supported && !!selected?.civilianSpawnEnabled;
+
+  if (BUILDER_UI.civilianSpawnEnabled) {
+    BUILDER_UI.civilianSpawnEnabled.disabled = !supported;
+    BUILDER_UI.civilianSpawnEnabled.value = spawnOn ? '1' : '0';
+  }
+  if (BUILDER_UI.civilianSpawnCount) {
+    BUILDER_UI.civilianSpawnCount.disabled = !spawnOn;
+    BUILDER_UI.civilianSpawnCount.value = String(clamp(Number(selected?.civilianSpawnCount ?? 1), 1, 8));
+  }
+  if (BUILDER_UI.civilianSpawnDelayMs) {
+    BUILDER_UI.civilianSpawnDelayMs.disabled = !spawnOn;
+    BUILDER_UI.civilianSpawnDelayMs.value = String(clamp(Number(selected?.civilianSpawnDelayMs ?? 2500), 0, 120000));
+  }
+  if (BUILDER_UI.civilianSpawnIntervalMs) {
+    BUILDER_UI.civilianSpawnIntervalMs.disabled = !spawnOn;
+    BUILDER_UI.civilianSpawnIntervalMs.value = String(clamp(Number(selected?.civilianSpawnIntervalMs ?? 1700), 100, 60000));
+  }
+  if (BUILDER_UI.civilianRunMode) {
+    BUILDER_UI.civilianRunMode.disabled = !spawnOn;
+    BUILDER_UI.civilianRunMode.value = (selected?.civilianRunMode === 'direction' || selected?.civilianRunMode === 'both') ? selected.civilianRunMode : 'pingpong';
+  }
+  if (BUILDER_UI.civilianRunDirection) {
+    BUILDER_UI.civilianRunDirection.disabled = !spawnOn;
+    BUILDER_UI.civilianRunDirection.value = (selected?.civilianRunDirection === 'left' || selected?.civilianRunDirection === 'right') ? selected.civilianRunDirection : 'nearest';
+  }
+  if (BUILDER_UI.civilianDoorSide) {
+    BUILDER_UI.civilianDoorSide.disabled = !spawnOn;
+    BUILDER_UI.civilianDoorSide.value = (selected?.civilianDoorSide === 'left' || selected?.civilianDoorSide === 'right') ? selected.civilianDoorSide : 'auto';
+  }
+  if (BUILDER_UI.civilianRunSpeed) {
+    BUILDER_UI.civilianRunSpeed.disabled = !spawnOn;
+    BUILDER_UI.civilianRunSpeed.value = String(clamp(Number(selected?.civilianRunSpeed ?? 2.3), 0.4, 7));
+  }
+  if (BUILDER_UI.civilianRunDurationMs) {
+    BUILDER_UI.civilianRunDurationMs.disabled = !spawnOn;
+    BUILDER_UI.civilianRunDurationMs.value = String(clamp(Number(selected?.civilianRunDurationMs ?? 11000), 500, 120000));
+  }
+  if (BUILDER_UI.civilianBonusPoints) {
+    BUILDER_UI.civilianBonusPoints.disabled = !spawnOn;
+    BUILDER_UI.civilianBonusPoints.value = String(clamp(Number(selected?.civilianBonusPoints ?? 12), 0, 300));
+  }
+  builderPopulateCivilianModelOptions(selected);
+  if (BUILDER_UI.civilianModelKey) {
+    BUILDER_UI.civilianModelKey.disabled = !spawnOn;
+    BUILDER_UI.civilianModelKey.value = resolveSpriteKey(String(selected?.civilianModelKey || '')) || '';
+  }
+  if (BUILDER_UI.civilianFirefighterModelKey) {
+    BUILDER_UI.civilianFirefighterModelKey.disabled = !spawnOn;
+    BUILDER_UI.civilianFirefighterModelKey.value = resolveSpriteKey(String(selected?.civilianFirefighterModelKey || '')) || '';
   }
 }
 
@@ -5515,6 +5732,7 @@ function builderApplyStateToUi() {
   builderSyncPhysicsControlsForSelection(selected);
   builderSyncLevelOptionVisibility();
   builderSyncAnimalControlsForSelection(selected);
+  builderSyncCivilianControlsForSelection(selected);
   builderUpdateTopColumnsForSelection(selected);
   builderRenderBurnZoneEditor(selected);
   builderRefreshCreatorNotice();
@@ -6298,6 +6516,18 @@ function builderInitCollapsibleSections() {
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints',
+    '#builderCivilianSpawnEnabled',
+    '#builderCivilianSpawnCount',
+    '#builderCivilianSpawnDelayMs',
+    '#builderCivilianSpawnIntervalMs',
+    '#builderCivilianRunMode',
+    '#builderCivilianRunDirection',
+    '#builderCivilianDoorSide',
+    '#builderCivilianRunSpeed',
+    '#builderCivilianRunDurationMs',
+    '#builderCivilianBonusPoints',
+    '#builderCivilianModelKey',
+    '#builderCivilianFirefighterModelKey',
     '#builderLayerEnemyEnabled',
     '#builderLayerEnemyModelKey',
     '#builderLayerEnemyCount',
@@ -6359,6 +6589,18 @@ function builderInitCollapsibleSections() {
     '#builderAnimalExitDirection',
     '#builderAnimalExitSpeed',
     '#builderAnimalBonusPoints',
+    '#builderCivilianSpawnEnabled',
+    '#builderCivilianSpawnCount',
+    '#builderCivilianSpawnDelayMs',
+    '#builderCivilianSpawnIntervalMs',
+    '#builderCivilianRunMode',
+    '#builderCivilianRunDirection',
+    '#builderCivilianDoorSide',
+    '#builderCivilianRunSpeed',
+    '#builderCivilianRunDurationMs',
+    '#builderCivilianBonusPoints',
+    '#builderCivilianModelKey',
+    '#builderCivilianFirefighterModelKey',
     '#builderLayerEnemyEnabled',
     '#builderLayerEnemyModelKey',
     '#builderLayerEnemyCount',
@@ -6404,6 +6646,20 @@ function builderInitCollapsibleSections() {
     selectedContent.appendChild(details);
     return details;
   };
+  moveToSelectedSubsection('Civilian Rescue', [
+    '#builderCivilianSpawnEnabled',
+    '#builderCivilianSpawnCount',
+    '#builderCivilianSpawnDelayMs',
+    '#builderCivilianSpawnIntervalMs',
+    '#builderCivilianRunMode',
+    '#builderCivilianRunDirection',
+    '#builderCivilianDoorSide',
+    '#builderCivilianRunSpeed',
+    '#builderCivilianRunDurationMs',
+    '#builderCivilianBonusPoints',
+    '#builderCivilianModelKey',
+    '#builderCivilianFirefighterModelKey'
+  ], false);
   moveToSelectedSubsection('Enemy', [
     '#builderLayerEnemyEnabled',
     '#builderLayerEnemyModelKey',
@@ -14202,7 +14458,19 @@ function normalizeBuilderEntity(ent, idx = 0) {
       pathEndX: ent.pathEndX == null ? undefined : clamp(Number(ent.pathEndX), -220, 1520),
       pathEndY: ent.pathEndY == null ? undefined : clamp(Number(ent.pathEndY), 120, 580),
       pathDurationMs: ent.pathDurationMs == null ? undefined : clamp(Number(ent.pathDurationMs), 200, 120000),
-      pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000)
+      pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000),
+      civilianSpawnEnabled: !!ent.civilianSpawnEnabled,
+      civilianSpawnCount: clamp(Number(ent.civilianSpawnCount ?? 1), 1, 8),
+      civilianSpawnDelayMs: clamp(Number(ent.civilianSpawnDelayMs ?? 2500), 0, 120000),
+      civilianSpawnIntervalMs: clamp(Number(ent.civilianSpawnIntervalMs ?? 1700), 100, 60000),
+      civilianRunMode: (ent.civilianRunMode === 'direction' || ent.civilianRunMode === 'both') ? ent.civilianRunMode : 'pingpong',
+      civilianRunDirection: (ent.civilianRunDirection === 'left' || ent.civilianRunDirection === 'right') ? ent.civilianRunDirection : 'nearest',
+      civilianDoorSide: (ent.civilianDoorSide === 'left' || ent.civilianDoorSide === 'right') ? ent.civilianDoorSide : 'auto',
+      civilianRunSpeed: clamp(Number(ent.civilianRunSpeed ?? 2.3), 0.4, 7),
+      civilianRunDurationMs: clamp(Number(ent.civilianRunDurationMs ?? 11000), 500, 120000),
+      civilianBonusPoints: clamp(Number(ent.civilianBonusPoints ?? 12), 0, 300),
+      civilianModelKey: resolveSpriteKey(String(ent.civilianModelKey || '')) || '',
+      civilianFirefighterModelKey: resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || ''
     };
   }
   const normalized = {
@@ -14278,7 +14546,19 @@ function normalizeBuilderEntity(ent, idx = 0) {
     pathEndX: ent.pathEndX == null ? undefined : clamp(Number(ent.pathEndX), -220, 1520),
     pathEndY: ent.pathEndY == null ? undefined : clamp(Number(ent.pathEndY), 120, 580),
     pathDurationMs: ent.pathDurationMs == null ? undefined : clamp(Number(ent.pathDurationMs), 200, 120000),
-    pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000)
+    pathPauseMs: ent.pathPauseMs == null ? undefined : clamp(Number(ent.pathPauseMs), 0, 60000),
+    civilianSpawnEnabled: !!ent.civilianSpawnEnabled,
+    civilianSpawnCount: clamp(Number(ent.civilianSpawnCount ?? 1), 1, 8),
+    civilianSpawnDelayMs: clamp(Number(ent.civilianSpawnDelayMs ?? 2500), 0, 120000),
+    civilianSpawnIntervalMs: clamp(Number(ent.civilianSpawnIntervalMs ?? 1700), 100, 60000),
+    civilianRunMode: (ent.civilianRunMode === 'direction' || ent.civilianRunMode === 'both') ? ent.civilianRunMode : 'pingpong',
+    civilianRunDirection: (ent.civilianRunDirection === 'left' || ent.civilianRunDirection === 'right') ? ent.civilianRunDirection : 'nearest',
+    civilianDoorSide: (ent.civilianDoorSide === 'left' || ent.civilianDoorSide === 'right') ? ent.civilianDoorSide : 'auto',
+    civilianRunSpeed: clamp(Number(ent.civilianRunSpeed ?? 2.3), 0.4, 7),
+    civilianRunDurationMs: clamp(Number(ent.civilianRunDurationMs ?? 11000), 500, 120000),
+    civilianBonusPoints: clamp(Number(ent.civilianBonusPoints ?? 12), 0, 300),
+    civilianModelKey: resolveSpriteKey(String(ent.civilianModelKey || '')) || '',
+    civilianFirefighterModelKey: resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || ''
   };
   return normalized;
 }
@@ -14598,7 +14878,19 @@ function convertLegacyEntityForBuilder(ent) {
     pathEndX: ent.pathEndX,
     pathEndY: ent.pathEndY,
     pathDurationMs: ent.pathDurationMs,
-    pathPauseMs: ent.pathPauseMs
+    pathPauseMs: ent.pathPauseMs,
+    civilianSpawnEnabled: !!ent.civilianSpawnEnabled,
+    civilianSpawnCount: ent.civilianSpawnCount,
+    civilianSpawnDelayMs: ent.civilianSpawnDelayMs,
+    civilianSpawnIntervalMs: ent.civilianSpawnIntervalMs,
+    civilianRunMode: ent.civilianRunMode,
+    civilianRunDirection: ent.civilianRunDirection,
+    civilianDoorSide: ent.civilianDoorSide,
+    civilianRunSpeed: ent.civilianRunSpeed,
+    civilianRunDurationMs: ent.civilianRunDurationMs,
+    civilianBonusPoints: ent.civilianBonusPoints,
+    civilianModelKey: ent.civilianModelKey,
+    civilianFirefighterModelKey: ent.civilianFirefighterModelKey
   };
 }
 
@@ -14880,15 +15172,462 @@ function isTankerRefillEnabled(levelData = null) {
   return level?.primaryLaserTankerRefill !== false;
 }
 
+function isFirefighterControlActive() {
+  return gameState === 'playing' && !!rescueState?.firefighter && rescueState.firefighter.mode === 'active';
+}
+
 function setTruckDrive(value) {
+  const normalized = Math.max(-1, Math.min(1, value));
+  if (isFirefighterControlActive()) {
+    rescueState.firefighter.vx = normalized;
+    if (Math.abs(normalized) > 0.05) rescueState.firefighter.facing = normalized > 0 ? 1 : -1;
+    updateThumbKnob(normalized);
+    truckDrive = 0;
+    return;
+  }
   if (!playerControlsEnabled) {
     truckDrive = 0;
     updateThumbKnob(0);
     return;
   }
-  truckDrive = Math.max(-1, Math.min(1, value));
+  truckDrive = normalized;
   if (Math.abs(truckDrive) > 0.05) truckFacing = truckDrive > 0 ? 1 : -1;
   updateThumbKnob(truckDrive);
+}
+
+function getDefaultCivilianModelKey() {
+  return resolveSpriteKey('misc_human_civilian_running_right_pose2_459x200')
+    || resolveSpriteKey('misc_human_female_civilian_running_right_pose2_459x200')
+    || resolveSpriteKey('misc_human_civilian_front_standing_459x200')
+    || '';
+}
+
+function getDefaultFirefighterModelKey() {
+  return resolveSpriteKey('misc_human_firefighter_running_right_pose1_459x200')
+    || resolveSpriteKey('misc_human_firefighter_side_standing_right_459x200')
+    || '';
+}
+
+function awardGameplayPoints(points) {
+  const amount = clamp(Number(points || 0), 0, 999999);
+  if (amount <= 0) return;
+  addScorePoints(amount, baseLevels[currentLevel - 1] || {});
+}
+
+function isVehicleLikeEntity(ent) {
+  const text = `${ent?.type || ''} ${ent?.spriteKey || ''} ${ent?.variant || ''}`.toLowerCase();
+  return /(sedan|car|pickup|truck|van|bus|semi|vehicle|suv|coupe|hatch|wagon|auto|tractor)/.test(text);
+}
+
+function collectCivilianSpriteKeys() {
+  const keys = new Set();
+  Object.keys(SPRITE_FILES || {}).forEach((key) => {
+    if (isCivilianSpriteKey(key)) keys.add(key);
+  });
+  Object.keys(CUSTOM_SPRITE_DATA || {}).forEach((key) => {
+    if (isCivilianSpriteKey(key)) keys.add(key);
+  });
+  return [...keys];
+}
+
+function pickCivilianSpriteKey(pool, regexes, fallback = '') {
+  if (!Array.isArray(pool) || !pool.length) return fallback || '';
+  for (const reg of regexes) {
+    const hit = pool.find((key) => reg.test(String(key || '').toLowerCase()));
+    if (hit) return hit;
+  }
+  return fallback || pool[0] || '';
+}
+
+function buildCivilianAnimationSet(baseModelKey) {
+  const resolved = resolveSpriteKey(String(baseModelKey || '')) || getDefaultCivilianModelKey();
+  const poolRaw = collectCivilianSpriteKeys();
+  if (!poolRaw.length) {
+    return { stand: resolved, runFrames: [resolved].filter(Boolean) };
+  }
+  const lower = String(resolved || '').toLowerCase();
+  const female = /female|woman|girl/.test(lower);
+  const male = /male|man|boy/.test(lower) && !/woman/.test(lower);
+  const narrowed = poolRaw.filter((key) => {
+    const text = String(key || '').toLowerCase();
+    if (female && !/(female|woman|girl)/.test(text)) return false;
+    if (male && !/(male|man|boy)/.test(text)) return false;
+    return true;
+  });
+  const pool = narrowed.length ? narrowed : poolRaw;
+  const stand = pickCivilianSpriteKey(
+    pool,
+    [/side_standing_right/, /front_standing/, /standing/, /idle/],
+    resolved
+  );
+  const run1 = pickCivilianSpriteKey(
+    pool,
+    [/running_right_pose1/, /running_pose1/, /run.*pose1/, /running/],
+    resolved
+  );
+  const run2 = pickCivilianSpriteKey(
+    pool,
+    [/running_right_pose2/, /running_pose2/, /run.*pose2/, /running/],
+    run1 || resolved
+  );
+  const runFrames = [run1, run2].filter(Boolean);
+  return {
+    stand: stand || resolved,
+    runFrames: runFrames.length ? runFrames : [resolved].filter(Boolean)
+  };
+}
+
+function getFirefighterTruckHomeX() {
+  const truckRect = getTruckDrawRect();
+  if (!truckRect) return clamp(Number(truck.x || 120), 24, canvas.width - 24);
+  const sideBias = truckFacing >= 0 ? 0.36 : 0.64;
+  return clamp(truckRect.x + truckRect.w * sideBias, 24, canvas.width - 24);
+}
+
+function getFirefighterRect() {
+  const ff = rescueState?.firefighter;
+  if (!ff || ff.mode === 'hidden') return null;
+  const modelKey = resolveSpriteKey(String(ff.modelKey || '')) || getDefaultFirefighterModelKey();
+  const size = getBuilderSpriteBaseSize(modelKey || '');
+  const h = clamp(size.h * 0.46, 56, 116);
+  const w = clamp(size.w * 0.32, 26, 84);
+  return { x: ff.x - w * 0.5, y: GRASS_Y - h, w, h };
+}
+
+function getCivilianRect(civilian) {
+  if (!civilian) return null;
+  const modelKey = resolveSpriteKey(String(civilian.displayModelKey || civilian.modelKey || '')) || getDefaultCivilianModelKey();
+  const size = getBuilderSpriteBaseSize(modelKey || '');
+  const h = clamp(size.h * 0.42, 48, 102);
+  const w = clamp(size.w * 0.30, 24, 78);
+  const bob = Math.sin((civilian.bobMs || 0) / 160) * 2.4;
+  return { x: civilian.x - w * 0.5, y: GRASS_Y - h + bob, w, h };
+}
+
+function getCivilianDoorSide(ent, box) {
+  if (!ent || !box) return 'right';
+  if (ent.civilianDoorSide === 'left' || ent.civilianDoorSide === 'right') return ent.civilianDoorSide;
+  const text = `${ent.type || ''} ${ent.spriteKey || ''} ${ent.variant || ''}`.toLowerCase();
+  if (/left/.test(text) && !/right/.test(text)) return 'left';
+  if (/right/.test(text) && !/left/.test(text)) return 'right';
+  return (box.x + box.w * 0.5) < (canvas.width * 0.5) ? 'right' : 'left';
+}
+
+function getCivilianDoorSpawn(ent, box) {
+  const side = getCivilianDoorSide(ent, box);
+  const x = side === 'left'
+    ? (box.x + box.w * 0.24)
+    : (box.x + box.w * 0.76);
+  return {
+    x: clamp(x, 16, canvas.width - 16),
+    y: clamp(box.y + box.h, GRASS_Y - 26, GRASS_Y + 6),
+    side
+  };
+}
+
+function getCivilianTargetDirection(ent, spawnX) {
+  if (ent?.civilianRunDirection === 'left') return -1;
+  if (ent?.civilianRunDirection === 'right') return 1;
+  return spawnX < canvas.width * 0.5 ? -1 : 1;
+}
+
+function beginUfoCivilianAbduction(civilian) {
+  if (!civilian || currentLevel !== FINAL_LEVEL || !ufoRaid) return;
+  if (ufoRaid.abduction?.active) return;
+  if (!civilian.fromVehicle) return;
+  if (ufoRaid.phase === 'crash') return;
+  ufoRaid.abduction = {
+    active: true,
+    phase: 'approach',
+    timerMs: 0,
+    targetCivilianId: civilian.id,
+    exitDir: civilian.x < canvas.width * 0.5 ? -1 : 1
+  };
+  civilian.isAbductionTarget = true;
+  addPointPopup(civilian.x, GRASS_Y - 72, 'UFO LOCKING TARGET', '#9ce9ff', 56);
+}
+
+function resetRescueStateForLevel(levelData) {
+  const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
+  const emitters = [];
+  entities.forEach((ent, idx) => {
+    if (!ent || !ent.civilianSpawnEnabled) return;
+    if (!isCivilianSpawnEntity(ent)) return;
+    emitters.push({
+      entityIndex: idx,
+      entityKey: `${ent.type}:${idx}`,
+      nextSpawnAtMs: clamp(Number(ent.civilianSpawnDelayMs ?? 2500), 0, 120000),
+      spawnedCount: 0,
+      totalCount: clamp(Number(ent.civilianSpawnCount ?? 1), 1, 8)
+    });
+  });
+  if (!emitters.length && currentLevel === FINAL_LEVEL) {
+    const autoIdx = entities.findIndex((ent) => isVehicleLikeEntity(ent));
+    if (autoIdx >= 0) {
+      emitters.push({
+        entityIndex: autoIdx,
+        entityKey: `${entities[autoIdx].type}:${autoIdx}`,
+        nextSpawnAtMs: 2800,
+        spawnedCount: 0,
+        totalCount: 1,
+        force: true
+      });
+    }
+  }
+  rescueState = {
+    emitters,
+    civilians: [],
+    nextCivilianId: 1,
+    firefighter: {
+      mode: 'hidden',
+      x: getFirefighterTruckHomeX(),
+      vx: 0,
+      facing: 1,
+      modelKey: getDefaultFirefighterModelKey()
+    }
+  };
+}
+
+function spawnCivilianFromEmitter(emitter, levelData) {
+  if (!emitter || !levelData?.entities) return false;
+  const ent = levelData.entities[emitter.entityIndex];
+  if (!ent || (!ent.civilianSpawnEnabled && !emitter.force)) return false;
+  const box = getEntityBounds(ent);
+  if (!box) return false;
+  const door = getCivilianDoorSpawn(ent, box);
+  const targetDir = getCivilianTargetDirection(ent, door.x);
+  const runMode = (ent.civilianRunMode === 'direction' || ent.civilianRunMode === 'both') ? ent.civilianRunMode : 'pingpong';
+  const runSpeed = clamp(Number(ent.civilianRunSpeed ?? 2.3), 0.4, 7);
+  const runDurationMs = clamp(Number(ent.civilianRunDurationMs ?? 11000), 500, 120000);
+  const roam = clamp(Math.max(90, box.w * 1.05), 90, 280);
+  const civModel = resolveSpriteKey(String(ent.civilianModelKey || '')) || getDefaultCivilianModelKey();
+  const ffModel = resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || getDefaultFirefighterModelKey();
+  const anim = buildCivilianAnimationSet(civModel);
+  if (civModel) ensureSpritesLoaded([civModel]);
+  if (anim.stand) ensureSpritesLoaded([anim.stand]);
+  if (anim.runFrames?.length) ensureSpritesLoaded(anim.runFrames);
+  if (ffModel) ensureSpritesLoaded([ffModel]);
+  const civilian = {
+    id: rescueState.nextCivilianId++,
+    x: door.x,
+    y: door.y,
+    mode: runMode,
+    speed: runSpeed,
+    durationMs: runDurationMs,
+    elapsedMs: 0,
+    targetDir,
+    panicDir: Math.random() < 0.5 ? -1 : 1,
+    panicTimerMs: 260 + Math.random() * 560,
+    roamMinX: clamp(door.x - roam, 12, canvas.width - 12),
+    roamMaxX: clamp(door.x + roam, 12, canvas.width - 12),
+    exiting: false,
+    exitDir: targetDir,
+    modelKey: civModel,
+    standModelKey: anim.stand || civModel,
+    runModelKeys: (anim.runFrames || [civModel]).filter(Boolean),
+    displayModelKey: anim.stand || civModel,
+    runFrameTickMs: 0,
+    firefighterModelKey: ffModel,
+    bonusPoints: clamp(Number(ent.civilianBonusPoints ?? 12), 0, 300),
+    bobMs: Math.random() * 900,
+    facing: targetDir >= 0 ? 1 : -1,
+    fromVehicle: isVehicleLikeEntity(ent),
+    isAbductionTarget: false
+  };
+  rescueState.civilians.push(civilian);
+  beginUfoCivilianAbduction(civilian);
+  emitter.spawnedCount += 1;
+  const ff = rescueState.firefighter;
+  if (ff) {
+    ff.modelKey = ffModel || ff.modelKey || getDefaultFirefighterModelKey();
+    if (ff.mode === 'hidden' || ff.mode === 'returning') {
+      ff.mode = 'active';
+      ff.x = getFirefighterTruckHomeX();
+      ff.vx = 0;
+      ff.facing = 1;
+    }
+  }
+  addPointPopup(door.x, door.y - 18, 'CIVILIAN OUT!', '#ffd6a8', 58);
+  return true;
+}
+
+function updateCivilianRescue(dt, levelData) {
+  if (gameState !== 'playing' || !rescueState || !levelData) return;
+  if (pendingDispatchLevel !== null || truckEntryState?.active) return;
+  if (level9EventState?.active && level9EventState?.phase !== 'active') return;
+  const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
+  const nowMs = levelElapsedMs;
+
+  rescueState.emitters.forEach((emitter) => {
+    const ent = levelData.entities?.[emitter.entityIndex];
+    if (!ent || (!ent.civilianSpawnEnabled && !emitter.force)) return;
+    if (emitter.spawnedCount >= emitter.totalCount) return;
+    const intervalMs = clamp(Number(ent.civilianSpawnIntervalMs ?? 1700), 100, 60000);
+    while (emitter.spawnedCount < emitter.totalCount && nowMs >= emitter.nextSpawnAtMs) {
+      const spawned = spawnCivilianFromEmitter(emitter, levelData);
+      if (!spawned) {
+        emitter.nextSpawnAtMs = nowMs + 500;
+        break;
+      }
+      emitter.nextSpawnAtMs += intervalMs;
+    }
+  });
+
+  const ff = rescueState.firefighter;
+  if (ff) {
+    if (ff.mode === 'active') {
+      ff.x = clamp(ff.x + ff.vx * 3.1 * step, 16, canvas.width - 16);
+      if (Math.abs(ff.vx) > 0.05) ff.facing = ff.vx > 0 ? 1 : -1;
+      if (!rescueState.civilians.length) {
+        ff.mode = 'returning';
+        ff.vx = 0;
+      }
+    } else if (ff.mode === 'returning') {
+      const homeX = getFirefighterTruckHomeX();
+      const dx = homeX - ff.x;
+      const move = Math.sign(dx) * Math.min(Math.abs(dx), 3.4 * step);
+      ff.x += move;
+      if (Math.abs(dx) <= 1.2) {
+        ff.x = homeX;
+        ff.mode = 'hidden';
+      } else {
+        ff.facing = move >= 0 ? 1 : -1;
+      }
+    } else {
+      ff.x = getFirefighterTruckHomeX();
+      ff.vx = 0;
+    }
+  }
+
+  const ffRect = getFirefighterRect();
+  for (let i = rescueState.civilians.length - 1; i >= 0; i--) {
+    const civ = rescueState.civilians[i];
+    civ.elapsedMs += Math.max(0, Number(dt || 0));
+    civ.bobMs = (civ.bobMs || 0) + Math.max(0, Number(dt || 0));
+    civ.runFrameTickMs = (civ.runFrameTickMs || 0) + Math.max(0, Number(dt || 0));
+    let moveDir = 0;
+    const isUfoTarget = !!(ufoRaid?.abduction?.active && ufoRaid.abduction.targetCivilianId === civ.id);
+    if (!civ.exiting && civ.elapsedMs >= civ.durationMs) {
+      civ.exiting = true;
+      civ.exitDir = civ.targetDir || (civ.x < canvas.width * 0.5 ? -1 : 1);
+    }
+    if (isUfoTarget) {
+      moveDir = 0;
+      civ.displayModelKey = civ.standModelKey || civ.modelKey;
+    } else if (!civ.exiting) {
+      civ.panicTimerMs -= Math.max(0, Number(dt || 0));
+      if (civ.panicTimerMs <= 0) {
+        civ.panicTimerMs = 220 + Math.random() * 620;
+        civ.panicDir *= -1;
+      }
+      if (civ.mode === 'direction') {
+        moveDir = civ.targetDir;
+      } else if (civ.mode === 'both') {
+        moveDir = (civ.panicDir * 0.62) + (civ.targetDir * 0.85);
+      } else {
+        moveDir = civ.panicDir;
+      }
+      civ.x += moveDir * civ.speed * step;
+      if (civ.mode !== 'direction') {
+        if (civ.x <= civ.roamMinX) {
+          civ.x = civ.roamMinX;
+          civ.panicDir = 1;
+        }
+        if (civ.x >= civ.roamMaxX) {
+          civ.x = civ.roamMaxX;
+          civ.panicDir = -1;
+        }
+      } else if (civ.x < 10 || civ.x > canvas.width - 10) {
+        civ.targetDir *= -1;
+        civ.x = clamp(civ.x, 10, canvas.width - 10);
+      }
+    } else {
+      moveDir = civ.exitDir;
+      civ.x += civ.exitDir * civ.speed * 1.45 * step;
+    }
+    if (Math.abs(moveDir) > 0.01) civ.facing = moveDir > 0 ? 1 : -1;
+    const isRunning = Math.abs(moveDir) > 0.08;
+    if (isRunning) {
+      const runFrames = Array.isArray(civ.runModelKeys) && civ.runModelKeys.length ? civ.runModelKeys : [civ.modelKey];
+      const frameIndex = Math.floor((civ.runFrameTickMs || 0) / 140) % runFrames.length;
+      civ.displayModelKey = runFrames[Math.max(0, frameIndex)] || civ.modelKey;
+    } else if (!isUfoTarget) {
+      civ.displayModelKey = civ.standModelKey || civ.modelKey;
+    }
+    const civRect = getCivilianRect(civ);
+    if (ffRect && ff?.mode === 'active' && civRect && rectsOverlap(ffRect, civRect) && !isUfoTarget) {
+      const bonus = clamp(Number(civ.bonusPoints || 0), 0, 300);
+      if (bonus > 0) {
+        awardGameplayPoints(bonus);
+        addPointPopup(civRect.x + civRect.w * 0.5, civRect.y - 8, `+${bonus}`, '#a2ffb5', 68);
+        createBonusStars(civRect.x + civRect.w * 0.5, civRect.y + civRect.h * 0.35, 8);
+      }
+      if (ufoRaid?.abduction?.targetCivilianId === civ.id) ufoRaid.abduction = null;
+      rescueState.civilians.splice(i, 1);
+      continue;
+    }
+    if (civ.x < -80 || civ.x > (canvas.width + 80)) {
+      if (ufoRaid?.abduction?.targetCivilianId === civ.id) ufoRaid.abduction = null;
+      rescueState.civilians.splice(i, 1);
+    }
+  }
+
+  if (ff && ff.mode === 'hidden' && rescueState.civilians.length) {
+    ff.mode = 'active';
+    ff.x = getFirefighterTruckHomeX();
+    ff.vx = 0;
+  }
+}
+
+function drawFacingActorSprite(modelKey, rect, facing = 1) {
+  if (!rect) return;
+  const key = resolveSpriteKey(String(modelKey || ''));
+  if (key) ensureSpritesLoaded([key]);
+  ctx.save();
+  if (facing < 0) {
+    const cx = rect.x + rect.w * 0.5;
+    ctx.translate(cx, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-cx, 0);
+  }
+  const drawn = key ? drawSpriteFitted(key, rect.x, rect.y, rect.w, rect.h, true) : false;
+  if (!drawn) {
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(rect.x + rect.w * 0.32, rect.y + rect.h * 0.20, rect.w * 0.36, rect.h * 0.44);
+    ctx.fillStyle = '#ffd4be';
+    ctx.beginPath();
+    ctx.arc(rect.x + rect.w * 0.5, rect.y + rect.h * 0.16, Math.max(6, rect.w * 0.16), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rect.x + rect.w * 0.5, rect.y + rect.h * 0.64);
+    ctx.lineTo(rect.x + rect.w * 0.36, rect.y + rect.h * 0.96);
+    ctx.moveTo(rect.x + rect.w * 0.5, rect.y + rect.h * 0.64);
+    ctx.lineTo(rect.x + rect.w * 0.64, rect.y + rect.h * 0.96);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCivilianRescue() {
+  if (!rescueState) return;
+  rescueState.civilians.forEach((civ) => {
+    const rect = getCivilianRect(civ);
+    if (!rect) return;
+    drawFacingActorSprite(civ.displayModelKey || civ.modelKey || getDefaultCivilianModelKey(), rect, civ.facing || 1);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,245,120,0.94)';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('HELP', rect.x + rect.w * 0.5, rect.y - 6);
+    ctx.restore();
+  });
+  const ff = rescueState.firefighter;
+  const ffRect = getFirefighterRect();
+  if (ff && ffRect && ff.mode !== 'hidden') {
+    drawFacingActorSprite(ff.modelKey || getDefaultFirefighterModelKey(), ffRect, ff.facing || 1);
+  }
 }
 
 function initBlackBoxTruckLevels() {
@@ -15014,7 +15753,12 @@ function initUfoRaid() {
     beamTargetIndex: 0,
     exitScale: 1,
     targets: getBossIgnitionTargets(),
-    activeTarget: null
+    activeTarget: null,
+    leftHealth: 26,
+    rightHealth: 26,
+    crash: null,
+    abduction: null,
+    hitPulseUntil: 0
   };
 }
 
@@ -15420,6 +16164,7 @@ function loadLevel(lvl, options = {}) {
   currentLevel = lvl;
   level9EventState = null;
   truckEntryState = null;
+  rescueState = null;
   playerControlsEnabled = true;
   truckVisible = true;
   if (lvl !== 3) hasShownLevel3MoveCue = false;
@@ -15451,6 +16196,7 @@ function loadLevel(lvl, options = {}) {
   truckFacing = lane === TRUCK_LANES.right ? -1 : 1;
   truckFlightBoost = 0;
   truckFlightInput = 0;
+  resetRescueStateForLevel(levelData);
   const configuredTruckEntryDelayMs = clamp(Number(levelData?.truckEntryDelayMs ?? 0), 0, 120000);
   if (configuredTruckEntryDelayMs > 0 && lvl !== 9) {
     playerControlsEnabled = false;
@@ -17867,6 +18613,82 @@ BUILDER_UI.animalBonusPoints?.addEventListener('change', () => {
   ent.waterExitBonusPoints = clamp(Number(BUILDER_UI.animalBonusPoints.value || 0), 0, 50);
   builderSaveLastDraft();
 });
+BUILDER_UI.civilianSpawnEnabled?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianSpawnEnabled = BUILDER_UI.civilianSpawnEnabled.value === '1';
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianSpawnCount?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianSpawnCount = clamp(Number(BUILDER_UI.civilianSpawnCount.value || 1), 1, 8);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianSpawnDelayMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianSpawnDelayMs = clamp(Number(BUILDER_UI.civilianSpawnDelayMs.value || 2500), 0, 120000);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianSpawnIntervalMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianSpawnIntervalMs = clamp(Number(BUILDER_UI.civilianSpawnIntervalMs.value || 1700), 100, 60000);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianRunMode?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  const mode = String(BUILDER_UI.civilianRunMode.value || 'pingpong');
+  ent.civilianRunMode = (mode === 'direction' || mode === 'both') ? mode : 'pingpong';
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianRunDirection?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  const dir = String(BUILDER_UI.civilianRunDirection.value || 'nearest');
+  ent.civilianRunDirection = (dir === 'left' || dir === 'right') ? dir : 'nearest';
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianDoorSide?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  const side = String(BUILDER_UI.civilianDoorSide.value || 'auto');
+  ent.civilianDoorSide = (side === 'left' || side === 'right') ? side : 'auto';
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianRunSpeed?.addEventListener('input', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianRunSpeed = clamp(Number(BUILDER_UI.civilianRunSpeed.value || 2.3), 0.4, 7);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianRunDurationMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianRunDurationMs = clamp(Number(BUILDER_UI.civilianRunDurationMs.value || 11000), 500, 120000);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianBonusPoints?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianBonusPoints = clamp(Number(BUILDER_UI.civilianBonusPoints.value || 12), 0, 300);
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianModelKey?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianModelKey = resolveSpriteKey(String(BUILDER_UI.civilianModelKey.value || '')) || '';
+  builderSaveLastDraft();
+});
+BUILDER_UI.civilianFirefighterModelKey?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent || !isCivilianSpawnEntity(ent)) return;
+  ent.civilianFirefighterModelKey = resolveSpriteKey(String(BUILDER_UI.civilianFirefighterModelKey.value || '')) || '';
+  builderSaveLastDraft();
+});
 BUILDER_UI.layerEnemyEnabled?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -19199,7 +20021,8 @@ function applyWaterPushToEntities() {
   const moveables = entities.filter((ent) => ent.movableWithWater && ent.lockedPosition === false);
   const moveableSet = new Set(moveables);
   const waterReactive = entities.filter((ent) => !!ent.onWaterHitSpriteKey);
-  if (!moveables.length && !waterReactive.length) return;
+  const allowUfoDamage = currentLevel === FINAL_LEVEL && !!ufoRaid;
+  if (!moveables.length && !waterReactive.length && !allowUfoDamage) return;
   const touched = new Set();
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -19233,6 +20056,9 @@ function applyWaterPushToEntities() {
         p.life = Math.min(p.life, 6);
       }
     });
+    if (allowUfoDamage && applyWaterDamageToUfoRaidParticle(p)) {
+      p.life = Math.min(p.life, 6);
+    }
   }
   touched.forEach((ent) => {
     if (!ent?._waterExitActive) return;
@@ -20953,9 +21779,205 @@ function igniteBossTarget(target) {
   return;
 }
 
+function getUfoRaidCraftRect(raid, side) {
+  if (!raid) return null;
+  const layout = ENTITY_LAYOUT.ufo || { w: 140, h: 70 };
+  if (side === 'left') return { side: 'left', x: raid.leftX, y: raid.y, w: layout.w, h: layout.h };
+  if (side === 'right') return { side: 'right', x: raid.rightX, y: raid.y + 8, w: layout.w, h: layout.h };
+  return null;
+}
+
+function igniteNearbyFireSpots(x, y, radius = 180, healthRatio = 0.24) {
+  const r = Math.max(20, Number(radius || 0));
+  const ratio = clamp(Number(healthRatio || 0.24), 0.08, 0.8);
+  const r2 = r * r;
+  fireSpots.forEach((spot) => {
+    if (!spot) return;
+    const cx = Number(spot.x || 0) + (Number(spot.w || 0) * 0.5);
+    const cy = Number(spot.y || 0) + (Number(spot.h || 0) * 0.5);
+    const dx = cx - x;
+    const dy = cy - y;
+    if ((dx * dx) + (dy * dy) > r2) return;
+    const maxHealth = Math.max(10, Number(spot.maxHealth || 24));
+    const minIgniteHealth = Math.max(8, maxHealth * ratio);
+    spot.health = Math.min(maxHealth, Math.max(Number(spot.health || 0), minIgniteHealth));
+    spot.active = true;
+    spot.igniteAtMs = 0;
+    spot.outAtMs = null;
+    spot.outAwarded = false;
+  });
+}
+
+function knockDownUfoCraft(side) {
+  if (!ufoRaid || ufoRaid.phase === 'crash') return;
+  const craft = getUfoRaidCraftRect(ufoRaid, side);
+  if (!craft) return;
+  const otherSide = side === 'left' ? 'right' : 'left';
+  const other = getUfoRaidCraftRect(ufoRaid, otherSide);
+  const centerX = craft.x + craft.w * 0.5;
+  ufoRaid.phase = 'crash';
+  ufoRaid.timer = 0;
+  ufoRaid.abduction = null;
+  if (rescueState?.civilians?.length) {
+    rescueState.civilians.forEach((civ) => { civ.isAbductionTarget = false; });
+  }
+  ufoRaid.crash = {
+    side,
+    x: craft.x,
+    y: craft.y,
+    vx: side === 'left' ? -1.7 : 1.7,
+    vy: 0.55,
+    rot: 0,
+    rotVel: (Math.random() < 0.5 ? -1 : 1) * 0.07,
+    grounded: false,
+    burnMs: 0,
+    ignitePulseMs: 0,
+    exitDir: centerX < canvas.width * 0.5 ? -1 : 1
+  };
+  ufoRaid.flee = other ? {
+    x: other.x,
+    y: other.y,
+    dir: otherSide === 'left' ? -1 : 1
+  } : null;
+  addPointPopup(centerX, craft.y - 8, 'UFO DOWN!', '#8fe9ff', 64);
+}
+
+function applyWaterDamageToUfoRaidParticle(particle) {
+  if (!ufoRaid || currentLevel !== FINAL_LEVEL || !particle || particle.type !== 'water') return false;
+  if (ufoRaid.phase === 'exit' && ufoRaid.exitScale < 0.2) return false;
+  const hitboxes = [];
+  if (ufoRaid.phase === 'crash' && ufoRaid.crash) {
+    hitboxes.push({
+      side: ufoRaid.crash.side || 'left',
+      x: ufoRaid.crash.x,
+      y: ufoRaid.crash.y,
+      w: 140,
+      h: 70
+    });
+    if (ufoRaid.flee) {
+      hitboxes.push({ side: 'flee', x: ufoRaid.flee.x, y: ufoRaid.flee.y, w: 140, h: 70 });
+    }
+  } else {
+    const left = getUfoRaidCraftRect(ufoRaid, 'left');
+    const right = getUfoRaidCraftRect(ufoRaid, 'right');
+    if (left) hitboxes.push(left);
+    if (right) hitboxes.push(right);
+  }
+  const hit = hitboxes.find((box) => (
+    particle.x >= box.x && particle.x <= (box.x + box.w) &&
+    particle.y >= box.y && particle.y <= (box.y + box.h)
+  ));
+  if (!hit) return false;
+  particle.life = Math.min(particle.life, 6);
+  ufoRaid.hitPulseUntil = performance.now() + 120;
+  if (hit.side === 'left' || hit.side === 'right') {
+    const damage = 1.0 + (difficulty <= 1 ? 0.25 : (difficulty >= 3 ? 0.06 : 0.14));
+    if (hit.side === 'left') ufoRaid.leftHealth = Math.max(0, Number(ufoRaid.leftHealth || 0) - damage);
+    if (hit.side === 'right') ufoRaid.rightHealth = Math.max(0, Number(ufoRaid.rightHealth || 0) - damage);
+    if ((hit.side === 'left' && ufoRaid.leftHealth <= 0) || (hit.side === 'right' && ufoRaid.rightHealth <= 0)) {
+      knockDownUfoCraft(hit.side);
+    }
+  }
+  return true;
+}
+
+function updateUfoAbductionRaid(raid, dt, step) {
+  const abduction = raid?.abduction;
+  if (!abduction?.active) return false;
+  const civilians = rescueState?.civilians || [];
+  const idx = civilians.findIndex((civ) => civ.id === abduction.targetCivilianId);
+  const target = idx >= 0 ? civilians[idx] : null;
+  const targetX = target ? target.x : (raid.leftX + 70);
+  const targetY = Math.max(62, GRASS_Y - 204);
+  abduction.timerMs += Math.max(0, Number(dt || 0));
+  raid.leftX += ((targetX - 70) - raid.leftX) * Math.min(1, 0.14 * step);
+  raid.y += (targetY - raid.y) * Math.min(1, 0.12 * step);
+  if (abduction.phase === 'approach') {
+    const closeEnough = Math.abs((raid.leftX + 70) - targetX) < 9 && Math.abs(raid.y - targetY) < 10;
+    if (closeEnough || abduction.timerMs > 1400) {
+      abduction.phase = 'beam';
+      abduction.timerMs = 0;
+      raid.beamUntil = performance.now() + 1200;
+    }
+  } else if (abduction.phase === 'beam') {
+    if (target) target.displayModelKey = target.standModelKey || target.modelKey;
+    if (!abduction.abducted && abduction.timerMs >= 700) {
+      abduction.abducted = true;
+      if (idx >= 0) civilians.splice(idx, 1);
+      addPointPopup(targetX, GRASS_Y - 92, 'ABDUCTED!', '#ffb7ff', 70);
+    }
+    if (abduction.timerMs >= 1180) {
+      abduction.phase = 'depart';
+      abduction.timerMs = 0;
+    }
+  } else if (abduction.phase === 'depart') {
+    raid.leftX += abduction.exitDir * 3.7 * step;
+    raid.y -= 1.2 * step;
+    if (raid.leftX < -240 || raid.leftX > canvas.width + 240 || raid.y < -220) {
+      raid.abduction = null;
+      raid.phase = 'exit';
+      raid.timer = 0;
+      raid.flashUntil = performance.now() + 220;
+      raid.exitScale = 1;
+    }
+  }
+  return true;
+}
+
+function updateUfoCrashRaid(raid, dt, step) {
+  const crash = raid?.crash;
+  if (!crash) return false;
+  if (raid.flee) {
+    raid.flee.x += raid.flee.dir * 4.6 * step;
+    raid.flee.y -= 0.9 * step;
+  }
+  if (!crash.grounded) {
+    crash.vy += 0.23 * step;
+    crash.x += crash.vx * step;
+    crash.y += crash.vy * step;
+    crash.rot += crash.rotVel * step;
+    if (crash.y >= GRASS_Y - 76) {
+      crash.y = GRASS_Y - 76;
+      crash.grounded = true;
+      crash.vx *= 0.72;
+      crash.vy = 0;
+      crash.rotVel *= 0.62;
+      crash.ignitePulseMs = 0;
+      crash.burnMs = 0;
+      igniteNearbyFireSpots(crash.x + 70, GRASS_Y - 8, 220, 0.40);
+    }
+  } else {
+    crash.burnMs += Math.max(0, Number(dt || 0));
+    crash.ignitePulseMs += Math.max(0, Number(dt || 0));
+    crash.x += crash.vx * 0.18 * step;
+    crash.vx *= 0.992;
+    createSmoke(crash.x + 70, GRASS_Y - 10);
+    createFireParticles(crash.x + 70, GRASS_Y - 14, 6.2, 1.05, { big: true });
+    if (crash.ignitePulseMs >= 420) {
+      crash.ignitePulseMs = 0;
+      igniteNearbyFireSpots(crash.x + 70, GRASS_Y - 8, 126, 0.18);
+    }
+    const fleeGone = !raid.flee || raid.flee.x < -260 || raid.flee.x > canvas.width + 260 || raid.flee.y < -180;
+    if (crash.burnMs > 2600 && fleeGone) {
+      raid.phase = 'exit';
+      raid.leftX = crash.exitDir < 0 ? (crash.x - 130) : (crash.x + 18);
+      raid.rightX = crash.exitDir < 0 ? (crash.x + 32) : (crash.x + 190);
+      raid.y = crash.y - 10;
+      raid.flashUntil = performance.now() + 220;
+      raid.exitScale = 1;
+      raid.crash = null;
+      raid.flee = null;
+      raid.timer = 0;
+    }
+  }
+  return true;
+}
+
 function updateUfoRaid(dt) {
   if (!ufoRaid || currentLevel !== FINAL_LEVEL) return;
   const step = Math.max(0.25, dt / 16.67);
+  if (updateUfoAbductionRaid(ufoRaid, dt, step)) return;
+  if (ufoRaid.phase === 'crash' && updateUfoCrashRaid(ufoRaid, dt, step)) return;
   ufoRaid.timer += dt;
   if (ufoRaid.phase === 'enter') {
     ufoRaid.leftX += 3.0 * step;
@@ -21024,9 +22046,36 @@ function updateUfoPreview(dt) {
 
 function drawUfoRaid() {
   if (!ufoRaid || currentLevel !== FINAL_LEVEL) return;
+  if (ufoRaid.phase === 'crash' && ufoRaid.crash) {
+    const crash = ufoRaid.crash;
+    ctx.save();
+    const cx = crash.x + 70;
+    const cy = crash.y + 35;
+    ctx.translate(cx, cy);
+    ctx.rotate(crash.rot || 0);
+    ctx.translate(-cx, -cy);
+    drawUfo(crash.x, crash.y, false);
+    ctx.restore();
+    if (ufoRaid.flee) drawUfo(ufoRaid.flee.x, ufoRaid.flee.y, false);
+    return;
+  }
+  if (ufoRaid.abduction?.active) {
+    const beamMode = ufoRaid.abduction.phase === 'beam';
+    drawUfo(ufoRaid.leftX, ufoRaid.y, beamMode);
+    return;
+  }
   const beamMode = ufoRaid.phase === 'beam';
   drawUfo(ufoRaid.leftX, ufoRaid.y, beamMode);
   drawUfo(ufoRaid.rightX, ufoRaid.y + 8, beamMode);
+  if (ufoRaid.hitPulseUntil > performance.now()) {
+    ctx.save();
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = 'rgba(145, 235, 255, 0.75)';
+    ctx.beginPath();
+    ctx.arc((ufoRaid.leftX + ufoRaid.rightX) * 0.5 + 70, ufoRaid.y + 38, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
   if (ufoRaid.phase === 'exit' && ufoRaid.flashUntil > performance.now()) {
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.beginPath();
@@ -21365,9 +22414,11 @@ function loop() {
     requestAnimationFrame(loop);
     return;
   }
-  if (playerControlsEnabled) {
+  if (playerControlsEnabled && !isFirefighterControlActive()) {
     truck.x += truckDrive * truck.speed;
     truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
+  } else if (isFirefighterControlActive()) {
+    truckDrive = 0;
   } else {
     setTruckDrive(0);
   }
@@ -21391,14 +22442,15 @@ function loop() {
   updateUfoPreview(dt);
   updateUfoRaid(dt);
   updateLevel7Horse(dt);
-  updateEnemyRaid(dt, baseLevels[currentLevel - 1] || {});
+  const data = baseLevels[currentLevel - 1] || { entities: [] };
+  updateEnemyRaid(dt, data);
   updateEnemyLaserShots(dt);
+  updateCivilianRescue(dt, data);
   ctx.clearRect(0,0,1200,600);
   drawBackground();
 if (false && currentLevel === 11) drawPlacementGrid();
   drawBlackBoxTruckState();
 
-  const data = baseLevels[currentLevel-1];
   drawLevel7Horse(true);
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
     if (ent.type === 'tornado') drawTornado();
@@ -21535,13 +22587,18 @@ if (false && currentLevel === 11) drawPlacementGrid();
   const roadW = Math.max(80, roadEndX - roadStartX);
   ctx.fillStyle = '#000000';
   ctx.fillRect(roadStartX, ROAD_LANE_Y, roadW, ROAD_LANE_H);
+  drawCivilianRescue();
 
   if (!(data.entities || []).some((ent) => ent?.type === 'requiredFireTruck')) drawSideFireTruck(data);
   drawUfoPreview();
   drawUfoRaid();
   drawLevel7Horse(false);
 
-  if (truckVisible) {
+  const hoseReady = gameState === 'playing'
+    && pendingDispatchLevel === null
+    && !truckEntryState?.active
+    && !(level9EventState?.active && level9EventState?.phase !== 'active');
+  if (truckVisible && hoseReady) {
     const laserMode = isPrimaryLaserMode(data);
     if (!laserMode) {
       const tip = getClampedHoseEnd();
