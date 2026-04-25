@@ -253,7 +253,7 @@ button:hover { filter: brightness(1.2); }
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 54px;
+  bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -289,7 +289,7 @@ button:hover { filter: brightness(1.2); }
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 86px;
+  bottom: 76px;
   z-index: 1001;
   width: auto;
   min-width: 142px;
@@ -1587,6 +1587,13 @@ button:hover { filter: brightness(1.2); }
             <option value="laser">Laser</option>
           </select>
         </div>
+        <div class="builder-field">
+          <label for="builderHoseTeamEnabled">Hose Team On Truck</label>
+          <select id="builderHoseTeamEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
         <div class="builder-field weapon-zone">
           <label for="builderPrimaryLaserTankerRefill">Laser Mode Tanker Refill</label>
           <select id="builderPrimaryLaserTankerRefill">
@@ -1779,7 +1786,7 @@ button:hover { filter: brightness(1.2); }
         </div>
         <div class="builder-field">
           <label for="builderTargetLevelSlot">Save as Official Slot</label>
-          <input id="builderTargetLevelSlot" type="number" min="1" max="23" value="1">
+          <input id="builderTargetLevelSlot" type="number" min="1" max="999" value="1">
         </div>
         <div class="builder-field">
           <label for="builderEditLevelSelect">Load Existing Level</label>
@@ -4124,6 +4131,11 @@ let year2043State = {
 };
 const MUTUAL_AID_BUTTON_RECT = { x: 856, y: 18, w: 140, h: 38 };
 const TANKER_TIMER_RECT = { x: 732, y: 18, w: 118, h: 38 };
+const HUD_TOP_GAP = 16;
+const HUD_CLUSTER_GAP = 16;
+const TIME_SELECTOR_BUTTON_W = 58;
+const TIME_SELECTOR_BUTTON_H = 38;
+const TIME_SELECTOR_GAP = 12;
 const EARLY_REFILL_PENALTY_POINTS = 250;
 let earlyRefillWarningAccepted = false;
 let builderState = null;
@@ -4181,6 +4193,7 @@ const BUILDER_UI = {
   primaryVehicleFacingBase: document.getElementById('builderPrimaryVehicleFacingBase'),
   primaryVehicleFlight: document.getElementById('builderPrimaryVehicleFlight'),
   primaryAttackMode: document.getElementById('builderPrimaryAttackMode'),
+  hoseTeamEnabled: document.getElementById('builderHoseTeamEnabled'),
   primaryLaserTankerRefill: document.getElementById('builderPrimaryLaserTankerRefill'),
   primaryLaserColor: document.getElementById('builderPrimaryLaserColor'),
   primaryRocketType: document.getElementById('builderPrimaryRocketType'),
@@ -4342,6 +4355,7 @@ function createEmptyBuilderLevel() {
     truckSide: 'left',
     fireTruckTheme: 'standard',
     primaryAttackMode: 'water',
+    hoseTeamEnabled: true,
     primaryLaserTankerRefill: true,
     primaryLaserColor: '#4bb8ff',
     primaryRocketType: 'rocket',
@@ -5078,6 +5092,7 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.primaryVehicleFacingBase) BUILDER_UI.primaryVehicleFacingBase.value = builderState.primaryVehicleFacingBase === 'left' ? 'left' : 'right';
   if (BUILDER_UI.primaryVehicleFlight) BUILDER_UI.primaryVehicleFlight.value = builderState.primaryVehicleFlight ? '1' : '0';
   if (BUILDER_UI.primaryAttackMode) BUILDER_UI.primaryAttackMode.value = builderState.primaryAttackMode === 'laser' ? 'laser' : 'water';
+  if (BUILDER_UI.hoseTeamEnabled) BUILDER_UI.hoseTeamEnabled.value = builderState.hoseTeamEnabled ? '1' : '0';
   if (BUILDER_UI.primaryLaserTankerRefill) BUILDER_UI.primaryLaserTankerRefill.value = builderState.primaryLaserTankerRefill === false ? '0' : '1';
   if (BUILDER_UI.primaryLaserColor) BUILDER_UI.primaryLaserColor.value = /^#[0-9a-fA-F]{6}$/.test(String(builderState.primaryLaserColor || '')) ? String(builderState.primaryLaserColor) : '#4bb8ff';
   if (BUILDER_UI.primaryRocketType) BUILDER_UI.primaryRocketType.value = (builderState.primaryRocketType === 'plasma' || builderState.primaryRocketType === 'missile') ? builderState.primaryRocketType : 'rocket';
@@ -5236,6 +5251,7 @@ function builderReadUiIntoState() {
   builderState.primaryVehicleFacingBase = BUILDER_UI.primaryVehicleFacingBase?.value === 'left' ? 'left' : 'right';
   builderState.primaryVehicleFlight = BUILDER_UI.primaryVehicleFlight?.value === '1';
   builderState.primaryAttackMode = BUILDER_UI.primaryAttackMode?.value === 'laser' ? 'laser' : 'water';
+  builderState.hoseTeamEnabled = BUILDER_UI.hoseTeamEnabled?.value === '1';
   builderState.primaryLaserTankerRefill = BUILDER_UI.primaryLaserTankerRefill?.value !== '0';
   builderState.primaryLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.primaryLaserColor?.value || '')) ? String(BUILDER_UI.primaryLaserColor.value) : '#4bb8ff';
   builderState.primaryRocketType = (BUILDER_UI.primaryRocketType?.value === 'plasma' || BUILDER_UI.primaryRocketType?.value === 'missile') ? BUILDER_UI.primaryRocketType.value : 'rocket';
@@ -5379,6 +5395,10 @@ function builderPopulateLevelSelect() {
   const desired = clamp(previous || currentLevel || 1, 1, max || 1);
   if (BUILDER_UI.editLevelSelect) BUILDER_UI.editLevelSelect.value = String(desired);
   if (BUILDER_UI.topLevelLoader) BUILDER_UI.topLevelLoader.value = '';
+  if (BUILDER_UI.targetSlot) {
+    BUILDER_UI.targetSlot.min = '1';
+    BUILDER_UI.targetSlot.max = String(Math.max(1, max || BUILDER_SLOT_MAX || 1));
+  }
 }
 
 function builderLoadLevelBySlot(slot, announce = true) {
@@ -7411,7 +7431,11 @@ function isFinalAbductionScenario(levelData = null, level = currentLevel) {
 function isHoseExperimentLevel(levelData = null, level = currentLevel) {
   const lvl = Number(level || 0);
   const data = levelData || baseLevels[lvl - 1] || {};
-  return lvl === HOSE_EXPERIMENT_LEVEL || data?.hoseFirefighterExperiment === true;
+  const name = String(data?.name || '').toLowerCase();
+  return lvl === HOSE_EXPERIMENT_LEVEL
+    || data?.hoseFirefighterExperiment === true
+    || (lvl === 24)
+    || name.includes('hose firefighter experiment');
 }
 
 function resetYear2043State() {
@@ -20109,6 +20133,9 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
   const primaryAttackMode = typeof level.primaryAttackMode === 'string'
     ? (level.primaryAttackMode === 'laser' ? 'laser' : 'water')
     : ((fireTruckTheme === 'scifi' || !!primaryVehicleSprite) ? 'laser' : 'water');
+  const hoseTeamEnabled = typeof level.hoseTeamEnabled === 'boolean'
+    ? level.hoseTeamEnabled
+    : (fireTruckTheme !== 'scifi');
   const primaryLaserTankerRefill = level.primaryLaserTankerRefill !== false;
   const primaryLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(level.primaryLaserColor || '')) ? String(level.primaryLaserColor) : '#4bb8ff';
   const primaryRocketType = (level.primaryRocketType === 'plasma' || level.primaryRocketType === 'missile') ? level.primaryRocketType : 'rocket';
@@ -20127,6 +20154,7 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
     primaryVehicleSprite,
     primaryVehicleFlight: !!level.primaryVehicleFlight,
     primaryAttackMode,
+    hoseTeamEnabled,
     primaryLaserTankerRefill,
     primaryLaserColor,
     primaryRocketType,
@@ -20461,17 +20489,17 @@ if (hashLevelPackage?.level) {
 }
 
 function getTimeSelectorButtons() {
-  const buttonW = 62;
-  const buttonH = 38;
-  const gap = 6;
+  const buttonW = TIME_SELECTOR_BUTTON_W;
+  const buttonH = TIME_SELECTOR_BUTTON_H;
+  const gap = TIME_SELECTOR_GAP;
   const totalW = (buttonW * 3) + (gap * 2);
   const rect = canvas.getBoundingClientRect();
   const scaleX = rect.width > 0 ? (canvas.width / rect.width) : 1;
   const leftClipUnits = Math.max(0, (0 - rect.left) + 8) * scaleX;
   const rightClipUnits = Math.max(0, (rect.right - window.innerWidth) + 8) * scaleX;
   const safeLeft = 18 + leftClipUnits;
-  const safeRight = Math.max(safeLeft + totalW, canvas.width - 14 - rightClipUnits);
-  const startX = clamp(safeRight - totalW, safeLeft, canvas.width - totalW - 14);
+  const safeRight = Math.max(safeLeft + totalW, canvas.width - HUD_TOP_GAP - rightClipUnits);
+  const startX = clamp(safeRight - totalW, safeLeft, canvas.width - totalW - HUD_TOP_GAP);
   const y = 18;
   return [
     { label: 'Day', mode: 0, x: startX, y, w: buttonW, h: buttonH },
@@ -20494,13 +20522,13 @@ function getTimeSelectorBounds() {
 
 function getTankerTimerRect() {
   const timeBounds = getTimeSelectorBounds();
-  const x = Math.max(18, timeBounds.x - TANKER_TIMER_RECT.w - 10);
+  const x = Math.max(HUD_TOP_GAP, timeBounds.x - TANKER_TIMER_RECT.w - HUD_CLUSTER_GAP);
   return { x, y: TANKER_TIMER_RECT.y, w: TANKER_TIMER_RECT.w, h: TANKER_TIMER_RECT.h };
 }
 
 function getMutualAidButtonRect() {
   const timerRect = getTankerTimerRect();
-  const x = Math.max(18, timerRect.x - MUTUAL_AID_BUTTON_RECT.w - 10);
+  const x = Math.max(HUD_TOP_GAP, timerRect.x - MUTUAL_AID_BUTTON_RECT.w - HUD_CLUSTER_GAP);
   return { x, y: MUTUAL_AID_BUTTON_RECT.y, w: MUTUAL_AID_BUTTON_RECT.w, h: MUTUAL_AID_BUTTON_RECT.h };
 }
 
@@ -20572,10 +20600,27 @@ function isPrimaryLaserMode(levelData = null) {
   return level?.primaryAttackMode === 'laser';
 }
 
+function isActiveLaserCombatMode(levelData = null) {
+  const level = levelData || baseLevels[currentLevel - 1] || {};
+  // Non-sci-fi levels always keep water spray as the core firefighting mechanic.
+  if (!isScifiTruckActive(level)) return false;
+  return isPrimaryLaserMode(level);
+}
+
 function isTankerRefillEnabled(levelData = null) {
   const level = levelData || baseLevels[currentLevel - 1] || {};
   if (!isPrimaryLaserMode(level)) return true;
   return level?.primaryLaserTankerRefill !== false;
+}
+
+function isHoseTeamEnabled(levelData = null, level = currentLevel) {
+  const lvl = Number(level || 0);
+  const data = levelData || baseLevels[lvl - 1] || {};
+  if (isHoseExperimentLevel(data, lvl)) return true;
+  if (data?.hoseTeamEnabled === true) return true;
+  if (data?.hoseTeamEnabled === false) return false;
+  // Default for regular firefighting scenes: allow in-truck or out-on-hose play.
+  return !isScifiTruckActive(data);
 }
 
 function isFirefighterControlActive() {
@@ -20872,6 +20917,7 @@ function resetRescueStateForLevel(levelData) {
       runModelKeys: [getDefaultFirefighterModelKey()].filter(Boolean),
       displayModelKey: getDefaultFirefighterModelKey(),
       mode: 'hidden',
+      autoMounted: false,
       x: getFirefighterTruckHomeX(),
       vx: 0,
       facing: 1,
@@ -20943,6 +20989,7 @@ function spawnCivilianFromEmitter(emitter, levelData) {
     ff.runFrameTickMs = 0;
     if (ff.mode === 'hidden' || ff.mode === 'returning') {
       ff.mode = 'active';
+      ff.autoMounted = true;
       ff.x = getFirefighterTruckHomeX();
       ff.vx = 0;
       ff.facing = 1;
@@ -20955,9 +21002,8 @@ function spawnCivilianFromEmitter(emitter, levelData) {
 
 function updateCivilianRescue(dt, levelData) {
   if (gameState !== 'playing' || !rescueState || !levelData) return;
-  const hoseExperiment = isHoseExperimentLevel(levelData);
-  if ((pendingDispatchLevel !== null || truckEntryState?.active) && !hoseExperiment) return;
-  if ((level9EventState?.active && level9EventState?.phase !== 'active') && !hoseExperiment) return;
+  if (pendingDispatchLevel !== null || truckEntryState?.active) return;
+  if (level9EventState?.active && level9EventState?.phase !== 'active') return;
   const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
   const nowMs = levelElapsedMs;
 
@@ -20993,7 +21039,7 @@ function updateCivilianRescue(dt, levelData) {
       } else {
         ff.displayModelKey = ff.standModelKey || ff.modelKey || getDefaultFirefighterModelKey();
       }
-      if (!rescueState.civilians.length && !isHoseExperimentLevel(levelData)) {
+      if (!rescueState.civilians.length && !isHoseTeamEnabled(levelData, currentLevel)) {
         ff.mode = 'returning';
         ff.vx = 0;
       }
@@ -21801,14 +21847,15 @@ function loadLevel(lvl, options = {}) {
   truckFlightInput = 0;
   resetRescueStateForLevel(levelData);
   hoseExperimentState.showMountHintUntilMs = 0;
-  if (isHoseExperimentLevel(levelData, lvl) && rescueState?.firefighter) {
+  if (isHoseTeamEnabled(levelData, lvl) && rescueState?.firefighter) {
     const ff = rescueState.firefighter;
     const ffAnim = buildFirefighterAnimationSet(
       resolveSpriteKey(String(ff.modelKey || ''))
       || resolveSpriteKey('misc_human_firefighter_side_standing_right_459x200')
       || getDefaultFirefighterModelKey()
     );
-    ff.mode = 'active';
+    ff.mode = 'hidden';
+    ff.autoMounted = false;
     ff.x = getFirefighterTruckHomeX();
     ff.vx = 0;
     ff.facing = truckFacing >= 0 ? 1 : -1;
@@ -21819,8 +21866,6 @@ function loadLevel(lvl, options = {}) {
     ff.runFrameTickMs = 0;
     if (ff.standModelKey) ensureSpritesLoaded([ff.standModelKey]);
     if (ff.runModelKeys?.length) ensureSpritesLoaded(ff.runModelKeys);
-    firefighterCueUntilMs = levelElapsedMs + 4200;
-    showFirefighterMoveCue();
   }
   const configuredTruckEntryDelayMs = clamp(Number(levelData?.truckEntryDelayMs ?? 0), 0, 120000);
   if (configuredTruckEntryDelayMs > 0 && lvl !== 9) {
@@ -22047,7 +22092,7 @@ function loadLevel(lvl, options = {}) {
     if (lvl === 3) setTimeout(() => showLevel3MoveCue(), 250);
     if (lvl === 6) setTimeout(() => showLevel6TimeCue(), 250);
   }
-  if (isHoseExperimentLevel(levelData, lvl)) {
+  if (isHoseTeamEnabled(levelData, lvl)) {
     setTimeout(() => updateFirefighterMountButton(), 40);
   }
   const customBlackBox = levelData?.blackBoxPlan;
@@ -22335,6 +22380,7 @@ BUILDER_UI.primaryVehicleSprite?.addEventListener('change', () => {
 BUILDER_UI.primaryVehicleFacingBase?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryVehicleFlight?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryAttackMode?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
+BUILDER_UI.hoseTeamEnabled?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryLaserTankerRefill?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryLaserColor?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.primaryRocketType?.addEventListener('change', () => builderReadUiIntoState());
@@ -23269,7 +23315,7 @@ function handleStart(e) {
     } 
     if (!playerControlsEnabled) return;
     const levelData = baseLevels[currentLevel - 1] || {};
-  if (isPrimaryLaserMode(levelData)) {
+  if (isActiveLaserCombatMode(levelData)) {
       isLaserFiring = true;
       isSpraying = false;
       return;
@@ -23374,6 +23420,14 @@ try {
   }
 } catch (err) {}
 syncThumbStickVisibility();
+window.addEventListener('resize', () => {
+  syncThumbStickVisibility();
+  dockHudControlsToCanvasEdge();
+});
+window.addEventListener('orientationchange', () => {
+  syncThumbStickVisibility();
+  dockHudControlsToCanvasEdge();
+});
 
 class Particle {
   constructor(x, y, vx, vy, color, life, size, type) { 
@@ -23523,35 +23577,45 @@ function getClampedHoseEnd() {
 }
 
 function createWaterParticles() {
+  const origin = getHoseSprayOriginPoint();
   const tip = getClampedHoseEnd();
-  const truckPoint = getHoseSprayOriginPoint();
-  const attachX = truckPoint.x;
-  const attachY = truckPoint.y;
-  const impact = getFirstWaterImpactPoint(attachX, attachY, tip.x, tip.y);
-  const effectiveTip = impact ? impact : tip;
-  const dx = effectiveTip.x - attachX;
-  const dy = effectiveTip.y - attachY;
+  const firefighterMode = !!(isHoseTeamEnabled() && rescueState?.firefighter?.mode === 'active');
+  const originX = origin.x;
+  const originY = origin.y;
+  const impact = getFirstWaterImpactPoint(originX, originY, tip.x, tip.y);
+  const target = impact || tip;
+  const dx = target.x - originX;
+  const dy = target.y - originY;
   const len = Math.hypot(dx, dy) || 1;
+  const dirX = dx / len;
+  const dirY = dy / len;
+  const perpX = -dirY;
+  const perpY = dirX;
+
+  // Near nozzle drag: wide/short. Far drag: tight/long.
   const stretchFactor = Math.min(tip.length / getTruckHoseLengthLimit(), 1);
-  const coneSpread = 12 * (1 - stretchFactor * 0.93);
-  const hitReduction = impact ? 0.35 : 1;
-  const waterSpeed = (6.5 + stretchFactor * 21) * hitReduction;
-  const numStreams = impact ? 3 : (stretchFactor > 0.7 ? 4 : 10);
+  const closeBoost = Math.pow(1 - stretchFactor, 1.15);
+  const spreadBase = (firefighterMode ? 31 : 28) * (0.28 + closeBoost);
+  const hitReduction = impact ? 0.45 : 1;
+  const waterSpeed = ((5.2 + stretchFactor * 20.2) + (firefighterMode ? 2.2 : 0)) * hitReduction;
+  const numStreams = impact ? 3 : (stretchFactor > 0.72 ? 5 : 11);
+  const gravityBias = firefighterMode ? 0.45 : 2.2;
+
   for (let s = 0; s < numStreams; s++) {
-    const spread = coneSpread * (Math.random() - 0.5) * 0.8;
-    const perpX = -dy / len;
-    const perpY = dx / len;
-    const startX = effectiveTip.x + perpX * spread;
-    const startY = effectiveTip.y + perpY * spread;
-    const vx = (dx / len) * waterSpeed;
-    const vy = (dy / len) * waterSpeed + 4.2;
-    for (let i = 0; i < 7; i++) {
-      const progress = i / 6;
+    const lateral = (Math.random() - 0.5) * spreadBase;
+    const startX = originX + perpX * lateral + dirX * (0.8 + Math.random() * 1.2);
+    const startY = originY + perpY * lateral + dirY * (0.8 + Math.random() * 1.2);
+    const vx = dirX * waterSpeed + perpX * ((Math.random() - 0.5) * spreadBase * 0.11);
+    const vy = dirY * waterSpeed + perpY * ((Math.random() - 0.5) * spreadBase * 0.11) + gravityBias;
+    for (let i = 0; i < 5; i++) {
+      const jitter = i * 0.18;
       particles.push(new Particle(
-        startX + vx * progress * 0.6, startY + vy * progress * 0.6,
-        vx * 0.85 + (Math.random()-0.5)*1.2, vy * 0.85 + (Math.random()-0.5)*1.8,
+        startX + dirX * jitter, startY + dirY * jitter,
+        vx * (0.9 + Math.random() * 0.12), vy * (0.9 + Math.random() * 0.12),
         (Math.random() > 0.5 ? '#A0E8FF' : '#40C0FF'),
-        (impact ? 12 : 32) + Math.random() * 10, 2.8 + Math.random() * 1.6, 'water'
+        (impact ? 14 : (firefighterMode ? 38 : 30)) + Math.random() * 8,
+        2.6 + Math.random() * 1.4,
+        'water'
       ));
     }
   }
@@ -23821,7 +23885,7 @@ function getTruckNozzlePoint() {
 }
 
 function getFirefighterHoseHandPoint() {
-  if (!isHoseExperimentLevel() || rescueState?.firefighter?.mode !== 'active') return null;
+  if (!isHoseTeamEnabled() || rescueState?.firefighter?.mode !== 'active') return null;
   const ffRect = getFirefighterRect();
   const ff = rescueState?.firefighter;
   if (!ffRect || !ff) return null;
@@ -24101,7 +24165,7 @@ function drawTotalFireGauge() {
   let totalCurrent = 0; let totalMax = 0;
   fireSpots.forEach(s => { totalCurrent += Math.max(0, s.health); totalMax += s.maxHealth; });
   const percent = totalMax > 0 ? totalCurrent / totalMax : 0;
-  const gaugeX = 480; const gaugeY = 25; const gaugeWidth = 240; const gaugeHeight = 18; const radius = 9;
+  const gaugeX = 390; const gaugeY = 25; const gaugeWidth = 240; const gaugeHeight = 18; const radius = 9;
   ctx.fillStyle = '#333'; fillRoundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, radius);
   const grad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeWidth, gaugeY);
   grad.addColorStop(0, '#FF2200'); grad.addColorStop(1, '#FFDD00');
@@ -24144,7 +24208,7 @@ function canSprayWaterNow() {
 }
 
 function drawWaterGauge() {
-  const gaugeX = 480; const gaugeY = 76; const gaugeWidth = 240; const gaugeHeight = 14; const radius = 7;
+  const gaugeX = 390; const gaugeY = 76; const gaugeWidth = 240; const gaugeHeight = 14; const radius = 7;
   if (isYear2043Level(currentLevel)) {
     const percent = getYear2043HullPercent();
     ctx.fillStyle = '#25191a'; fillRoundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, radius);
@@ -26767,7 +26831,26 @@ function syncThumbStickVisibility() {
   const isMobileLike = noHover && coarsePointer && !hasAnyFinePointer;
   stick.style.display = (forcedArrows ? false : (forcedJoystick || isMobileLike)) ? 'block' : 'none';
   controls.style.display = 'flex';
-  controls.style.bottom = (stick.style.display === 'block') ? '12px' : '18px';
+  dockHudControlsToCanvasEdge();
+}
+
+function dockHudControlsToCanvasEdge() {
+  const rect = canvas?.getBoundingClientRect?.();
+  if (!rect || rect.height <= 0) return;
+  const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+  const gapBelowCanvas = Math.max(0, viewportH - rect.bottom);
+  // Slight negative overlap to sit controls on the game edge instead of deep in letterbox.
+  const overlapPx = 14;
+  const baseBottom = Math.max(8, Math.round(gapBelowCanvas - overlapPx));
+
+  const controls = document.getElementById('truckControls');
+  if (controls) controls.style.bottom = `${baseBottom}px`;
+
+  const mountBtn = document.getElementById('firefighterMountBtn');
+  if (mountBtn) mountBtn.style.bottom = `${baseBottom + 70}px`;
+
+  const stick = document.getElementById('thumbStick');
+  if (stick) stick.style.bottom = `${baseBottom}px`;
 }
 
 function clearMoveCue() {
@@ -26832,7 +26915,9 @@ function showFirefighterMoveCue() {
 function updateFirefighterMountButton() {
   const btn = document.getElementById('firefighterMountBtn');
   if (!btn) return;
-  if (!isHoseExperimentLevel()) {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const hoseTeamEnabled = isHoseTeamEnabled(levelData, currentLevel);
+  if (!hoseTeamEnabled) {
     btn.style.display = 'none';
     return;
   }
@@ -26850,6 +26935,7 @@ function updateFirefighterMountButton() {
         runModelKeys: [getDefaultFirefighterModelKey()].filter(Boolean),
         displayModelKey: getDefaultFirefighterModelKey(),
         mode: 'hidden',
+        autoMounted: false,
         x: getFirefighterTruckHomeX(),
         vx: 0,
         facing: truckFacing >= 0 ? 1 : -1,
@@ -26863,6 +26949,7 @@ function updateFirefighterMountButton() {
       runModelKeys: [getDefaultFirefighterModelKey()].filter(Boolean),
       displayModelKey: getDefaultFirefighterModelKey(),
       mode: 'hidden',
+      autoMounted: false,
       x: getFirefighterTruckHomeX(),
       vx: 0,
       facing: truckFacing >= 0 ? 1 : -1,
@@ -26870,7 +26957,21 @@ function updateFirefighterMountButton() {
       runFrameTickMs: 0
     };
   }
+  const truckArrived = truckVisible && !truckEntryState?.active && pendingDispatchLevel === null;
+  if (!truckArrived) {
+    btn.style.display = 'none';
+    return;
+  }
   const ff = rescueState.firefighter;
+  if (ff.mode === 'hidden' && ff.autoMounted !== true) {
+    ff.mode = 'active';
+    ff.autoMounted = true;
+    ff.x = getFirefighterTruckHomeX();
+    ff.vx = 0;
+    ff.facing = truckFacing >= 0 ? 1 : -1;
+    ff.displayModelKey = ff.standModelKey || ff.modelKey || getDefaultFirefighterModelKey();
+    showFirefighterMoveCue();
+  }
   const doorX = getFirefighterTruckHomeX();
   const nearDoor = Math.abs((ff.x || 0) - doorX) <= 64;
   if (ff.mode === 'active') {
@@ -26887,7 +26988,7 @@ function updateFirefighterMountButton() {
 }
 
 function toggleFirefighterMountState() {
-  if (gameState !== 'playing' || !isHoseExperimentLevel()) return;
+  if (gameState !== 'playing' || !isHoseTeamEnabled()) return;
   if (!rescueState?.firefighter) {
     updateFirefighterMountButton();
   }
@@ -27019,7 +27120,7 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
     truckFlightInput = -1;
   }
-  if ((e.key === 'e' || e.key === 'E') && isPrimaryLaserMode() && gameState === 'playing') {
+  if ((e.key === 'e' || e.key === 'E') && isActiveLaserCombatMode() && gameState === 'playing') {
     e.preventDefault();
     isRocketFiring = true;
     isSpraying = false;
@@ -27131,6 +27232,17 @@ if (false && currentLevel === 11) drawPlacementGrid();
     ctx.textAlign = 'center';
     ctx.fillText(btn.label, btn.x + (btn.w * 0.5), btn.y + 25);
   });
+  for (let i = 0; i < timeButtons.length - 1; i++) {
+    const left = timeButtons[i];
+    const right = timeButtons[i + 1];
+    const midX = (left.x + left.w + right.x) * 0.5;
+    ctx.strokeStyle = 'rgba(214,236,255,0.55)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(midX, left.y + 6);
+    ctx.lineTo(midX, left.y + left.h - 6);
+    ctx.stroke();
+  }
   drawTimeSelectorCue();
 
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
@@ -27241,7 +27353,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     && !(level9EventState?.active && level9EventState?.phase !== 'active');
   if (truckVisible && hoseReady) {
     const tip = getClampedHoseEnd();
-    const laserMode = isPrimaryLaserMode(data);
+    const laserMode = isActiveLaserCombatMode(data);
     ctx.strokeStyle = laserMode ? '#3ba8ff' : '#333333';
     ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.shadowBlur = 12; ctx.shadowColor = laserMode ? '#6bc3ff' : '#111';
     const truckPoint = getTruckNozzlePoint();
@@ -27250,24 +27362,45 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (firefighterHand) {
       ctx.save();
       ctx.strokeStyle = laserMode ? '#3289d8' : '#3a3a3a';
-      ctx.lineWidth = 10;
-      ctx.shadowBlur = laserMode ? 9 : 4;
+      ctx.lineWidth = 9;
+      ctx.lineJoin = 'round';
+      ctx.shadowBlur = laserMode ? 7 : 3;
+      const groundY = clamp(FIRETRUCK_LANE_Y + 3, ROAD_LANE_Y + 2, GRASS_Y - 10);
       ctx.beginPath();
       ctx.moveTo(truckPoint.x, truckPoint.y);
-      ctx.quadraticCurveTo((truckPoint.x + firefighterHand.x) * 0.5, Math.min(truckPoint.y, firefighterHand.y) - 34, firefighterHand.x, firefighterHand.y);
+      // Run the hose low along the truck tire/road level, then up to the firefighter.
+      ctx.lineTo(truckPoint.x, groundY);
+      ctx.lineTo(firefighterHand.x - 8, groundY);
+      ctx.quadraticCurveTo(firefighterHand.x - 2, groundY - 8, firefighterHand.x, firefighterHand.y);
       ctx.stroke();
       ctx.restore();
     }
     const hoseFacing = firefighterHand
       ? ((rescueState?.firefighter?.facing || truckFacing) >= 0 ? 1 : -1)
       : (truckFacing >= 0 ? 1 : -1);
-    ctx.beginPath();
-    ctx.moveTo(sprayPoint.x, sprayPoint.y);
-    ctx.quadraticCurveTo(sprayPoint.x + (hoseFacing * 86), sprayPoint.y - 132, tip.x, tip.y);
-    ctx.stroke();
+    if (!firefighterHand) {
+      ctx.beginPath();
+      ctx.moveTo(sprayPoint.x, sprayPoint.y);
+      ctx.quadraticCurveTo(sprayPoint.x + (hoseFacing * 86), sprayPoint.y - 132, tip.x, tip.y);
+      ctx.stroke();
+    }
     ctx.shadowBlur = 0;
-    ctx.fillStyle = laserMode ? '#1f7dff' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
-    ctx.fillStyle = laserMode ? '#b7e3ff' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+    if (firefighterHand) {
+      // Tiny nozzle only when the firefighter is holding the hose.
+      const nx = sprayPoint.x + (hoseFacing * 5);
+      const ny = sprayPoint.y - 1;
+      ctx.strokeStyle = laserMode ? '#bfe8ff' : '#b8b8b8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sprayPoint.x, sprayPoint.y);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+      ctx.fillStyle = laserMode ? '#dbf2ff' : '#c9c9c9';
+      ctx.fillRect(nx - 2, ny - 2, 4, 4);
+    } else {
+      ctx.fillStyle = laserMode ? '#1f7dff' : '#222'; ctx.fillRect(tip.x-10, tip.y-10, 20, 20);
+      ctx.fillStyle = laserMode ? '#b7e3ff' : '#555'; ctx.fillRect(tip.x-6, tip.y-15, 12, 9);
+    }
   }
 
   const fireBehaviorTiming = getLevelFireBehavior(data, difficulty);
@@ -27364,7 +27497,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     }
   });
 
-  if (isPrimaryLaserMode(data)) {
+  if (isActiveLaserCombatMode(data)) {
     isSpraying = false;
   }
   if (isSpraying) {
@@ -27372,7 +27505,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (canSprayWaterNow()) createWaterParticles();
     else isSpraying = false;
   }
-  if (isPrimaryLaserMode(data)) {
+  if (isActiveLaserCombatMode(data)) {
     pulseScifiLaser(dt, data);
     pulsePlayerRockets(dt, data);
   }

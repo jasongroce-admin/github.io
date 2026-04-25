@@ -128,7 +128,6 @@ if ($null -eq $pkg.level) {
 
 $targetSlot = if ($Slot -ge 1) { $Slot } else { [int]($pkg.integrationNotes.targetSlot) }
 if ($targetSlot -lt 1) { $targetSlot = 1 }
-if ($targetSlot -gt 23) { $targetSlot = 23 }
 
 Sync-MainBranch -repo $mainRepo
 Sync-MainBranch -repo $stageRepo

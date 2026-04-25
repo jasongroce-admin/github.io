@@ -2044,6 +2044,13 @@ body {
             <option value="laser">Laser</option>
           </select>
         </div>
+        <div class="builder-field">
+          <label for="builderHoseTeamEnabled">Hose Team On Truck</label>
+          <select id="builderHoseTeamEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
         <div class="builder-field weapon-zone">
           <label for="builderPrimaryLaserTankerRefill">Laser Mode Tanker Refill</label>
           <select id="builderPrimaryLaserTankerRefill">
@@ -2236,7 +2243,7 @@ body {
         </div>
         <div class="builder-field">
           <label for="builderTargetLevelSlot">Save as Official Slot</label>
-          <input id="builderTargetLevelSlot" type="number" min="1" max="23" value="1">
+          <input id="builderTargetLevelSlot" type="number" min="1" max="999" value="1">
         </div>
         <div class="builder-field">
           <label for="builderEditLevelSelect">Load Template</label>
@@ -4653,6 +4660,7 @@ const BUILDER_UI = {
   primaryVehicleFlight: document.getElementById('builderPrimaryVehicleFlight'),
   primaryLaserEmitterSide: document.getElementById('builderPrimaryLaserEmitterSide'),
   primaryAttackMode: document.getElementById('builderPrimaryAttackMode'),
+  hoseTeamEnabled: document.getElementById('builderHoseTeamEnabled'),
   primaryLaserTankerRefill: document.getElementById('builderPrimaryLaserTankerRefill'),
   primaryLaserColor: document.getElementById('builderPrimaryLaserColor'),
   primaryRocketType: document.getElementById('builderPrimaryRocketType'),
@@ -4848,6 +4856,7 @@ function createEmptyBuilderLevel() {
     fireTruckTheme: 'scifi',
     primaryVehicleSprite: defaultPrimaryVehicleSprite,
     primaryAttackMode: 'laser',
+    hoseTeamEnabled: false,
     primaryLaserTankerRefill: true,
     primaryLaserColor: '#4bb8ff',
     primaryRocketType: 'rocket',
@@ -5596,6 +5605,7 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.primaryLaserEmitterSide) BUILDER_UI.primaryLaserEmitterSide.value = (builderState.primaryLaserEmitterSide === 'left' || builderState.primaryLaserEmitterSide === 'right' || builderState.primaryLaserEmitterSide === 'center') ? builderState.primaryLaserEmitterSide : 'auto';
   if (BUILDER_UI.primaryVehicleFlight) BUILDER_UI.primaryVehicleFlight.value = builderState.primaryVehicleFlight ? '1' : '0';
   if (BUILDER_UI.primaryAttackMode) BUILDER_UI.primaryAttackMode.value = builderState.primaryAttackMode === 'laser' ? 'laser' : 'water';
+  if (BUILDER_UI.hoseTeamEnabled) BUILDER_UI.hoseTeamEnabled.value = builderState.hoseTeamEnabled ? '1' : '0';
   if (BUILDER_UI.primaryLaserTankerRefill) BUILDER_UI.primaryLaserTankerRefill.value = builderState.primaryLaserTankerRefill === false ? '0' : '1';
   if (BUILDER_UI.primaryLaserColor) BUILDER_UI.primaryLaserColor.value = /^#[0-9a-fA-F]{6}$/.test(String(builderState.primaryLaserColor || '')) ? String(builderState.primaryLaserColor) : '#4bb8ff';
   if (BUILDER_UI.primaryRocketType) BUILDER_UI.primaryRocketType.value = (builderState.primaryRocketType === 'plasma' || builderState.primaryRocketType === 'missile') ? builderState.primaryRocketType : 'rocket';
@@ -5783,6 +5793,7 @@ function builderReadUiIntoState() {
   builderState.primaryLaserEmitterSide = (BUILDER_UI.primaryLaserEmitterSide?.value === 'left' || BUILDER_UI.primaryLaserEmitterSide?.value === 'right' || BUILDER_UI.primaryLaserEmitterSide?.value === 'center') ? BUILDER_UI.primaryLaserEmitterSide.value : 'auto';
   builderState.primaryVehicleFlight = BUILDER_UI.primaryVehicleFlight?.value === '1';
   builderState.primaryAttackMode = BUILDER_UI.primaryAttackMode?.value === 'laser' ? 'laser' : 'water';
+  builderState.hoseTeamEnabled = BUILDER_UI.hoseTeamEnabled?.value === '1';
   builderState.primaryLaserTankerRefill = BUILDER_UI.primaryLaserTankerRefill?.value !== '0';
   builderState.primaryLaserColor = /^#[0-9a-fA-F]{6}$/.test(String(BUILDER_UI.primaryLaserColor?.value || '')) ? String(BUILDER_UI.primaryLaserColor.value) : '#4bb8ff';
   builderState.primaryRocketType = (BUILDER_UI.primaryRocketType?.value === 'plasma' || BUILDER_UI.primaryRocketType?.value === 'missile') ? BUILDER_UI.primaryRocketType.value : 'rocket';
@@ -5937,6 +5948,10 @@ function builderPopulateLevelSelect() {
   const desired = clamp(previous || currentLevel || 1, 1, max || 1);
   if (BUILDER_UI.editLevelSelect) BUILDER_UI.editLevelSelect.value = String(desired);
   if (BUILDER_UI.topLevelLoader) BUILDER_UI.topLevelLoader.value = '';
+  if (BUILDER_UI.targetSlot) {
+    BUILDER_UI.targetSlot.min = '1';
+    BUILDER_UI.targetSlot.max = String(Math.max(1, max || BUILDER_SLOT_MAX || 1));
+  }
 }
 
 function builderLoadLevelBySlot(slot, announce = true) {
@@ -8853,7 +8868,7 @@ const BUILDER_MIN_SCALE = 0.01;
 const BUILDER_MAX_SCALE = 2.8;
 const BUILDER_SNAP_X = 10;
 const BUILDER_SNAP_Y = 5;
-const BUILDER_SLOT_MAX = 23;
+const BUILDER_SLOT_MAX = Math.max(23, baseLevels.length || 23);
 const BUILDER_APP_VERSION = 'deluxe-23';
 const BUILDER_SOURCE_OVERRIDES_JSON = `/*YOUBLEVEL_SOURCE_OVERRIDES_START*/
 {
@@ -14692,6 +14707,7 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
     primaryVehicleSprite,
     primaryVehicleFlight: !!level.primaryVehicleFlight,
     primaryAttackMode,
+    hoseTeamEnabled: !!level.hoseTeamEnabled,
     primaryLaserTankerRefill,
     primaryLaserColor,
     primaryRocketType,
@@ -18141,6 +18157,7 @@ BUILDER_UI.primaryVehicleFacingBase?.addEventListener('change', () => builderRea
 BUILDER_UI.primaryLaserEmitterSide?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryVehicleFlight?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryAttackMode?.addEventListener('change', () => { builderReadUiIntoState(); builderSyncLevelOptionVisibility(); });
+BUILDER_UI.hoseTeamEnabled?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryLaserTankerRefill?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.primaryLaserColor?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.primaryRocketType?.addEventListener('change', () => builderReadUiIntoState());
