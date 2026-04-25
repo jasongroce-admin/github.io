@@ -22749,12 +22749,19 @@ function igniteTornadoFireGroupByEntityKey(entityKey) {
 function initLevel9EventState(levelData, preparedSpots) {
   const entities = levelData?.entities || [];
   const findIndex = (predicate) => entities.findIndex(predicate);
-  const busIdx = (() => {
-    const builderBus = findIndex((ent) => ent?.type === 'builderSprite' && String(ent?.spriteKey || '').toLowerCase() === 'busschoolleft');
-    if (builderBus >= 0) return builderBus;
-    return findIndex((ent) => ent?.type === 'busUpsideDown');
+  const busSchoolIdx = findIndex((ent) => ent?.type === 'busSchoolLeft');
+  const busUpsideIdx = findIndex((ent) => ent?.type === 'busUpsideDown');
+  const builderBusIdx = findIndex((ent) => ent?.type === 'builderSprite' && /busschoolleft|school_bus_yellow|schoolbus|school_bus/.test(String(ent?.spriteKey || '').toLowerCase()));
+  // Level 9 uses a yellow school bus that swaps to the upside-down bus when the tornado passes.
+  // Track the upside-down entity for bounds, but use the swap trigger so ignition happens at the correct moment.
+  const busIdx = busUpsideIdx >= 0 ? busUpsideIdx : (busSchoolIdx >= 0 ? busSchoolIdx : builderBusIdx);
+  const busSwapAtX = (() => {
+    const src = busSchoolIdx >= 0 ? entities[busSchoolIdx] : (busUpsideIdx >= 0 ? entities[busUpsideIdx] : null);
+    const raw = src?.stormSwapAtX ?? src?.stormSwapX ?? src?.stormTriggerX ?? 730;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 730;
   })();
-  const schoolIdx = findIndex((ent) => ent?.type === 'kennardSchool');
+  const schoolIdx = findIndex((ent) => ent?.type === 'kennardSchool' || ent?.type === 'schoolhouse');
   const tree2Idx = findIndex((ent) => ent?.type === 'stormTree' && Number(ent?.x || 0) >= 900);
   const busKey = busIdx >= 0
     ? `${entities[busIdx]?.type || 'builderSprite'}:${busIdx}`
@@ -22843,6 +22850,7 @@ function initLevel9EventState(levelData, preparedSpots) {
     active: true,
     phase: 'tornado',
     busIdx,
+    busSwapAtX,
     schoolIgniteX: resolvedSchoolIgniteX,
     treeIgniteDelayMs: 1250,
     schoolIgnitedAt: null,
@@ -22871,6 +22879,10 @@ function updateLevel9Event(dt, levelData) {
         const box = getEntityBounds(bus);
         if (box) busHit = isTornadoPastX(box.x + box.w * 0.35);
       }
+    }
+    // Prefer igniting the bus at the actual visual swap moment (yellow bus -> upside-down bus).
+    if (!busHit && Number.isFinite(Number(state.busSwapAtX))) {
+      busHit = isTornadoPastX(Number(state.busSwapAtX));
     }
     if (busHit && !state.busIgnited) {
       activateLevel9FireGroup(state.busSpots);
