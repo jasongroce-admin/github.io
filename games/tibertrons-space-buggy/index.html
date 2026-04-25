@@ -398,9 +398,50 @@
         min-height: 52px;
         font-size: 0.96rem;
       }
-      .fire-fab {
+      .mobile-stick {
         position: fixed;
         left: 14px;
+        bottom: calc(16px + env(safe-area-inset-bottom));
+        width: 118px;
+        height: 118px;
+        border-radius: 999px;
+        border: 2px solid rgba(126, 188, 255, 0.55);
+        background: radial-gradient(circle at 40% 35%, rgba(30, 83, 132, 0.7), rgba(8, 22, 42, 0.92));
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45), inset 0 0 22px rgba(95, 177, 255, 0.28);
+        z-index: 66;
+        display: none;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .mobile-stick .ring {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(168, 214, 255, 0.5);
+      }
+      .mobile-stick .knob {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 44px;
+        height: 44px;
+        margin-left: -22px;
+        margin-top: -22px;
+        border-radius: 999px;
+        border: 1px solid rgba(218, 240, 255, 0.82);
+        background: radial-gradient(circle at 34% 32%, rgba(210, 238, 255, 0.98), rgba(82, 151, 219, 0.86));
+        box-shadow: 0 8px 16px rgba(2, 9, 18, 0.55);
+        pointer-events: none;
+        transform: translate(0px, 0px);
+      }
+      .fire-fab {
+        position: fixed;
+        right: 14px;
+        left: auto;
         bottom: calc(18px + env(safe-area-inset-bottom));
         min-width: 88px;
         min-height: 56px;
@@ -417,6 +458,11 @@
         }
         .stats-row {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (hover: none) and (pointer: coarse) {
+        #touchControls {
+          display: none !important;
         }
       }
     </style>
@@ -472,7 +518,7 @@
           <button id="restartCheckpointBtn" class="btn" type="button">Restart At Checkpoint</button>
           <button id="toDashboardBtn" class="btn ghost" type="button">Dashboard</button>
         </div>
-        <div class="legend">Controls: Auto-scroll right. Left/Right adjust speed. Jump timing clears craters. Aim follows mouse/touch point, click to fire, plus bottom-left Fire button on mobile.</div>
+        <div id="missionLegend" class="legend">Controls: Auto-scroll right. Left/Right adjust speed. Jump timing clears craters. Aim follows mouse/touch point and click/tap to fire.</div>
         <div class="canvas-wrap">
           <canvas id="gameCanvas" width="1200" height="580"></canvas>
           <div id="deathOverlay" class="overlay">
@@ -503,10 +549,14 @@
           <button class="btn" data-ctl="jump" type="button">Jump</button>
           <button class="btn" data-ctl="boost" type="button">Boost</button>
         </div>
+        <div id="mobileStick" class="mobile-stick" aria-label="Movement joystick">
+          <div class="ring"></div>
+          <div id="mobileStickKnob" class="knob"></div>
+        </div>
         <button id="fireFab" class="btn fire-fab" data-ctl="fire" type="button">Fire</button>
       </section>
     </main>
 
-    <script src="app.js?v=20260424"></script>
+    <script src="app.js?v=20260425a"></script>
   </body>
 </html>

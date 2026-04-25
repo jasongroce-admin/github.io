@@ -117,6 +117,21 @@ button:hover { filter: brightness(1.2); }
 }
 #levelCompleteScreen h1 { font-size: 24px; color: #0F0; margin: 0 0 12px 0; }
 #levelCompleteScreen p { font-size: 15.5px; line-height: 1.4; margin: 8px 0; color: #ddd; }
+#futureChoiceButtons button {
+  width: min(320px, calc(100vw - 64px));
+  margin: 4px 0;
+}
+#futureChoiceButtons .future-primary {
+  background: linear-gradient(180deg, #23a0ff, #0c5ecf);
+  border: 1px solid rgba(185, 227, 255, 0.82);
+  box-shadow: 0 10px 20px rgba(14, 117, 228, 0.4);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+#futureChoiceButtons .future-secondary {
+  background: #2a4f76;
+  border: 1px solid rgba(162, 205, 252, 0.64);
+}
 
 .buttons {
   margin-top: 22px;
@@ -257,6 +272,74 @@ button:hover { filter: brightness(1.2); }
 }
 #missionStoryBackBtn {
   background: #375f8f;
+  border: 1px solid rgba(190, 221, 255, 0.72);
+}
+
+#finalThanksScreen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.86);
+  z-index: 1245;
+  pointer-events: auto;
+}
+#finalThanksCard {
+  width: min(880px, calc(100vw - 28px));
+  max-height: calc(100dvh - 30px);
+  overflow: auto;
+  border-radius: 16px;
+  border: 2px solid rgba(142, 206, 255, 0.84);
+  background: linear-gradient(180deg, rgba(14, 28, 48, 0.98), rgba(6, 14, 23, 0.98));
+  box-shadow: 0 24px 56px rgba(0,0,0,0.62);
+  color: #e8f5ff;
+  padding: 18px 18px 16px;
+}
+#finalThanksCard h2 {
+  margin: 0 0 10px 0;
+  color: #9fd4ff;
+  font-size: 30px;
+}
+#finalThanksCard p {
+  margin: 8px 0;
+  line-height: 1.45;
+  font-size: 16px;
+  color: #d6e9fb;
+}
+#finalThanksDonate {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(124, 185, 242, 0.5);
+  background: rgba(9, 32, 58, 0.55);
+}
+#finalThanksSummary {
+  color: #ffe08b !important;
+  font-weight: 700;
+}
+#finalThanksActions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#finalThanksActions button {
+  width: auto;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+#finalThanksReplayBtn {
+  background: #1f7d47;
+}
+#finalThanksTitleBtn {
+  background: #375f8f;
+  border: 1px solid rgba(190, 221, 255, 0.72);
+}
+#finalThanksDonateBtn {
+  background: #21548f;
   border: 1px solid rgba(190, 221, 255, 0.72);
 }
 
@@ -2801,11 +2884,31 @@ button:hover { filter: brightness(1.2); }
     </div>
     
 <div class="buttons" id="futureChoiceButtons" style="display:none;">
-  <button class="secondary-btn button-slide" onclick="startHoseExperiment()">TRY HOSE FIREFIGHTER TEST</button>
-  <button class="button-slide" onclick="startYear2043Preview()">PREVIEW YEAR 2043</button>
-  <button class="secondary-btn button-slide" onclick="endAfterAbduction()">END GAME</button>
-  <button class="secondary-btn button-slide" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
+  <button class="button-slide future-primary" onclick="startYear2043Preview()">CONTINUE TO YEAR 2043</button>
+  <button class="secondary-btn button-slide future-secondary" onclick="endAfterAbduction()">FINISH & VIEW THANK YOU</button>
+  <button class="secondary-btn button-slide future-secondary" onclick="startHoseExperiment()">TRY HOSE FIREFIGHTER TEST</button>
+  <button class="secondary-btn button-slide future-secondary" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
 </div>
+  </div>
+</div>
+
+<div id="finalThanksScreen" aria-hidden="true">
+  <div id="finalThanksCard">
+    <h2 id="finalThanksHeading">Thank You for Playing</h2>
+    <p id="finalThanksSummary"></p>
+    <p>This game was created to bring fun and entertainment to our community while sharing fire-safety reminders between levels. It was also built to help raise funds for new tools, equipment upgrades, and the long-term goal of building a modern fire station that can serve our growing community for the next 100 years.</p>
+    <p>The Kennard Volunteer Fire Department was founded in 1924. In 1974, a powerful tornado devastated much of our town, destroyed the school, and required major rebuilding of the town hall and fire station. Our community kept moving forward, and today our needs have grown again. Modern fire apparatus are larger and longer, and our current station no longer fits the equipment we rely on to protect the town.</p>
+    <div id="finalThanksDonate">
+      <p style="margin-top:0;"><strong>If you would like to support the Kennard Volunteer Fire Department:</strong></p>
+      <p>Email: <strong>vfd@kennardin.com</strong></p>
+      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>For Volunteer Fire Department</strong> in the memo.</p>
+    </div>
+    <p style="margin-bottom:0;">Thank you for playing and helping keep our volunteers strong.<br>I hope you enjoyed the game.<br>Jason Groce - Kennard, Indiana</p>
+    <div id="finalThanksActions">
+      <button id="finalThanksDonateBtn" type="button" onclick="returnToFirePage()">Fire Department Page</button>
+      <button id="finalThanksTitleBtn" type="button" onclick="closeFinalThanksToTitle()">Back To Title</button>
+      <button id="finalThanksReplayBtn" type="button" onclick="finalThanksPlayAgain()">Play Again</button>
+    </div>
   </div>
 </div>
 
@@ -4442,9 +4545,13 @@ function getEntityBounds(ent) {
 }
 
 function getTruckDrawRect() {
-  const levelData = baseLevels[currentLevel - 1] || {};
-  const spec = getTruckSpriteRenderSpec(levelData, truckFacing, getTruckRenderScale(), truck.x, getTruckY());
-  return spec ? { x: spec.x, y: spec.y, w: spec.w, h: spec.h } : { x: truck.x, y: getTruckY() - 120, w: 220, h: 120 };
+  try {
+    const levelData = baseLevels[currentLevel - 1] || {};
+    const spec = getTruckSpriteRenderSpec(levelData, truckFacing, getTruckRenderScale(), truck.x, getTruckY());
+    return spec ? { x: spec.x, y: spec.y, w: spec.w, h: spec.h } : { x: truck.x, y: getTruckY() - 120, w: 220, h: 120 };
+  } catch (_) {
+    return { x: Number(truck?.x || 120), y: Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y) - 120, w: 220, h: 120 };
+  }
 }
 
 function rectsOverlap(a, b) {
@@ -4607,6 +4714,7 @@ let spaceStarfield = [];
 let spaceStarPanX = 0;
 let spaceStarPanY = 0;
 let enemyCrashFx = [];
+let enemyHealthDrops = [];
 let waterCapacity = 100;
 let waterCurrent = 100;
 let currentDifficultyTuning = null;
@@ -7335,12 +7443,13 @@ function builderTestLevel() {
   const runtimeLevel = builderCloneToRuntimeLevel();
   const testDifficulty = clamp(Number(runtimeLevel.testDifficulty ?? 1), 1, 3);
   difficulty = testDifficulty;
-  if (builderTestLevelIndex == null) {
-    baseLevels.push(runtimeLevel);
-    builderTestLevelIndex = baseLevels.length - 1;
-  } else {
-    baseLevels[builderTestLevelIndex] = runtimeLevel;
-  }
+  const selectedSlot = clamp(
+    Number(BUILDER_UI.editLevelSelect?.value || BUILDER_UI.topLevelLoader?.value || BUILDER_UI.targetSlot?.value || currentLevel || 1),
+    1,
+    Math.max(1, Math.min(BUILDER_SLOT_MAX, baseLevels.length || BUILDER_SLOT_MAX))
+  );
+  builderTestLevelIndex = selectedSlot - 1;
+  baseLevels[builderTestLevelIndex] = runtimeLevel;
   if (BUILDER_UI.screen) BUILDER_UI.screen.style.display = 'none';
   builderTestActive = true;
   document.getElementById('builderReturnFromTestBtn').style.display = 'block';
@@ -7954,7 +8063,6 @@ function isHoseExperimentLevel(levelData = null, level = currentLevel) {
   const name = String(data?.name || '').toLowerCase();
   return lvl === HOSE_EXPERIMENT_LEVEL
     || data?.hoseFirefighterExperiment === true
-    || (lvl === 24)
     || name.includes('hose firefighter experiment');
 }
 
@@ -7978,6 +8086,35 @@ function resetYear2043State() {
 function getYear2043HullPercent() {
   const damage = clamp(Number(year2043State?.truckDamage || 0), 0, YEAR2043_HULL_MAX);
   return clamp(1 - (damage / YEAR2043_HULL_MAX), 0, 1);
+}
+
+function isHeroHullModeActive(levelData = null) {
+  const data = levelData || baseLevels[currentLevel - 1] || {};
+  return isYear2043Level(currentLevel) || isActiveLaserCombatMode(data);
+}
+
+function addTruckHullRepair(amount, source = 'pickup') {
+  const heal = clamp(Number(amount || 0), 0, 90);
+  if (heal <= 0) return;
+  year2043State.truckDamage = clamp(Number(year2043State.truckDamage || 0) - heal, 0, YEAR2043_HULL_MAX);
+  const rect = getTruckDrawRect() || { x: Number(truck?.x || 120), y: Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y) - 92, w: 170, h: 92 };
+  const pct = Math.round(getYear2043HullPercent() * 100);
+  const color = source === 'drop' ? '#8fffd2' : '#a5ffdd';
+  addPointPopup(rect.x + rect.w * 0.5, rect.y - 22, `HULL +${Math.round(heal)} (${pct}%)`, color, 62);
+}
+
+function spawnEnemyHealthDrop(x, y, amount = 8) {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+  enemyHealthDrops.push({
+    x,
+    y,
+    vx: (Math.random() - 0.5) * 1.2,
+    vy: -1.2 - Math.random() * 0.8,
+    amount: clamp(Number(amount || 8), 2, 24),
+    ttlMs: 7200,
+    phase: 'fall',
+    _seed: Math.random() * 100000
+  });
 }
 
 function getYear2043WaveTotal(levelData, level = currentLevel) {
@@ -8004,11 +8141,15 @@ function getScifiOppositeSpawnDirection(levelData = null) {
 }
 
 function registerTruckImpactDamage(amount, source = 'impact') {
-  if (!isYear2043Level(currentLevel)) return;
   const delta = clamp(Number(amount || 0), 0, 90);
   if (delta <= 0) return;
   year2043State.truckDamage = clamp(Number(year2043State.truckDamage || 0) + delta, 0, YEAR2043_HULL_MAX);
-  const rect = getTruckDrawRect();
+  const rect = getTruckDrawRect() || {
+    x: clamp(Number(truck.x || 120), -220, 1300),
+    y: clamp(Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y), 40, 600) - 92,
+    w: 170,
+    h: 92
+  };
   const x = rect.x + rect.w * 0.5;
   const y = rect.y - 10;
   const pct = Math.round(getYear2043HullPercent() * 100);
@@ -8028,7 +8169,7 @@ function markRaidAttackerDestroyed(ent, reason = 'down', popupX = null, popupY =
   const isScifiEnemy = /(ufo|saucer|delta|cigar|mothership|scifi|alien|space|hover|fighter|pod|mech|armored)/.test(keyText);
   createSmoke(cx, cy);
   createFireParticles(cx, cy, isUfo ? 8.5 : 5.4, isUfo ? 1.45 : 1.05, { big: true });
-  if (isScifiEnemy) {
+  if (isScifiEnemy && !enemyRaidState?.isScifiRaid) {
     enemyCrashFx.push({
       kind: 'blast',
       spriteKey: resolveSpriteKey(String(ent?.spriteKey || '')) || '',
@@ -8042,6 +8183,14 @@ function markRaidAttackerDestroyed(ent, reason = 'down', popupX = null, popupY =
       ttlMs: 460
     });
   }
+  if (ent._raidSpawned && enemyRaidState?.isScifiRaid && !isYear2043Level(currentLevel) && !ent._raidKillCredited) {
+    ent._raidKillCredited = true;
+    const raidRequired = Math.max(0, Number(enemyRaidState.requiredKills || 0));
+    const nextRaidKills = Math.max(0, Number(enemyRaidState.levelKills || 0)) + 1;
+    enemyRaidState.levelKills = raidRequired > 0 ? Math.min(nextRaidKills, raidRequired) : nextRaidKills;
+    addScorePoints(3, baseLevels[currentLevel - 1] || {});
+    addPointPopup(cx, cy - 28, '+3', '#9dfbcf', 54);
+  }
   if (reason === 'collision') {
     addPointPopup(cx, cy - 6, 'RAMMED!', '#ffaf7a', 64);
   } else if (isUfo) {
@@ -8051,12 +8200,20 @@ function markRaidAttackerDestroyed(ent, reason = 'down', popupX = null, popupY =
   }
   if (ent._raidSpawned && isYear2043Level(currentLevel) && !ent._year2043KillCredited) {
     ent._year2043KillCredited = true;
-    year2043State.levelKills = Math.max(0, Number(year2043State.levelKills || 0)) + 1;
+    const yearRequired = Math.max(0, Number(year2043State.requiredKills || 0));
+    const nextYearKills = Math.max(0, Number(year2043State.levelKills || 0)) + 1;
+    year2043State.levelKills = yearRequired > 0 ? Math.min(nextYearKills, yearRequired) : nextYearKills;
     year2043State.totalKills = Math.max(0, Number(year2043State.totalKills || 0)) + 1;
-    year2043State.waveKills = Math.max(0, Number(year2043State.waveKills || 0)) + 1;
+    const waveGoal = Math.max(0, Number(year2043State.waveGoal || 0));
+    const nextWaveKills = Math.max(0, Number(year2043State.waveKills || 0)) + 1;
+    year2043State.waveKills = waveGoal > 0 ? Math.min(nextWaveKills, waveGoal) : nextWaveKills;
     const bonus = reason === 'collision' ? 2 : 4;
     addScorePoints(bonus, baseLevels[currentLevel - 1] || {});
     addPointPopup(cx, cy - 28, `+${bonus}`, '#9dfbcf', 58);
+  }
+  if (ent._raidSpawned && isHeroHullModeActive(baseLevels[currentLevel - 1] || {})) {
+    const heal = reason === 'collision' ? 4 : (isUfo ? 10 : 7);
+    spawnEnemyHealthDrop(cx, cy, heal);
   }
   return true;
 }
@@ -8067,6 +8224,7 @@ function drawTruckDamageFireOverlay(levelData = null) {
   const burn = clamp(1 - integrity, 0, 1);
   if (burn < 0.12) return;
   const rect = getTruckDrawRect();
+  if (!isFiniteRect(rect)) return;
   const flicker = 0.7 + Math.sin(levelElapsedMs / 150) * 0.3;
   const tongues = Math.floor(2 + burn * 7);
   ctx.save();
@@ -8093,11 +8251,7 @@ function drawTruckDamageFireOverlay(levelData = null) {
 }
 
 function getMaxLevel() {
-  const inExperimentPlay = gameState !== 'title' && currentLevel === HOSE_EXPERIMENT_LEVEL;
-  if (year2043State?.previewUnlocked || isYear2043Level(currentLevel) || inExperimentPlay) {
-    return baseLevels.length || YEAR2043_END_LEVEL;
-  }
-  return Math.min(FINAL_LEVEL, baseLevels.length || FINAL_LEVEL);
+  return Math.max(1, Number(baseLevels.length || YEAR2043_END_LEVEL || FINAL_LEVEL || 1));
 }
 
 function updateLevelSkipHud() {
@@ -8242,15 +8396,23 @@ function getTruckSpriteRenderSpec(levelData = null, facing = truckFacing, render
 
 function drawTruckSpriteSpec(spec) {
   if (!spec || !spec.key) return false;
-  if (spec.flipX) {
-    ctx.save();
-    ctx.translate(spec.x + spec.w, spec.y);
-    ctx.scale(-1, 1);
-    const ok = drawSprite(spec.key, 0, 0, spec.w, spec.h);
-    ctx.restore();
-    return !!ok;
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const scifiFlight = isScifiTruckActive(levelData) && isPrimaryLaserMode(levelData) && isPrimaryFlightModeActive(levelData);
+  const fighterKey = resolveSpriteKey('scifi_kvfd_ufo_fighter_side_512x256_2');
+  const usePitch = scifiFlight && (!!fighterKey && String(spec.key || '') === String(fighterKey));
+  const pitchRad = usePitch ? ((-clamp(Number(truckFlightInput || 0), -1, 1)) * (Math.PI / 18)) : 0;
+  if (!spec.flipX && Math.abs(pitchRad) < 0.0001) {
+    return drawSprite(spec.key, spec.x, spec.y, spec.w, spec.h);
   }
-  return drawSprite(spec.key, spec.x, spec.y, spec.w, spec.h);
+  ctx.save();
+  const cx = spec.x + spec.w * 0.5;
+  const cy = spec.y + spec.h * 0.5;
+  ctx.translate(cx, cy);
+  if (pitchRad) ctx.rotate(pitchRad);
+  if (spec.flipX) ctx.scale(-1, 1);
+  const ok = drawSprite(spec.key, -spec.w * 0.5, -spec.h * 0.5, spec.w, spec.h);
+  ctx.restore();
+  return !!ok;
 }
 
 function updateTruckFlight(dt, levelData = null) {
@@ -8929,11 +9091,10 @@ function buildHoseExperimentLevel() {
   return source;
 }
 
-const HOSE_EXPERIMENT_LEVEL = FINAL_LEVEL + 1;
-baseLevels.push(buildHoseExperimentLevel());
+const HOSE_EXPERIMENT_LEVEL = -1;
 
 const YEAR2043_LEVEL_COUNT = 7;
-const YEAR2043_START_LEVEL = HOSE_EXPERIMENT_LEVEL + 1;
+const YEAR2043_START_LEVEL = FINAL_LEVEL + 1;
 const YEAR2043_END_LEVEL = YEAR2043_START_LEVEL + YEAR2043_LEVEL_COUNT - 1;
 const YEAR2043_HULL_MAX = 180;
 
@@ -8984,7 +9145,7 @@ function buildYear2043Levels() {
       timeOfDay: 8,
       truckSide: 'left',
       fireTruckTheme: 'scifi',
-      primaryVehicleSprite: 'spaceEngineRight',
+      primaryVehicleSprite: 'scifi_kvfd_ufo_fighter_side_512x256_2',
       primaryVehicleFacingBase: 'right',
       primaryVehicleScale: scifiScale,
       primaryVehicleFlight: true,
@@ -9023,7 +9184,6 @@ function buildYear2043Levels() {
 baseLevels.push(...buildYear2043Levels());
 
 function enforceFixedCampaignLevels() {
-  baseLevels[HOSE_EXPERIMENT_LEVEL - 1] = deepClone(normalizeBuilderLevel(buildHoseExperimentLevel()));
   const yearLevels = buildYear2043Levels().map((lvl) => normalizeBuilderLevel(lvl));
   yearLevels.forEach((lvl, idx) => {
     const slot = YEAR2043_START_LEVEL + idx;
@@ -22617,6 +22777,7 @@ function loadLevel(lvl, options = {}) {
   currentDifficultyTuning = getDifficultyTuning(difficulty, lvl, 0);
   resetWaterForLevel();
   const levelData = baseLevels[lvl - 1];
+  year2043State.truckDamage = 0;
   if (isYear2043Level(lvl)) {
     year2043State.previewUnlocked = true;
     year2043State.inCampaign = true;
@@ -22633,7 +22794,6 @@ function loadLevel(lvl, options = {}) {
     year2043State.inCampaign = false;
     year2043State.levelKills = 0;
     year2043State.requiredKills = 0;
-    year2043State.truckDamage = 0;
     year2043State.waveTotal = 0;
     year2043State.waveNumber = 0;
     year2043State.waveKills = 0;
@@ -22724,6 +22884,7 @@ function loadLevel(lvl, options = {}) {
   enemyLaserShots = [];
   enemyBombShots = [];
   playerRocketShots = [];
+  enemyHealthDrops = [];
   if (dispatchAutoAdvance) {
     clearTimeout(dispatchAutoAdvance);
     dispatchAutoAdvance = null;
@@ -22954,6 +23115,9 @@ function checkWin() {
     if (liveAttackers || enemyLaserShots.length || enemyBombShots.length || playerRocketShots.length) return;
   } else if ((levelData?.primaryAttackMode === 'laser' || levelData?.fireTruckTheme === 'scifi') && fireSpots.length === 0) {
     if (!enemyRaidState) return;
+    const requiredKills = Math.max(0, Number(enemyRaidState.requiredKills || 0));
+    const levelKills = Math.max(0, Number(enemyRaidState.levelKills || 0));
+    if (requiredKills > 0 && levelKills < requiredKills) return;
     const liveAttackers = Array.isArray(enemyRaidState?.attackers)
       ? enemyRaidState.attackers.some((ent) => ent && !ent._laserDestroyed)
       : false;
@@ -22967,14 +23131,22 @@ function checkWin() {
   const copy = getLevelDispatchCopy(currentLevel, 'complete');
   const isOriginalFinal = currentLevel === FINAL_LEVEL;
   const isFutureFinal = currentLevel === YEAR2043_END_LEVEL;
+  if (isFutureFinal) {
+    showFinalThanksScreen('year2043');
+    return;
+  }
   const showFutureChoice = isOriginalFinal;
   const showFinalButtons = isFutureFinal;
   document.getElementById('levelTitle').textContent = copy.title;
   if (showFutureChoice) {
-    document.getElementById('encourageText').innerHTML = 'Abduction response complete.<br>Continue to a Year 2043 combat preview?';
-    document.getElementById('safetyTip').textContent = 'Preview mode uses lasers only and wave-based enemies.';
+    document.getElementById('encourageText').innerHTML = 'Abduction response complete.<br>Choose your next mission path.';
+    document.getElementById('safetyTip').textContent = 'Year 2043 uses laser combat and wave-based enemy sectors.';
   } else if (isYear2043Level(currentLevel)) {
-    const killLine = `Kills: ${year2043State.levelKills}/${year2043State.requiredKills}`;
+    const shownKills = Math.min(
+      Math.max(0, Number(year2043State.levelKills || 0)),
+      Math.max(0, Number(year2043State.requiredKills || 0))
+    );
+    const killLine = `Kills: ${shownKills}/${year2043State.requiredKills}`;
     document.getElementById('encourageText').innerHTML = isFutureFinal
       ? 'Year 2043 corridor secured.<br>You held the line through all seven sectors.'
       : `Sector clear.<br>${killLine}`;
@@ -23038,6 +23210,11 @@ function playGameAgain() {
   screen.classList.remove('show');
   setTimeout(() => {
     screen.style.display = 'none';
+    const finalScreen = document.getElementById('finalThanksScreen');
+    if (finalScreen) {
+      finalScreen.style.display = 'none';
+      finalScreen.setAttribute('aria-hidden', 'true');
+    }
     resetYear2043State();
     hasShownFirefighterMoveCue = false;
     firefighterCueUntilMs = 0;
@@ -23050,6 +23227,59 @@ function playGameAgain() {
 }
 
 function endAfterAbduction() {
+  const screen = document.getElementById('levelCompleteScreen');
+  if (screen) {
+    screen.classList.remove('show');
+    screen.style.display = 'none';
+  }
+  document.querySelectorAll('.button-slide').forEach((b) => b.classList.remove('show'));
+  showFinalThanksScreen('level23');
+}
+
+function showFinalThanksScreen(path = 'general') {
+  const screen = document.getElementById('levelCompleteScreen');
+  if (screen) {
+    screen.classList.remove('show');
+    screen.style.display = 'none';
+  }
+  const title = document.getElementById('finalThanksHeading');
+  const summary = document.getElementById('finalThanksSummary');
+  if (title) title.textContent = 'Thank You for Playing';
+  if (summary) {
+    if (path === 'year2043') {
+      const shownKills = Math.min(
+        Math.max(0, Number(year2043State.levelKills || 0)),
+        Math.max(0, Number(year2043State.requiredKills || 0))
+      );
+      const hullPct = Math.round(getYear2043HullPercent() * 100);
+      summary.textContent = `Year 2043 campaign complete. Sector clears: ${shownKills}/${Math.max(0, Number(year2043State.requiredKills || 0))}. Hull integrity on final clear: ${hullPct}%.`;
+    } else if (path === 'level23') {
+      summary.textContent = 'You completed the main response storyline and kept Kennard standing strong.';
+    } else {
+      summary.textContent = 'Thanks for helping protect Kennard through every scene.';
+    }
+  }
+  const finalScreen = document.getElementById('finalThanksScreen');
+  if (!finalScreen) return;
+  finalScreen.style.display = 'flex';
+  finalScreen.setAttribute('aria-hidden', 'false');
+}
+
+function closeFinalThanksToTitle() {
+  const finalScreen = document.getElementById('finalThanksScreen');
+  if (finalScreen) {
+    finalScreen.style.display = 'none';
+    finalScreen.setAttribute('aria-hidden', 'true');
+  }
+  playGameAgain();
+}
+
+function finalThanksPlayAgain() {
+  const finalScreen = document.getElementById('finalThanksScreen');
+  if (finalScreen) {
+    finalScreen.style.display = 'none';
+    finalScreen.setAttribute('aria-hidden', 'true');
+  }
   playGameAgain();
 }
 
@@ -23069,7 +23299,7 @@ function startHoseExperiment() {
     screen.style.display = 'none';
     document.querySelectorAll('.button-slide').forEach((b) => b.classList.remove('show'));
     captureHoseCarryModeFromCurrentState();
-    loadLevel(HOSE_EXPERIMENT_LEVEL);
+    loadLevel(YEAR2043_START_LEVEL);
     updateLevelSkipHud();
   }, 450);
 }
@@ -24535,8 +24765,8 @@ function pulseScifiLaser(dt, levelData) {
   const dirLen = Math.hypot(dirXRaw, dirYRaw) || 1;
   const dirX = dirXRaw / dirLen;
   const dirY = dirYRaw / dirLen;
-  const beamStartX = tip.x;
-  const beamStartY = tip.y;
+  const beamStartX = truckPoint.x;
+  const beamStartY = truckPoint.y;
   const beamLength = 520;
   const beamEndX = beamStartX + (dirX * beamLength);
   const beamEndY = beamStartY + (dirY * beamLength);
@@ -24776,9 +25006,9 @@ function getTruckNozzlePoint() {
   const levelData = baseLevels[currentLevel - 1] || {};
   const laserMode = isActiveLaserCombatMode(levelData);
   if (laserMode) {
-    // Sci-fi laser should originate from the turret barrel tip.
-    const xRatio = truckFacing >= 0 ? 0.60 : 0.40;
-    const yRatio = 0.22;
+    // Sci-fi laser should originate from the front barrel tip.
+    const xRatio = truckFacing >= 0 ? 0.76 : 0.24;
+    const yRatio = 0.17;
     return { x: rect.x + rect.w * xRatio, y: rect.y + rect.h * yRatio };
   }
   const primarySprite = getLevelPrimaryVehicleSprite(levelData);
@@ -24817,11 +25047,11 @@ function drawScifiTruckThrusters(levelData = null) {
   const rect = getTruckDrawRect();
   const rearDir = truckFacing >= 0 ? -1 : 1;
   const pulse = 0.65 + (Math.sin(levelElapsedMs / 110) * 0.35);
-  const flameLen = (26 + (altitude * 54)) * pulse;
-  const rearX = rearDir < 0 ? (rect.x + rect.w * 0.08) : (rect.x + rect.w * 0.92);
+  const flameLen = (16 + (altitude * 34)) * pulse;
+  const rearX = rearDir < 0 ? (rect.x + rect.w * 0.14) : (rect.x + rect.w * 0.86);
   const rearY = rect.y + rect.h * 0.56;
   const underY = rect.y + rect.h * 0.95;
-  const underOffsets = [0.28, 0.48, 0.68];
+  const underOffsets = [0.36, 0.50, 0.64];
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   const rearGrad = ctx.createLinearGradient(rearX, rearY, rearX + (rearDir * flameLen), rearY);
@@ -25165,8 +25395,10 @@ function canSprayWaterNow() {
 }
 
 function drawWaterGauge() {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const showHullGauge = isYear2043Level(currentLevel) || (isScifiTruckActive(levelData) && isPrimaryLaserMode(levelData));
   const gaugeX = 390; const gaugeY = 76; const gaugeWidth = 240; const gaugeHeight = 14; const radius = 7;
-  if (isYear2043Level(currentLevel)) {
+  if (showHullGauge) {
     const percent = getYear2043HullPercent();
     ctx.fillStyle = '#25191a'; fillRoundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, radius);
     const gradFuture = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeWidth, gaugeY);
@@ -25409,22 +25641,6 @@ function drawBackground() {
     sgrad.addColorStop(1, '#050915');
     ctx.fillStyle = sgrad;
     ctx.fillRect(0, 0, 1200, 600);
-    let spaceBackdropKey = resolveSpriteKey(String(levelData.backgroundSpriteKey || ''));
-    if (!spaceBackdropKey && isYear2043Level(currentLevel)) {
-      const idx = clamp(currentLevel - YEAR2043_START_LEVEL, 0, YEAR2043_BACKDROPS.length - 1);
-      spaceBackdropKey = resolveSpriteKey(String(YEAR2043_BACKDROPS[idx] || ''));
-    }
-    if (spaceBackdropKey) {
-      ensureSpritesLoaded([spaceBackdropKey]);
-      const driftX = (spaceStarPanX * 0.18);
-      const driftY = (spaceStarPanY * 0.14);
-      ctx.save();
-      ctx.globalAlpha = 0.50;
-      drawSpriteFitted(spaceBackdropKey, -90 + driftX, -16 + driftY, 1320, 430, false);
-      ctx.globalAlpha = 0.22;
-      drawSpriteFitted(spaceBackdropKey, -40 + driftX * 0.5, 18 + driftY * 0.6, 1280, 390, false);
-      ctx.restore();
-    }
     spaceStarfield.forEach((s, idx) => {
       const x = ((s.x + spaceStarPanX * s.depth) % 1220 + 1220) % 1220 - 10;
       const y = ((s.y + spaceStarPanY * s.depth) % 620 + 620) % 620 - 10;
@@ -26405,6 +26621,13 @@ function initEnemyRaid(levelData) {
   const baseTargetCount = isScifiCombatLevel
     ? clamp(Number(levelData?.enemyRaid?.targetCount ?? Math.min(5, profiles.length)), 3, 6)
     : Math.max(1, profiles.length);
+  const scifiRequiredKills = isScifiCombatLevel
+    ? clamp(
+      Number(levelData?.enemyRaid?.requiredKills ?? levelData?.enemyTargetCount ?? Math.max(baseTargetCount + 3, baseTargetCount * 3)),
+      baseTargetCount,
+      120
+    )
+    : 0;
   enemyRaidState = {
     profiles,
     targetCount: baseTargetCount,
@@ -26425,6 +26648,9 @@ function initEnemyRaid(levelData) {
     formationSpecs,
     attackers: [],
     isScifiRaid: isScifiCombatLevel,
+    levelKills: 0,
+    requiredKills: scifiRequiredKills,
+    spawnedTotal: 0,
     _spawnedAny: false,
     spawnAccumulatorMs: 0,
     nextSpawnDelayMs: spawnMinDelayMs,
@@ -26585,6 +26811,7 @@ function spawnEnemyRaidAttacker(spriteKey = '', options = {}) {
     clone._formationLockMs = clamp(Number(options.formationLockMs ?? 1450), 300, 4200);
   }
   enemyRaidState.attackers.push(clone);
+  enemyRaidState.spawnedTotal = Math.max(0, Number(enemyRaidState.spawnedTotal || 0)) + 1;
   enemyRaidState._spawnedAny = true;
   return true;
 }
@@ -26631,7 +26858,13 @@ function ensureEnemyRaidCount(dt) {
   }
   enemyRaidState.attackers = enemyRaidState.attackers.filter((ent) => ent && !ent._laserDestroyed);
   const current = enemyRaidState.attackers.length;
-  const needed = Math.max(0, enemyRaidState.targetCount - current);
+  let needed = Math.max(0, enemyRaidState.targetCount - current);
+  if (enemyRaidState.isScifiRaid && !isYear2043Level(currentLevel)) {
+    const requiredKills = Math.max(0, Number(enemyRaidState.requiredKills || 0));
+    const spawnedTotal = Math.max(0, Number(enemyRaidState.spawnedTotal || 0));
+    const remainingSpawnBudget = Math.max(0, requiredKills - spawnedTotal);
+    needed = Math.min(needed, remainingSpawnBudget);
+  }
   if (needed <= 0) return;
   const elapsed = Math.max(0, Number(dt || 0));
   enemyRaidState.spawnAccumulatorMs = Math.max(0, Number(enemyRaidState.spawnAccumulatorMs || 0)) + elapsed;
@@ -26690,12 +26923,31 @@ function updateYear2043WaveProgress() {
 }
 
 function getEnemyRaidTargetRect(ent, levelData) {
+  const fallbackRect = (() => {
+    const t = getTruckDrawRect();
+    if (t && Number.isFinite(Number(t.x)) && Number.isFinite(Number(t.y))) return t;
+    const w = 170;
+    const h = 92;
+    const x = clamp(Number(truck.x || 120), -220, 1300);
+    const y = clamp(Number(getTruckY ? getTruckY() : (FIRETRUCK_LANE_Y - h)), 40, 600) - h;
+    return { x, y, w, h };
+  })();
   const targetId = String(ent?.aggressiveTargetId || 'primaryVehicle');
-  if (!targetId || targetId === 'primaryVehicle') return getTruckDrawRect();
+  if (!targetId || targetId === 'primaryVehicle') return fallbackRect;
   const entities = Array.isArray(levelData?.entities) ? levelData.entities : [];
   const target = entities.find((item) => item && String(item.id || '') === targetId);
-  if (!target || target._laserDestroyed) return getTruckDrawRect();
-  return getEntityBounds(target) || getTruckDrawRect();
+  if (!target || target._laserDestroyed) return fallbackRect;
+  return getEntityBounds(target) || fallbackRect;
+}
+
+function isFiniteRect(rect) {
+  return !!rect
+    && Number.isFinite(Number(rect.x))
+    && Number.isFinite(Number(rect.y))
+    && Number.isFinite(Number(rect.w))
+    && Number.isFinite(Number(rect.h))
+    && Number(rect.w) > 0
+    && Number(rect.h) > 0;
 }
 
 function updateEnemyRaid(dt, levelData) {
@@ -26704,7 +26956,7 @@ function updateEnemyRaid(dt, levelData) {
   updateYear2043WaveProgress();
   ensureEnemyRaidCount(dt);
   const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
-  const truckRect = getTruckDrawRect();
+  const truckRect = getTruckDrawRect() || { x: clamp(Number(truck.x || 120), -220, 1300), y: clamp(Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y), 40, 600) - 92, w: 170, h: 92 };
   const raidIsScifi = !!enemyRaidState.isScifiRaid;
   const nowMs = Number(levelElapsedMs || 0);
   enemyRaidState.attackers.forEach((ent) => {
@@ -26712,6 +26964,7 @@ function updateEnemyRaid(dt, levelData) {
     if (!Number.isFinite(Number(ent._seed))) ent._seed = Math.random() * 100000;
     if (!Number.isFinite(Number(ent._raidBaseScale))) ent._raidBaseScale = clamp(Number(ent.scale || 1), 0.15, 3);
     const targetRect = getEnemyRaidTargetRect(ent, levelData);
+    if (!isFiniteRect(targetRect)) return;
     const skill = clamp(Number(ent.aggressiveSkill ?? 1), 0.2, 2.5);
     const slowed = nowMs < Number(ent._slowUntilMs || 0);
     const slowFactor = slowed ? clamp(Number(ent._slowFactor || 0.58), 0.34, 1) : 1;
@@ -26798,7 +27051,9 @@ function updateEnemyRaid(dt, levelData) {
     const nowPerf = performance.now();
     const provoked = !!ent.fightBackEnabled && Number(ent._enemyProvokedUntil || 0) > nowPerf;
     const phaseCanFire = !(raidIsScifi || ent._raidIsScifi) || ent._raidPhase === 'hover' || ent._raidPhase === 'attack';
-    const canShoot = !!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && phaseCanFire && (!!ent.aggressiveEnabled || provoked);
+    const canShoot = (raidIsScifi || ent._raidIsScifi)
+      ? (ent._enemyLaserCdMs <= 0 && phaseCanFire)
+      : (!!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && phaseCanFire && (!!ent.aggressiveEnabled || provoked));
     if (canShoot) {
       const bounds = getEntityBounds(ent);
       if (bounds) {
@@ -26806,10 +27061,12 @@ function updateEnemyRaid(dt, levelData) {
         const sy = bounds.y + bounds.h * 0.45;
         const tx2 = targetRect.x + targetRect.w * 0.5;
         const ty2 = targetRect.y + targetRect.h * 0.35;
+        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(tx2) || !Number.isFinite(ty2)) return;
         const dx = tx2 - sx;
         const dy = ty2 - sy;
         const len = Math.hypot(dx, dy) || 1;
         const projSpeed = 7.2 + (skill * 1.2);
+        if (!Number.isFinite(projSpeed) || projSpeed <= 0) return;
         enemyLaserShots.push({
           x: sx,
           y: sy,
@@ -26832,6 +27089,7 @@ function updateEnemyRaid(dt, levelData) {
         const sx = bounds.x + bounds.w * 0.5;
         const sy = bounds.y + bounds.h * 0.9;
         const tx2 = targetRect.x + targetRect.w * 0.5;
+        if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(tx2)) return;
         enemyBombShots.push({
           x: sx,
           y: sy,
@@ -26845,8 +27103,19 @@ function updateEnemyRaid(dt, levelData) {
       }
       ent._enemyBombCdMs = clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000) / Math.max(0.45, skill);
     }
-    if (ent._raidSpawned && ((ent.x || 0) < -320 || (ent.x || 0) > 1620)) {
-      ent._laserDestroyed = true;
+    const xPos = Number(ent.x || 0);
+    const reachedRecycleEdge = xPos <= -240 || xPos >= 1540;
+    if (ent._raidSpawned && reachedRecycleEdge) {
+      if (raidIsScifi || ent._raidIsScifi) {
+        const fromLeft = String(ent._raidSpawnDirection || enemyRaidState.spawnDirection || 'right') === 'left';
+        ent.x = fromLeft ? -260 : 1460;
+        ent._raidSpawnX = ent.x;
+        ent.baseY = clamp(Number(ent.baseY || 170) + ((Math.random() - 0.5) * 42), 90, 500);
+        ent._raidPhase = 'approach';
+        ent._raidHoverUntilMs = 0;
+      } else {
+        ent._laserDestroyed = true;
+      }
     }
   });
   enemyLaserShots = enemyLaserShots.filter((shot) => shot && shot.ttlMs > 0);
@@ -26856,9 +27125,17 @@ function updateEnemyRaid(dt, levelData) {
 function updateEnemyLaserShots(dt) {
   if ((!enemyLaserShots.length && !enemyBombShots.length) || gameState !== 'playing') return;
   if (pendingDispatchLevel !== null || level1GuideOpen) return;
-  const truckRect = getTruckDrawRect();
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const hullMode = isYear2043Level(currentLevel) || isActiveLaserCombatMode(levelData);
+  const truckRect = getTruckDrawRect() || {
+    x: clamp(Number(truck.x || 120), -220, 1300),
+    y: clamp(Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y), 40, 600) - 92,
+    w: 170,
+    h: 92
+  };
   const ms = Math.max(0, Number(dt || 0));
   enemyLaserShots.forEach((shot) => {
+    if (!shot || !Number.isFinite(Number(shot.x)) || !Number.isFinite(Number(shot.y))) return;
     shot.ttlMs -= ms;
     const prevX = shot.x;
     const prevY = shot.y;
@@ -26872,7 +27149,7 @@ function updateEnemyLaserShots(dt) {
     if (!hit) return;
     const drain = Math.max(1, Number(shot.damage || 6)) * 0.55;
     createBonusStars(hit.x, hit.y, 2);
-    if (isYear2043Level(currentLevel)) {
+    if (hullMode) {
       registerTruckImpactDamage(drain * 0.82, 'laser');
       createFireParticles(hit.x, hit.y, 2.4, 0.9);
     } else {
@@ -26881,8 +27158,9 @@ function updateEnemyLaserShots(dt) {
     }
     shot.ttlMs = 0;
   });
-  enemyLaserShots = enemyLaserShots.filter((shot) => shot.ttlMs > 0);
+  enemyLaserShots = enemyLaserShots.filter((shot) => shot && shot.ttlMs > 0);
   enemyBombShots.forEach((shot) => {
+    if (!shot || !Number.isFinite(Number(shot.x)) || !Number.isFinite(Number(shot.y))) return;
     shot.ttlMs -= ms;
     const prevX = shot.x;
     const prevY = shot.y;
@@ -26896,7 +27174,7 @@ function updateEnemyLaserShots(dt) {
     const hit = segmentRectHit(prevX, prevY, shot.x, shot.y, truckRect, 3);
     if (!hit) return;
     const drain = Math.max(2, Number(shot.damage || 10)) * 0.65;
-    if (isYear2043Level(currentLevel)) {
+    if (hullMode) {
       registerTruckImpactDamage(drain * 1.05, 'bomb');
       createFireParticles(hit.x, hit.y, 4.8, 1.25, { big: true });
     } else {
@@ -26906,7 +27184,7 @@ function updateEnemyLaserShots(dt) {
     createSmoke(hit.x, hit.y);
     shot.ttlMs = 0;
   });
-  enemyBombShots = enemyBombShots.filter((shot) => shot.ttlMs > 0);
+  enemyBombShots = enemyBombShots.filter((shot) => shot && shot.ttlMs > 0);
 }
 
 function updateEnemyCrashFx(dt) {
@@ -26936,7 +27214,68 @@ function updateEnemyCrashFx(dt) {
   enemyCrashFx = enemyCrashFx.filter((fx) => fx && Number(fx.ttlMs || 0) > 0);
 }
 
+function updateEnemyHealthDrops(dt) {
+  if (!enemyHealthDrops.length || gameState !== 'playing') return;
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (!isHeroHullModeActive(levelData)) {
+    enemyHealthDrops = [];
+    return;
+  }
+  const ms = Math.max(0, Number(dt || 0));
+  const step = Math.max(0.2, ms / 16.67);
+  const truckRect = getTruckDrawRect() || { x: Number(truck?.x || 120), y: Number(getTruckY ? getTruckY() : FIRETRUCK_LANE_Y) - 92, w: 170, h: 92 };
+  enemyHealthDrops.forEach((d) => {
+    if (!d) return;
+    d.ttlMs -= ms;
+    if (d.phase === 'fall') {
+      d.vy += 0.12 * step;
+      d.x += Number(d.vx || 0) * step * 2.4;
+      d.y += Number(d.vy || 0) * step * 2.4;
+      const groundY = clamp(FIRETRUCK_LANE_Y - 4, ROAD_LANE_Y - 6, GRASS_Y + 10);
+      if (d.y >= groundY) {
+        d.y = groundY;
+        d.phase = 'hover';
+        d.vx = 0;
+        d.vy = 0;
+      }
+    } else {
+      d.y += Math.sin((levelElapsedMs + (d._seed || 0)) / 280) * 0.25;
+    }
+    const pickupRect = { x: Number(d.x || 0) - 9, y: Number(d.y || 0) - 9, w: 18, h: 18 };
+    if (isFiniteRect(truckRect) && rectsOverlap(pickupRect, truckRect)) {
+      addTruckHullRepair(Number(d.amount || 0), 'drop');
+      createBonusStars(d.x, d.y, 6);
+      d.ttlMs = 0;
+    }
+  });
+  enemyHealthDrops = enemyHealthDrops.filter((d) => d && Number(d.ttlMs || 0) > 0);
+}
+
 function drawEnemyRaidOverlays() {
+  enemyHealthDrops.forEach((d) => {
+    if (!d || Number(d.ttlMs || 0) <= 0) return;
+    const alpha = clamp(Number(d.ttlMs || 0) / 7200, 0.2, 1);
+    const x = Number(d.x || 0);
+    const y = Number(d.y || 0);
+    const pulse = 0.85 + Math.sin((levelElapsedMs + (d._seed || 0)) / 170) * 0.15;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = 'rgba(150,255,220,0.9)';
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = 'rgba(92,255,190,0.95)';
+    ctx.beginPath();
+    ctx.arc(x, y, 7.2 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(218,255,240,0.95)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x - 4.5, y);
+    ctx.lineTo(x + 4.5, y);
+    ctx.moveTo(x, y - 4.5);
+    ctx.lineTo(x, y + 4.5);
+    ctx.stroke();
+    ctx.restore();
+  });
   enemyCrashFx.forEach((fx) => {
     if (!fx || Number(fx.ttlMs || 0) <= 0) return;
     const alpha = clamp(Number(fx.ttlMs || 0) / (fx.phase === 'fall' ? 1550 : 580), 0, 1);
@@ -26976,10 +27315,12 @@ function drawEnemyRaidOverlays() {
     }
   });
   enemyLaserShots.forEach((shot) => {
+    if (!shot || !Number.isFinite(Number(shot.x)) || !Number.isFinite(Number(shot.y))) return;
     const x1 = Number(shot._prevX ?? shot.x);
     const y1 = Number(shot._prevY ?? shot.y);
     const x2 = Number(shot.x);
     const y2 = Number(shot.y);
+    if (!Number.isFinite(x1) || !Number.isFinite(y1) || !Number.isFinite(x2) || !Number.isFinite(y2)) return;
     ctx.save();
     const color = String(shot.color || '#ff5772');
     ctx.strokeStyle = color;
@@ -27004,6 +27345,7 @@ function drawEnemyRaidOverlays() {
     ctx.restore();
   });
   enemyBombShots.forEach((shot) => {
+    if (!shot || !Number.isFinite(Number(shot.x)) || !Number.isFinite(Number(shot.y))) return;
     ctx.save();
     ctx.fillStyle = String(shot.color || '#ffa047');
     ctx.shadowColor = String(shot.color || '#ffa047');
@@ -28388,56 +28730,67 @@ function loop() {
   const now = performance.now();
   const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16.67;
   lastFrameTime = now;
-  if (gameState === 'builder') {
-    ctx.clearRect(0, 0, 1200, 600);
-    builderDrawHelpers();
-    requestAnimationFrame(loop);
-    return;
-  }
-  if (level1GuideOpen) {
-    setTruckDrive(0);
-    truckFlightInput = 0;
-    isSpraying = false;
-    isLaserFiring = false;
-    isRocketFiring = false;
-  }
-  if (playerControlsEnabled && !isFirefighterControlActive()) {
-    truck.x += truckDrive * truck.speed;
-    truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
-  } else if (isFirefighterControlActive()) {
-    truckDrive = 0;
-  } else {
-    setTruckDrive(0);
-  }
-  updateTruckFlight(dt, baseLevels[currentLevel - 1] || {});
-  if (gameState === 'playing' && pendingDispatchLevel === null) {
-    levelElapsedMs += dt;
-    if (!isManualKvfdRefillMode() && !tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
-      startTankerSupport();
+  try {
+    if (gameState === 'builder') {
+      ctx.clearRect(0, 0, 1200, 600);
+      builderDrawHelpers();
+      return;
     }
-    const levelData = baseLevels[currentLevel - 1] || {};
-    const allowBoro = (levelData?.boroSchedule?.enabled || (currentLevel === FINAL_LEVEL && !levelData.tankerRightOnly));
-    if (allowBoro && !boroTankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextBoroTankerAt) {
-      startBoroTankerSupport();
+    if (level1GuideOpen) {
+      setTruckDrive(0);
+      truckFlightInput = 0;
+      isSpraying = false;
+      isLaserFiring = false;
+      isRocketFiring = false;
     }
-  }
-  updateLevel9Event(dt, baseLevels[currentLevel - 1] || {});
-  updateTruckEntry(dt);
-  updateTankerSupport(dt);
-  updateBoroTankerSupport(dt);
-  updateBlackBoxTruck(dt);
-  updateUfoPreview(dt);
-  updateUfoRaid(dt);
-  updateLevel7Horse(dt);
-  const data = baseLevels[currentLevel - 1] || { entities: [] };
-  updateEnemyRaid(dt, data);
-  updateEnemyLaserShots(dt);
-  updateCivilianRescue(dt, data);
-  updateFirefighterMountButton();
-  ctx.clearRect(0,0,1200,600);
-  drawBackground();
+    if (playerControlsEnabled && !isFirefighterControlActive()) {
+      truck.x += truckDrive * truck.speed;
+      truck.x = Math.max(truck.minX, Math.min(truck.x, truck.maxX));
+    } else if (isFirefighterControlActive()) {
+      truckDrive = 0;
+    } else {
+      setTruckDrive(0);
+    }
+    updateTruckFlight(dt, baseLevels[currentLevel - 1] || {});
+    if (gameState === 'playing' && pendingDispatchLevel === null) {
+      levelElapsedMs += dt;
+      if (!isManualKvfdRefillMode() && !tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
+        startTankerSupport();
+      }
+      const levelData = baseLevels[currentLevel - 1] || {};
+      const allowBoro = (levelData?.boroSchedule?.enabled || (currentLevel === FINAL_LEVEL && !levelData.tankerRightOnly));
+      if (allowBoro && !boroTankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextBoroTankerAt) {
+        startBoroTankerSupport();
+      }
+    }
+    updateLevel9Event(dt, baseLevels[currentLevel - 1] || {});
+    updateTruckEntry(dt);
+    updateTankerSupport(dt);
+    updateBoroTankerSupport(dt);
+    updateBlackBoxTruck(dt);
+    updateUfoPreview(dt);
+    updateUfoRaid(dt);
+    updateLevel7Horse(dt);
+    const data = baseLevels[currentLevel - 1] || { entities: [] };
+    try {
+      updateEnemyRaid(dt, data);
+      updateEnemyLaserShots(dt);
+      updateEnemyHealthDrops(dt);
+    } catch (err) {
+      console.error('Enemy raid update failed:', err);
+      enemyLaserShots = [];
+      enemyBombShots = [];
+      enemyHealthDrops = [];
+      if (enemyRaidState?.attackers?.length) {
+        enemyRaidState.attackers = enemyRaidState.attackers.filter((ent) => ent && !ent._laserDestroyed);
+      }
+    }
+    updateCivilianRescue(dt, data);
+    updateFirefighterMountButton();
+    ctx.clearRect(0,0,1200,600);
+    drawBackground();
 if (false && currentLevel === 11) drawPlacementGrid();
-  drawBlackBoxTruckState();
+    drawBlackBoxTruckState();
 
   drawLevel7Horse(true);
   getEntitiesInRenderOrder(data.entities).forEach(ent => {
@@ -28463,7 +28816,11 @@ if (false && currentLevel === 11) drawPlacementGrid();
   if (isYear2043Level(currentLevel)) {
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = '#8feaff';
-    ctx.fillText(`WAVE KILLS: ${year2043State.levelKills}/${year2043State.requiredKills}`, 360, 48);
+      const shownKills = Math.min(
+        Math.max(0, Number(year2043State.levelKills || 0)),
+        Math.max(0, Number(year2043State.requiredKills || 0))
+      );
+      ctx.fillText(`WAVE KILLS: ${shownKills}/${year2043State.requiredKills}`, 360, 48);
     ctx.font = 'bold 13px Arial';
     ctx.fillStyle = '#bdefff';
     ctx.fillText(`WAVE ${Math.max(1, Number(year2043State.waveNumber || 1))}/${Math.max(1, Number(year2043State.waveTotal || 1))}`, 362, 66);
@@ -28639,27 +28996,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
       ? ((rescueState?.firefighter?.facing || truckFacing) >= 0 ? 1 : -1)
       : (truckFacing >= 0 ? 1 : -1);
     if (scifiStubMode) {
-      const dirX = tip.x - truckPoint.x;
-      const dirY = tip.y - truckPoint.y;
-      const len = Math.hypot(dirX, dirY) || 1;
-      const nx = truckPoint.x + (dirX / len) * 22;
-      const ny = truckPoint.y + (dirY / len) * 22;
-      ctx.save();
-      ctx.strokeStyle = '#5dd7ff';
-      ctx.shadowColor = '#7cf1ff';
-      ctx.shadowBlur = 11;
-      ctx.lineWidth = 8;
-      ctx.beginPath();
-      ctx.moveTo(truckPoint.x, truckPoint.y);
-      ctx.lineTo(nx, ny);
-      ctx.stroke();
-      ctx.fillStyle = '#b6f0ff';
-      ctx.beginPath();
-      ctx.arc(truckPoint.x, truckPoint.y, 4.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#d8f9ff';
-      ctx.fillRect(nx - 2.5, ny - 2.5, 5, 5);
-      ctx.restore();
+      // No visible hose/nozzle/barrel in sci-fi laser mode.
     } else if (!firefighterHand) {
       ctx.beginPath();
       ctx.moveTo(truckPoint.x, truckPoint.y);
@@ -28840,8 +29177,18 @@ if (false && currentLevel === 11) drawPlacementGrid();
   ctx.textAlign = 'right';
   ctx.fillText('KVFD - Kennard, IN',1180,580);
 
-  if (gameState === 'playing') checkWin();
-  requestAnimationFrame(loop);
+    if (gameState === 'playing') checkWin();
+  } catch (err) {
+    console.error('Main loop failed:', err);
+    enemyLaserShots = [];
+    enemyBombShots = [];
+    playerRocketShots = [];
+    enemyHealthDrops = [];
+    isLaserFiring = false;
+    isRocketFiring = false;
+  } finally {
+    requestAnimationFrame(loop);
+  }
 }
 
 if (builderOpenRequestedFromHash) {
