@@ -22849,11 +22849,15 @@ function initLevel9EventState(levelData, preparedSpots) {
   level9EventState = {
     active: true,
     phase: 'tornado',
+    timerMs: 0,
     busIdx,
     busSwapAtX,
     schoolIgniteX: resolvedSchoolIgniteX,
     treeIgniteDelayMs: 1250,
     schoolIgnitedAt: null,
+    schoolIgnitedAtMs: null,
+    busIgniteAtMs: null,
+    schoolIgniteAtMs: null,
     busIgnited: false,
     schoolIgnited: false,
     tree2Ignited: false,
@@ -22868,6 +22872,7 @@ function initLevel9EventState(levelData, preparedSpots) {
 function updateLevel9Event(dt, levelData) {
   if (!level9EventState?.active || currentLevel !== 9 || gameState !== 'playing') return;
   const state = level9EventState;
+  state.timerMs = Math.max(0, Number(state.timerMs || 0) + Math.max(0, Number(dt || 0)));
   const entities = levelData?.entities || [];
   if (state.phase === 'tornado') {
     const bus = state.busIdx >= 0 ? entities[state.busIdx] : null;
@@ -22884,16 +22889,24 @@ function updateLevel9Event(dt, levelData) {
     if (!busHit && Number.isFinite(Number(state.busSwapAtX))) {
       busHit = isTornadoPastX(Number(state.busSwapAtX));
     }
-    if (busHit && !state.busIgnited) {
+    // Schedule ignition off a storm timer so it works even while dispatch/overlays are up.
+    if (busHit && state.busIgniteAtMs == null) {
+      state.busIgniteAtMs = state.timerMs + 200;
+    }
+    if (!state.busIgnited && state.busIgniteAtMs != null && state.timerMs >= state.busIgniteAtMs) {
       activateLevel9FireGroup(state.busSpots);
       state.busIgnited = true;
     }
-    if (!state.schoolIgnited && isTornadoPastX(state.schoolIgniteX)) {
+    if (!state.schoolIgnited && isTornadoPastX(state.schoolIgniteX) && state.schoolIgniteAtMs == null) {
+      state.schoolIgniteAtMs = state.timerMs + 220;
+    }
+    if (!state.schoolIgnited && state.schoolIgniteAtMs != null && state.timerMs >= state.schoolIgniteAtMs) {
       activateLevel9FireGroup(state.schoolSpots);
       state.schoolIgnited = true;
       state.schoolIgnitedAt = levelElapsedMs;
+      state.schoolIgnitedAtMs = state.timerMs;
     }
-    if (state.schoolIgnited && !state.tree2Ignited && (levelElapsedMs - (state.schoolIgnitedAt || 0)) >= state.treeIgniteDelayMs) {
+    if (state.schoolIgnited && !state.tree2Ignited && (state.timerMs - (state.schoolIgnitedAtMs || 0)) >= state.treeIgniteDelayMs) {
       activateLevel9FireGroup(state.tree2Spots);
       state.tree2Ignited = true;
     }
