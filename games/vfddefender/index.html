@@ -1898,7 +1898,7 @@ button:hover { filter: brightness(1.2); }
               <option value="buildings">Buildings</option>
               <option value="nature">Nature</option>
               <option value="props">Props</option>
-              <option value="scifi">Sci-Fi</option>
+      <option value="scifi">Special</option>
               <option value="misc">Misc</option>
             </select>
           </div>
@@ -1918,7 +1918,7 @@ button:hover { filter: brightness(1.2); }
           <option value="buildings">Buildings</option>
           <option value="nature">Nature</option>
           <option value="props">Props</option>
-          <option value="scifi">Sci-Fi</option>
+      <option value="scifi">Special</option>
           <option value="uploaded">Uploaded</option>
           <option value="misc">Misc</option>
         </select>
@@ -1993,7 +1993,7 @@ button:hover { filter: brightness(1.2); }
           <label for="builderFireTruckTheme">Fire Truck Type</label>
           <select id="builderFireTruckTheme">
             <option value="standard">Standard</option>
-            <option value="scifi">Sci-Fi</option>
+      <option value="scifi">Special</option>
           </select>
         </div>
         <div class="builder-field">
@@ -2885,7 +2885,6 @@ button:hover { filter: brightness(1.2); }
 <div class="buttons" id="futureChoiceButtons" style="display:none;">
   <button class="button-slide future-primary" onclick="startYear2043Preview()">CONTINUE TO YEAR 2043</button>
   <button class="secondary-btn button-slide future-secondary" onclick="endAfterAbduction()">FINISH & VIEW THANK YOU</button>
-  <button class="secondary-btn button-slide future-secondary" onclick="startHoseExperiment()">TRY HOSE FIREFIGHTER TEST</button>
   <button class="secondary-btn button-slide future-secondary" onclick="redoLevel()">PLAY LEVEL AGAIN</button>
 </div>
   </div>
@@ -7168,7 +7167,7 @@ function getCategoryLabel(cat) {
   if (cat === 'buildings') return 'Buildings';
   if (cat === 'nature') return 'Nature';
   if (cat === 'props') return 'Props';
-  if (cat === 'scifi') return 'Sci-Fi';
+  if (cat === 'scifi') return 'Special';
   if (cat === 'uploaded') return 'Uploaded';
   return 'Misc';
 }
@@ -8441,12 +8440,93 @@ function updateTruckFlight(dt, levelData = null) {
 }
 
 const safetyTips = [
-  "Never play with matches or lighters.", "If your clothes catch fire, stop, drop, and roll.",
-  "Have a family escape plan and practice it.", "Check smoke alarms every month.",
-  "Keep a fire extinguisher accessible and know how to use it.", "Stay low and crawl under smoke to escape.",
-    "Never hide from fire - get low and go!", "Don't overload electrical outlets.",
-    "Keep flammable items away from heat sources.", "Practice fire safety every day - it could save lives."
+  "Know two ways out of every room, and choose a family meeting place outside.",
+  "Test smoke alarms monthly and replace batteries when needed.",
+  "Install smoke alarms in every bedroom, outside sleeping areas, and on each level.",
+  "Keep bedroom doors closed while sleeping to slow smoke and fire.",
+  "If your clothes catch fire: stop, drop, and roll until the flames are out.",
+  "Get low under smoke. Clean air is closer to the floor.",
+  "Never go back inside a burning building for pets or belongings.",
+  "If you smell smoke: get out, stay out, and call 911.",
+  "Keep a working fire extinguisher accessible and learn PASS: Pull, Aim, Squeeze, Sweep.",
+  "Never leave cooking unattended. Keep a lid nearby to smother small pan fires.",
+  "Keep towels, paper, and curtains away from the stove and burners.",
+  "Keep space heaters 3 feet from anything that can burn, and turn them off before bed.",
+  "Use only flameless candles if children or pets are around.",
+  "Do not overload outlets or daisy-chain power strips.",
+  "Replace damaged cords; never run cords under rugs or doorways.",
+  "Charge lithium batteries on hard surfaces and never overnight in bedding.",
+  "Keep grills away from siding, rails, and overhangs; clean grease buildup.",
+  "Store gasoline and propane outside living spaces and away from heat.",
+  "Never smoke near oxygen, fuel, or in bed.",
+  "Keep chimneys and fireplaces cleaned and inspected regularly.",
+  "Keep dryer vents clean; lint buildup can ignite.",
+  "Set your water heater to 120F to prevent scalds.",
+  "If you hear a smoke alarm: get everyone out first, then call for help.",
+  "Teach kids to crawl low and to never hide from firefighters.",
+  "Keep house numbers visible from the road so responders can find you fast.",
+  "Plan for pets: keep leashes/carriers near exits for quick evacuation.",
+  "Have a flashlight in bedrooms for nighttime evacuations.",
+  "During a storm, stay away from windows and move to an interior room.",
+  "If you see downed power lines: stay back and call 911.",
+  "Never drive through flooded roads. Turn around, don't drown.",
+  "If a tornado warning is issued: go to a basement or interior room on the lowest floor.",
+  "After a tornado, watch for gas leaks, broken glass, and damaged wiring.",
+  "If someone is burned: cool with cool water for 10-20 minutes and cover with a clean cloth.",
+  "For severe bleeding: apply firm pressure and call 911.",
+  "If someone is choking and cannot speak: call 911 and begin abdominal thrusts if trained.",
+  "Learn CPR. Early compressions save lives.",
+  "If you suspect carbon monoxide: leave immediately and call 911 from outside.",
+  "Never run generators or grills in garages, basements, or near open windows.",
+  "Keep matches and lighters locked away from children.",
+  "Practice your escape plan twice a year, including nighttime drills.",
+  "If a door is hot or smoke is heavy: use another exit.",
+  "Close doors behind you as you leave to slow fire spread.",
+  "Keep stairways and hallways clear so everyone can exit quickly.",
+  "Stop your vehicle in a safe spot after a crash and stay alert for leaking fluids.",
+  "Never park vehicles on tall, dry grass. Hot exhaust can start a fire.",
+  "Keep yard debris away from buildings; dry leaves and brush ignite fast.",
+  "Trim branches away from roofs, power lines, and chimneys.",
+  "Store ashes in a metal container outdoors, away from the house.",
+  "If you use a fire pit: keep water nearby and fully extinguish before leaving.",
+  "Call 911 early. Seconds matter in fires and medical emergencies.",
+  "If a smoke alarm chirps: replace the battery right away.",
+  "Teach kids: if you see smoke or fire, leave and tell an adult.",
+  "Do not open a door if you see flames or heavy smoke behind it.",
+  "Keep a first-aid kit stocked and easy to find.",
+  "If lightning is close: go indoors and stay away from plumbing and corded devices.",
+  "Wear seatbelts every trip. Buckle children in the correct car seat.",
+  "Keep flammable liquids in approved containers with caps closed tight.",
+  "Never let children play near roadways, driveways, or moving vehicles.",
+  "If you spill fuel: clean it up safely before starting equipment.",
+  "Before mowing, clear rocks and debris to prevent sparks.",
+  "If you see a fire, pull over safely and give responders space.",
+  "Keep attic and crawlspace access clear for emergency checks.",
+  "Know your address and teach it to children for 911 calls.",
+  "If you live alone, set a safety check-in plan with neighbors or family.",
+  "Stay calm on the phone with dispatch: location first, then details.",
+  "If you use extension cords, use the right gauge for the job and avoid overload.",
+  "Keep pool and pond areas supervised; water safety saves lives.",
+  "In winter, keep heaters away from blankets and use CO alarms with fuel-burning heat.",
+  "If you smell gas: leave, do not use switches or flames, and call 911.",
+  "Keep medicine, cleaners, and chemicals locked away from children.",
+  "Use a timer when cooking if you might get distracted.",
+  "If smoke is present, crawl low and feel doors with the back of your hand.",
+  "Install CO alarms near sleeping areas and test them regularly.",
+  "If a vehicle catches fire: get everyone out and move away from the vehicle.",
+  "Do not attempt to fight a spreading fire; evacuate and let firefighters handle it.",
+  "Keep porch steps and walkways clear of clutter to prevent trips during an emergency.",
+  "If you need help, signal responders clearly and follow their instructions."
 ];
+
+function applyUniqueSafetyTipsToBaseLevels() {
+  if (!Array.isArray(baseLevels) || !baseLevels.length) return;
+  for (let i = 0; i < baseLevels.length; i++) {
+    const lvl = baseLevels[i];
+    if (!lvl) continue;
+    lvl.safetyTip = safetyTips[i % safetyTips.length];
+  }
+}
 
 const baseLevels = [
   { name: "Small Shed Fire", truckSide: 'right', safetyTip: "Never play with matches or lighters.", fireSpots: [{x:154,y:252,w:98,h:34,health:320,maxHealth:400,roof:true},{x:164,y:286,w:92,h:92,health:580,maxHealth:720},{x:214,y:360,w:46,h:86,health:270,maxHealth:340},{x:430,y:418,w:46,h:24,health:220,maxHealth:300,isVehicle:true}], entities: [{type:'shedWindow',x:120}, {type:'ridingMower',x:380}, {type:'oakSmall',x:560}] },
@@ -21166,6 +21246,7 @@ function applyDefaultCivilianEmitterMix() {
 loadBuilderSourceOverrides();
 loadBuilderOfficialOverrides();
 enforceFixedCampaignLevels();
+applyUniqueSafetyTipsToBaseLevels();
 applyDefaultCivilianEmitterMix();
 builderState = normalizeBuilderLevel(safeJsonParse(localStorage.getItem(BUILDER_LAST_DRAFT_KEY) || '', null) || {});
 
@@ -22659,10 +22740,16 @@ function igniteTornadoFireGroupByEntityKey(entityKey) {
 function initLevel9EventState(levelData, preparedSpots) {
   const entities = levelData?.entities || [];
   const findIndex = (predicate) => entities.findIndex(predicate);
-  const busIdx = findIndex((ent) => ent?.type === 'builderSprite' && String(ent?.spriteKey || '').toLowerCase() === 'busschoolleft');
+  const busIdx = (() => {
+    const builderBus = findIndex((ent) => ent?.type === 'builderSprite' && String(ent?.spriteKey || '').toLowerCase() === 'busschoolleft');
+    if (builderBus >= 0) return builderBus;
+    return findIndex((ent) => ent?.type === 'busUpsideDown');
+  })();
   const schoolIdx = findIndex((ent) => ent?.type === 'kennardSchool');
   const tree2Idx = findIndex((ent) => ent?.type === 'stormTree' && Number(ent?.x || 0) >= 900);
-  const busKey = busIdx >= 0 ? `builderSprite:${busIdx}` : '';
+  const busKey = busIdx >= 0
+    ? `${entities[busIdx]?.type || 'builderSprite'}:${busIdx}`
+    : '';
   const schoolKey = schoolIdx >= 0 ? `kennardSchool:${schoolIdx}` : '';
   const tree2Key = tree2Idx >= 0 ? `stormTree:${tree2Idx}` : '';
   const busSpots = preparedSpots.filter((spot) => spot?.entityKey === busKey);
@@ -22683,6 +22770,33 @@ function initLevel9EventState(levelData, preparedSpots) {
       }];
     }
   }
+  let resolvedBusSpots = busSpots;
+  if (!resolvedBusSpots.length && busIdx >= 0) {
+    const box = getEntityBounds(entities[busIdx]);
+    if (box) {
+      resolvedBusSpots = [
+        { x: box.x + box.w * 0.20, y: box.y + box.h * 0.48, w: box.w * 0.28, h: box.h * 0.22, isVehicle: true, entityKey: busKey },
+        { x: box.x + box.w * 0.48, y: box.y + box.h * 0.36, w: box.w * 0.24, h: box.h * 0.20, isVehicle: true, entityKey: busKey },
+        { x: box.x + box.w * 0.68, y: box.y + box.h * 0.46, w: box.w * 0.18, h: box.h * 0.18, isVehicle: true, entityKey: busKey },
+        { x: box.x + box.w * 0.22, y: box.y + box.h * 0.04, w: box.w * 0.56, h: box.h * 0.16, roof: true, isVehicle: true, entityKey: busKey }
+      ];
+    }
+  }
+  let resolvedSchoolSpots = schoolSpots;
+  let resolvedSchoolIgniteX = 808;
+  if (schoolIdx >= 0) {
+    const schoolBox = getEntityBounds(entities[schoolIdx]);
+    if (schoolBox) {
+      resolvedSchoolIgniteX = Math.round(schoolBox.x + schoolBox.w * 0.32);
+      if (!resolvedSchoolSpots.length) {
+        resolvedSchoolSpots = [
+          { x: schoolBox.x + schoolBox.w * 0.18, y: schoolBox.y + schoolBox.h * 0.32, w: schoolBox.w * 0.22, h: schoolBox.h * 0.28, entityKey: schoolKey },
+          { x: schoolBox.x + schoolBox.w * 0.60, y: schoolBox.y + schoolBox.h * 0.32, w: schoolBox.w * 0.22, h: schoolBox.h * 0.28, entityKey: schoolKey },
+          { x: schoolBox.x + schoolBox.w * 0.18, y: schoolBox.y + schoolBox.h * 0.06, w: schoolBox.w * 0.64, h: schoolBox.h * 0.18, roof: true, entityKey: schoolKey }
+        ];
+      }
+    }
+  }
   fireSpots = [];
   pendingTornadoFireSpotsByKey = new Map();
   playerControlsEnabled = false;
@@ -22699,14 +22813,14 @@ function initLevel9EventState(levelData, preparedSpots) {
     active: true,
     phase: 'tornado',
     busIdx,
-    schoolIgniteX: 808,
+    schoolIgniteX: resolvedSchoolIgniteX,
     treeIgniteDelayMs: 1250,
     schoolIgnitedAt: null,
     busIgnited: false,
     schoolIgnited: false,
     tree2Ignited: false,
-    busSpots,
-    schoolSpots,
+    busSpots: resolvedBusSpots,
+    schoolSpots: resolvedSchoolSpots,
     tree2Spots,
     truckTargetX: lane.spawnX,
     truckEntrySpeed: 2.5
@@ -22719,7 +22833,15 @@ function updateLevel9Event(dt, levelData) {
   const entities = levelData?.entities || [];
   if (state.phase === 'tornado') {
     const bus = state.busIdx >= 0 ? entities[state.busIdx] : null;
-    const busHit = !!(bus && (bus._tornadoCollisionSwapDone || String(bus.spriteKey || '').toLowerCase() === 'busupsidedown'));
+    let busHit = false;
+    if (bus) {
+      if (bus._tornadoCollisionSwapDone) busHit = true;
+      else if (String(bus.spriteKey || '').toLowerCase() === 'busupsidedown') busHit = true;
+      else if (bus.type === 'busUpsideDown') {
+        const box = getEntityBounds(bus);
+        if (box) busHit = isTornadoPastX(box.x + box.w * 0.35);
+      }
+    }
     if (busHit && !state.busIgnited) {
       activateLevel9FireGroup(state.busSpots);
       state.busIgnited = true;
@@ -23154,7 +23276,7 @@ function checkWin() {
   document.getElementById('levelTitle').textContent = copy.title;
   if (showFutureChoice) {
     document.getElementById('encourageText').innerHTML = 'Abduction response complete.<br>Choose your next mission path.';
-    document.getElementById('safetyTip').textContent = 'Year 2043 uses laser combat and wave-based enemy sectors.';
+    document.getElementById('safetyTip').textContent = 'A sealed dispatch file just unlocked: "Year 2043". Enter if you want to see what the future holds.';
   } else if (isYear2043Level(currentLevel)) {
     const shownKills = Math.min(
       Math.max(0, Number(year2043State.levelKills || 0)),
@@ -28397,8 +28519,9 @@ function syncThumbStickVisibility() {
   const forcedJoystick = stored === 'joystick';
   const forcedArrows = stored === 'arrows';
   const isMobileLike = noHover && coarsePointer && !hasAnyFinePointer;
-  stick.style.display = (forcedArrows ? false : (forcedJoystick || isMobileLike)) ? 'block' : 'none';
-  controls.style.display = 'flex';
+  const useJoystick = !forcedArrows && (forcedJoystick || isMobileLike);
+  stick.style.display = useJoystick ? 'block' : 'none';
+  controls.style.display = forcedArrows ? 'flex' : (useJoystick ? 'none' : 'flex');
   dockHudControlsToCanvasEdge();
 }
 
@@ -28422,11 +28545,19 @@ function dockHudControlsToCanvasEdge() {
 function positionFirefighterMountButtonByTruckSide() {
   const btn = document.getElementById('firefighterMountBtn');
   const controls = document.getElementById('truckControls');
-  if (!btn || !controls || btn.style.display === 'none') return;
-  const controlsRect = controls.getBoundingClientRect();
+  if (!btn || btn.style.display === 'none') return;
   const truckRect = getTruckDrawRect();
   const truckCenterX = truckRect ? (truckRect.x + truckRect.w * 0.5) : Number(truck?.x || canvas.width * 0.5);
   const truckOnRight = truckCenterX > canvas.width * 0.5;
+  const controlsVisible = !!controls && controls.style.display !== 'none';
+  if (!controlsVisible) {
+    btn.style.transform = 'none';
+    btn.style.left = truckOnRight ? 'auto' : '12px';
+    btn.style.right = truckOnRight ? '12px' : 'auto';
+    return;
+  }
+
+  const controlsRect = controls.getBoundingClientRect();
   const gap = 10;
   const btnW = Math.max(132, Math.round(btn.getBoundingClientRect().width || 152));
   let leftPx = truckOnRight
