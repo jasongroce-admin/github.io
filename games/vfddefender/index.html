@@ -22274,9 +22274,16 @@ function showDispatchScreen(lvl, phase) {
   dispatchAutoTimer = setTimeout(() => dismissDispatchScreen(true), 5000);
 }
 
+let codeGateUnlocked = false;
+
 function showCodeGate() {
   document.getElementById('codeGate').style.display = 'flex';
   document.getElementById('overlay').style.display = 'none';
+  const input = document.getElementById('codeInput');
+  if (input) {
+    input.value = '';
+    setTimeout(() => input.focus(), 40);
+  }
 }
 
 function hideCodeGate() {
@@ -22287,6 +22294,7 @@ function hideCodeGate() {
 function submitCodeGate() {
   const entered = (document.getElementById('codeInput').value || '').trim();
   if (entered === '47351') {
+    codeGateUnlocked = true;
     hideCodeGate();
     showTitleScreen();
     return;
@@ -22474,6 +22482,10 @@ function hideMissionStoryScreen() {
 }
 
 function beginGameFromMissionStory() {
+  if (!codeGateUnlocked) {
+    showCodeGate();
+    return;
+  }
   const cfg = pendingStartConfig || { diff: 1, startLevel: null };
   const diff = clamp(Number(cfg.diff || 1), 1, 3);
   const startLevel = cfg.startLevel == null ? null : Number(cfg.startLevel);
@@ -22499,6 +22511,10 @@ function beginGameFromMissionStory() {
 }
 
 function startGame(diff, startLevel = null) {
+  if (!codeGateUnlocked) {
+    showCodeGate();
+    return;
+  }
   showMissionStoryScreen(diff, startLevel);
 }
 
@@ -23331,8 +23347,7 @@ document.getElementById('codeCancelBtn').addEventListener('click', () => {
 document.getElementById('codeInput').addEventListener('keydown', (event) => {
   if (event.key === 'Enter') submitCodeGate();
 });
-hideCodeGate();
-showTitleScreen();
+showCodeGate();
 builderApplyStateToUi();
 builderInitCollapsibleSections();
 builderRenderAssetList();
