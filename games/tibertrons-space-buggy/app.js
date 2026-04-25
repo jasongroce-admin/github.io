@@ -51,6 +51,9 @@
         "images/scifi/scifi_ufo_small_saucer_459x145.webp",
         "images/scifi/scifi_ufo_medium_delta_459x145.webp",
         "images/scifi/scifi_ufo_large_cigar_459x145.webp",
+        "images/scifi/scifi_ufo_mothership_792x276.webp",
+        "images/scifi/scifi_home_modular_ring_792x276.webp",
+        "images/scifi/scifi_vehicle_cargohauler_792x276.webp",
         "images/scifi/scifi_ufo_920x416.webp"
       ],
       crawler: [
