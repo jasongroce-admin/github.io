@@ -2626,6 +2626,8 @@ const SPRITE_FILES = {
   misc_human_firefighter_running_right_pose1_459x200: 'misc_human_firefighter_running_right_pose1_459x200.webp',
   misc_human_firefighter_running_right_pose2_459x200: 'misc_human_firefighter_running_right_pose2_459x200.webp',
   misc_human_firefighter_side_standing_right_459x200: 'misc_human_firefighter_side_standing_right_459x200.webp',
+  misc_human_civilian_running_right_pose3_784x1168: 'misc_human_civilian_running_right_pose3_784x1168.webp',
+  misc_human_civilian_running_right_pose4_784x1168: 'misc_human_civilian_running_right_pose4_784x1168.webp',
 };
 
 const SPRITE_BASE_PATH = 'images/';
@@ -2838,6 +2840,8 @@ const DISCOVERED_SPRITE_FILENAMES = [
   'misc_human_firefighter_running_right_pose1_459x200.webp',
   'misc_human_firefighter_running_right_pose2_459x200.webp',
   'misc_human_firefighter_side_standing_right_459x200.webp',
+  'misc_human_civilian_running_right_pose3_784x1168.webp',
+  'misc_human_civilian_running_right_pose4_784x1168.webp',
 ];
 
 function normalizeSpriteToken(value) {
@@ -20713,6 +20717,13 @@ function buildCivilianAnimationSet(baseModelKey) {
   }
   const lower = String(resolved || '').toLowerCase();
   const female = /female|woman|girl/.test(lower);
+  const preferMaleStandSide = resolveSpriteKey('misc_human_civilian_side_standing_right_459x200');
+  const preferMaleRun2 = resolveSpriteKey('misc_human_civilian_running_right_pose2_459x200');
+  const preferMaleFront = resolveSpriteKey('misc_human_civilian_front_standing_459x200');
+  const preferFemaleStandSide = resolveSpriteKey('misc_human_female_civilian_side_standing_right_459x200');
+  const preferFemaleRun1 = resolveSpriteKey('misc_human_female_civilian_running_right_pose1_459x200');
+  const preferFemaleRun2 = resolveSpriteKey('misc_human_female_civilian_running_right_pose2_459x200');
+  const preferFemaleFront = resolveSpriteKey('misc_human_female_civilian_front_standing_459x200');
   const familyPrefix = lower.replace(/_(side|front|back|running|run|standing|idle).*/, '');
   const genderPool = poolRaw.filter((key) => {
     const text = String(key || '').toLowerCase();
@@ -20725,22 +20736,30 @@ function buildCivilianAnimationSet(baseModelKey) {
     return !!familyPrefix && text.startsWith(`${familyPrefix}_`);
   });
   const pool = familyPool.length ? familyPool : (genderPool.length ? genderPool : poolRaw);
-  const stand = pickCivilianSpriteKey(
+  const preferredStand = female
+    ? ((preferFemaleStandSide && pool.includes(preferFemaleStandSide)) ? preferFemaleStandSide
+      : ((preferFemaleFront && pool.includes(preferFemaleFront)) ? preferFemaleFront : ''))
+    : ((preferMaleStandSide && pool.includes(preferMaleStandSide)) ? preferMaleStandSide
+      : ((preferMaleFront && pool.includes(preferMaleFront)) ? preferMaleFront : ''));
+  const stand = preferredStand || pickCivilianSpriteKey(
     pool,
     [/side_standing_right/, /front_standing/, /standing/, /idle/],
     resolved
   );
-  const run1 = pickCivilianSpriteKey(
+  const preferredRunFrames = female
+    ? [preferFemaleRun1, preferFemaleRun2].filter((k) => !!k && pool.includes(k))
+    : [preferMaleRun2].filter((k) => !!k && pool.includes(k));
+  const run1 = preferredRunFrames[0] || pickCivilianSpriteKey(
     pool,
     [/running_right_pose1/, /running_pose1/, /run.*pose1/, /running/],
     resolved
   );
-  const run2 = pickCivilianSpriteKey(
+  const run2 = preferredRunFrames[1] || pickCivilianSpriteKey(
     pool,
     [/running_right_pose2/, /running_pose2/, /run.*pose2/, /running/],
     run1 || resolved
   );
-  const runFrames = [run1, run2].filter(Boolean);
+  const runFrames = preferredRunFrames.length ? preferredRunFrames : [run1, run2].filter(Boolean);
   return {
     stand: stand || resolved,
     runFrames: runFrames.length ? runFrames : [resolved].filter(Boolean)
@@ -20753,22 +20772,31 @@ function buildFirefighterAnimationSet(baseModelKey) {
   if (!poolRaw.length) {
     return { stand: resolved, runFrames: [resolved].filter(Boolean) };
   }
+  const preferStand = resolveSpriteKey('misc_human_firefighter_side_standing_right_459x200');
+  const preferRun1 = resolveSpriteKey('misc_human_firefighter_running_right_pose1_459x200');
+  const preferRun2 = resolveSpriteKey('misc_human_firefighter_running_right_pose2_459x200');
   const pool = poolRaw;
-  const stand = pickCivilianSpriteKey(
-    pool,
-    [/side_standing_right/, /front_standing/, /standing/, /idle/],
-    resolved
-  );
-  const run1 = pickCivilianSpriteKey(
-    pool,
-    [/running_right_pose1/, /running_pose1/, /run.*pose1/, /running/],
-    resolved
-  );
-  const run2 = pickCivilianSpriteKey(
-    pool,
-    [/running_right_pose2/, /running_pose2/, /run.*pose2/, /running/],
-    run1 || resolved
-  );
+  const stand = (preferStand && pool.includes(preferStand))
+    ? preferStand
+    : pickCivilianSpriteKey(
+      pool,
+      [/side_standing_right/, /front_standing/, /standing/, /idle/],
+      resolved
+    );
+  const run1 = (preferRun1 && pool.includes(preferRun1))
+    ? preferRun1
+    : pickCivilianSpriteKey(
+      pool,
+      [/running_right_pose1/, /running_pose1/, /run.*pose1/, /running/],
+      resolved
+    );
+  const run2 = (preferRun2 && pool.includes(preferRun2))
+    ? preferRun2
+    : pickCivilianSpriteKey(
+      pool,
+      [/running_right_pose2/, /running_pose2/, /run.*pose2/, /running/],
+      run1 || resolved
+    );
   const runFrames = [run1, run2].filter(Boolean);
   return {
     stand: stand || resolved,
@@ -20799,21 +20827,10 @@ function getFirefighterRect() {
   if (!ff || ff.mode === 'hidden') return null;
   const modelKey = resolveSpriteKey(String(ff.modelKey || '')) || getDefaultFirefighterModelKey();
   const size = getBuilderSpriteBaseSize(modelKey || '');
-  const h = clamp(size.h * 0.66, 76, 164);
-  const w = clamp(size.w * 0.46, 38, 118);
+  const h = clamp(size.h * 0.72, 84, 176);
+  const w = clamp(size.w * 0.50, 42, 124);
   const groundY = clamp(FIRETRUCK_LANE_Y + 2, GRASS_Y - 6, FIRETRUCK_LANE_Y + 10);
-  let x = ff.x - w * 0.5;
-  const truckRect = getTruckDrawRect();
-  // Prevent visual shimmer when the firefighter stands at the truck door by
-  // pushing the sprite slightly out of truck overlap.
-  if (ff.mode === 'active' && truckRect) {
-    const overlap = Math.min(x + w, truckRect.x + truckRect.w) - Math.max(x, truckRect.x);
-    if (overlap > 0) {
-      const push = overlap + 8;
-      x += (ff.facing >= 0 ? 1 : -1) * push;
-    }
-  }
-  x = clamp(x, 6, canvas.width - w - 6);
+  const x = clamp(ff.x - w * 0.5, 6, canvas.width - w - 6);
   return { x, y: groundY - h, w, h };
 }
 
@@ -21248,6 +21265,8 @@ function drawCivilianRescue() {
   const ff = rescueState.firefighter;
   const ffRect = getFirefighterRect();
   if (ff && ffRect && ff.mode !== 'hidden') {
+    if (Number(ff.vx || 0) > 0.03) ff.facing = 1;
+    else if (Number(ff.vx || 0) < -0.03) ff.facing = -1;
     drawFacingActorSprite(ff.displayModelKey || ff.standModelKey || ff.modelKey || getDefaultFirefighterModelKey(), ffRect, ff.facing || 1);
     if (levelElapsedMs < firefighterCueUntilMs) {
       const pulse = 0.35 + ((Math.sin(levelElapsedMs / 120) + 1) * 0.5) * 0.45;
@@ -27581,6 +27600,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
