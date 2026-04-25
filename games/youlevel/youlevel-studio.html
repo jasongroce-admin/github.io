@@ -2549,6 +2549,14 @@ body {
           <input id="builderLayerEnemySpawnMaxDelayMs" type="number" min="120" max="10000" step="20" value="1200">
         </div>
         <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyHoverMinMs">Hover Pause Min (ms)</label>
+          <input id="builderLayerEnemyHoverMinMs" type="number" min="100" max="5000" step="20" value="620">
+        </div>
+        <div class="builder-field movement-zone">
+          <label for="builderLayerEnemyHoverMaxMs">Hover Pause Max (ms)</label>
+          <input id="builderLayerEnemyHoverMaxMs" type="number" min="120" max="8000" step="20" value="1650">
+        </div>
+        <div class="builder-field movement-zone">
           <label for="builderLayerEnemyScaleMin">Enemy Size Min</label>
           <input id="builderLayerEnemyScaleMin" type="number" min="0.1" max="3" step="0.05" value="0.55">
         </div>
@@ -4786,6 +4794,8 @@ const BUILDER_UI = {
   layerEnemySpawnDirection: document.getElementById('builderLayerEnemySpawnDirection'),
   layerEnemySpawnMinDelayMs: document.getElementById('builderLayerEnemySpawnMinDelayMs'),
   layerEnemySpawnMaxDelayMs: document.getElementById('builderLayerEnemySpawnMaxDelayMs'),
+  layerEnemyHoverMinMs: document.getElementById('builderLayerEnemyHoverMinMs'),
+  layerEnemyHoverMaxMs: document.getElementById('builderLayerEnemyHoverMaxMs'),
   layerEnemyScaleMin: document.getElementById('builderLayerEnemyScaleMin'),
   layerEnemyScaleMax: document.getElementById('builderLayerEnemyScaleMax'),
   layerDifficultyTier: document.getElementById('builderLayerDifficultyTier'),
@@ -5436,6 +5446,8 @@ function builderSyncLevelOptionVisibility() {
     'builderLayerEnemySpawnDirection',
     'builderLayerEnemySpawnMinDelayMs',
     'builderLayerEnemySpawnMaxDelayMs',
+    'builderLayerEnemyHoverMinMs',
+    'builderLayerEnemyHoverMaxMs',
     'builderLayerEnemyScaleMin',
     'builderLayerEnemyScaleMax',
     'builderLayerFightBackEnabled',
@@ -5465,6 +5477,8 @@ function builderSyncLevelOptionVisibility() {
     'builderLayerEnemySpawnDirection',
     'builderLayerEnemySpawnMinDelayMs',
     'builderLayerEnemySpawnMaxDelayMs',
+    'builderLayerEnemyHoverMinMs',
+    'builderLayerEnemyHoverMaxMs',
     'builderLayerEnemyScaleMin',
     'builderLayerEnemyScaleMax',
     'builderLayerFightBackEnabled',
@@ -5700,6 +5714,8 @@ function builderApplyStateToUi() {
   if (BUILDER_UI.layerEnemySpawnDirection) BUILDER_UI.layerEnemySpawnDirection.value = (selected?.enemySpawnDirection === 'left' || selected?.enemySpawnDirection === 'right') ? selected.enemySpawnDirection : 'both';
   if (BUILDER_UI.layerEnemySpawnMinDelayMs) BUILDER_UI.layerEnemySpawnMinDelayMs.value = String(clamp(Number(selected?.enemySpawnMinDelayMs ?? 300), 80, 5000));
   if (BUILDER_UI.layerEnemySpawnMaxDelayMs) BUILDER_UI.layerEnemySpawnMaxDelayMs.value = String(clamp(Number(selected?.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+  if (BUILDER_UI.layerEnemyHoverMinMs) BUILDER_UI.layerEnemyHoverMinMs.value = String(clamp(Number(selected?.enemyHoverMinMs ?? 620), 100, 5000));
+  if (BUILDER_UI.layerEnemyHoverMaxMs) BUILDER_UI.layerEnemyHoverMaxMs.value = String(clamp(Number(selected?.enemyHoverMaxMs ?? 1650), 120, 8000));
   if (BUILDER_UI.layerEnemyScaleMin) BUILDER_UI.layerEnemyScaleMin.value = String(clamp(Number(selected?.enemyScaleMin ?? 0.55), 0.1, 3));
   if (BUILDER_UI.layerEnemyScaleMax) BUILDER_UI.layerEnemyScaleMax.value = String(clamp(Number(selected?.enemyScaleMax ?? 1.1), 0.1, 3));
   if (BUILDER_UI.layerDifficultyTier) BUILDER_UI.layerDifficultyTier.value = (selected?.difficultyTier === 'easy' || selected?.difficultyTier === 'hard' || selected?.difficultyTier === 'boss') ? selected.difficultyTier : 'normal';
@@ -6382,6 +6398,8 @@ function builderResetSelectedDefaults() {
   ent.enemySpawnDirection = 'both';
   ent.enemySpawnMinDelayMs = 300;
   ent.enemySpawnMaxDelayMs = 1200;
+  ent.enemyHoverMinMs = 620;
+  ent.enemyHoverMaxMs = 1650;
   ent.enemyScaleMin = 0.55;
   ent.enemyScaleMax = 1.1;
   ent.difficultyTier = 'normal';
@@ -6549,6 +6567,8 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnDirection',
     '#builderLayerEnemySpawnMinDelayMs',
     '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
     '#builderLayerDifficultyTier',
@@ -6622,6 +6642,8 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnDirection',
     '#builderLayerEnemySpawnMinDelayMs',
     '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
     '#builderLayerDifficultyTier',
@@ -6682,6 +6704,8 @@ function builderInitCollapsibleSections() {
     '#builderLayerEnemySpawnDirection',
     '#builderLayerEnemySpawnMinDelayMs',
     '#builderLayerEnemySpawnMaxDelayMs',
+    '#builderLayerEnemyHoverMinMs',
+    '#builderLayerEnemyHoverMaxMs',
     '#builderLayerEnemyScaleMin',
     '#builderLayerEnemyScaleMax',
     '#builderLayerDifficultyTier',
@@ -14436,8 +14460,10 @@ function normalizeBuilderEntity(ent, idx = 0) {
       enemyModelKey: resolveSpriteKey(String(ent.enemyModelKey || '')) || '',
       enemyCount: clamp(Number(ent.enemyCount ?? 1), 1, 30),
       enemySpawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
-      enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
-      enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+      enemySpawnMinDelayMs,
+      enemySpawnMaxDelayMs,
+      enemyHoverMinMs,
+      enemyHoverMaxMs,
       enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
       enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
       difficultyTier: (ent.difficultyTier === 'easy' || ent.difficultyTier === 'hard' || ent.difficultyTier === 'boss') ? ent.difficultyTier : 'normal',
@@ -14488,6 +14514,10 @@ function normalizeBuilderEntity(ent, idx = 0) {
       civilianFirefighterModelKey: resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || ''
     };
   }
+  const enemySpawnMinDelayMs = clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000);
+  const enemySpawnMaxDelayMs = Math.max(enemySpawnMinDelayMs, clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+  const enemyHoverMinMs = clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000);
+  const enemyHoverMaxMs = Math.max(enemyHoverMinMs, clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000));
   const normalized = {
     ...ent,
     id,
@@ -14527,8 +14557,10 @@ function normalizeBuilderEntity(ent, idx = 0) {
     enemyModelKey: resolveSpriteKey(String(ent.enemyModelKey || '')) || '',
     enemyCount: clamp(Number(ent.enemyCount ?? 1), 1, 30),
     enemySpawnDirection: (ent.enemySpawnDirection === 'left' || ent.enemySpawnDirection === 'right') ? ent.enemySpawnDirection : 'both',
-    enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
-    enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+    enemySpawnMinDelayMs,
+    enemySpawnMaxDelayMs,
+    enemyHoverMinMs,
+    enemyHoverMaxMs,
     enemyScaleMin: clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3),
     enemyScaleMax: clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3),
     fightBackEnabled: !!ent.fightBackEnabled,
@@ -14603,6 +14635,8 @@ function buildEnemyRaidFromEntities(entities = []) {
     attackOrder: 'random',
     spawnMinDelayMs: 300,
     spawnMaxDelayMs: 1200,
+    hoverMinMs: 620,
+    hoverMaxMs: 1650,
     scaleMin: 0.55,
     scaleMax: 1.1,
     laserColor: '#ff5772',
@@ -14615,6 +14649,8 @@ function buildEnemyRaidFromEntities(entities = []) {
   let hasRight = false;
   let minDelay = 5000;
   let maxDelay = 120;
+  let minHover = 5000;
+  let maxHover = 120;
   let minScale = 3;
   let maxScale = 0.1;
   spriteEntities.forEach((ent) => {
@@ -14630,6 +14666,8 @@ function buildEnemyRaidFromEntities(entities = []) {
     else { hasLeft = true; hasRight = true; }
     minDelay = Math.min(minDelay, clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000));
     maxDelay = Math.max(maxDelay, clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+    minHover = Math.min(minHover, clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000));
+    maxHover = Math.max(maxHover, clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000));
     minScale = Math.min(minScale, clamp(Number(ent.enemyScaleMin ?? 0.55), 0.1, 3));
     maxScale = Math.max(maxScale, clamp(Number(ent.enemyScaleMax ?? 1.1), 0.1, 3));
     if (/^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || ''))) normalized.laserColor = String(ent.enemyLaserColor);
@@ -14641,6 +14679,8 @@ function buildEnemyRaidFromEntities(entities = []) {
   normalized.spawnDirection = hasLeft && hasRight ? 'both' : (hasLeft ? 'left' : 'right');
   normalized.spawnMinDelayMs = clamp(minDelay, 80, 5000);
   normalized.spawnMaxDelayMs = Math.max(normalized.spawnMinDelayMs, clamp(maxDelay, 120, 10000));
+  normalized.hoverMinMs = clamp(minHover, 100, 5000);
+  normalized.hoverMaxMs = Math.max(normalized.hoverMinMs, clamp(maxHover, 120, 8000));
   normalized.scaleMin = clamp(minScale, 0.1, 3);
   normalized.scaleMax = Math.max(normalized.scaleMin, clamp(maxScale, 0.1, 3));
   return normalized;
@@ -14753,6 +14793,8 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
       attackOrder: level?.enemyRaid?.attackOrder === 'sequence' ? 'sequence' : entityEnemyRaid.attackOrder,
       spawnMinDelayMs: clamp(Number(level?.enemyRaid?.spawnMinDelayMs ?? entityEnemyRaid.spawnMinDelayMs), 80, 5000),
       spawnMaxDelayMs: clamp(Number(level?.enemyRaid?.spawnMaxDelayMs ?? entityEnemyRaid.spawnMaxDelayMs), 120, 10000),
+      hoverMinMs: clamp(Number(level?.enemyRaid?.hoverMinMs ?? entityEnemyRaid.hoverMinMs), 100, 5000),
+      hoverMaxMs: clamp(Number(level?.enemyRaid?.hoverMaxMs ?? entityEnemyRaid.hoverMaxMs), 120, 8000),
       scaleMin: clamp(Number(level?.enemyRaid?.scaleMin ?? entityEnemyRaid.scaleMin), 0.1, 3),
       scaleMax: clamp(Number(level?.enemyRaid?.scaleMax ?? entityEnemyRaid.scaleMax), 0.1, 3),
       laserColor: /^#[0-9a-fA-F]{6}$/.test(String(level?.enemyRaid?.laserColor || '')) ? String(level.enemyRaid.laserColor) : entityEnemyRaid.laserColor,
@@ -14775,6 +14817,9 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
   }
   if (normalized.enemyRaid.spawnMaxDelayMs < normalized.enemyRaid.spawnMinDelayMs) {
     normalized.enemyRaid.spawnMaxDelayMs = normalized.enemyRaid.spawnMinDelayMs;
+  }
+  if (normalized.enemyRaid.hoverMaxMs < normalized.enemyRaid.hoverMinMs) {
+    normalized.enemyRaid.hoverMaxMs = normalized.enemyRaid.hoverMinMs;
   }
   if (normalized.enemyRaid.scaleMax < normalized.enemyRaid.scaleMin) {
     normalized.enemyRaid.scaleMax = normalized.enemyRaid.scaleMin;
@@ -18754,6 +18799,22 @@ BUILDER_UI.layerEnemySpawnMaxDelayMs?.addEventListener('change', () => {
   builderApplyStateToUi();
   builderSaveLastDraft();
 });
+BUILDER_UI.layerEnemyHoverMinMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyHoverMinMs = clamp(Number(BUILDER_UI.layerEnemyHoverMinMs.value || 620), 100, 5000);
+  if (ent.enemyHoverMaxMs < ent.enemyHoverMinMs) ent.enemyHoverMaxMs = ent.enemyHoverMinMs;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
+BUILDER_UI.layerEnemyHoverMaxMs?.addEventListener('change', () => {
+  const ent = getBuilderEntityById(builderSelectedId);
+  if (!ent) return;
+  ent.enemyHoverMaxMs = clamp(Number(BUILDER_UI.layerEnemyHoverMaxMs.value || 1650), 120, 8000);
+  if (ent.enemyHoverMaxMs < ent.enemyHoverMinMs) ent.enemyHoverMaxMs = ent.enemyHoverMinMs;
+  builderApplyStateToUi();
+  builderSaveLastDraft();
+});
 BUILDER_UI.layerEnemyScaleMin?.addEventListener('change', () => {
   const ent = getBuilderEntityById(builderSelectedId);
   if (!ent) return;
@@ -20848,6 +20909,8 @@ function initEnemyRaid(levelData) {
         allowLaserDamage: !!ent.allowLaserDamage,
         enemySpawnMinDelayMs: clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000),
         enemySpawnMaxDelayMs: clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000),
+        enemyHoverMinMs: clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000),
+        enemyHoverMaxMs: clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000),
         enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(ent.enemyLaserColor || '')) ? String(ent.enemyLaserColor) : '#ff5772',
         enemyLaserEmitterSide: (ent.enemyLaserEmitterSide === 'left' || ent.enemyLaserEmitterSide === 'right' || ent.enemyLaserEmitterSide === 'center') ? ent.enemyLaserEmitterSide : 'auto',
         enemyBombType: (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : 'bomb',
@@ -20898,6 +20961,8 @@ function initEnemyRaid(levelData) {
         allowLaserDamage: true,
         enemySpawnMinDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMinDelayMs ?? 300), 80, 5000),
         enemySpawnMaxDelayMs: clamp(Number(levelData?.enemyRaid?.spawnMaxDelayMs ?? 1200), 120, 10000),
+        enemyHoverMinMs: clamp(Number(levelData?.enemyRaid?.hoverMinMs ?? 620), 100, 5000),
+        enemyHoverMaxMs: clamp(Number(levelData?.enemyRaid?.hoverMaxMs ?? 1650), 120, 8000),
         enemyLaserColor: legacyLaserColor,
         enemyLaserEmitterSide: 'auto',
         enemyBombType: legacyBombType,
@@ -20919,6 +20984,8 @@ function initEnemyRaid(levelData) {
     attackOrder: formationSpecs.length ? 'sequence' : 'random',
     spawnMinDelayMs: Math.min(...profiles.map((p) => Number(p.enemySpawnMinDelayMs || 300))),
     spawnMaxDelayMs: Math.max(...profiles.map((p) => Number(p.enemySpawnMaxDelayMs || 1200))),
+    hoverMinMs: Math.min(...profiles.map((p) => Number(p.enemyHoverMinMs || 620))),
+    hoverMaxMs: Math.max(...profiles.map((p) => Number(p.enemyHoverMaxMs || 1650))),
     scaleMin: Math.min(...profiles.map((p) => Number(p.scaleMin || 0.55))),
     scaleMax: Math.max(...profiles.map((p) => Number(p.scaleMax || 1.1))),
     laserColor: profiles[0]?.enemyLaserColor || '#ff5772',
@@ -20971,6 +21038,8 @@ function createEnemyRaidClone(spriteKey, options = {}) {
     aggressiveSkill: clamp(Number(options.aggressiveSkill ?? (0.8 + Math.random() * 1.1)), 0.2, 2.5),
     aggressiveTargetId: String(options.targetId || 'primaryVehicle'),
     allowLaserDamage: options.allowLaserDamage !== false,
+    enemyHoverMinMs: clamp(Number(options.enemyHoverMinMs ?? 620), 100, 5000),
+    enemyHoverMaxMs: clamp(Number(options.enemyHoverMaxMs ?? 1650), 120, 8000),
     enemyLaserColor: /^#[0-9a-fA-F]{6}$/.test(String(options.enemyLaserColor || '')) ? String(options.enemyLaserColor) : '#ff5772',
     enemyLaserEmitterSide: (options.enemyLaserEmitterSide === 'left' || options.enemyLaserEmitterSide === 'right' || options.enemyLaserEmitterSide === 'center') ? options.enemyLaserEmitterSide : 'auto',
     enemyBombType: (options.enemyBombType === 'plasma' || options.enemyBombType === 'mine') ? options.enemyBombType : 'bomb',
@@ -21041,6 +21110,8 @@ function spawnEnemyRaidAttacker(spriteKey = '', options = {}) {
     fightBackEnabled: options.fightBackEnabled ?? profile?.fightBackEnabled,
     aggressiveSkill: options.aggressiveSkill ?? profile?.aggressiveSkill,
     allowLaserDamage: options.allowLaserDamage ?? profile?.allowLaserDamage,
+    enemyHoverMinMs: options.enemyHoverMinMs ?? profile?.enemyHoverMinMs ?? enemyRaidState.hoverMinMs,
+    enemyHoverMaxMs: options.enemyHoverMaxMs ?? profile?.enemyHoverMaxMs ?? enemyRaidState.hoverMaxMs,
     enemyLaserColor: options.enemyLaserColor ?? profile?.enemyLaserColor ?? enemyRaidState.laserColor,
     enemyLaserEmitterSide: options.enemyLaserEmitterSide ?? profile?.enemyLaserEmitterSide ?? 'auto',
     enemyBombType: options.enemyBombType ?? profile?.enemyBombType ?? enemyRaidState.bombType,
@@ -21144,6 +21215,7 @@ function updateEnemyRaid(dt, levelData) {
   const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
   enemyRaidState.attackers.forEach((ent) => {
     if (!ent || ent._laserDestroyed) return;
+    const nowMs = performance.now();
     const targetRect = getEnemyRaidTargetRect(ent, levelData);
     const tierMult = getEntityDifficultyMultiplier(ent);
     const overallMult = getOverallDifficultyMultiplier(levelData);
@@ -21155,12 +21227,24 @@ function updateEnemyRaid(dt, levelData) {
       ent._formationLockMs -= Math.max(0, Number(dt || 0));
       tx += Number(ent._formationOffsetX || 0);
       ty = clamp(ty + Number(ent._formationOffsetY || 0), 90, 520);
+      ent._raidHoverUntil = 0;
+    } else {
+      const hoverMinMs = clamp(Number(ent.enemyHoverMinMs ?? enemyRaidState.hoverMinMs ?? 620), 100, 5000);
+      const hoverMaxMs = Math.max(hoverMinMs, clamp(Number(ent.enemyHoverMaxMs ?? enemyRaidState.hoverMaxMs ?? 1650), 120, 8000));
+      if (Number(ent._raidHoverUntil || 0) > nowMs) {
+        tx = Number.isFinite(Number(ent._raidHoverX)) ? Number(ent._raidHoverX) : tx;
+        ty = clamp(Number.isFinite(Number(ent._raidHoverY)) ? Number(ent._raidHoverY) : ty, 90, 520);
+      } else if (Math.random() < (0.0038 * step)) {
+        const hoverDuration = hoverMinMs + Math.random() * (hoverMaxMs - hoverMinMs);
+        ent._raidHoverUntil = nowMs + hoverDuration;
+        ent._raidHoverX = tx + ((Math.random() - 0.5) * 74);
+        ent._raidHoverY = clamp(ty + ((Math.random() - 0.5) * 58), 90, 520);
+      }
     }
     ent.x = clamp((ent.x || 0) + clamp(tx - (ent.x || 0), -speed * 5, speed * 5), -260, 1560);
     if (ent.flightEnabled) ent.baseY = clamp((ent.baseY ?? ty) + clamp(ty - (ent.baseY ?? ty), -speed * 2.2, speed * 2.2), 90, 520);
     if (!ent._enemyLaserCdMs) ent._enemyLaserCdMs = 0;
     ent._enemyLaserCdMs -= Math.max(0, dt || 0);
-    const nowMs = performance.now();
     const provoked = !!ent.fightBackEnabled && Number(ent._enemyProvokedUntil || 0) > nowMs;
     const canShoot = !!ent.laserEnabled && ent._enemyLaserCdMs <= 0 && (!!ent.aggressiveEnabled || provoked);
     if (canShoot) {
