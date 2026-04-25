@@ -20799,10 +20799,22 @@ function getFirefighterRect() {
   if (!ff || ff.mode === 'hidden') return null;
   const modelKey = resolveSpriteKey(String(ff.modelKey || '')) || getDefaultFirefighterModelKey();
   const size = getBuilderSpriteBaseSize(modelKey || '');
-  const h = clamp(size.h * 0.54, 64, 132);
-  const w = clamp(size.w * 0.38, 32, 96);
+  const h = clamp(size.h * 0.66, 76, 164);
+  const w = clamp(size.w * 0.46, 38, 118);
   const groundY = clamp(FIRETRUCK_LANE_Y + 2, GRASS_Y - 6, FIRETRUCK_LANE_Y + 10);
-  return { x: ff.x - w * 0.5, y: groundY - h, w, h };
+  let x = ff.x - w * 0.5;
+  const truckRect = getTruckDrawRect();
+  // Prevent visual shimmer when the firefighter stands at the truck door by
+  // pushing the sprite slightly out of truck overlap.
+  if (ff.mode === 'active' && truckRect) {
+    const overlap = Math.min(x + w, truckRect.x + truckRect.w) - Math.max(x, truckRect.x);
+    if (overlap > 0) {
+      const push = overlap + 8;
+      x += (ff.facing >= 0 ? 1 : -1) * push;
+    }
+  }
+  x = clamp(x, 6, canvas.width - w - 6);
+  return { x, y: groundY - h, w, h };
 }
 
 function getCivilianRect(civilian) {
