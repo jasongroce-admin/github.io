@@ -128,6 +128,7 @@
   const saveProgressBtn = document.getElementById("saveProgressBtn");
   const uploadSaveBtn = document.getElementById("uploadSaveBtn");
   const uploadSaveInput = document.getElementById("uploadSaveInput");
+  const difficultyPicker = document.getElementById("difficultyPicker");
   const importLevelBtn = document.getElementById("importLevelBtn");
   const importLevelInput = document.getElementById("importLevelInput");
   const resetSaveBtn = document.getElementById("resetSaveBtn");
@@ -759,10 +760,20 @@
     const key = DIFFICULTY_PROFILES[mode] ? mode : "normal";
     dashboardUi.difficulty = key;
     localStorage.setItem(DIFFICULTY_KEY, key);
+    syncDifficultyPicker();
   }
 
   function getDifficultyProfile() {
     return DIFFICULTY_PROFILES[dashboardUi.difficulty] || DIFFICULTY_PROFILES.normal;
+  }
+
+  function syncDifficultyPicker() {
+    if (!difficultyPicker) return;
+    difficultyPicker.querySelectorAll("[data-difficulty]").forEach((btn) => {
+      const key = String(btn.getAttribute("data-difficulty") || "");
+      btn.classList.toggle("selected", key === dashboardUi.difficulty);
+      btn.classList.toggle("ghost", key !== dashboardUi.difficulty);
+    });
   }
 
   function getTotalStoredResources() {
@@ -1891,9 +1902,8 @@
         <h3>${useLanded ? "PLANET SURFACE" : "ORBIT NAV"}</h3>
         <p>${useLanded ? `Landed: ${selected.planetName}` : `Orbit: ${currentPlanet.planetName} | Destination: ${selected.planetName}`}</p>
         <p class="statline">${useLanded ? `Gather ${selected.line.name} by launching the buggy.` : (hasPendingForSelected ? "Arrived in orbit - land or choose another planet." : "Choose a destination and fly through a space encounter.")}</p>
-        ${useLanded ? `<button id="cockpitToggleViewBtn" class="btn ghost" type="button">Back To Orbit</button>` : (hasPendingForSelected ? `<button id="cockpitToggleViewBtn" class="btn" type="button">Land On ${selected.planetName}</button>` : "")}
+        ${useLanded ? "" : (hasPendingForSelected ? `<button id="cockpitToggleViewBtn" class="btn" type="button">Land On ${selected.planetName}</button>` : "")}
         ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn ${hasPendingForSelected ? "ghost" : ""}" type="button">${hasPendingForSelected ? "Fly To Another Planet" : `Fly To ${selected.line.name}`}</button>`}
-        <button id="cockpitDifficultyBtn" class="btn ghost" type="button">Difficulty: ${getDifficultyProfile().label}</button>
       `);
       const toggleBtn = document.getElementById("cockpitToggleViewBtn");
       if (toggleBtn) {
@@ -1909,16 +1919,6 @@
         launchBtn.addEventListener("click", (event) => {
           event.preventDefault();
           launchSelectedPlanetMission();
-        });
-      }
-      const difficultyBtn = document.getElementById("cockpitDifficultyBtn");
-      if (difficultyBtn) {
-        difficultyBtn.addEventListener("click", (event) => {
-          event.preventDefault();
-          const order = ["easy", "normal", "hard"];
-          const idx = Math.max(0, order.indexOf(dashboardUi.difficulty));
-          writeDifficulty(order[(idx + 1) % order.length]);
-          renderDashboard();
         });
       }
     }
@@ -3355,6 +3355,15 @@
         }
       });
     }
+    if (difficultyPicker) {
+      difficultyPicker.querySelectorAll("[data-difficulty]").forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+          event.preventDefault();
+          writeDifficulty(String(btn.getAttribute("data-difficulty") || "normal"));
+          renderDashboard();
+        });
+      });
+    }
     if (importLevelBtn && importLevelInput) {
       importLevelBtn.addEventListener("click", () => importLevelInput.click());
       importLevelInput.addEventListener("change", async (event) => {
@@ -3454,6 +3463,7 @@
     setCockpitEditMode(false);
     bindEvents();
     syncMissionControls();
+    syncDifficultyPicker();
     renderDashboard();
     runtime.lastTime = performance.now();
   }

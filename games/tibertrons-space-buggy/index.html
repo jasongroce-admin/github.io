@@ -71,6 +71,27 @@
         flex-wrap: wrap;
         gap: 0.45rem;
       }
+      .difficulty-picker {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+        margin-left: auto;
+      }
+      .difficulty-picker .k {
+        color: #9bc2e7;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+      .difficulty-picker .btn {
+        min-height: 30px;
+        padding: 0.32rem 0.56rem;
+      }
+      .difficulty-picker .btn.selected {
+        background: linear-gradient(180deg, #4aa4ef, #2464a6);
+        border-color: rgba(176, 222, 255, 0.95);
+        box-shadow: 0 0 0 1px rgba(119, 219, 255, 0.32) inset, 0 0 14px rgba(79, 190, 255, 0.28);
+      }
       .notice {
         border-left: 3px solid var(--accent);
         padding-left: 0.6rem;
@@ -288,6 +309,26 @@
         font-size: calc(0.64rem * var(--panel-font-scale, 1));
         padding: 0.2rem 0.32rem;
       }
+      #cockpitLeftPanel .panel-content {
+        transform: rotate(-3deg) skewX(-4deg);
+        transform-origin: center center;
+      }
+      #cockpitRightPanel .panel-content {
+        transform: rotate(5deg) skewX(4deg);
+        transform-origin: center center;
+      }
+      #cockpitLeftPanel .btn,
+      #cockpitRightPanel .btn {
+        border-radius: 7px;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.78);
+        box-shadow: inset 0 0 0 1px rgba(111, 226, 255, 0.22), 0 0 10px rgba(0, 255, 255, 0.18);
+      }
+      #cockpitLeftPanel .btn {
+        clip-path: polygon(4% 15%, 96% 0%, 100% 84%, 0% 100%);
+      }
+      #cockpitRightPanel .btn {
+        clip-path: polygon(0% 0%, 96% 14%, 100% 100%, 4% 84%);
+      }
       #cockpitMainViewport { left: 41%; top: 76%; width: 18%; height: 12%; }
       #cockpitLeftPanel { left: 8%; top: 68%; width: 9%; height: 12%; }
       #cockpitTopLeftPanel { left: 28%; top: 58%; width: 11%; height: 14%; }
@@ -500,6 +541,12 @@
           <button id="saveProgressBtn" class="btn" type="button">Save Progress</button>
           <button id="uploadSaveBtn" class="btn ghost" type="button">Upload Saved Game</button>
           <input id="uploadSaveInput" type="file" accept="application/json" style="display:none">
+          <div id="difficultyPicker" class="difficulty-picker" aria-label="Difficulty selection">
+            <span class="k">Difficulty</span>
+            <button class="btn ghost" data-difficulty="easy" type="button">Easy</button>
+            <button class="btn ghost" data-difficulty="normal" type="button">Normal</button>
+            <button class="btn ghost" data-difficulty="hard" type="button">Hard</button>
+          </div>
         </div>
         <div id="dashboardSummary" class="stats-row"></div>
         <div id="resourceGrid" class="dashboard-grid" style="margin-top:0.75rem"></div>
