@@ -138,6 +138,8 @@
         padding: 0.2rem;
         display: grid;
         place-items: center;
+        position: relative;
+        overflow: hidden;
       }
       .loadout-choice.selected {
         border-color: rgba(255, 229, 127, 0.96);
@@ -149,6 +151,23 @@
         object-fit: contain;
         pointer-events: none;
         filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.48));
+      }
+      .loadout-choice.locked img {
+        opacity: 0.34;
+        filter: grayscale(0.8) drop-shadow(0 5px 7px rgba(0, 0, 0, 0.48));
+      }
+      .loadout-lock {
+        position: absolute;
+        right: 4px;
+        bottom: 3px;
+        border-radius: 5px;
+        padding: 0.05rem 0.22rem;
+        background: rgba(5, 13, 24, 0.86);
+        color: #ffd27e;
+        font-size: 0.55rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        pointer-events: none;
       }
       .notice {
         border-left: 3px solid var(--accent);
@@ -791,11 +810,12 @@
           <canvas id="gameCanvas" width="1200" height="580"></canvas>
           <div id="deathOverlay" class="overlay">
             <div class="overlay-card">
-              <h2 style="margin:0">Buggy Destroyed</h2>
+              <h2 id="deathTitle" style="margin:0">Buggy Destroyed</h2>
               <p id="deathMessage" style="margin:0"></p>
               <div id="deathStats" class="stats-row"></div>
               <div class="row-actions">
                 <button id="respawnBtn" class="btn" type="button">Respawn Checkpoint</button>
+                <button id="restartLevelBtn" class="btn ghost" type="button">Restart Level</button>
                 <button id="bankReturnBtn" class="btn alt" type="button">Bank Gathered + Return</button>
               </div>
             </div>
@@ -841,6 +861,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=20260426b"></script>
+    <script src="app.js?v=20260426c"></script>
   </body>
 </html>
