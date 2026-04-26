@@ -238,15 +238,18 @@
       height: 19.91
     },
     cockpitLeftPanel: {
-      left: 9.52,
-      top: 71.54,
-      width: 11.09,
-      height: 22.08,
+      left: 10.65,
+      top: 72.40,
+      width: 12.90,
+      height: 17.80,
+      rotate: -16,
+      skewX: -2,
+      skewY: 0,
       corners: {
-        tl: { x: 9.52, y: 79.32 },
-        tr: { x: 19.56, y: 71.54 },
-        br: { x: 20.61, y: 85.85 },
-        bl: { x: 11.09, y: 93.62 }
+        tl: { x: 10.65, y: 75.80 },
+        tr: { x: 21.80, y: 72.40 },
+        br: { x: 23.55, y: 86.40 },
+        bl: { x: 12.35, y: 90.20 }
       }
     },
     cockpitTopLeftPanel: {
