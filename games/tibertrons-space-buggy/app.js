@@ -10,7 +10,7 @@
 
   const STORAGE_KEY = "tibertron2000-save-v1";
   const DIFFICULTY_KEY = "tibertron2000-difficulty-v1";
-  const COCKPIT_LAYOUT_KEY = "tibertron2000-cockpit-layout-v1";
+  const COCKPIT_LAYOUT_KEY = "tibertron2000-cockpit-layout-v2";
   const COCKPIT_LAYOUT_LOCK_KEY = "tibertron2000-cockpit-layout-lock-v1";
   const MAX_LEVEL = 10;
   const PLAYER_WIDTH = 92;
@@ -231,13 +231,60 @@
     "cockpitRightPanel"
   ];
   const cockpitDefaultLayout = {
-    cockpitMainViewport: { left: 41, top: 76, width: 18, height: 12 },
-    cockpitLeftPanel: { left: 8, top: 68, width: 9, height: 12 },
-    cockpitTopLeftPanel: { left: 28, top: 58, width: 11, height: 14 },
-    cockpitTopMidPanel: { left: 41, top: 58, width: 11, height: 14 },
-    cockpitTopRightPanel: { left: 54, top: 58, width: 11, height: 14 },
-    cockpitBottomMidPanel: { left: 41, top: 76, width: 11, height: 12 },
-    cockpitRightPanel: { left: 78, top: 68, width: 9, height: 12 }
+    cockpitMainViewport: {
+      left: 37.99,
+      top: 43.23,
+      width: 22.18,
+      height: 19.91
+    },
+    cockpitLeftPanel: {
+      left: 9.52,
+      top: 71.54,
+      width: 11.09,
+      height: 22.08,
+      corners: {
+        tl: { x: 9.52, y: 79.32 },
+        tr: { x: 19.56, y: 71.54 },
+        br: { x: 20.61, y: 85.85 },
+        bl: { x: 11.09, y: 93.62 }
+      }
+    },
+    cockpitTopLeftPanel: {
+      left: 29.87,
+      top: 64.07,
+      width: 9.78,
+      height: 12.29
+    },
+    cockpitTopMidPanel: {
+      left: 43.49,
+      top: 63.45,
+      width: 11.09,
+      height: 17.26
+    },
+    cockpitTopRightPanel: {
+      left: 57.90,
+      top: 64.07,
+      width: 10.39,
+      height: 12.91
+    },
+    cockpitBottomMidPanel: {
+      left: 42.27,
+      top: 80.87,
+      width: 13.80,
+      height: 18.97
+    },
+    cockpitRightPanel: {
+      left: 73.97,
+      top: 72.16,
+      width: 15.50,
+      height: 23.02,
+      corners: {
+        tl: { x: 76.51, y: 72.16 },
+        tr: { x: 89.47, y: 79.94 },
+        br: { x: 87.69, y: 95.18 },
+        bl: { x: 73.97, y: 85.23 }
+      }
+    }
   };
   let cockpitEditState = null;
   const mobileStickState = {
