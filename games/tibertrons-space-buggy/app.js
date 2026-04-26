@@ -11,9 +11,11 @@
   const STORAGE_KEY = "tibertron2000-save-v1";
   const DIFFICULTY_KEY = "tibertron2000-difficulty-v1";
   const TUTORIAL_KEY = "tibertron2000-tutorial-v1";
+  const LOADOUT_KEY = "tibertron2000-loadout-v1";
   const COCKPIT_LAYOUT_KEY = "tibertron2000-cockpit-layout-v2";
   const COCKPIT_LAYOUT_LOCK_KEY = "tibertron2000-cockpit-layout-lock-v1";
   const MAX_LEVEL = 10;
+  const MAX_RESOURCE_SORTIES = 3;
   const PLAYER_WIDTH = 92;
   const PLAYER_HEIGHT = 50;
   const SPACE_HERO_WIDTH = 128;
@@ -121,6 +123,21 @@
       mine: "images/moon/hazards/space_mine_small_256x256.webp"
     }
   };
+  const HERO_SHIP_OPTIONS = [
+    { id: "starfighter", label: "Starfighter", path: SPACE_HERO_SPRITE, facesRight: SPACE_HERO_FACES_RIGHT },
+    { id: "fighter", label: "Fighter", path: "images/scifi/scifi_vehicle_fighter_459x145.webp", facesRight: true },
+    { id: "pod", label: "Flying Pod", path: "images/scifi/scifi_vehicle_flyingpod_459x145.webp", facesRight: true },
+    { id: "hoverbike", label: "Hoverbike", path: "images/scifi/scifi_vehicle_hoverbike_459x145.webp", facesRight: true }
+  ];
+  const HERO_BUGGY_OPTIONS = [
+    { id: "moonbuggy", label: "Moon Buggy", path: "images/vehicles/moonbuggy1.webp", facesRight: false },
+    ...BUGGY_ENEMY_SPRITES.map((enemy, idx) => ({
+      id: `alien-buggy-${idx + 1}`,
+      label: `Alien Buggy ${idx + 1}`,
+      path: enemy.path,
+      facesRight: !!enemy.facesRight
+    }))
+  ];
   const DASHBOARD_PLANETS = ["AETHERIS", "DUSKARA", "IRONHEART", "KRYON", "NEBULON"];
 
   const dashboardScreen = document.getElementById("dashboardScreen");
@@ -130,6 +147,8 @@
   const uploadSaveBtn = document.getElementById("uploadSaveBtn");
   const uploadSaveInput = document.getElementById("uploadSaveInput");
   const difficultyPicker = document.getElementById("difficultyPicker");
+  const shipLoadoutOptions = document.getElementById("shipLoadoutOptions");
+  const buggyLoadoutOptions = document.getElementById("buggyLoadoutOptions");
   const importLevelBtn = document.getElementById("importLevelBtn");
   const importLevelInput = document.getElementById("importLevelInput");
   const resetSaveBtn = document.getElementById("resetSaveBtn");
@@ -228,6 +247,7 @@
     layoutEditMode: false,
     layoutLocked: false,
     difficulty: "normal",
+    loadout: { shipPath: SPACE_HERO_SPRITE, buggyPath: ASSET_LIBRARY.moonBuggy.path },
     pendingLanding: null,
     highlightLaunchUntilMs: 0,
     highlightOrbitUntilMs: 0
@@ -664,6 +684,49 @@
     });
   }
 
+  function createDefaultLoadout() {
+    return {
+      shipPath: HERO_SHIP_OPTIONS[0]?.path || SPACE_HERO_SPRITE,
+      buggyPath: HERO_BUGGY_OPTIONS[0]?.path || ASSET_LIBRARY.moonBuggy.path
+    };
+  }
+
+  function getHeroShipOption() {
+    const path = dashboardUi.loadout?.shipPath || HERO_SHIP_OPTIONS[0]?.path || SPACE_HERO_SPRITE;
+    return HERO_SHIP_OPTIONS.find((option) => option.path === path) || HERO_SHIP_OPTIONS[0];
+  }
+
+  function getHeroBuggyOption() {
+    const path = dashboardUi.loadout?.buggyPath || HERO_BUGGY_OPTIONS[0]?.path || ASSET_LIBRARY.moonBuggy.path;
+    return HERO_BUGGY_OPTIONS.find((option) => option.path === path) || HERO_BUGGY_OPTIONS[0];
+  }
+
+  function sanitizeLoadout(raw) {
+    const fallback = createDefaultLoadout();
+    const ship = HERO_SHIP_OPTIONS.find((option) => option.path === raw?.shipPath || option.id === raw?.shipId) || HERO_SHIP_OPTIONS[0];
+    const buggy = HERO_BUGGY_OPTIONS.find((option) => option.path === raw?.buggyPath || option.id === raw?.buggyId) || HERO_BUGGY_OPTIONS[0];
+    return {
+      shipPath: ship?.path || fallback.shipPath,
+      buggyPath: buggy?.path || fallback.buggyPath
+    };
+  }
+
+  function readLoadout() {
+    try {
+      return sanitizeLoadout(JSON.parse(localStorage.getItem(LOADOUT_KEY) || "{}"));
+    } catch (_) {
+      return createDefaultLoadout();
+    }
+  }
+
+  function writeLoadout(nextLoadout) {
+    dashboardUi.loadout = sanitizeLoadout(nextLoadout);
+    localStorage.setItem(LOADOUT_KEY, JSON.stringify(dashboardUi.loadout));
+    syncLoadoutPicker();
+    ensureImage(dashboardUi.loadout.shipPath);
+    ensureImage(dashboardUi.loadout.buggyPath);
+  }
+
   function createDefaultSave() {
     const stored = {};
     const progress = {};
@@ -690,7 +753,7 @@
       next.importedCompleted = safeNumber(parsed.importedCompleted, 0);
       RESOURCE_LINES.forEach((line) => {
         next.stored[line.id] = Math.max(0, safeNumber(parsed?.stored?.[line.id], 0));
-        next.progress[line.id] = clamp(Math.floor(safeNumber(parsed?.progress?.[line.id], 0)), 0, MAX_LEVEL);
+        next.progress[line.id] = clamp(Math.floor(safeNumber(parsed?.progress?.[line.id], 0)), 0, MAX_RESOURCE_SORTIES);
       });
       return next;
     } catch (_) {
@@ -735,19 +798,21 @@
   }
 
   function getTutorialDeck(key) {
+    const heroShip = getHeroShipOption()?.path || SPACE_HERO_SPRITE;
+    const heroBuggy = getHeroBuggyOption()?.path || ASSET_LIBRARY.moonBuggy.path;
     if (key === "space") {
       return [
         tutorialCard(
           "Space Flight",
           "Fly through the route to reach the selected planet. Move with WASD, arrow keys, or the on-screen stick. Fire with F, X, click, tap, or the Fire button.",
           ["Watch ship health", "Enemies fire different lasers", "Clear the route to arrive in orbit"],
-          { hero: SPACE_HERO_SPRITE, enemy: ASSET_LIBRARY.enemySprites.drone[0], laser: true, keys: ["W", "A", "D"] }
+          { hero: heroShip, enemy: getEnemySpriteList("drone")[0] || ASSET_LIBRARY.enemySprites.drone[0], laser: true, keys: ["W", "A", "D"] }
         ),
         tutorialCard(
           "Aim And Survive",
           "Point at targets to aim. Keep moving while firing because space routes can be quiet, patrolled, ambushed, or storm-heavy.",
           ["Move first, then shoot", "Harder routes reward more", "Destroyed enemies may drop health"],
-          { hero: SPACE_HERO_SPRITE, enemy: ASSET_LIBRARY.enemySprites.drone[3], laser: true, pickup: ASSET_LIBRARY.pickups.health }
+          { hero: heroShip, enemy: getEnemySpriteList("drone")[3] || ASSET_LIBRARY.enemySprites.drone[0], laser: true, pickup: ASSET_LIBRARY.pickups.health }
         )
       ];
     }
@@ -757,13 +822,13 @@
           "Moon Buggy Drive",
           "The buggy keeps rolling across the planet. Brake or accelerate to line up jumps, then use Jump before craters and broken ground.",
           ["Left/A brakes", "Right/D accelerates", "Space/W jumps"],
-          { hero: ASSET_LIBRARY.moonBuggy.path, pickup: ASSET_LIBRARY.pickups.fuel, keys: ["A", "D", "Space"] }
+          { hero: heroBuggy, pickup: ASSET_LIBRARY.pickups.fuel, keys: ["A", "D", "Space"] }
         ),
         tutorialCard(
           "Fuel, Health, Resources",
           "Fuel drains as you drive. Grab fuel cans on the level, and shoot close enemies because some drop extra fuel or health after they are destroyed.",
           ["Fuel keeps the run alive", "Health repairs damage", "Return to ship to bank gathered resources"],
-          { hero: ASSET_LIBRARY.moonBuggy.path, enemy: BUGGY_ENEMY_SPRITES[1].path, pickup: ASSET_LIBRARY.pickups.fuel, laser: true }
+          { hero: heroBuggy, enemy: getBuggyEnemyChoices()[1]?.path || BUGGY_ENEMY_SPRITES[0].path, pickup: ASSET_LIBRARY.pickups.fuel, laser: true }
         )
       ];
     }
@@ -776,9 +841,9 @@
       ),
       tutorialCard(
         "Plan The Run",
-        "Each planet needs a resource. Save Progress downloads your current campaign, and Upload Saved Game restores it later.",
-        ["Choose difficulty before launching", "Land to open the buggy bay", "Launch Buggy to gather more"],
-        { hero: ASSET_LIBRARY.moonBuggy.path, pickup: ASSET_LIBRARY.pickups.health, enemy: ASSET_LIBRARY.enemySprites.drone[1] }
+        "Each planet needs a resource. Pick your hero ship and buggy before launching; chosen models are reserved for you and will not spawn as enemies.",
+        ["Choose difficulty before launching", "Save or upload progress", "Land to open the buggy bay"],
+        { hero: heroBuggy, pickup: ASSET_LIBRARY.pickups.health, enemy: getEnemySpriteList("drone")[1] || ASSET_LIBRARY.enemySprites.drone[0] }
       )
     ];
   }
@@ -902,6 +967,7 @@
       storageKey: STORAGE_KEY,
       save: cloneSimple(saveState),
       difficulty: dashboardUi.difficulty,
+      loadout: cloneSimple(dashboardUi.loadout || createDefaultLoadout()),
       cockpitLayout: loadCockpitLayout() || cockpitDefaultLayout
     };
   }
@@ -928,7 +994,7 @@
     next.importedCompleted = safeNumber(source?.importedCompleted, 0);
     RESOURCE_LINES.forEach((line) => {
       next.stored[line.id] = Math.max(0, safeNumber(source?.stored?.[line.id], 0));
-      next.progress[line.id] = clamp(Math.floor(safeNumber(source?.progress?.[line.id], 0)), 0, MAX_LEVEL);
+      next.progress[line.id] = clamp(Math.floor(safeNumber(source?.progress?.[line.id], 0)), 0, MAX_RESOURCE_SORTIES);
     });
     return next;
   }
@@ -938,6 +1004,9 @@
     persistSave();
     if (parsed?.difficulty && DIFFICULTY_PROFILES[String(parsed.difficulty)]) {
       writeDifficulty(String(parsed.difficulty));
+    }
+    if (parsed?.loadout && typeof parsed.loadout === "object") {
+      writeLoadout(parsed.loadout);
     }
     if (parsed?.cockpitLayout && typeof parsed.cockpitLayout === "object") {
       localStorage.setItem(COCKPIT_LAYOUT_KEY, JSON.stringify(parsed.cockpitLayout));
@@ -975,6 +1044,30 @@
       btn.classList.toggle("selected", key === dashboardUi.difficulty);
       btn.classList.toggle("ghost", key !== dashboardUi.difficulty);
     });
+  }
+
+  function renderLoadoutOptions(container, options, selectedPath, type) {
+    if (!container) return;
+    container.textContent = "";
+    options.forEach((option) => {
+      const btn = document.createElement("button");
+      btn.className = `loadout-choice${option.path === selectedPath ? " selected" : ""}`;
+      btn.type = "button";
+      btn.dataset.loadoutType = type;
+      btn.dataset.loadoutPath = option.path;
+      btn.title = option.label;
+      btn.setAttribute("aria-label", `${type === "ship" ? "Ship" : "Buggy"}: ${option.label}`);
+      const img = document.createElement("img");
+      img.src = option.path;
+      img.alt = "";
+      btn.appendChild(img);
+      container.appendChild(btn);
+    });
+  }
+
+  function syncLoadoutPicker() {
+    renderLoadoutOptions(shipLoadoutOptions, HERO_SHIP_OPTIONS, dashboardUi.loadout?.shipPath, "ship");
+    renderLoadoutOptions(buggyLoadoutOptions, HERO_BUGGY_OPTIONS, dashboardUi.loadout?.buggyPath, "buggy");
   }
 
   function getTotalStoredResources() {
@@ -1028,8 +1121,21 @@
     return arr[Math.floor(rng() * arr.length)] || arr[0];
   }
 
+  function getEnemySpriteList(type) {
+    const key = type === "drone" ? "drone" : "crawler";
+    const blocked = key === "drone" ? dashboardUi.loadout?.shipPath : dashboardUi.loadout?.buggyPath;
+    const list = (ASSET_LIBRARY.enemySprites[key] || []).filter((path) => path !== blocked);
+    return list.length ? list : (ASSET_LIBRARY.enemySprites[key] || []);
+  }
+
+  function getBuggyEnemyChoices() {
+    const selectedBuggy = dashboardUi.loadout?.buggyPath;
+    const list = BUGGY_ENEMY_SPRITES.filter((enemy) => enemy.path !== selectedBuggy);
+    return list.length ? list : BUGGY_ENEMY_SPRITES;
+  }
+
   function enemySpriteForType(type, rng = null, index = 0) {
-    const list = ASSET_LIBRARY.enemySprites[type === "drone" ? "drone" : "crawler"] || [];
+    const list = getEnemySpriteList(type);
     if (!list.length) return "";
     if (rng) return pick(list, rng);
     return list[index % list.length];
@@ -1044,6 +1150,8 @@
 
   function normalizeEnemySpritePath(spritePath, type, index = 0) {
     const txt = String(spritePath || "");
+    const blocked = type === "drone" ? dashboardUi.loadout?.shipPath : dashboardUi.loadout?.buggyPath;
+    if (txt && txt === blocked) return enemySpriteForType(type, null, index + 1);
     // Keep mission enemies strictly on sci-fi assets.
     if (/^images\/scifi\/.+\.webp$/i.test(txt)) return txt;
     if (/^images\/moon\/enemies\/.+\.webp$/i.test(txt)) return txt;
@@ -1156,8 +1264,9 @@
     }
 
     const enemyCount = 3 + Math.floor(lv * 0.85);
+    const buggyEnemyChoices = getBuggyEnemyChoices();
     for (let i = 0; i < enemyCount; i += 1) {
-      const meta = BUGGY_ENEMY_SPRITES[i % BUGGY_ENEMY_SPRITES.length];
+      const meta = buggyEnemyChoices[i % buggyEnemyChoices.length];
       const x = pickSafeX(1020 + i * 260, length - 1300);
       const patrol = 52 + Math.floor(rng() * 96);
       const baseW = Math.round(92 * (meta.scale || 1));
@@ -1568,8 +1677,9 @@
     const w = player?.w || SPACE_HERO_WIDTH;
     const h = player?.h || SPACE_HERO_HEIGHT;
     const facing = (player?.facing || -1) >= 0 ? 1 : -1;
-    const noseX = SPACE_HERO_FACES_RIGHT ? (w * 0.48) : (-w * 0.48);
-    const sideX = SPACE_HERO_FACES_RIGHT ? (w * 0.14) : (-w * 0.14);
+    const heroFacesRight = getHeroShipOption()?.facesRight !== false;
+    const noseX = heroFacesRight ? (w * 0.48) : (-w * 0.48);
+    const sideX = heroFacesRight ? (w * 0.14) : (-w * 0.14);
     const localPoints = [
       { x: noseX, y: -h * 0.14 }, // top barrel
       { x: noseX, y: h * 0.14 },  // bottom barrel
@@ -1664,6 +1774,11 @@
     missionScreen.classList.add("open");
     deathOverlay.classList.remove("open");
     completeOverlay.classList.remove("open");
+    if (nextMissionBtn) {
+      nextMissionBtn.disabled = false;
+      nextMissionBtn.textContent = "Continue Buggy Run";
+    }
+    if (completeDashboardBtn) completeDashboardBtn.textContent = "Back To Ship";
 
     if (!runtime.raf) {
       runtime.lastTime = performance.now();
@@ -1722,10 +1837,18 @@
     amount = Math.max(0, Math.floor(amount * scoreMult));
 
     if (runtime.resource && !runtime.importedMode) {
-      saveState.stored[runtime.resource.id] = Math.max(0, Math.floor((saveState.stored[runtime.resource.id] || 0) + amount));
+      const line = runtime.resource;
+      const currentStored = Math.max(0, Math.floor(saveState.stored[line.id] || 0));
+      const sortieFloor = includeCompletionBonus ? Math.ceil(Math.max(1, line.requirement || 1) / 3) : 0;
+      const bankedAmount = includeCompletionBonus ? Math.max(amount, sortieFloor) : amount;
+      saveState.stored[line.id] = clamp(currentStored + bankedAmount, 0, Math.max(1, line.requirement || bankedAmount));
+      amount = bankedAmount;
       if (includeCompletionBonus) {
-        const prev = saveState.progress[runtime.resource.id] || 0;
-        if ((mission.level || 1) === prev + 1) saveState.progress[runtime.resource.id] = Math.min(MAX_LEVEL, prev + 1);
+        const prev = saveState.progress[line.id] || 0;
+        if ((mission.level || 1) === prev + 1) saveState.progress[line.id] = Math.min(MAX_RESOURCE_SORTIES, prev + 1);
+        if ((saveState.progress[line.id] || 0) >= MAX_RESOURCE_SORTIES || saveState.stored[line.id] >= line.requirement) {
+          saveState.stored[line.id] = Math.max(saveState.stored[line.id] || 0, line.requirement);
+        }
         saveState.missionsCompleted += 1;
       }
     } else if (runtime.importedMode && includeCompletionBonus) {
@@ -1781,6 +1904,11 @@
     missionScreen.classList.add("open");
     deathOverlay.classList.remove("open");
     completeOverlay.classList.remove("open");
+    if (nextMissionBtn) {
+      nextMissionBtn.disabled = false;
+      nextMissionBtn.textContent = "Next Mission";
+    }
+    if (completeDashboardBtn) completeDashboardBtn.textContent = "Back To Dashboard";
 
     if (!runtime.raf) {
       runtime.lastTime = performance.now();
@@ -1908,7 +2036,17 @@
     runtime.dead = false;
     const amount = bankRunToShip(true);
     const mission = runtime.mission;
-    completeMessage.textContent = `Reached ${mission.goal.label}. Banked ${amount} units (${Math.floor(runtime.runCollected)} gathered + ${Math.floor(mission.completionBonus)} completion bonus).`;
+    const line = runtime.resource;
+    const stored = line?.id ? Math.max(0, saveState.stored[line.id] || 0) : 0;
+    const full = !!line && stored >= line.requirement;
+    completeMessage.textContent = full
+      ? `Reached ${mission.goal.label}. The buggy hold is full and ${line.name} is at 100%. Return to the ship to choose the next destination.`
+      : `Reached ${mission.goal.label}. Banked ${amount} units. Continue launches another buggy sortie on this planet; return to the ship when you are ready.`;
+    if (nextMissionBtn) {
+      nextMissionBtn.textContent = full ? "Buggy Full" : "Continue Buggy Run";
+      nextMissionBtn.disabled = full;
+    }
+    if (completeDashboardBtn) completeDashboardBtn.textContent = full ? "Return To Ship" : "Back To Ship";
     completeOverlay.classList.add("open");
   }
 
@@ -1923,10 +2061,10 @@
 
   function getLineMissionStats(line) {
     const stored = saveState.stored[line.id] || 0;
-    const complete = saveState.progress[line.id] || 0;
-    const nextLevel = Math.min(MAX_LEVEL, complete + 1);
+    const complete = clamp(saveState.progress[line.id] || 0, 0, MAX_RESOURCE_SORTIES);
+    const nextLevel = Math.min(MAX_RESOURCE_SORTIES, complete + 1);
     const shortage = Math.max(0, line.requirement - stored);
-    const done = shortage <= 0 && complete >= MAX_LEVEL;
+    const done = shortage <= 0;
     return { stored, complete, nextLevel, shortage, done };
   }
 
@@ -2050,7 +2188,7 @@
       setPanelContentHtml(cockpitMainViewport, `
         <h3>${useLanded ? selected.planetName : currentPlanet.planetName}</h3>
         <p>${useLanded ? selected.line.name : `Destination: ${selected.planetName}`}</p>
-        <p class="statline">${useLanded ? "LANDED" : "CURRENT ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | L${previewLevel}/10</p>
+        <p class="statline">${useLanded ? "LANDED" : "CURRENT ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | Sortie ${previewLevel}/${MAX_RESOURCE_SORTIES}</p>
         <p class="statline">Upgrade Preview: ${weaponPreview.title} (Space x${weaponPreview.spaceDamage} | Buggy x${weaponPreview.buggyDamage})</p>
       `);
     }
@@ -2183,8 +2321,8 @@
         <div class="stat"><span class="k">Shortage</span><span class="v" style="color:${shortage > 0 ? "#ffd27e" : "#8df7ae"}">${Math.floor(shortage)}</span></div>
       </div>
       <div class="stats-row">
-        <div class="stat"><span class="k">Next Mission</span><span class="v">${nextLevel}/10</span></div>
-        <div class="stat"><span class="k">Arc Complete</span><span class="v">${complete}/10</span></div>
+        <div class="stat"><span class="k">Next Sortie</span><span class="v">${nextLevel}/${MAX_RESOURCE_SORTIES}</span></div>
+        <div class="stat"><span class="k">Buggy Load</span><span class="v">${complete}/${MAX_RESOURCE_SORTIES}</span></div>
         <div class="stat"><span class="k">Branch</span><span class="v">${line.category}</span></div>
       </div>
     `;
@@ -2196,7 +2334,7 @@
     const launch = document.createElement("button");
     launch.className = "btn";
     launch.type = "button";
-    launch.textContent = done ? "Replay Arc" : `Launch Level ${nextLevel}`;
+    launch.textContent = done ? "Replay Sortie" : `Launch Sortie ${nextLevel}`;
     launch.addEventListener("click", () => launchMission(line, nextLevel));
 
     const replay = document.createElement("button");
@@ -2258,7 +2396,7 @@
     const distance = Math.max(0, Math.floor(runtime.player.x || 0));
     const cpPct = Math.min(100, Math.floor((runtime.lastCheckpointX / mission.length) * 100));
     const stored = runtime.resource ? Math.floor(saveState.stored[runtime.resource.id] || 0) : "-";
-    const progress = runtime.resource ? `${saveState.progress[runtime.resource.id] || 0}/10` : "custom";
+    const progress = runtime.resource ? `${clamp(saveState.progress[runtime.resource.id] || 0, 0, MAX_RESOURCE_SORTIES)}/${MAX_RESOURCE_SORTIES}` : "custom";
     const speed = Math.floor(Math.hypot(runtime.player.vx || 0, runtime.player.vy || 0));
     const hpPct = Math.round((Math.max(0, runtime.health) / Math.max(1, runtime.maxHealth)) * 100);
     const hpColor = hpPct > 65 ? "#8df7ae" : (hpPct > 35 ? "#ffd27e" : "#ff8f97");
@@ -2403,17 +2541,19 @@
       }
     });
 
-    const ship = ensureImage(SPACE_HERO_SPRITE);
+    const heroShip = getHeroShipOption();
+    const ship = ensureImage(heroShip?.path || SPACE_HERO_SPRITE);
     if (ship && ship.complete && ship.naturalWidth > 0) {
       ctx.save();
       ctx.translate(player.x, player.y);
       const facing = (player.facing || -1) >= 0 ? 1 : -1;
-      const shouldFlip = SPACE_HERO_FACES_RIGHT ? (facing < 0) : (facing >= 0);
+      const shouldFlip = (heroShip?.facesRight !== false) ? (facing < 0) : (facing >= 0);
       ctx.scale(shouldFlip ? -1 : 1, 1);
       const thrustPulse = 0.65 + Math.sin(runtime.ticks * 0.015) * 0.25 + (inputState.superThrust ? 0.35 : 0);
       const flareLen = player.w * (0.22 + thrustPulse * 0.22);
-      const rearX = (SPACE_HERO_FACES_RIGHT ? -1 : 1) * (player.w * 0.44);
-      const exhaustDir = SPACE_HERO_FACES_RIGHT ? -1 : 1;
+      const heroFacesRight = heroShip?.facesRight !== false;
+      const rearX = (heroFacesRight ? -1 : 1) * (player.w * 0.44);
+      const exhaustDir = heroFacesRight ? -1 : 1;
       const topY = -player.h * 0.16;
       const botY = player.h * 0.16;
       const drawThruster = (y) => {
@@ -2818,13 +2958,15 @@
       ctx.fillText(goal.label || "Goal", gx + 4, goal.y - 8);
     }
 
-    const buggy = ensureImage(ASSET_LIBRARY.moonBuggy.path);
+    const heroBuggy = getHeroBuggyOption();
+    const buggy = ensureImage(heroBuggy?.path || ASSET_LIBRARY.moonBuggy.path);
     const px = player.x - runtime.cameraX;
     if (buggy && buggy.complete && buggy.naturalWidth > 0) {
       ctx.save();
       ctx.translate(px + player.w / 2, player.y + player.h / 2);
       ctx.rotate(clamp(player.vy * 0.0011, -0.2, 0.2));
-      ctx.scale(player.facing >= 0 ? -1 : 1, 1);
+      const shouldFlip = (heroBuggy?.facesRight !== false) ? (player.facing < 0) : (player.facing >= 0);
+      ctx.scale(shouldFlip ? -1 : 1, 1);
       ctx.drawImage(buggy, -player.w / 2, -player.h / 2, player.w, player.h);
       ctx.restore();
     } else {
@@ -2864,7 +3006,7 @@
     const space = runtime.space;
     if (!space) return;
     const missionLevel = clamp(safeNumber(runtime.mission?.level, 1), 1, MAX_LEVEL);
-    const droneSprites = ASSET_LIBRARY.enemySprites?.drone || [];
+    const droneSprites = getEnemySpriteList("drone");
     const diff = getDifficultyProfile();
     const route = space.route || SPACE_ROUTE_PROFILES[1];
     const toSpawn = Math.min(space.waveSize, Math.max(0, space.killsNeeded - space.kills - space.enemies.filter((e) => e.hp > 0).length));
@@ -3535,11 +3677,11 @@
       }
       const line = runtime.resource;
       const completed = saveState.progress[line.id] || 0;
-      if (completed >= MAX_LEVEL) {
+      if (completed >= MAX_RESOURCE_SORTIES || (saveState.stored[line.id] || 0) >= line.requirement) {
         returnToDashboard();
         return;
       }
-      launchMission(line, completed + 1);
+      startBuggyMissionWithPrepared(line, createProceduralMission(line, completed + 1));
     });
 
     if (saveProgressBtn) {
@@ -3570,6 +3712,19 @@
         });
       });
     }
+    [shipLoadoutOptions, buggyLoadoutOptions].forEach((container) => {
+      if (!container) return;
+      container.addEventListener("click", (event) => {
+        const btn = event.target?.closest?.("[data-loadout-type][data-loadout-path]");
+        if (!btn) return;
+        const type = String(btn.getAttribute("data-loadout-type") || "");
+        const path = String(btn.getAttribute("data-loadout-path") || "");
+        const next = { ...(dashboardUi.loadout || createDefaultLoadout()) };
+        if (type === "ship") next.shipPath = path;
+        if (type === "buggy") next.buggyPath = path;
+        writeLoadout(next);
+      });
+    });
     if (importLevelBtn && importLevelInput) {
       importLevelBtn.addEventListener("click", () => importLevelInput.click());
       importLevelInput.addEventListener("change", async (event) => {
@@ -3645,6 +3800,9 @@
 
   function boot() {
     dashboardUi.difficulty = readDifficulty();
+    dashboardUi.loadout = readLoadout();
+    HERO_SHIP_OPTIONS.forEach((option) => ensureImage(option.path));
+    HERO_BUGGY_OPTIONS.forEach((option) => ensureImage(option.path));
     ensureImage(ASSET_LIBRARY.moonBuggy.path);
     ensureImage(SPACE_HERO_SPRITE);
     ASSET_LIBRARY.backgrounds.forEach((path) => ensureImage(path));
@@ -3670,6 +3828,7 @@
     bindEvents();
     syncMissionControls();
     syncDifficultyPicker();
+    syncLoadoutPicker();
     renderDashboard();
     window.setTimeout(() => maybeShowTutorial("dashboard"), 120);
     runtime.lastTime = performance.now();

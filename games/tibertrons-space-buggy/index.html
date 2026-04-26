@@ -59,6 +59,10 @@
         font-weight: 700;
         cursor: pointer;
       }
+      .btn:disabled, button:disabled {
+        opacity: 0.48;
+        cursor: not-allowed;
+      }
       .btn.alt {
         background: linear-gradient(180deg, #95743a, #684f24);
         border-color: rgba(255, 208, 116, 0.65);
@@ -91,6 +95,60 @@
         background: linear-gradient(180deg, #4aa4ef, #2464a6);
         border-color: rgba(176, 222, 255, 0.95);
         box-shadow: 0 0 0 1px rgba(119, 219, 255, 0.32) inset, 0 0 14px rgba(79, 190, 255, 0.28);
+      }
+      .loadout-panel {
+        border: 1px solid rgba(122, 188, 255, 0.26);
+        border-radius: 12px;
+        padding: 0.65rem;
+        background: rgba(6, 18, 35, 0.68);
+        display: grid;
+        gap: 0.55rem;
+      }
+      .loadout-title {
+        color: #b9d8f5;
+        font-weight: 800;
+        font-size: 0.86rem;
+      }
+      .loadout-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.55rem;
+      }
+      .loadout-group {
+        display: grid;
+        gap: 0.4rem;
+      }
+      .loadout-group .k {
+        color: #9bc2e7;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .loadout-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.38rem;
+      }
+      .loadout-choice {
+        width: 70px;
+        height: 48px;
+        border-radius: 9px;
+        border: 1px solid rgba(139, 197, 255, 0.44);
+        background: rgba(8, 25, 47, 0.8);
+        padding: 0.2rem;
+        display: grid;
+        place-items: center;
+      }
+      .loadout-choice.selected {
+        border-color: rgba(255, 229, 127, 0.96);
+        box-shadow: 0 0 0 1px rgba(255, 229, 127, 0.38) inset, 0 0 15px rgba(255, 220, 104, 0.28);
+      }
+      .loadout-choice img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.48));
       }
       .notice {
         border-left: 3px solid var(--accent);
@@ -704,6 +762,19 @@
             <button class="btn ghost" data-difficulty="hard" type="button">Hard</button>
           </div>
         </div>
+        <div id="loadoutPanel" class="loadout-panel">
+          <div class="loadout-title">Hero Loadout</div>
+          <div class="loadout-grid">
+            <div class="loadout-group">
+              <span class="k">Space Ship</span>
+              <div id="shipLoadoutOptions" class="loadout-options"></div>
+            </div>
+            <div class="loadout-group">
+              <span class="k">Moon Buggy</span>
+              <div id="buggyLoadoutOptions" class="loadout-options"></div>
+            </div>
+          </div>
+        </div>
         <div id="dashboardSummary" class="stats-row"></div>
         <div id="resourceGrid" class="dashboard-grid" style="margin-top:0.75rem"></div>
       </section>
@@ -770,6 +841,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=20260426a"></script>
+    <script src="app.js?v=20260426b"></script>
   </body>
 </html>
