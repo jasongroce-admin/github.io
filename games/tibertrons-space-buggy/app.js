@@ -209,6 +209,12 @@
   const touchInputState = { left: false, right: false, jump: false, boost: false, fire: false, superThrust: false };
   const pressedKeyCodes = new Set();
   const imageCache = new Map();
+  const decodedImages = new Set();
+  const renderCache = {
+    spaceGradient: null,
+    spaceGradientW: 0,
+    spaceGradientH: 0
+  };
 
   const runtime = {
     active: false,
@@ -238,6 +244,9 @@
     maxFuel: BUGGY_MAX_FUEL,
     damageCooldown: 0,
     pausedByTutorial: false,
+    hudMarkup: "",
+    hudNextAt: 0,
+    smoothedDt: 0.016,
     ticks: 0,
     lastTime: 0,
     raf: null
@@ -1524,6 +1533,25 @@
     return imageCache.get(path);
   }
 
+  function warmImage(path) {
+    const img = ensureImage(path);
+    const key = String(path || "");
+    if (!img || !key || decodedImages.has(key)) return img;
+    if (typeof img.decode === "function") {
+      img.decode().then(() => decodedImages.add(key)).catch(() => {});
+    } else if (img.complete && img.naturalWidth > 0) {
+      decodedImages.add(key);
+    }
+    return img;
+  }
+
+  function warmSpaceMissionAssets() {
+    warmImage(getHeroShipOption()?.path || SPACE_HERO_SPRITE);
+    getEnemySpriteList("drone").forEach((path) => warmImage(path));
+    warmImage(ASSET_LIBRARY.pickups.health);
+    warmImage(ASSET_LIBRARY.pickups.fuel);
+  }
+
   function setAimFromClient(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
@@ -1817,6 +1845,9 @@
     runtime.damageCooldown = 0;
     runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
     runtime.ticks = 0;
+    runtime.smoothedDt = 0.016;
+    runtime.hudMarkup = "";
+    runtime.hudNextAt = 0;
     dashboardUi.pendingLanding = null;
     dashboardUi.highlightOrbitUntilMs = 0;
 
@@ -1835,7 +1866,7 @@
       runtime.raf = requestAnimationFrame(gameLoop);
     }
     syncMissionControls();
-    updateHud();
+    updateHud(true);
     window.setTimeout(() => maybeShowTutorial("buggy"), 80);
   }
 
@@ -1928,6 +1959,7 @@
       runtime.mode = "spaceCombat";
       runtime.space = createSpaceCombatState(mission);
       runtime.player = makeSpacePlayer();
+      warmSpaceMissionAssets();
     }
     runtime.cameraX = 0;
     runtime.runCollected = 0;
@@ -1948,6 +1980,9 @@
       ? { x: runtime.player.x + 120, y: runtime.player.y, active: false }
       : { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
     runtime.ticks = 0;
+    runtime.smoothedDt = 0.016;
+    runtime.hudMarkup = "";
+    runtime.hudNextAt = 0;
     dashboardUi.highlightOrbitUntilMs = 0;
 
     dashboardScreen.style.display = "none";
@@ -1965,7 +2000,7 @@
       runtime.raf = requestAnimationFrame(gameLoop);
     }
     syncMissionControls();
-    updateHud();
+    updateHud(true);
     window.setTimeout(() => maybeShowTutorial(runtime.mode === "spaceCombat" ? "space" : "buggy"), 80);
   }
 
@@ -1983,6 +2018,8 @@
     runtime.enemyBullets = [];
     runtime.effects = [];
     runtime.aim.active = false;
+    runtime.hudMarkup = "";
+    runtime.hudNextAt = 0;
     deathOverlay.classList.remove("open");
     completeOverlay.classList.remove("open");
     missionScreen.classList.remove("open");
@@ -2039,7 +2076,7 @@
       setRuntimeDead(reason || "Buggy hull breached.");
       return true;
     }
-    updateHud();
+    updateHud(true);
     return true;
   }
 
@@ -2054,7 +2091,7 @@
       runtime.fuel = clamp(runtime.fuel + amount, 0, runtime.maxFuel);
       spawnExplosion(powerup.x + powerup.w * 0.5, powerup.y + powerup.h * 0.5, "#ffd77a");
     }
-    updateHud();
+    updateHud(true);
   }
 
   function dropEnemyPowerup(enemy) {
@@ -2487,8 +2524,10 @@
     sorted.forEach((line) => resourceGrid.appendChild(createResourceCard(line)));
   }
 
-  function updateHud() {
+  function updateHud(force = false) {
     if (!runtime.mission) return;
+    const now = performance.now();
+    if (!force && now < runtime.hudNextAt) return;
     const mission = runtime.mission;
     const distance = Math.max(0, Math.floor(runtime.player.x || 0));
     const cpPct = Math.min(100, Math.floor((runtime.lastCheckpointX / mission.length) * 100));
@@ -2499,9 +2538,10 @@
     const hpColor = hpPct > 65 ? "#8df7ae" : (hpPct > 35 ? "#ffd27e" : "#ff8f97");
     const fuelPct = Math.round((Math.max(0, runtime.fuel) / Math.max(1, runtime.maxFuel)) * 100);
     const fuelColor = fuelPct > 45 ? "#ffd77a" : (fuelPct > 20 ? "#ffb36b" : "#ff8f97");
+    let markup = "";
     if (runtime.mode === "spaceCombat") {
       const s = runtime.space || { kills: 0, killsNeeded: 0, enemies: [] };
-      hud.innerHTML = `
+      markup = `
         <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
         <div class="stat"><span class="k">Route</span><span class="v">${s.route?.label || "Space Assault"}</span></div>
         <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
@@ -2513,24 +2553,29 @@
         <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
         <div class="stat"><span class="k">Hull Integrity</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
       `;
-      return;
+      runtime.hudNextAt = now + 125;
+    } else {
+      markup = `
+        <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
+        <div class="stat"><span class="k">Branch</span><span class="v">${mission.category}</span></div>
+        <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
+        <div class="stat"><span class="k">Run Collected</span><span class="v" style="color:#8df7ae">${Math.floor(runtime.runCollected)}</span></div>
+        <div class="stat"><span class="k">Stored In Ship</span><span class="v">${stored}</span></div>
+        <div class="stat"><span class="k">Speed</span><span class="v">${speed}</span></div>
+        <div class="stat"><span class="k">Distance</span><span class="v">${distance}/${Math.floor(mission.length)}</span></div>
+        <div class="stat"><span class="k">Checkpoint</span><span class="v">${runtime.lastCheckpointLabel}</span></div>
+        <div class="stat"><span class="k">Checkpoint %</span><span class="v">${cpPct}%</span></div>
+        <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
+        <div class="stat"><span class="k">Buggy Weapon</span><span class="v">${runtime.weapon?.title || "MK-1"} x${runtime.weapon?.buggyDamage || 1}</span></div>
+        <div class="stat"><span class="k">Buggy Hull</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
+        <div class="stat"><span class="k">Fuel</span><span class="v" style="color:${fuelColor}">${fuelPct}%</span></div>
+      `;
+      runtime.hudNextAt = now + 140;
     }
-
-    hud.innerHTML = `
-      <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
-      <div class="stat"><span class="k">Branch</span><span class="v">${mission.category}</span></div>
-      <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
-      <div class="stat"><span class="k">Run Collected</span><span class="v" style="color:#8df7ae">${Math.floor(runtime.runCollected)}</span></div>
-      <div class="stat"><span class="k">Stored In Ship</span><span class="v">${stored}</span></div>
-      <div class="stat"><span class="k">Speed</span><span class="v">${speed}</span></div>
-      <div class="stat"><span class="k">Distance</span><span class="v">${distance}/${Math.floor(mission.length)}</span></div>
-      <div class="stat"><span class="k">Checkpoint</span><span class="v">${runtime.lastCheckpointLabel}</span></div>
-      <div class="stat"><span class="k">Checkpoint %</span><span class="v">${cpPct}%</span></div>
-      <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
-      <div class="stat"><span class="k">Buggy Weapon</span><span class="v">${runtime.weapon?.title || "MK-1"} x${runtime.weapon?.buggyDamage || 1}</span></div>
-      <div class="stat"><span class="k">Buggy Hull</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
-      <div class="stat"><span class="k">Fuel</span><span class="v" style="color:${fuelColor}">${fuelPct}%</span></div>
-    `;
+    if (force || markup !== runtime.hudMarkup) {
+      hud.innerHTML = markup;
+      runtime.hudMarkup = markup;
+    }
   }
 
   function drawLongMoonLayer(path, y, h, scrollRatio, alpha = 1) {
@@ -2607,15 +2652,29 @@
     }
   }
 
-  function drawSpaceCombat() {
-    const mission = runtime.mission;
-    const player = runtime.player;
-    const space = runtime.space;
+  function getSpaceBackgroundGradient() {
+    if (
+      renderCache.spaceGradient &&
+      renderCache.spaceGradientW === canvas.width &&
+      renderCache.spaceGradientH === canvas.height
+    ) {
+      return renderCache.spaceGradient;
+    }
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "#070f22");
     gradient.addColorStop(0.5, "#0b1730");
     gradient.addColorStop(1, "#050c1b");
-    ctx.fillStyle = gradient;
+    renderCache.spaceGradient = gradient;
+    renderCache.spaceGradientW = canvas.width;
+    renderCache.spaceGradientH = canvas.height;
+    return gradient;
+  }
+
+  function drawSpaceCombat() {
+    const mission = runtime.mission;
+    const player = runtime.player;
+    const space = runtime.space;
+    ctx.fillStyle = getSpaceBackgroundGradient();
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     (space?.stars || []).forEach((star) => {
@@ -3182,6 +3241,10 @@
     if (Math.abs(player.vx) > 7) {
       player.facing = player.vx >= 0 ? 1 : -1;
     }
+    const playerHitX = player.x - player.w * 0.44;
+    const playerHitY = player.y - player.h * 0.42;
+    const playerHitW = player.w * 0.88;
+    const playerHitH = player.h * 0.84;
 
     const starDriftX = player.vx * dt * 0.22;
     const starDriftY = player.vy * dt * 0.22;
@@ -3241,7 +3304,9 @@
       b.life -= dt;
       if (b.life <= 0) return false;
       if (b.x < -30 || b.x > canvas.width + 30 || b.y < -40 || b.y > canvas.height + 40) return false;
-      if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, { x: player.x - player.w * 0.44, y: player.y - player.h * 0.42, w: player.w * 0.88, h: player.h * 0.84 })) {
+      const bx = b.x - 3;
+      const by = b.y - 3;
+      if (bx < playerHitX + playerHitW && bx + 6 > playerHitX && by < playerHitY + playerHitH && by + 6 > playerHitY) {
         applyBuggyDamage(b.damage || 6, "Enemy UFO fire destroyed the hero ship. Restart the mission or return to the ship.", { color: b.color || "#ff9cd0" });
         return false;
       }
@@ -3257,8 +3322,13 @@
       for (let i = 0; i < space.enemies.length; i += 1) {
         const enemy = space.enemies[i];
         if (enemy.hp <= 0) continue;
-        const hitRect = { x: enemy.x - enemy.w * 0.45, y: enemy.y - enemy.h * 0.45, w: enemy.w * 0.9, h: enemy.h * 0.9 };
-        if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, hitRect)) {
+        const ex = enemy.x - enemy.w * 0.45;
+        const ey = enemy.y - enemy.h * 0.45;
+        const ew = enemy.w * 0.9;
+        const eh = enemy.h * 0.9;
+        const bx = b.x - 3;
+        const by = b.y - 3;
+        if (bx < ex + ew && bx + 6 > ex && by < ey + eh && by + 6 > ey) {
           enemy.hp -= Math.max(1, safeNumber(b.damage, 1));
           spawnExplosion(enemy.x, enemy.y, enemy.weapon?.explosion || "#d8a6ff");
           if (enemy.hp <= 0) {
@@ -3286,7 +3356,7 @@
 
     space.powerups = (space.powerups || []).filter((powerup) => {
       if (powerup.collected) return false;
-      if (rectOverlap({ x: player.x - player.w * 0.44, y: player.y - player.h * 0.42, w: player.w * 0.88, h: player.h * 0.84 }, powerup)) {
+      if (playerHitX < powerup.x + powerup.w && playerHitX + playerHitW > powerup.x && playerHitY < powerup.y + powerup.h && playerHitY + playerHitH > powerup.y) {
         collectPowerup(powerup);
         return false;
       }
@@ -3572,7 +3642,9 @@
 
   function gameLoop(now) {
     runtime.raf = requestAnimationFrame(gameLoop);
-    const dt = Math.min(0.033, (now - runtime.lastTime) / 1000 || 0.016);
+    const rawDt = Math.min(0.033, (now - runtime.lastTime) / 1000 || 0.016);
+    runtime.smoothedDt = runtime.smoothedDt * 0.82 + rawDt * 0.18;
+    const dt = runtime.smoothedDt;
     runtime.lastTime = now;
 
     if (!runtime.active || !runtime.mission) return;
@@ -3909,23 +3981,24 @@
   function boot() {
     dashboardUi.difficulty = readDifficulty();
     dashboardUi.loadout = readLoadout();
-    HERO_SHIP_OPTIONS.forEach((option) => ensureImage(option.path));
-    HERO_BUGGY_OPTIONS.forEach((option) => ensureImage(option.path));
-    ensureImage(ASSET_LIBRARY.moonBuggy.path);
-    ensureImage(SPACE_HERO_SPRITE);
-    ASSET_LIBRARY.backgrounds.forEach((path) => ensureImage(path));
-    Object.values(ASSET_LIBRARY.moonParallax).flat().forEach((path) => ensureImage(path));
-    Object.values(ASSET_LIBRARY.pickups).forEach((path) => ensureImage(path));
-    Object.values(ASSET_LIBRARY.hazards).forEach((path) => ensureImage(path));
-    Object.values(ASSET_LIBRARY.enemySprites).flat().forEach((path) => ensureImage(path));
+    HERO_SHIP_OPTIONS.forEach((option) => warmImage(option.path));
+    HERO_BUGGY_OPTIONS.forEach((option) => warmImage(option.path));
+    warmImage(ASSET_LIBRARY.moonBuggy.path);
+    warmImage(SPACE_HERO_SPRITE);
+    ASSET_LIBRARY.backgrounds.forEach((path) => warmImage(path));
+    Object.values(ASSET_LIBRARY.moonParallax).flat().forEach((path) => warmImage(path));
+    Object.values(ASSET_LIBRARY.pickups).forEach((path) => warmImage(path));
+    Object.values(ASSET_LIBRARY.hazards).forEach((path) => warmImage(path));
+    Object.values(ASSET_LIBRARY.enemySprites).flat().forEach((path) => warmImage(path));
     DASHBOARD_PLANETS.forEach((planet) => {
       const set = {
         spacePath: `images/planets/orbit/planet_orbit_${planet}.webp`,
         landedPath: `images/planets/landed/planet_landed_${planet}.webp`
       };
-      ensureImage(set.spacePath);
-      ensureImage(set.landedPath);
+      warmImage(set.spacePath);
+      warmImage(set.landedPath);
     });
+    warmSpaceMissionAssets();
     setCockpitUnderlay(`images/planets/orbit/planet_orbit_${DASHBOARD_PLANETS[0]}.webp`, `${DASHBOARD_PLANETS[0]} orbit cockpit view`, { immediate: true });
     readCockpitLockState();
     const savedLayout = loadCockpitLayout();
