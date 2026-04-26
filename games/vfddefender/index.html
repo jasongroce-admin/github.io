@@ -22749,9 +22749,10 @@ function igniteTornadoFireGroupByEntityKey(entityKey) {
 function initLevel9EventState(levelData, preparedSpots) {
   const entities = levelData?.entities || [];
   const findIndex = (predicate) => entities.findIndex(predicate);
+  const spriteToken = (ent) => normalizeSpriteToken(String(ent?.spriteKey || ent?.variant || ''));
   const busSchoolIdx = findIndex((ent) => ent?.type === 'busSchoolLeft');
   const busUpsideIdx = findIndex((ent) => ent?.type === 'busUpsideDown');
-  const builderBusIdx = findIndex((ent) => ent?.type === 'builderSprite' && /busschoolleft|school_bus_yellow|schoolbus|school_bus/.test(String(ent?.spriteKey || '').toLowerCase()));
+  const builderBusIdx = findIndex((ent) => ent?.type === 'builderSprite' && /busschoolleft|schoolbus|school_bus|building_vehicle_school_bus_yellow/.test(spriteToken(ent)));
   // Level 9 uses a yellow school bus that swaps to the upside-down bus when the tornado passes.
   // Track the upside-down entity for bounds, but use the swap trigger so ignition happens at the correct moment.
   const busIdx = busUpsideIdx >= 0 ? busUpsideIdx : (busSchoolIdx >= 0 ? busSchoolIdx : builderBusIdx);
@@ -22761,13 +22762,21 @@ function initLevel9EventState(levelData, preparedSpots) {
     const num = Number(raw);
     return Number.isFinite(num) ? num : 730;
   })();
-  const schoolIdx = findIndex((ent) => ent?.type === 'kennardSchool' || ent?.type === 'schoolhouse');
+  const schoolIdx = findIndex((ent) => {
+    if (ent?.type === 'kennardSchool' || ent?.type === 'schoolhouse') return true;
+    if (ent?.type !== 'builderSprite') return false;
+    return /kennardschool|building_kennard_school|school/.test(spriteToken(ent));
+  });
   const tree2Idx = findIndex((ent) => ent?.type === 'stormTree' && Number(ent?.x || 0) >= 900);
   const busKey = busIdx >= 0
     ? `${entities[busIdx]?.type || 'builderSprite'}:${busIdx}`
     : '';
-  const schoolKey = schoolIdx >= 0 ? `kennardSchool:${schoolIdx}` : '';
-  const tree2Key = tree2Idx >= 0 ? `stormTree:${tree2Idx}` : '';
+  const schoolKey = schoolIdx >= 0
+    ? `${entities[schoolIdx]?.type || 'builderSprite'}:${schoolIdx}`
+    : '';
+  const tree2Key = tree2Idx >= 0
+    ? `${entities[tree2Idx]?.type || 'stormTree'}:${tree2Idx}`
+    : '';
   const busSpots = preparedSpots.filter((spot) => spot?.entityKey === busKey);
   const schoolSpots = preparedSpots.filter((spot) => spot?.entityKey === schoolKey);
   let tree2Spots = preparedSpots.filter((spot) => spot?.entityKey === tree2Key);
@@ -22834,8 +22843,10 @@ function initLevel9EventState(levelData, preparedSpots) {
       : (spot?.roof ? 640 : 820);
     return { ...spot, health: base, maxHealth: max };
   });
-  fireSpots = [];
-  pendingTornadoFireSpotsByKey = new Map();
+  // Keep the already-prepared fire spots so Level 9 still honors normal builder timers
+  // (`Burn ON`, `Delay`, including zero-delay immediate ignition).
+  fireSpots = Array.isArray(preparedSpots) ? preparedSpots.map((spot) => ({ ...spot })) : [];
+  if (!(pendingTornadoFireSpotsByKey instanceof Map)) pendingTornadoFireSpotsByKey = new Map();
   playerControlsEnabled = false;
   truckVisible = false;
   setTruckDrive(0);
@@ -22851,8 +22862,10 @@ function initLevel9EventState(levelData, preparedSpots) {
     phase: 'tornado',
     timerMs: 0,
     busIdx,
+    busEntityKey: busKey,
     busSwapAtX,
     schoolIgniteX: resolvedSchoolIgniteX,
+    schoolEntityKey: schoolKey,
     treeIgniteDelayMs: 1250,
     schoolIgnitedAt: null,
     schoolIgnitedAtMs: null,
@@ -22894,6 +22907,7 @@ function updateLevel9Event(dt, levelData) {
       state.busIgniteAtMs = state.timerMs + 200;
     }
     if (!state.busIgnited && state.busIgniteAtMs != null && state.timerMs >= state.busIgniteAtMs) {
+      if (state.busEntityKey) igniteTornadoFireGroupByEntityKey(state.busEntityKey);
       activateLevel9FireGroup(state.busSpots);
       state.busIgnited = true;
     }
@@ -22901,6 +22915,7 @@ function updateLevel9Event(dt, levelData) {
       state.schoolIgniteAtMs = state.timerMs + 220;
     }
     if (!state.schoolIgnited && state.schoolIgniteAtMs != null && state.timerMs >= state.schoolIgniteAtMs) {
+      if (state.schoolEntityKey) igniteTornadoFireGroupByEntityKey(state.schoolEntityKey);
       activateLevel9FireGroup(state.schoolSpots);
       state.schoolIgnited = true;
       state.schoolIgnitedAt = levelElapsedMs;
@@ -23516,6 +23531,16 @@ function returnToFirePage() { window.location.href = 'https://kennardin.com/fire
 function showRestartConfirm() { document.getElementById('confirmDialog').style.display = 'flex'; }
 function confirmRestartYes() { document.getElementById('confirmDialog').style.display = 'none'; location.reload(); }
 function confirmRestartNo() { document.getElementById('confirmDialog').style.display = 'none'; }
+function applyStartLevelFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    const raw = url.searchParams.get('level') || url.searchParams.get('startLevel');
+    if (!raw) return;
+    const parsed = Number(String(raw).match(/\d+/)?.[0] || 1);
+    if (!Number.isFinite(parsed)) return;
+    requestedStartLevel = Math.max(1, Math.min(getMaxLevel(), Math.floor(parsed)));
+  } catch (err) {}
+}
 
 document.getElementById('codeSubmitBtn').addEventListener('click', submitCodeGate);
 document.getElementById('codeCancelBtn').addEventListener('click', () => {
@@ -23524,7 +23549,9 @@ document.getElementById('codeCancelBtn').addEventListener('click', () => {
 document.getElementById('codeInput').addEventListener('keydown', (event) => {
   if (event.key === 'Enter') submitCodeGate();
 });
+applyStartLevelFromUrl();
 showCodeGate();
+updateLevelSkipHud();
 builderApplyStateToUi();
 builderInitCollapsibleSections();
 builderRenderAssetList();
