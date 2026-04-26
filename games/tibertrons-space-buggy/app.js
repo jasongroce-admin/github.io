@@ -213,6 +213,7 @@
     selectedLineId: RESOURCE_LINES[0]?.id || "",
     viewMode: "orbit",
     selectedPlanetScreenId: "",
+    currentPlanetScreenId: "",
     layoutEditMode: false,
     layoutLocked: false,
     difficulty: "normal",
@@ -1422,7 +1423,10 @@
       dashboardUi.selectedLineId = line.id;
       const cards = getPlanetDashboardCards(getDashboardSortedLines());
       const selected = cards.find((card) => card?.line?.id === line.id);
-      if (selected) dashboardUi.selectedPlanetScreenId = selected.id;
+      if (selected) {
+        dashboardUi.selectedPlanetScreenId = selected.id;
+        dashboardUi.currentPlanetScreenId = selected.id;
+      }
     } else {
       dashboardUi.pendingLanding = null;
     }
@@ -1745,6 +1749,17 @@
     return card;
   }
 
+  function getCurrentPlanetCard(cards) {
+    if (!cards.length) return null;
+    const current = String(dashboardUi.currentPlanetScreenId || "");
+    let card = cards.find((entry) => entry.id === current);
+    if (!card) {
+      card = cards[0];
+      dashboardUi.currentPlanetScreenId = card.id;
+    }
+    return card;
+  }
+
   function launchSelectedPlanetMission() {
     const cards = getPlanetDashboardCards(getDashboardSortedLines());
     const selected = getSelectedPlanetCard(cards);
@@ -1755,21 +1770,23 @@
   function updateCockpitDashboard(sorted) {
     const cards = getPlanetDashboardCards(sorted);
     const selected = getSelectedPlanetCard(cards);
+    const currentPlanet = getCurrentPlanetCard(cards) || selected;
     if (!selected) return;
     const pending = dashboardUi.pendingLanding;
     const hasPendingForSelected = !!(pending && pending.lineId === selected.line.id);
     const useLanded = dashboardUi.viewMode === "landed";
-    const nextImage = useLanded ? selected.landedPath : selected.spacePath;
-    setCockpitUnderlay(nextImage, `${selected.planetName} ${useLanded ? "landed" : "orbit"} cockpit view`);
+    const sceneCard = useLanded ? selected : currentPlanet;
+    const nextImage = useLanded ? sceneCard.landedPath : sceneCard.spacePath;
+    setCockpitUnderlay(nextImage, `${sceneCard.planetName} ${useLanded ? "landed" : "orbit"} cockpit view`);
     if (cockpitMainViewport) {
       const previewLevel = Math.floor((pending?.level || selected.stats.nextLevel));
       const weaponPreview = getWeaponProfile(selected.line, previewLevel);
       cockpitMainViewport.style.display = "grid";
       cockpitMainViewport.style.opacity = "1";
       setPanelContentHtml(cockpitMainViewport, `
-        <h3>${selected.planetName}</h3>
-        <p>${selected.line.name}</p>
-        <p class="statline">${useLanded ? "LANDED" : "ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | L${previewLevel}/10</p>
+        <h3>${useLanded ? selected.planetName : currentPlanet.planetName}</h3>
+        <p>${useLanded ? selected.line.name : `Destination: ${selected.planetName}`}</p>
+        <p class="statline">${useLanded ? "LANDED" : "CURRENT ORBIT"} | Need ${Math.floor(selected.stats.shortage)} | L${previewLevel}/10</p>
         <p class="statline">Upgrade Preview: ${weaponPreview.title} (Space x${weaponPreview.spaceDamage} | Buggy x${weaponPreview.buggyDamage})</p>
       `);
     }
@@ -1822,8 +1839,8 @@
     if (cockpitBottomMidPanel) {
       setPanelContentHtml(cockpitBottomMidPanel, `
         <h3>${useLanded ? "PLANET SURFACE" : "ORBIT NAV"}</h3>
-        <p>Selected: ${selected.planetName} (${useLanded ? "Landed" : "Orbit"})</p>
-        <p class="statline">${useLanded ? `Gather ${selected.line.name} by launching the buggy.` : (hasPendingForSelected ? "Arrived in orbit - land or choose another planet." : "Choose a planet and fly through a space encounter.")}</p>
+        <p>${useLanded ? `Landed: ${selected.planetName}` : `Orbit: ${currentPlanet.planetName} | Destination: ${selected.planetName}`}</p>
+        <p class="statline">${useLanded ? `Gather ${selected.line.name} by launching the buggy.` : (hasPendingForSelected ? "Arrived in orbit - land or choose another planet." : "Choose a destination and fly through a space encounter.")}</p>
         ${useLanded ? `<button id="cockpitToggleViewBtn" class="btn ghost" type="button">Back To Orbit</button>` : (hasPendingForSelected ? `<button id="cockpitToggleViewBtn" class="btn" type="button">Land On ${selected.planetName}</button>` : "")}
         ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn ${hasPendingForSelected ? "ghost" : ""}" type="button">${hasPendingForSelected ? "Fly To Another Planet" : `Fly To ${selected.line.name}`}</button>`}
         <button id="cockpitDifficultyBtn" class="btn ghost" type="button">Difficulty: ${getDifficultyProfile().label}</button>
