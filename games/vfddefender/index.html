@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2850,11 +2850,11 @@ button:hover { filter: brightness(1.2); }
 <div id="missionStoryScreen" aria-hidden="true">
   <div id="missionStoryCard">
     <h2>Why This Game Exists</h2>
-    <p>This game was created to bring fun and entertainment to our community while sharing important fire-safety reminders between levels. It was also made with the intent of raising funds for new tools, equipment upgrades, and ultimately building a modern fire station that will better serve our growing community for the next 100 years. The Kennard Volunteer Fire Department was founded in 1924, and after a powerful tornado devastated much of our town in 1974, destroying the school and requiring the town hall and fire station to be rebuilt, we have continued to grow. Over the decades our needs have grown too, and today’s significantly larger and longer fire trucks no longer fit inside our current station.</p>
+    <p>This game was created to bring fun and entertainment to our community while sharing important fire-safety reminders between levels. It was also made with the intent of raising funds for new tools, equipment upgrades, and ultimately building a modern fire station that will better serve our growing community for the next 100 years. The Kennard Volunteer Fire Department was founded in 1924, and after a powerful tornado devastated much of our town in 1974, destroying the school and requiring the town hall and fire station to be rebuilt, we have continued to grow. Over the decades our needs have grown too, and today�s significantly larger and longer fire trucks no longer fit inside our current station.</p>
     <div id="missionStoryDonate">
       <p style="margin-top:0;"><strong>If you would like to support the Kennard Volunteer Fire Department:</strong></p>
       <p>Email: <strong>vfd@kennardin.com</strong></p>
-      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>“For Volunteer Fire Department”</strong> in the memo.</p>
+      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>�For Volunteer Fire Department�</strong> in the memo.</p>
     </div>
     <p style="margin-bottom:0;">Thank you for playing and helping keep our volunteers strong.<br>Enjoy the game! - Jason Groce - Kennard, Indiana</p>
     <div id="missionStoryActions">
@@ -9137,6 +9137,8 @@ baseLevels[22] = {
       civilianFirefighterModelKey: 'misc_human_firefighter_side_standing_right_459x200',
       civilianWaitForFire: false
     },
+    { type: 'treeOakRealistic', x: 890, scale: 0.88, baseY: 488 },
+    { type: 'fenceWhiteRow', x: 742, scale: 0.72 },
     {
       type: 'sedan',
       x: 805,
@@ -9155,9 +9157,7 @@ baseLevels[22] = {
       civilianModelKey: 'misc_human_civilian_side_standing_right_459x200',
       civilianFirefighterModelKey: 'misc_human_firefighter_side_standing_right_459x200',
       civilianWaitForFire: false
-    },
-    { type: 'treeOakRealistic', x: 890, scale: 0.88, baseY: 488 },
-    { type: 'fenceWhiteRow', x: 742, scale: 0.72 }
+    }
   ]
 };
 
@@ -22450,8 +22450,8 @@ function getLevel1GuideVisualHtml(kind) {
     return `
       <div class="guide-scene">
         <img class="guide-truck guide-truck-move" style="left:178px; bottom:35px;" src="images/vehicle_engine_680x322.webp" alt="truck">
-        <div class="guide-btn-chip" style="left:334px; bottom:42px;">◀</div>
-        <div class="guide-btn-chip" style="left:410px; bottom:42px;">▶</div>
+        <div class="guide-btn-chip" style="left:334px; bottom:42px;">?</div>
+        <div class="guide-btn-chip" style="left:410px; bottom:42px;">?</div>
         <div class="guide-btn-chip" style="left:486px; bottom:42px;">Press To Enter Truck</div>
         <div class="guide-arrow" style="left:470px; top:70px; transform: rotate(98deg); width:58px;"></div>
         <div class="guide-arrow-lbl" style="left:518px; top:48px;">Move Truck</div>
@@ -29440,6 +29440,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
