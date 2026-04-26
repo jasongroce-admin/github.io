@@ -2095,31 +2095,15 @@
     `;
   }
 
-  function drawParallaxBackdrop(path, y, h, speed, alpha) {
-    const img = ensureImage(path);
-    if (!img || !img.complete || img.naturalWidth <= 0) return;
-    const tileW = (img.naturalWidth / Math.max(1, img.naturalHeight)) * h;
-    const offset = -((runtime.cameraX * speed) % tileW);
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    for (let x = offset - tileW; x < canvas.width + tileW; x += tileW) {
-      ctx.drawImage(img, x, y, tileW, h);
-    }
-    ctx.restore();
-  }
-
-  function drawBackdropCover(path, driftX = 0, driftY = 0, alpha = 0.35, scale = 1.18) {
+  function drawLongMoonLayer(path, y, h, scrollRatio, alpha = 1) {
     const img = ensureImage(path);
     if (!img || !img.complete || img.naturalWidth <= 0 || img.naturalHeight <= 0) return;
-    const drawW = canvas.width * scale;
-    const drawH = canvas.height * scale;
-    const maxX = Math.max(1, drawW - canvas.width);
-    const maxY = Math.max(1, drawH - canvas.height);
-    const ox = -maxX * 0.5 + driftX;
-    const oy = -maxY * 0.5 + driftY;
+    const sourceW = Math.min(img.naturalWidth, Math.max(1, img.naturalHeight * (canvas.width / Math.max(1, h))));
+    const maxSourceX = Math.max(0, img.naturalWidth - sourceW);
+    const sx = maxSourceX * clamp(scrollRatio, 0, 1);
     ctx.save();
     ctx.globalAlpha = clamp(alpha, 0, 1);
-    ctx.drawImage(img, ox, oy, drawW, drawH);
+    ctx.drawImage(img, sx, 0, sourceW, img.naturalHeight, 0, y, canvas.width, h);
     ctx.restore();
   }
 
@@ -2132,56 +2116,10 @@
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const drift = Math.sin(runtime.ticks * 0.0007) * 18;
-    drawParallaxBackdrop(moonLayers.background, -40 + drift * 0.02, canvas.height + 80, 0.24, 0.96);
-    drawParallaxBackdrop(moonLayers.midlayer, mission.baseGround - 360 + drift * 0.04, 360, 0.54, 0.88);
-    drawParallaxBackdrop(moonLayers.foreground, mission.baseGround - 210, 330, 0.98, 0.9);
-
-    const farRidgeY = mission.baseGround - 170;
-    const midRidgeY = mission.baseGround - 125;
-    ctx.fillStyle = "rgba(44, 72, 108, 0.45)";
-    for (let x = -200; x < canvas.width + 260; x += 120) {
-      const sx = x - ((runtime.cameraX * 0.16) % 120);
-      ctx.beginPath();
-      ctx.moveTo(sx, mission.baseGround + 6);
-      ctx.lineTo(sx + 56, farRidgeY - 26 - Math.sin((runtime.ticks + sx) * 0.01) * 14);
-      ctx.lineTo(sx + 120, mission.baseGround + 6);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.fillStyle = "rgba(64, 98, 140, 0.36)";
-    for (let x = -180; x < canvas.width + 220; x += 100) {
-      const sx = x - ((runtime.cameraX * 0.24) % 100);
-      ctx.beginPath();
-      ctx.moveTo(sx, mission.baseGround + 6);
-      ctx.lineTo(sx + 46, midRidgeY - 18 - Math.sin((runtime.ticks + sx) * 0.015) * 10);
-      ctx.lineTo(sx + 100, mission.baseGround + 6);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    ctx.fillStyle = "rgba(215, 234, 255, 0.7)";
-    for (let i = 0; i < 38; i += 1) {
-      const sx = (i * 317 + runtime.ticks * 0.07) % (canvas.width + 80) - 40;
-      const sy = (i * 113) % 220;
-      ctx.fillRect(sx, sy, 2, 2);
-    }
-
-    mission.deco.forEach((d) => {
-      const sx = d.x - runtime.cameraX * d.parallax;
-      if (sx + d.w < -100 || sx > canvas.width + 100) return;
-      ctx.fillStyle = d.color || "rgba(140,160,190,0.2)";
-      if (d.type === "mountain") {
-        ctx.beginPath();
-        ctx.moveTo(sx, mission.baseGround + 8);
-        ctx.lineTo(sx + d.w * 0.5, d.y);
-        ctx.lineTo(sx + d.w, mission.baseGround + 8);
-        ctx.closePath();
-        ctx.fill();
-      } else {
-        ctx.fillRect(sx, d.y, d.w, d.h);
-      }
-    });
+    const scrollProgress = clamp(runtime.cameraX / Math.max(1, mission.length - canvas.width), 0, 1);
+    drawLongMoonLayer(moonLayers.background, -28, canvas.height * 0.58, scrollProgress * 0.34, 0.98);
+    drawLongMoonLayer(moonLayers.midlayer, mission.baseGround - 390, 300, scrollProgress * 0.68, 0.9);
+    drawLongMoonLayer(moonLayers.foreground, mission.baseGround - 245, 310, scrollProgress, 0.96);
   }
 
   function drawGroundSegment(sx, w, mission) {
