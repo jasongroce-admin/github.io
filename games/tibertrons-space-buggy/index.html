@@ -427,6 +427,156 @@
         display: grid;
         gap: 0.7rem;
       }
+      .tutorial-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 1rem;
+        background: linear-gradient(180deg, rgba(2, 6, 13, 0.12), rgba(2, 6, 13, 0.58));
+        pointer-events: none;
+      }
+      .tutorial-overlay.open {
+        display: flex;
+      }
+      .tutorial-card {
+        width: min(680px, 96vw);
+        border: 1px solid rgba(111, 240, 255, 0.62);
+        border-radius: 14px;
+        background: rgba(5, 15, 30, 0.94);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.46), inset 0 0 22px rgba(0, 255, 255, 0.16);
+        padding: 0.8rem;
+        display: grid;
+        grid-template-columns: minmax(128px, 180px) minmax(0, 1fr);
+        gap: 0.8rem;
+        pointer-events: auto;
+      }
+      .tutorial-card h2 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+      .tutorial-card p {
+        margin: 0.3rem 0 0;
+        color: #d7ecff;
+        line-height: 1.45;
+      }
+      .tutorial-stage {
+        min-height: 126px;
+        border: 1px solid rgba(115, 221, 255, 0.38);
+        border-radius: 10px;
+        background:
+          linear-gradient(180deg, rgba(45, 89, 135, 0.22), rgba(4, 12, 24, 0.72)),
+          radial-gradient(circle at 78% 18%, rgba(111, 240, 255, 0.2), transparent 38%);
+        position: relative;
+        overflow: hidden;
+      }
+      .tutorial-stage::before {
+        content: "";
+        position: absolute;
+        left: -20%;
+        right: -20%;
+        bottom: 18px;
+        height: 2px;
+        background: repeating-linear-gradient(90deg, rgba(108, 234, 255, 0.14) 0 20px, rgba(255, 255, 255, 0.45) 20px 24px);
+        animation: tutorialTrack 1.25s linear infinite;
+      }
+      .tutorial-asset {
+        position: absolute;
+        max-width: 112px;
+        max-height: 76px;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
+      }
+      .tutorial-hero {
+        left: 18px;
+        bottom: 22px;
+        animation: tutorialBob 1.5s ease-in-out infinite;
+      }
+      .tutorial-pickup {
+        right: 18px;
+        bottom: 28px;
+        width: 48px;
+        height: 48px;
+        animation: tutorialGlow 1.2s ease-in-out infinite;
+      }
+      .tutorial-enemy {
+        right: 22px;
+        top: 22px;
+        transform: scaleX(-1);
+        animation: tutorialDrift 2s ease-in-out infinite;
+      }
+      .tutorial-laser {
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        width: 70px;
+        height: 3px;
+        border-radius: 99px;
+        background: #79f4ff;
+        box-shadow: 0 0 10px #79f4ff;
+        animation: tutorialLaser 0.8s ease-in-out infinite;
+      }
+      .tutorial-key {
+        position: absolute;
+        min-width: 30px;
+        min-height: 28px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(210, 234, 255, 0.75);
+        border-radius: 7px;
+        background: rgba(13, 44, 77, 0.88);
+        font-weight: 900;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.32);
+        animation: tutorialTap 1.4s ease-in-out infinite;
+      }
+      .tutorial-key.left { left: 16px; top: 18px; }
+      .tutorial-key.right { left: 54px; top: 18px; animation-delay: 0.15s; }
+      .tutorial-key.jump { left: 92px; top: 18px; animation-delay: 0.3s; }
+      .tutorial-tips {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.4rem;
+        margin-top: 0.55rem;
+      }
+      .tutorial-tip {
+        border: 1px solid rgba(137, 190, 255, 0.25);
+        border-radius: 8px;
+        padding: 0.38rem 0.45rem;
+        background: rgba(9, 28, 51, 0.72);
+        color: #bfe2ff;
+        font-size: 0.8rem;
+      }
+      .tutorial-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+      }
+      @keyframes tutorialTrack {
+        from { transform: translateX(0); }
+        to { transform: translateX(-44px); }
+      }
+      @keyframes tutorialBob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      @keyframes tutorialGlow {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(118, 255, 180, 0.4)); }
+        50% { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(118, 255, 180, 0.9)); }
+      }
+      @keyframes tutorialDrift {
+        0%, 100% { translate: 0 0; }
+        50% { translate: -18px 6px; }
+      }
+      @keyframes tutorialLaser {
+        0% { opacity: 0; transform: scaleX(0); transform-origin: left; }
+        35%, 80% { opacity: 1; transform: scaleX(1); }
+        100% { opacity: 0; transform: scaleX(1.15); }
+      }
+      @keyframes tutorialTap {
+        0%, 100% { transform: translateY(0); }
+        45% { transform: translateY(3px); }
+      }
       .controls {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -499,6 +649,12 @@
         }
         .stats-row {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .tutorial-card {
+          grid-template-columns: 1fr;
+        }
+        .tutorial-stage {
+          min-height: 104px;
         }
       }
       @media (hover: none) and (pointer: coarse) {
@@ -598,6 +754,22 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260425a"></script>
+    <div id="tutorialOverlay" class="tutorial-overlay" aria-live="polite">
+      <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+        <div id="tutorialStage" class="tutorial-stage" aria-hidden="true"></div>
+        <div>
+          <h2 id="tutorialTitle"></h2>
+          <p id="tutorialBody"></p>
+          <div id="tutorialTips" class="tutorial-tips"></div>
+        </div>
+        <div class="row-actions tutorial-actions">
+          <button id="tutorialSkipAllBtn" class="btn alt" type="button">Skip All</button>
+          <button id="tutorialSkipBtn" class="btn ghost" type="button">Skip</button>
+          <button id="tutorialNextBtn" class="btn" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js?v=20260426a"></script>
   </body>
 </html>

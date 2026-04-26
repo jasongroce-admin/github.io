@@ -10,6 +10,7 @@
 
   const STORAGE_KEY = "tibertron2000-save-v1";
   const DIFFICULTY_KEY = "tibertron2000-difficulty-v1";
+  const TUTORIAL_KEY = "tibertron2000-tutorial-v1";
   const COCKPIT_LAYOUT_KEY = "tibertron2000-cockpit-layout-v2";
   const COCKPIT_LAYOUT_LOCK_KEY = "tibertron2000-cockpit-layout-lock-v1";
   const MAX_LEVEL = 10;
@@ -169,6 +170,14 @@
   const completeMessage = document.getElementById("completeMessage");
   const nextMissionBtn = document.getElementById("nextMissionBtn");
   const completeDashboardBtn = document.getElementById("completeDashboardBtn");
+  const tutorialOverlay = document.getElementById("tutorialOverlay");
+  const tutorialStage = document.getElementById("tutorialStage");
+  const tutorialTitle = document.getElementById("tutorialTitle");
+  const tutorialBody = document.getElementById("tutorialBody");
+  const tutorialTips = document.getElementById("tutorialTips");
+  const tutorialNextBtn = document.getElementById("tutorialNextBtn");
+  const tutorialSkipBtn = document.getElementById("tutorialSkipBtn");
+  const tutorialSkipAllBtn = document.getElementById("tutorialSkipAllBtn");
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -206,6 +215,7 @@
     fuel: BUGGY_MAX_FUEL,
     maxFuel: BUGGY_MAX_FUEL,
     damageCooldown: 0,
+    pausedByTutorial: false,
     ticks: 0,
     lastTime: 0,
     raf: null
@@ -692,6 +702,197 @@
 
   function persistSave() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
+  }
+
+  const tutorialState = {
+    active: false,
+    key: "",
+    index: 0,
+    deck: []
+  };
+
+  function readTutorialProgress() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(TUTORIAL_KEY) || "{}");
+      return {
+        skipAll: !!parsed.skipAll,
+        seen: parsed.seen && typeof parsed.seen === "object" ? parsed.seen : {}
+      };
+    } catch (_) {
+      return { skipAll: false, seen: {} };
+    }
+  }
+
+  function writeTutorialProgress(progress) {
+    localStorage.setItem(TUTORIAL_KEY, JSON.stringify({
+      skipAll: !!progress.skipAll,
+      seen: progress.seen && typeof progress.seen === "object" ? progress.seen : {}
+    }));
+  }
+
+  function tutorialCard(title, body, tips, assets = {}) {
+    return { title, body, tips: Array.isArray(tips) ? tips : [], assets };
+  }
+
+  function getTutorialDeck(key) {
+    if (key === "space") {
+      return [
+        tutorialCard(
+          "Space Flight",
+          "Fly through the route to reach the selected planet. Move with WASD, arrow keys, or the on-screen stick. Fire with F, X, click, tap, or the Fire button.",
+          ["Watch ship health", "Enemies fire different lasers", "Clear the route to arrive in orbit"],
+          { hero: SPACE_HERO_SPRITE, enemy: ASSET_LIBRARY.enemySprites.drone[0], laser: true, keys: ["W", "A", "D"] }
+        ),
+        tutorialCard(
+          "Aim And Survive",
+          "Point at targets to aim. Keep moving while firing because space routes can be quiet, patrolled, ambushed, or storm-heavy.",
+          ["Move first, then shoot", "Harder routes reward more", "Destroyed enemies may drop health"],
+          { hero: SPACE_HERO_SPRITE, enemy: ASSET_LIBRARY.enemySprites.drone[3], laser: true, pickup: ASSET_LIBRARY.pickups.health }
+        )
+      ];
+    }
+    if (key === "buggy") {
+      return [
+        tutorialCard(
+          "Moon Buggy Drive",
+          "The buggy keeps rolling across the planet. Brake or accelerate to line up jumps, then use Jump before craters and broken ground.",
+          ["Left/A brakes", "Right/D accelerates", "Space/W jumps"],
+          { hero: ASSET_LIBRARY.moonBuggy.path, pickup: ASSET_LIBRARY.pickups.fuel, keys: ["A", "D", "Space"] }
+        ),
+        tutorialCard(
+          "Fuel, Health, Resources",
+          "Fuel drains as you drive. Grab fuel cans on the level, and shoot close enemies because some drop extra fuel or health after they are destroyed.",
+          ["Fuel keeps the run alive", "Health repairs damage", "Return to ship to bank gathered resources"],
+          { hero: ASSET_LIBRARY.moonBuggy.path, enemy: BUGGY_ENEMY_SPRITES[1].path, pickup: ASSET_LIBRARY.pickups.fuel, laser: true }
+        )
+      ];
+    }
+    return [
+      tutorialCard(
+        "Command Deck",
+        "Pick a planet panel to choose where you want to go. The view stays on your current planet until you press Fly To and complete the space route.",
+        ["Planet panels select a destination", "Fly To starts space travel", "Land after arrival"],
+        { hero: "images/dashboard/dashboard.webp", pickup: ASSET_LIBRARY.pickups.fuel }
+      ),
+      tutorialCard(
+        "Plan The Run",
+        "Each planet needs a resource. Save Progress downloads your current campaign, and Upload Saved Game restores it later.",
+        ["Choose difficulty before launching", "Land to open the buggy bay", "Launch Buggy to gather more"],
+        { hero: ASSET_LIBRARY.moonBuggy.path, pickup: ASSET_LIBRARY.pickups.health, enemy: ASSET_LIBRARY.enemySprites.drone[1] }
+      )
+    ];
+  }
+
+  function renderTutorialStage(card) {
+    if (!tutorialStage) return;
+    tutorialStage.textContent = "";
+    const assets = card.assets || {};
+    if (assets.keys) {
+      assets.keys.slice(0, 3).forEach((label, idx) => {
+        const key = document.createElement("span");
+        key.className = `tutorial-key ${idx === 0 ? "left" : idx === 1 ? "right" : "jump"}`;
+        key.textContent = label;
+        tutorialStage.appendChild(key);
+      });
+    }
+    if (assets.hero) {
+      const img = document.createElement("img");
+      img.className = "tutorial-asset tutorial-hero";
+      img.src = assets.hero;
+      img.alt = "";
+      tutorialStage.appendChild(img);
+    }
+    if (assets.enemy) {
+      const img = document.createElement("img");
+      img.className = "tutorial-asset tutorial-enemy";
+      img.src = assets.enemy;
+      img.alt = "";
+      tutorialStage.appendChild(img);
+    }
+    if (assets.pickup) {
+      const img = document.createElement("img");
+      img.className = "tutorial-asset tutorial-pickup";
+      img.src = assets.pickup;
+      img.alt = "";
+      tutorialStage.appendChild(img);
+    }
+    if (assets.laser) {
+      const laser = document.createElement("span");
+      laser.className = "tutorial-laser";
+      tutorialStage.appendChild(laser);
+    }
+  }
+
+  function renderTutorialCard() {
+    const card = tutorialState.deck[tutorialState.index];
+    if (!card || !tutorialOverlay) return;
+    if (tutorialTitle) tutorialTitle.textContent = card.title;
+    if (tutorialBody) tutorialBody.textContent = card.body;
+    if (tutorialTips) {
+      tutorialTips.textContent = "";
+      card.tips.forEach((tip) => {
+        const item = document.createElement("div");
+        item.className = "tutorial-tip";
+        item.textContent = tip;
+        tutorialTips.appendChild(item);
+      });
+    }
+    if (tutorialNextBtn) tutorialNextBtn.textContent = tutorialState.index >= tutorialState.deck.length - 1 ? "Done" : "Next";
+    renderTutorialStage(card);
+  }
+
+  function closeTutorial(markSeen = true) {
+    if (!tutorialOverlay) return;
+    if (markSeen && tutorialState.key) {
+      const progress = readTutorialProgress();
+      progress.seen[tutorialState.key] = true;
+      writeTutorialProgress(progress);
+    }
+    tutorialOverlay.classList.remove("open");
+    tutorialState.active = false;
+    tutorialState.key = "";
+    tutorialState.index = 0;
+    tutorialState.deck = [];
+    runtime.pausedByTutorial = false;
+  }
+
+  function maybeShowTutorial(key) {
+    if (!tutorialOverlay || tutorialState.active) return;
+    const progress = readTutorialProgress();
+    if (progress.skipAll || progress.seen[key]) return;
+    const deck = getTutorialDeck(key);
+    if (!deck.length) return;
+    tutorialState.active = true;
+    tutorialState.key = key;
+    tutorialState.index = 0;
+    tutorialState.deck = deck;
+    runtime.pausedByTutorial = !!runtime.active;
+    releaseAllInputs();
+    renderTutorialCard();
+    tutorialOverlay.classList.add("open");
+  }
+
+  function advanceTutorial() {
+    if (!tutorialState.active) return;
+    if (tutorialState.index >= tutorialState.deck.length - 1) {
+      closeTutorial(true);
+      return;
+    }
+    tutorialState.index += 1;
+    renderTutorialCard();
+  }
+
+  function skipCurrentTutorial() {
+    if (!tutorialState.active) return;
+    closeTutorial(true);
+  }
+
+  function skipAllTutorial() {
+    const progress = readTutorialProgress();
+    progress.skipAll = true;
+    if (tutorialState.key) progress.seen[tutorialState.key] = true;
+    writeTutorialProgress(progress);
+    closeTutorial(false);
   }
 
   function makeSaveExport() {
@@ -1470,6 +1671,7 @@
     }
     syncMissionControls();
     updateHud();
+    window.setTimeout(() => maybeShowTutorial("buggy"), 80);
   }
 
   function completeSpaceFlightToOrbit() {
@@ -1586,6 +1788,7 @@
     }
     syncMissionControls();
     updateHud();
+    window.setTimeout(() => maybeShowTutorial(runtime.mode === "spaceCombat" ? "space" : "buggy"), 80);
   }
 
   function returnToDashboard() {
@@ -3129,7 +3332,7 @@
     runtime.ticks += 1;
     if (pressedKeyCodes.size) syncKeyboardInputFromPressedKeys();
 
-    if (!runtime.dead && !runtime.completed) {
+    if (!runtime.dead && !runtime.completed && !runtime.pausedByTutorial) {
       runtime.fireCooldown = Math.max(0, runtime.fireCooldown - dt);
       if (inputState.fire) shoot();
       if (runtime.mode === "spaceCombat") {
@@ -3141,7 +3344,7 @@
         handleCollisionsAndInteractions();
       }
     }
-    updateEffects(dt);
+    if (!runtime.pausedByTutorial) updateEffects(dt);
 
     if (runtime.mode === "spaceCombat") {
       drawSpaceCombat();
@@ -3246,6 +3449,9 @@
     bindMobileStick();
     window.addEventListener("blur", releaseAllInputs);
     window.addEventListener("resize", syncMissionControls);
+    if (tutorialNextBtn) tutorialNextBtn.addEventListener("click", advanceTutorial);
+    if (tutorialSkipBtn) tutorialSkipBtn.addEventListener("click", skipCurrentTutorial);
+    if (tutorialSkipAllBtn) tutorialSkipAllBtn.addEventListener("click", skipAllTutorial);
 
     canvas.addEventListener("mousemove", (event) => {
       setAimFromClient(event.clientX, event.clientY);
@@ -3465,6 +3671,7 @@
     syncMissionControls();
     syncDifficultyPicker();
     renderDashboard();
+    window.setTimeout(() => maybeShowTutorial("dashboard"), 120);
     runtime.lastTime = performance.now();
   }
 
