@@ -20,6 +20,7 @@
   const SHOT_COOLDOWN = 0.18;
   const ENEMY_SIZE_MULT = 1.3;
   const BUGGY_MAX_HEALTH = 100;
+  const BUGGY_MAX_FUEL = 100;
   const BUGGY_HIT_IFRAMES = 0.42;
   const SPACE_HERO_SPRITE = "images/vehicles/starfighter_side_512x256.webp";
   const SPACE_HERO_FACES_RIGHT = true;
@@ -38,6 +39,27 @@
       "images/scifi/scifi_alien_plant.webp"
     ]
   };
+  const BUGGY_ENEMY_SPRITES = [
+    { path: "images/moon/enemies/alien_space_enemy_buggy_01_side_512x256.webp", facesRight: true, speed: 0.8, hp: 2, scale: 1.08 },
+    { path: "images/moon/enemies/alien_space_enemy_buggy_02_side_512x256.webp", facesRight: true, speed: 1.28, hp: 1, scale: 1.0 },
+    { path: "images/moon/enemies/alien_space_enemy_buggy_03_side_512x256.webp", facesRight: false, speed: 0.58, hp: 3, scale: 1.18 },
+    { path: "images/moon/enemies/alien_space_enemy_buggy_04_side_512x256.webp", facesRight: false, speed: 1.38, hp: 1, scale: 0.92 },
+    { path: "images/moon/enemies/alien_space_enemy_buggy_05_side_512x256.webp", facesRight: true, speed: 0.9, hp: 2, scale: 1.08 },
+    { path: "images/moon/enemies/alien_space_enemy_buggy_06_side_512x256.webp", facesRight: true, speed: 0.72, hp: 2, scale: 1.1 }
+  ];
+  const SPACE_ROUTE_PROFILES = [
+    { key: "quiet", label: "Quiet Route", enemyMult: 0.82, speedMult: 0.9, fireMult: 0.86, hpBonus: 0, scoreMult: 0.9 },
+    { key: "raider", label: "Raider Patrol", enemyMult: 1, speedMult: 1, fireMult: 1, hpBonus: 0, scoreMult: 1 },
+    { key: "ambush", label: "Ambush Lane", enemyMult: 1.18, speedMult: 1.14, fireMult: 1.18, hpBonus: 1, scoreMult: 1.14 },
+    { key: "storm", label: "Ion Storm", enemyMult: 1.35, speedMult: 1.26, fireMult: 1.34, hpBonus: 1, scoreMult: 1.28 }
+  ];
+  const SPACE_WEAPON_PROFILES = [
+    { name: "pink stinger", color: "#ff8fda", explosion: "#ffb3e8", pattern: "single", speed: 286, damage: 6 },
+    { name: "cyan rake", color: "#73e8ff", explosion: "#a8eeff", pattern: "spread", speed: 258, damage: 5 },
+    { name: "amber burst", color: "#ffd178", explosion: "#ffd99a", pattern: "burst", speed: 238, damage: 4 },
+    { name: "violet lance", color: "#c79cff", explosion: "#d8a6ff", pattern: "lance", speed: 330, damage: 7 },
+    { name: "green splitter", color: "#8df7ae", explosion: "#b9ffd0", pattern: "split", speed: 246, damage: 5 }
+  ];
 
   const ASSET_LIBRARY = {
     moonBuggy: { key: "moonBuggy", label: "Moon Buggy", path: "images/vehicles/moonbuggy1.webp" },
@@ -54,15 +76,48 @@
         "images/scifi/scifi_ufo_mothership_792x276.webp",
         "images/scifi/scifi_home_modular_ring_792x276.webp",
         "images/scifi/scifi_vehicle_cargohauler_792x276.webp",
-        "images/scifi/scifi_ufo_920x416.webp"
-      ],
-      crawler: [
-        "images/scifi/scifi_vehicle_hoverbike_459x145.webp",
-        "images/scifi/scifi_vehicle_hovercar_compact_459x145.webp",
+        "images/scifi/scifi_ufo_920x416.webp",
         "images/scifi/scifi_vehicle_fighter_459x145.webp",
         "images/scifi/scifi_vehicle_flyingpod_459x145.webp",
+        "images/scifi/scifi_vehicle_hoverbike_459x145.webp",
+        "images/scifi/scifi_vehicle_hovercar_compact_459x145.webp",
         "images/scifi/scifi_vehicle_armoredtransport_459x145.webp"
+      ],
+      crawler: [
+        ...BUGGY_ENEMY_SPRITES.map((enemy) => enemy.path)
       ]
+    },
+    moonParallax: {
+      backgrounds: [
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_01_4096x1024.webp",
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_02_4096x1024.webp",
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_03_4096x1024.webp",
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_04_4096x1024.webp",
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_05_4096x1024.webp",
+        "images/moon/backgrounds/alien_moon_scrolling_seamless_06_4096x1024.webp"
+      ],
+      midlayers: [
+        "images/moon/midlayers/alien_moon_midlayer_01_4096x1024.webp",
+        "images/moon/midlayers/alien_moon_midlayer_02_4096x1024.webp",
+        "images/moon/midlayers/alien_moon_midlayer_03_4096x1024.webp",
+        "images/moon/midlayers/alien_moon_midlayer_04_4096x1024.webp",
+        "images/moon/midlayers/alien_moon_midlayer_05_4096x1024.webp",
+        "images/moon/midlayers/alien_moon_midlayer_06_4096x1024.webp"
+      ],
+      foregrounds: [
+        "images/moon/foregrounds/alien_moon_foreground_01_4096x1024.webp",
+        "images/moon/foregrounds/alien_moon_foreground_02_4096x1024.webp",
+        "images/moon/foregrounds/alien_moon_foreground_03_4096x1024.webp",
+        "images/moon/foregrounds/alien_moon_foreground_04_4096x1024.webp",
+        "images/moon/foregrounds/alien_moon_foreground_06_4096x1024.webp"
+      ]
+    },
+    pickups: {
+      fuel: "images/pickups/space_power_fuel_canister_512x512.webp",
+      health: "images/pickups/space_health_medical_canister_512x512.webp"
+    },
+    hazards: {
+      mine: "images/moon/hazards/space_mine_small_256x256.webp"
     }
   };
   const DASHBOARD_PLANETS = ["AETHERIS", "DUSKARA", "IRONHEART", "KRYON", "NEBULON"];
@@ -70,6 +125,9 @@
   const dashboardScreen = document.getElementById("dashboardScreen");
   const dashboardSummary = document.getElementById("dashboardSummary");
   const resourceGrid = document.getElementById("resourceGrid");
+  const saveProgressBtn = document.getElementById("saveProgressBtn");
+  const uploadSaveBtn = document.getElementById("uploadSaveBtn");
+  const uploadSaveInput = document.getElementById("uploadSaveInput");
   const importLevelBtn = document.getElementById("importLevelBtn");
   const importLevelInput = document.getElementById("importLevelInput");
   const resetSaveBtn = document.getElementById("resetSaveBtn");
@@ -144,6 +202,8 @@
     weapon: { rank: 1, title: "MK-1", spaceDamage: 1, buggyDamage: 1, fireRateMult: 1, projectileSpeedMult: 1 },
     health: BUGGY_MAX_HEALTH,
     maxHealth: BUGGY_MAX_HEALTH,
+    fuel: BUGGY_MAX_FUEL,
+    maxFuel: BUGGY_MAX_FUEL,
     damageCooldown: 0,
     ticks: 0,
     lastTime: 0,
@@ -582,6 +642,59 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
   }
 
+  function makeSaveExport() {
+    return {
+      game: "tibertrons-space-buggy",
+      exportedAt: new Date().toISOString(),
+      storageKey: STORAGE_KEY,
+      save: cloneSimple(saveState),
+      difficulty: dashboardUi.difficulty,
+      cockpitLayout: loadCockpitLayout() || cockpitDefaultLayout
+    };
+  }
+
+  function downloadSavedGame() {
+    persistSave();
+    const payload = JSON.stringify(makeSaveExport(), null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tibertrons-space-buggy-save-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function normalizeUploadedSave(parsed) {
+    const source = parsed?.save && typeof parsed.save === "object" ? parsed.save : parsed;
+    const next = createDefaultSave();
+    next.missionsCompleted = safeNumber(source?.missionsCompleted, 0);
+    next.importedCompleted = safeNumber(source?.importedCompleted, 0);
+    RESOURCE_LINES.forEach((line) => {
+      next.stored[line.id] = Math.max(0, safeNumber(source?.stored?.[line.id], 0));
+      next.progress[line.id] = clamp(Math.floor(safeNumber(source?.progress?.[line.id], 0)), 0, MAX_LEVEL);
+    });
+    return next;
+  }
+
+  function importSavedGame(parsed) {
+    saveState = normalizeUploadedSave(parsed);
+    persistSave();
+    if (parsed?.difficulty && DIFFICULTY_PROFILES[String(parsed.difficulty)]) {
+      writeDifficulty(String(parsed.difficulty));
+    }
+    if (parsed?.cockpitLayout && typeof parsed.cockpitLayout === "object") {
+      localStorage.setItem(COCKPIT_LAYOUT_KEY, JSON.stringify(parsed.cockpitLayout));
+      applyCockpitLayout(parsed.cockpitLayout);
+    }
+    dashboardUi.pendingLanding = null;
+    dashboardUi.viewMode = "orbit";
+    renderDashboard();
+  }
+
   function readDifficulty() {
     try {
       const raw = String(localStorage.getItem(DIFFICULTY_KEY) || "normal").toLowerCase();
@@ -670,7 +783,41 @@
     const txt = String(spritePath || "");
     // Keep mission enemies strictly on sci-fi assets.
     if (/^images\/scifi\/.+\.webp$/i.test(txt)) return txt;
+    if (/^images\/moon\/enemies\/.+\.webp$/i.test(txt)) return txt;
     return enemySpriteForType(type, null, index);
+  }
+
+  function getBuggyEnemyMeta(spritePath) {
+    const txt = String(spritePath || "");
+    return BUGGY_ENEMY_SPRITES.find((enemy) => enemy.path === txt) || BUGGY_ENEMY_SPRITES[0];
+  }
+
+  function getMoonLayerSet(level = 1) {
+    const idx = Math.max(0, (Math.floor(Number(level || 1)) - 1));
+    const moon = ASSET_LIBRARY.moonParallax;
+    return {
+      background: moon.backgrounds[idx % moon.backgrounds.length],
+      midlayer: moon.midlayers[idx % moon.midlayers.length],
+      foreground: moon.foregrounds[idx % moon.foregrounds.length]
+    };
+  }
+
+  function addMissionPowerup(mission, type, x, y = null, options = {}) {
+    if (!mission) return null;
+    if (!Array.isArray(mission.powerups)) mission.powerups = [];
+    const isFuel = type === "fuel";
+    const powerup = {
+      x: Math.floor(x),
+      y: y == null ? mission.baseGround - 58 : Math.floor(y),
+      w: options.w || 38,
+      h: options.h || 38,
+      type: isFuel ? "fuel" : "health",
+      amount: options.amount || (isFuel ? 42 : 28),
+      source: options.source || "level",
+      collected: false
+    };
+    mission.powerups.push(powerup);
+    return powerup;
   }
 
   function cloneSimple(obj) {
@@ -695,22 +842,23 @@
     const mines = [];
     const enemies = [];
     const collectibles = [];
+    const powerups = [];
     const checkpoints = [];
     const platforms = [];
     const deco = [];
 
-    let cursor = 680;
-    const holeCount = 4 + lv + (resource.category === "genetic" ? 1 : 0);
+    let cursor = 780;
+    const holeCount = 3 + Math.floor(lv * 0.72) + (resource.category === "genetic" ? 1 : 0);
     const noSpawnZones = [];
     for (let i = 0; i < holeCount; i += 1) {
-      cursor += 300 + rng() * 330;
+      cursor += 430 + rng() * 390;
       if (cursor > length - 560) break;
-      // Keep holes always jumpable at normal travel speed.
-      const holeWidth = Math.floor(64 + lv * 3 + rng() * 34);
-      const w = clamp(holeWidth, 64, 124);
+      // Keep holes readable and jumpable at normal travel speed.
+      const holeWidth = Math.floor(58 + lv * 2.2 + rng() * 24);
+      const w = clamp(holeWidth, 58, 108);
       const x = Math.floor(cursor);
       holes.push({ x, w });
-      noSpawnZones.push({ start: x - 150, end: x + w + 180 });
+      noSpawnZones.push({ start: x - 210, end: x + w + 240 });
     }
 
     const isUnsafeX = (x) => noSpawnZones.some((zone) => x >= zone.start && x <= zone.end);
@@ -722,7 +870,7 @@
       return min + Math.floor(rng() * Math.max(1, max - min));
     };
 
-    const platformCount = 3 + Math.floor(lv * 0.75);
+    const platformCount = 2 + Math.floor(lv * 0.55);
     for (let i = 0; i < platformCount; i += 1) {
       const w = 120 + Math.floor(rng() * 180);
       const x = 700 + Math.floor(rng() * (length - 1300));
@@ -730,7 +878,7 @@
       platforms.push({ x, y, w, h: 18 + Math.floor(rng() * 8), color: resource.category === "genetic" ? "#6f9868" : "#a28d7c" });
     }
 
-    const rockCount = 6 + lv * 2;
+    const rockCount = 5 + lv;
     for (let i = 0; i < rockCount; i += 1) {
       const w = 36 + Math.floor(rng() * 56);
       const h = 24 + Math.floor(rng() * 38);
@@ -738,34 +886,56 @@
       rocks.push({ x, y: baseGround - h, w, h, hp: 1, color: "#7f644f" });
     }
 
-    const mineCount = 4 + lv;
+    const mineCount = 2 + Math.floor(lv * 0.8);
     for (let i = 0; i < mineCount; i += 1) {
       const x = pickSafeX(740, length - 1000);
-      mines.push({ x, y: baseGround - 14, w: 20, h: 14, hp: 1, color: "#b06e6e" });
+      mines.push({ x, y: baseGround - 30, w: 30, h: 30, hp: 1, color: "#b06e6e", sprite: ASSET_LIBRARY.hazards.mine });
     }
 
-    const enemyCount = 3 + lv;
+    const enemyCount = 3 + Math.floor(lv * 0.85);
     for (let i = 0; i < enemyCount; i += 1) {
-      const fly = true;
-      const x = pickSafeX(900, length - 1300);
-      const patrol = 80 + Math.floor(rng() * 170);
-      const type = fly ? "drone" : "crawler";
-      const baseW = fly ? 52 : 42;
-      const baseH = fly ? 26 : 36;
+      const meta = BUGGY_ENEMY_SPRITES[i % BUGGY_ENEMY_SPRITES.length];
+      const x = pickSafeX(1020 + i * 260, length - 1300);
+      const patrol = 52 + Math.floor(rng() * 96);
+      const baseW = Math.round(92 * (meta.scale || 1));
+      const baseH = Math.round(46 * (meta.scale || 1));
+      const dropType = i % 4 === 1 ? "fuel" : (i % 5 === 3 ? "health" : "");
       enemies.push({
         x,
         baseX: x,
-        y: fly ? 250 + Math.floor(rng() * 96) : baseGround - 36,
+        y: baseGround - baseH - 18 - Math.floor(rng() * 18),
         w: Math.round(baseW * ENEMY_SIZE_MULT),
         h: Math.round(baseH * ENEMY_SIZE_MULT),
-        type,
-        sprite: enemySpriteForType(type, rng),
-        speed: 0.6 + lv * 0.08 + rng() * 0.9,
+        type: "crawler",
+        sprite: meta.path,
+        speed: (0.46 + lv * 0.035 + rng() * 0.42) * (meta.speed || 1),
         patrol,
-        fireDelay: 1.4 + rng() * 1.2,
+        fireDelay: 1.2 + rng() * 1.15,
         fireTimer: 0.7 + rng() * 0.8,
-        hp: 1
+        hp: meta.hp || 1,
+        dropType,
+        dropAmount: dropType === "fuel" ? 34 : 24,
+        dropped: false,
+        escaped: false
       });
+    }
+
+    const firstFuelX = clamp(Math.floor(length * 0.34), 900, length - 1300);
+    const secondFuelX = clamp(Math.floor(length * 0.66), 1500, length - 820);
+    [firstFuelX, secondFuelX].forEach((fuelX) => {
+      const x = pickSafeX(fuelX - 120, fuelX + 120);
+      powerups.push({ x, y: baseGround - 58, w: 40, h: 40, type: "fuel", amount: 44, source: "level", collected: false });
+      const closeEnemy = enemies
+        .filter((enemy) => !enemy.dropType)
+        .sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0];
+      if (closeEnemy) {
+        closeEnemy.dropType = "fuel";
+        closeEnemy.dropAmount = 34;
+      }
+    });
+    if (lv >= 2) {
+      const healthX = pickSafeX(Math.floor(length * 0.48), Math.floor(length * 0.58));
+      powerups.push({ x: healthX, y: baseGround - 64, w: 38, h: 38, type: "health", amount: 26, source: "level", collected: false });
     }
 
     const collectCount = 11 + lv * 3;
@@ -810,6 +980,7 @@
       mines,
       enemies,
       collectibles,
+      powerups,
       checkpoints,
       platforms,
       deco,
@@ -850,7 +1021,10 @@
       completionBonus: Math.max(0, safeNumber(levelData.completionBonus, 24)),
       holes: Array.isArray(levelData.holes) ? levelData.holes.map((h) => ({ x: safeNumber(h?.x, 0), w: Math.max(30, safeNumber(h?.w, 90)) })) : [],
       rocks: Array.isArray(levelData.rocks) ? levelData.rocks.map((r) => readRect(r, { h: 26, color: "#996548" })) : [],
-      mines: Array.isArray(levelData.mines) ? levelData.mines.map((m) => readRect(m, { w: 20, h: 14, color: "#b06e6e" })) : [],
+      mines: Array.isArray(levelData.mines) ? levelData.mines.map((m) => ({
+        ...readRect(m, { w: 30, h: 30, color: "#b06e6e" }),
+        sprite: String(m?.sprite || ASSET_LIBRARY.hazards.mine)
+      })) : [],
       enemies: Array.isArray(levelData.enemies) ? levelData.enemies.map((e) => ({
         ...readRect(e, { w: 42, h: 36 }),
         baseX: safeNumber(e?.baseX, safeNumber(e?.x, 0)),
@@ -865,6 +1039,16 @@
         x: safeNumber(c?.x, 0),
         y: safeNumber(c?.y, baseGround - 70),
         value: Math.max(1, safeNumber(c?.value, 4)),
+        collected: false
+      })) : [],
+      powerups: Array.isArray(levelData.powerups) ? levelData.powerups.map((p) => ({
+        x: safeNumber(p?.x, 0),
+        y: safeNumber(p?.y, baseGround - 58),
+        w: Math.max(20, safeNumber(p?.w, 38)),
+        h: Math.max(20, safeNumber(p?.h, 38)),
+        type: String(p?.type || "fuel") === "health" ? "health" : "fuel",
+        amount: Math.max(1, safeNumber(p?.amount, String(p?.type || "") === "health" ? 24 : 40)),
+        source: String(p?.source || "level"),
         collected: false
       })) : [],
       checkpoints: Array.isArray(levelData.checkpoints) ? levelData.checkpoints.map((cp, i) => ({
@@ -1091,20 +1275,24 @@
   function createSpaceCombatState(mission) {
     const level = clamp(safeNumber(mission?.level, 1), 1, MAX_LEVEL);
     const diff = getDifficultyProfile();
+    const route = pick(SPACE_ROUTE_PROFILES, Math.random);
     const progressionTier = clamp(Math.floor(getProgressionScore() / 1400), 0, 8);
-    const killsNeeded = clamp(Math.round((5 + level * 2 + progressionTier) * diff.enemyCountMult), 5, 44);
-    const waveSize = clamp(Math.round((2 + Math.floor(level / 2) + Math.floor(progressionTier / 2)) * diff.enemyCountMult), 2, 8);
-    const waveDelay = clamp((Math.max(0.75, 2.1 - level * 0.08 - progressionTier * 0.05)) / Math.max(0.8, diff.enemyCountMult), 0.55, 2.8);
+    const routeEnemyMult = route?.enemyMult || 1;
+    const killsNeeded = clamp(Math.round((5 + level * 2 + progressionTier) * diff.enemyCountMult * routeEnemyMult), 5, 48);
+    const waveSize = clamp(Math.round((2 + Math.floor(level / 2) + Math.floor(progressionTier / 2)) * diff.enemyCountMult * Math.min(1.18, routeEnemyMult)), 2, 9);
+    const waveDelay = clamp((Math.max(0.75, 2.1 - level * 0.08 - progressionTier * 0.05)) / Math.max(0.8, diff.enemyCountMult * (route?.fireMult || 1)), 0.48, 2.8);
     return {
       level,
       difficulty: dashboardUi.difficulty,
-      enemyHp: clamp(Math.round((1 + Math.floor(level / 4) + Math.floor(progressionTier / 4)) * diff.enemyHpMult), 1, 6),
+      route,
+      enemyHp: clamp(Math.round((1 + Math.floor(level / 4) + Math.floor(progressionTier / 4) + (route?.hpBonus || 0)) * diff.enemyHpMult), 1, 7),
       kills: 0,
       killsNeeded,
       waveSize,
       waveDelay,
       spawnTimer: 0.5,
       enemies: [],
+      powerups: [],
       stars: makeSpaceStars(86),
       clearTimer: 0,
       introTimer: 0.85
@@ -1141,6 +1329,8 @@
     runtime.effects = [];
     runtime.fireCooldown = 0;
     runtime.spaceMuzzleIndex = 0;
+    runtime.maxFuel = BUGGY_MAX_FUEL;
+    runtime.fuel = BUGGY_MAX_FUEL;
     runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
     runtime.lastCheckpointX = 90;
     runtime.lastCheckpointLabel = "Ship Pad";
@@ -1150,6 +1340,7 @@
   function normalizeMissionForRun(mission, line = null) {
     const clone = cloneSimple(mission || {});
     clone.collectibles = (clone.collectibles || []).map((item) => ({ ...item, collected: false }));
+    clone.powerups = (clone.powerups || []).map((item) => ({ ...item, collected: false }));
     clone.webpAssets = (clone.webpAssets || []).map((asset) => ({ ...asset, collected: false }));
     const diff = getDifficultyProfile();
     const progressionTier = clamp(Math.floor(getProgressionScore() / 1700), 0, 6);
@@ -1163,6 +1354,8 @@
         speed: Math.max(0.2, safeNumber(enemy?.speed, 1) * diff.enemySpeedMult),
         fireDelay: Math.max(0.35, safeNumber(enemy?.fireDelay, 1.5) / diff.enemyFireMult),
         fireTimer: Math.max(0.2, safeNumber(enemy?.fireTimer, 0.6)),
+        dropped: false,
+        escaped: false,
         sprite: normalizeEnemySpritePath(enemy?.sprite, inferredType, idx)
       };
     });
@@ -1196,6 +1389,8 @@
     runtime.spaceMuzzleIndex = 0;
     runtime.maxHealth = BUGGY_MAX_HEALTH;
     runtime.health = BUGGY_MAX_HEALTH;
+    runtime.maxFuel = BUGGY_MAX_FUEL;
+    runtime.fuel = BUGGY_MAX_FUEL;
     runtime.damageCooldown = 0;
     runtime.aim = { x: runtime.player.x + 260, y: runtime.player.y + runtime.player.h * 0.45, active: false };
     runtime.ticks = 0;
@@ -1306,6 +1501,8 @@
     runtime.effects = [];
     runtime.maxHealth = BUGGY_MAX_HEALTH;
     runtime.health = BUGGY_MAX_HEALTH;
+    runtime.maxFuel = BUGGY_MAX_FUEL;
+    runtime.fuel = BUGGY_MAX_FUEL;
     runtime.damageCooldown = 0;
     runtime.aim = runtime.mode === "spaceCombat"
       ? { x: runtime.player.x + 120, y: runtime.player.y, active: false }
@@ -1395,6 +1592,31 @@
     return true;
   }
 
+  function collectPowerup(powerup) {
+    if (!powerup || powerup.collected) return;
+    powerup.collected = true;
+    const amount = Math.max(1, safeNumber(powerup.amount, 1));
+    if (powerup.type === "health") {
+      runtime.health = clamp(runtime.health + amount, 0, runtime.maxHealth);
+      spawnExplosion(powerup.x + powerup.w * 0.5, powerup.y + powerup.h * 0.5, "#8df7ae");
+    } else {
+      runtime.fuel = clamp(runtime.fuel + amount, 0, runtime.maxFuel);
+      spawnExplosion(powerup.x + powerup.w * 0.5, powerup.y + powerup.h * 0.5, "#ffd77a");
+    }
+    updateHud();
+  }
+
+  function dropEnemyPowerup(enemy) {
+    if (!enemy || enemy.dropped || enemy.escaped || !enemy.dropType) return;
+    enemy.dropped = true;
+    addMissionPowerup(runtime.mission, enemy.dropType, enemy.x + enemy.w * 0.5 - 18, enemy.y + enemy.h * 0.5 - 18, {
+      amount: enemy.dropAmount || (enemy.dropType === "fuel" ? 34 : 24),
+      source: "enemy",
+      w: enemy.dropType === "fuel" ? 40 : 38,
+      h: enemy.dropType === "fuel" ? 40 : 38
+    });
+  }
+
   function respawnAtCheckpoint() {
     if (!runtime.mission) return;
     if (runtime.mode === "spaceCombat") {
@@ -1407,6 +1629,7 @@
     runtime.enemyBullets = [];
     runtime.effects = [];
     runtime.health = runtime.maxHealth;
+    runtime.fuel = runtime.maxFuel;
     runtime.damageCooldown = 0;
     runtime.spaceMuzzleIndex = 0;
     deathOverlay.classList.remove("open");
@@ -1582,9 +1805,9 @@
         panel.title = `Return to orbit around ${selected.planetName}`;
       } else if (idx === cockpitPlanetPanels.length - 1) {
         setPanelContentHtml(panel, `
-          <h3>LAUNCH BUGGY</h3>
-          <p>${hasPendingForSelected ? "Landing Path Ready" : selected.line.name}</p>
-          <button id="cockpitLaunchBuggyBtn" class="btn" type="button">${hasPendingForSelected ? "Land + Launch" : "Launch"}</button>
+          <h3>BUGGY BAY</h3>
+          <p>${selected.line.name}</p>
+          <button id="cockpitLaunchBuggyBtn" class="btn" type="button">Launch Buggy</button>
         `);
         panel.title = `Launch buggy mission for ${selected.line.name}`;
       } else {
@@ -1598,11 +1821,11 @@
     });
     if (cockpitBottomMidPanel) {
       setPanelContentHtml(cockpitBottomMidPanel, `
-        <h3>SPACE MODE</h3>
+        <h3>${useLanded ? "PLANET SURFACE" : "ORBIT NAV"}</h3>
         <p>Selected: ${selected.planetName} (${useLanded ? "Landed" : "Orbit"})</p>
-        <p class="statline">${hasPendingForSelected ? "Space Route Cleared - You can land now." : "Choose planet, fight in space, then land."}</p>
-        <button id="cockpitToggleViewBtn" class="btn ghost" type="button">${useLanded ? "Show Orbit" : "Show Landed"}</button>
-        ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn" type="button">Fly To ${selected.line.name}</button>`}
+        <p class="statline">${useLanded ? `Gather ${selected.line.name} by launching the buggy.` : (hasPendingForSelected ? "Arrived in orbit - land or choose another planet." : "Choose a planet and fly through a space encounter.")}</p>
+        ${useLanded ? `<button id="cockpitToggleViewBtn" class="btn ghost" type="button">Back To Orbit</button>` : (hasPendingForSelected ? `<button id="cockpitToggleViewBtn" class="btn" type="button">Land On ${selected.planetName}</button>` : "")}
+        ${useLanded ? "" : `<button id="cockpitSpaceLaunchBtn" class="btn ${hasPendingForSelected ? "ghost" : ""}" type="button">${hasPendingForSelected ? "Fly To Another Planet" : `Fly To ${selected.line.name}`}</button>`}
         <button id="cockpitDifficultyBtn" class="btn ghost" type="button">Difficulty: ${getDifficultyProfile().label}</button>
       `);
       const toggleBtn = document.getElementById("cockpitToggleViewBtn");
@@ -1610,7 +1833,7 @@
         toggleBtn.addEventListener("click", (event) => {
           event.preventDefault();
           event.stopPropagation();
-          dashboardUi.viewMode = dashboardUi.viewMode === "orbit" ? "landed" : "orbit";
+          dashboardUi.viewMode = useLanded ? "orbit" : "landed";
           renderDashboard();
         });
       }
@@ -1669,7 +1892,8 @@
           startBuggyMissionWithPrepared(selected.line, dashboardUi.pendingLanding.mission, false, "");
           return;
         }
-        launchSelectedPlanetMission();
+        dashboardUi.viewMode = "orbit";
+        renderDashboard();
       });
     }
     ensureCockpitPanelAnchors();
@@ -1768,11 +1992,13 @@
     const speed = Math.floor(Math.hypot(runtime.player.vx || 0, runtime.player.vy || 0));
     const hpPct = Math.round((Math.max(0, runtime.health) / Math.max(1, runtime.maxHealth)) * 100);
     const hpColor = hpPct > 65 ? "#8df7ae" : (hpPct > 35 ? "#ffd27e" : "#ff8f97");
+    const fuelPct = Math.round((Math.max(0, runtime.fuel) / Math.max(1, runtime.maxFuel)) * 100);
+    const fuelColor = fuelPct > 45 ? "#ffd77a" : (fuelPct > 20 ? "#ffb36b" : "#ff8f97");
     if (runtime.mode === "spaceCombat") {
       const s = runtime.space || { kills: 0, killsNeeded: 0, enemies: [] };
       hud.innerHTML = `
         <div class="stat"><span class="k">Mission</span><span class="v">${mission.title}</span></div>
-        <div class="stat"><span class="k">Phase</span><span class="v">Space Assault</span></div>
+        <div class="stat"><span class="k">Route</span><span class="v">${s.route?.label || "Space Assault"}</span></div>
         <div class="stat"><span class="k">Difficulty</span><span class="v">${getDifficultyProfile().label}</span></div>
         <div class="stat"><span class="k">UFO Kills</span><span class="v" style="color:#8df7ae">${s.kills}/${s.killsNeeded}</span></div>
         <div class="stat"><span class="k">Enemies Live</span><span class="v">${(s.enemies || []).filter((e) => e.hp > 0).length}</span></div>
@@ -1798,6 +2024,7 @@
       <div class="stat"><span class="k">Arc Progress</span><span class="v">${progress}</span></div>
       <div class="stat"><span class="k">Buggy Weapon</span><span class="v">${runtime.weapon?.title || "MK-1"} x${runtime.weapon?.buggyDamage || 1}</span></div>
       <div class="stat"><span class="k">Buggy Hull</span><span class="v" style="color:${hpColor}">${hpPct}%</span></div>
+      <div class="stat"><span class="k">Fuel</span><span class="v" style="color:${fuelColor}">${fuelPct}%</span></div>
     `;
   }
 
@@ -1830,6 +2057,7 @@
   }
 
   function drawBackground(mission) {
+    const moonLayers = getMoonLayerSet(mission.level || 1);
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "#172f56");
     gradient.addColorStop(0.52, "#0e2240");
@@ -1838,9 +2066,9 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const drift = Math.sin(runtime.ticks * 0.0007) * 18;
-    drawBackdropCover(ASSET_LIBRARY.backgrounds[0], drift * 0.16, 0, 0.50, 1.22);
-    drawBackdropCover(ASSET_LIBRARY.backgrounds[1], drift * -0.24, 10, 0.30, 1.26);
-    drawBackdropCover(ASSET_LIBRARY.backgrounds[2], drift * 0.36, 18, 0.24, 1.34);
+    drawParallaxBackdrop(moonLayers.background, -40 + drift * 0.02, canvas.height + 80, 0.24, 0.96);
+    drawParallaxBackdrop(moonLayers.midlayer, mission.baseGround - 360 + drift * 0.04, 360, 0.54, 0.88);
+    drawParallaxBackdrop(moonLayers.foreground, mission.baseGround - 210, 330, 0.98, 0.9);
 
     const farRidgeY = mission.baseGround - 170;
     const midRidgeY = mission.baseGround - 125;
@@ -2006,8 +2234,28 @@
     }
 
     runtime.enemyBullets.forEach((b) => {
-      ctx.fillStyle = "#ff8f97";
+      ctx.save();
+      ctx.fillStyle = b.color || "#ff8f97";
+      ctx.shadowColor = b.color || "#ff8f97";
+      ctx.shadowBlur = 8;
       ctx.fillRect(b.x - 3, b.y - 3, 6, 6);
+      ctx.restore();
+    });
+    (space?.powerups || []).forEach((powerup) => {
+      if (powerup.collected) return;
+      const path = powerup.type === "health" ? ASSET_LIBRARY.pickups.health : ASSET_LIBRARY.pickups.fuel;
+      const img = ensureImage(path);
+      const bob = Math.sin(runtime.ticks * 0.08 + powerup.x * 0.01) * 4;
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.save();
+        ctx.shadowColor = powerup.type === "health" ? "#8df7ae" : "#ffd77a";
+        ctx.shadowBlur = 12;
+        ctx.drawImage(img, powerup.x, powerup.y + bob, powerup.w, powerup.h);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = powerup.type === "health" ? "#8df7ae" : "#ffd77a";
+        ctx.fillRect(powerup.x, powerup.y + bob, powerup.w, powerup.h);
+      }
     });
     runtime.bullets.forEach((b) => {
       if (b.kind === "aim") {
@@ -2183,6 +2431,18 @@
       if (mine.hp <= 0) return;
       const sx = mine.x - runtime.cameraX;
       if (sx + mine.w < 0 || sx > canvas.width) return;
+      const mineImg = ensureImage(mine.sprite || ASSET_LIBRARY.hazards.mine);
+      if (mineImg && mineImg.complete && mineImg.naturalWidth > 0) {
+        const pulse = 1 + Math.sin(runtime.ticks * 0.07 + mine.x * 0.02) * 0.035;
+        const drawW = mine.w * pulse;
+        const drawH = mine.h * pulse;
+        ctx.save();
+        ctx.shadowColor = "#ff8d96";
+        ctx.shadowBlur = 9;
+        ctx.drawImage(mineImg, sx + (mine.w - drawW) * 0.5, mine.y + (mine.h - drawH) * 0.5, drawW, drawH);
+        ctx.restore();
+        return;
+      }
       const cx = sx + mine.w * 0.5;
       const cy = mine.y + mine.h * 0.65;
       const r = Math.max(5, mine.w * 0.42);
@@ -2228,6 +2488,25 @@
       ctx.fill();
     });
 
+    (mission.powerups || []).forEach((powerup) => {
+      if (powerup.collected) return;
+      const sx = powerup.x - runtime.cameraX;
+      if (sx + powerup.w < -30 || sx > canvas.width + 30) return;
+      const path = powerup.type === "health" ? ASSET_LIBRARY.pickups.health : ASSET_LIBRARY.pickups.fuel;
+      const img = ensureImage(path);
+      const bob = Math.sin(runtime.ticks * 0.08 + powerup.x * 0.01) * 4;
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.save();
+        ctx.shadowColor = powerup.type === "health" ? "#8df7ae" : "#ffd77a";
+        ctx.shadowBlur = 12;
+        ctx.drawImage(img, sx, powerup.y + bob, powerup.w, powerup.h);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = powerup.type === "health" ? "#8df7ae" : "#ffd77a";
+        ctx.fillRect(sx, powerup.y + bob, powerup.w, powerup.h);
+      }
+    });
+
     mission.webpAssets.forEach((asset) => {
       if (asset.collectible && asset.collected) return;
       const sx = asset.x - runtime.cameraX;
@@ -2253,9 +2532,12 @@
       if (sx + enemy.w < -30 || sx > canvas.width + 30) return;
       const sprite = enemy.sprite ? ensureImage(enemy.sprite) : null;
       if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+        const meta = getBuggyEnemyMeta(enemy.sprite);
+        const firingLeft = (enemy.targetDir || -1) < 0;
+        const shouldFlip = meta.facesRight ? firingLeft : !firingLeft;
         ctx.save();
         ctx.translate(sx + enemy.w / 2, enemy.y + enemy.h / 2);
-        if (enemy.type === "crawler") ctx.scale(-1, 1);
+        ctx.scale(shouldFlip ? -1 : 1, 1);
         ctx.drawImage(sprite, -enemy.w / 2, -enemy.h / 2, enemy.w, enemy.h);
         ctx.restore();
       } else {
@@ -2376,6 +2658,7 @@
     const missionLevel = clamp(safeNumber(runtime.mission?.level, 1), 1, MAX_LEVEL);
     const droneSprites = ASSET_LIBRARY.enemySprites?.drone || [];
     const diff = getDifficultyProfile();
+    const route = space.route || SPACE_ROUTE_PROFILES[1];
     const toSpawn = Math.min(space.waveSize, Math.max(0, space.killsNeeded - space.kills - space.enemies.filter((e) => e.hp > 0).length));
     for (let i = 0; i < toSpawn; i += 1) {
       const t = toSpawn <= 1 ? 0.5 : i / (toSpawn - 1);
@@ -2383,7 +2666,8 @@
       const w = 94 + Math.random() * 38;
       const h = w * 0.35;
       const x = canvas.width + 120 + Math.random() * 180;
-      const speed = (110 + missionLevel * 12 + Math.random() * 70) * diff.enemySpeedMult;
+      const weapon = pick(SPACE_WEAPON_PROFILES, Math.random);
+      const speed = (110 + missionLevel * 12 + Math.random() * 70) * diff.enemySpeedMult * (route.speedMult || 1);
       space.enemies.push({
         x,
         y,
@@ -2392,14 +2676,34 @@
         vx: -speed,
         vy: Math.random() * 34 - 17,
         hp: Math.max(1, Math.floor(space.enemyHp || 1)),
-        fireDelay: Math.max(0.4, (1.3 + Math.random() * 1.1) / diff.enemyFireMult),
+        fireDelay: Math.max(0.34, (1.3 + Math.random() * 1.1) / (diff.enemyFireMult * (route.fireMult || 1))),
         fireTimer: 0.3 + Math.random() * 0.8,
         turnTimer: 1.7 + Math.random() * 1.6,
         targetY: y + (Math.random() * 120 - 60),
         angle: 0,
+        weapon,
         sprite: droneSprites.length ? droneSprites[Math.floor(Math.random() * droneSprites.length)] : enemySpriteForType("drone")
       });
     }
+  }
+
+  function pushSpaceEnemyShot(enemy, angleOffset = 0, speedMult = 1, delayX = 0) {
+    const player = runtime.player;
+    if (!player || !enemy) return;
+    const weapon = enemy.weapon || SPACE_WEAPON_PROFILES[0];
+    const dx = player.x - enemy.x;
+    const dy = player.y - enemy.y;
+    const baseAngle = Math.atan2(dy, dx) + angleOffset;
+    const speed = Math.max(160, safeNumber(weapon.speed, 260) * speedMult);
+    runtime.enemyBullets.push({
+      x: enemy.x + delayX,
+      y: enemy.y,
+      vx: Math.cos(baseAngle) * speed,
+      vy: Math.sin(baseAngle) * speed,
+      life: weapon.pattern === "lance" ? 1.65 : 2.1,
+      color: weapon.color || "#ff8f97",
+      damage: weapon.damage || 6
+    });
   }
 
   function updateSpaceCombat(dt) {
@@ -2464,16 +2768,18 @@
       enemy.fireTimer -= dt;
       if (enemy.fireTimer <= 0 && enemy.x < canvas.width + enemy.w) {
         enemy.fireTimer = enemy.fireDelay;
-        const dx = player.x - enemy.x;
-        const dy = player.y - enemy.y;
-        const len = Math.hypot(dx, dy) || 1;
-        runtime.enemyBullets.push({
-          x: enemy.x,
-          y: enemy.y,
-          vx: (dx / len) * (240 + Math.random() * 70),
-          vy: (dy / len) * (240 + Math.random() * 70),
-          life: 2.1
-        });
+        const weapon = enemy.weapon || SPACE_WEAPON_PROFILES[0];
+        if (weapon.pattern === "spread") {
+          [-0.18, 0, 0.18].forEach((offset) => pushSpaceEnemyShot(enemy, offset, 0.92));
+        } else if (weapon.pattern === "burst") {
+          [-10, 0, 10].forEach((offsetX, shotIndex) => pushSpaceEnemyShot(enemy, (shotIndex - 1) * 0.06, 0.82 + shotIndex * 0.08, offsetX));
+        } else if (weapon.pattern === "split") {
+          [-0.1, 0.1].forEach((offset) => pushSpaceEnemyShot(enemy, offset, 1.02));
+        } else if (weapon.pattern === "lance") {
+          pushSpaceEnemyShot(enemy, 0, 1.24);
+        } else {
+          pushSpaceEnemyShot(enemy, 0, 1);
+        }
       }
       if (enemy.x < -enemy.w - 80) {
         enemy.x = canvas.width + 40 + Math.random() * 120;
@@ -2487,7 +2793,7 @@
       if (b.life <= 0) return false;
       if (b.x < -30 || b.x > canvas.width + 30 || b.y < -40 || b.y > canvas.height + 40) return false;
       if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, { x: player.x - player.w * 0.44, y: player.y - player.h * 0.42, w: player.w * 0.88, h: player.h * 0.84 })) {
-        applyBuggyDamage(6, "Enemy UFO fire tore through your hull.", { color: "#ff9cd0" });
+        applyBuggyDamage(b.damage || 6, "Enemy UFO fire tore through your hull.", { color: b.color || "#ff9cd0" });
         return false;
       }
       return true;
@@ -2505,14 +2811,35 @@
         const hitRect = { x: enemy.x - enemy.w * 0.45, y: enemy.y - enemy.h * 0.45, w: enemy.w * 0.9, h: enemy.h * 0.9 };
         if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, hitRect)) {
           enemy.hp -= Math.max(1, safeNumber(b.damage, 1));
-          spawnExplosion(enemy.x, enemy.y, "#d8a6ff");
+          spawnExplosion(enemy.x, enemy.y, enemy.weapon?.explosion || "#d8a6ff");
           if (enemy.hp <= 0) {
             space.kills += 1;
-            spawnExplosion(enemy.x, enemy.y, "#a8eeff");
-            spawnExplosion(enemy.x + 8, enemy.y - 6, "#8bd3ff");
+            spawnExplosion(enemy.x, enemy.y, enemy.weapon?.explosion || "#a8eeff");
+            spawnExplosion(enemy.x + 8, enemy.y - 6, enemy.weapon?.color || "#8bd3ff");
+            if (space.kills % 4 === 2 || Math.random() < 0.18) {
+              space.powerups.push({
+                x: clamp(enemy.x - 18, 20, canvas.width - 58),
+                y: clamp(enemy.y - 18, 24, canvas.height - 62),
+                w: 36,
+                h: 36,
+                type: "health",
+                amount: 18,
+                source: "enemy",
+                collected: false
+              });
+            }
           }
           return false;
         }
+      }
+      return true;
+    });
+
+    space.powerups = (space.powerups || []).filter((powerup) => {
+      if (powerup.collected) return false;
+      if (rectOverlap({ x: player.x - player.w * 0.44, y: player.y - player.h * 0.42, w: player.w * 0.88, h: player.h * 0.84 }, powerup)) {
+        collectPowerup(powerup);
+        return false;
       }
       return true;
     });
@@ -2593,7 +2920,10 @@
         if (enemy.hp <= 0) continue;
         if (rectOverlap({ x: b.x - 3, y: b.y - 3, w: 6, h: 6 }, enemy)) {
           enemy.hp -= Math.max(1, safeNumber(b.damage, 1));
-          if (enemy.hp <= 0) spawnExplosion(enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5, enemy.type === "drone" ? "#d8a6ff" : "#ffb279");
+          if (enemy.hp <= 0) {
+            spawnExplosion(enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5, enemy.type === "drone" ? "#d8a6ff" : "#ffb279");
+            dropEnemyPowerup(enemy);
+          }
           return false;
         }
       }
@@ -2628,17 +2958,23 @@
     const player = runtime.player;
     runtime.damageCooldown = Math.max(0, runtime.damageCooldown - dt);
 
-    const baseSpeed = 185 + mission.level * 4;
+    const fuelRatio = Math.max(0, runtime.fuel) / Math.max(1, runtime.maxFuel);
+    const baseSpeed = 176 + mission.level * 3;
     let targetSpeed = baseSpeed;
-    if (inputState.left) targetSpeed -= 120;
-    if (inputState.right) targetSpeed += 170;
-    if (inputState.boost) targetSpeed += 100;
-    player.vx += (targetSpeed - player.vx) * Math.min(1, dt * 4.8);
-    player.vx = clamp(player.vx, 120, 530);
+    if (inputState.left) targetSpeed -= 105;
+    if (inputState.right) targetSpeed += 140;
+    if (inputState.boost && runtime.fuel > 2) targetSpeed += 92;
+    if (fuelRatio <= 0.02) targetSpeed = Math.min(targetSpeed, 124);
+    player.vx += (targetSpeed - player.vx) * Math.min(1, dt * 4.25);
+    player.vx = clamp(player.vx, fuelRatio <= 0.02 ? 82 : 112, 500);
 
-    if (inputState.jump && player.onGround) {
+    const fuelDrain = dt * (1.3 + Math.max(0, player.vx) * 0.0056 + (inputState.boost ? 5.5 : 0));
+    runtime.fuel = clamp(runtime.fuel - fuelDrain, 0, runtime.maxFuel);
+
+    if (inputState.jump && player.onGround && runtime.fuel > 1.2) {
       // Tuned so every generated crater remains jumpable with normal speed control.
-      player.vy = -910;
+      player.vy = -850;
+      runtime.fuel = Math.max(0, runtime.fuel - 1.2);
       player.onGround = false;
     }
 
@@ -2681,17 +3017,26 @@
       if (enemy.hp <= 0) return;
       const wave = Math.sin((runtime.ticks * 0.016 + index * 0.63) * enemy.speed);
       enemy.x = enemy.baseX + wave * enemy.patrol;
-      if (enemy.type === "drone") {
-        enemy.y += Math.sin((runtime.ticks * 0.025 + index) * 1.5) * 0.65;
-      }
+      enemy.y += Math.sin((runtime.ticks * 0.025 + index) * 1.5) * 0.45;
+      enemy.targetDir = runtime.player && runtime.player.x < enemy.x ? -1 : 1;
       enemy.fireTimer -= dt;
-      if (enemy.fireTimer <= 0 && enemy.type === "drone") {
+      if (enemy.x + enemy.w < runtime.cameraX - 120) {
+        enemy.escaped = true;
+      }
+      if (enemy.fireTimer <= 0 && enemy.x - runtime.cameraX > -40 && enemy.x - runtime.cameraX < canvas.width + 80) {
         enemy.fireTimer = enemy.fireDelay;
+        const dir = enemy.targetDir || -1;
+        const muzzleX = dir < 0 ? enemy.x + enemy.w * 0.08 : enemy.x + enemy.w * 0.92;
+        const muzzleY = enemy.y + enemy.h * 0.46;
+        const dx = ((runtime.player?.x || muzzleX - 120) + PLAYER_WIDTH * 0.4) - muzzleX;
+        const dy = ((runtime.player?.y || muzzleY) + PLAYER_HEIGHT * 0.45) - muzzleY;
+        const len = Math.hypot(dx, dy) || 1;
+        const shotSpeed = 260 + (mission.level || 1) * 8;
         runtime.enemyBullets.push({
-          x: enemy.x + enemy.w * 0.5,
-          y: enemy.y + enemy.h,
-          vx: -100 + Math.sin(runtime.ticks * 0.03 + index) * 50,
-          vy: 270 + Math.random() * 60,
+          x: muzzleX,
+          y: muzzleY,
+          vx: (dx / len) * shotSpeed,
+          vy: (dy / len) * shotSpeed,
           life: 2.5
         });
       }
@@ -2709,6 +3054,11 @@
         item.collected = true;
         runtime.runCollected += item.value;
       }
+    });
+
+    (mission.powerups || []).forEach((powerup) => {
+      if (powerup.collected) return;
+      if (rectOverlap(playerRect, powerup)) collectPowerup(powerup);
     });
 
     mission.rocks.forEach((rock) => {
@@ -2981,28 +3331,50 @@
       launchMission(line, completed + 1);
     });
 
-    importLevelBtn.addEventListener("click", () => importLevelInput.click());
-    importLevelInput.addEventListener("change", async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const json = JSON.parse(text);
-        const levelData = json?.level ? json.level : json;
-        launchMission({ id: "custom", name: "Imported", category: "custom", requirement: 0, goalLabel: "Imported Goal", accent: "#9ed2ff" }, 1, levelData);
-      } catch (_) {
-        window.alert("Could not parse imported level JSON.");
-      } finally {
-        importLevelInput.value = "";
-      }
-    });
-
-    resetSaveBtn.addEventListener("click", () => {
-      if (!window.confirm("Reset all Tibertron's Space Buggy progress and resource storage?")) return;
-      saveState = createDefaultSave();
-      persistSave();
-      renderDashboard();
-    });
+    if (saveProgressBtn) {
+      saveProgressBtn.addEventListener("click", () => downloadSavedGame());
+    }
+    if (uploadSaveBtn && uploadSaveInput) {
+      uploadSaveBtn.addEventListener("click", () => uploadSaveInput.click());
+      uploadSaveInput.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          importSavedGame(json);
+        } catch (_) {
+          window.alert("Could not parse saved game JSON.");
+        } finally {
+          uploadSaveInput.value = "";
+        }
+      });
+    }
+    if (importLevelBtn && importLevelInput) {
+      importLevelBtn.addEventListener("click", () => importLevelInput.click());
+      importLevelInput.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          const levelData = json?.level ? json.level : json;
+          launchMission({ id: "custom", name: "Imported", category: "custom", requirement: 0, goalLabel: "Imported Goal", accent: "#9ed2ff" }, 1, levelData);
+        } catch (_) {
+          window.alert("Could not parse imported level JSON.");
+        } finally {
+          importLevelInput.value = "";
+        }
+      });
+    }
+    if (resetSaveBtn) {
+      resetSaveBtn.addEventListener("click", () => {
+        if (!window.confirm("Reset all Tibertron's Space Buggy progress and resource storage?")) return;
+        saveState = createDefaultSave();
+        persistSave();
+        renderDashboard();
+      });
+    }
     cockpitPlanetPanels.forEach((panel) => {
       if (!panel) return;
       panel.addEventListener("click", () => {
@@ -3019,7 +3391,6 @@
     if (cockpitBottomMidPanel) {
       cockpitBottomMidPanel.addEventListener("click", () => {
         if (dashboardUi.layoutEditMode) return;
-        launchSelectedPlanetMission();
       });
     }
     if (cockpitAdjustBtn) {
@@ -3057,6 +3428,9 @@
     ensureImage(ASSET_LIBRARY.moonBuggy.path);
     ensureImage(SPACE_HERO_SPRITE);
     ASSET_LIBRARY.backgrounds.forEach((path) => ensureImage(path));
+    Object.values(ASSET_LIBRARY.moonParallax).flat().forEach((path) => ensureImage(path));
+    Object.values(ASSET_LIBRARY.pickups).forEach((path) => ensureImage(path));
+    Object.values(ASSET_LIBRARY.hazards).forEach((path) => ensureImage(path));
     Object.values(ASSET_LIBRARY.enemySprites).flat().forEach((path) => ensureImage(path));
     DASHBOARD_PLANETS.forEach((planet) => {
       const set = {
