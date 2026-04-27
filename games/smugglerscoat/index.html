@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smuggler’s Coat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        :root {
+            --tw-color-primary: #00ff9d;
+        }
+        
+        .dos-mode {
+            background-color: #000000;
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            image-rendering: pixelated;
+        }
+        
+        .palm-mode {
+            background: linear-gradient(#e6d5b8, #d4c4a8);
+            box-shadow: 0 0 0 12px #2a2a2a, 0 0 0 16px #111;
+            border-radius: 40px;
+            max-width: 380px;
+            margin: 20px auto;
+        }
+        
+        .java-mode {
+            background: #111;
+            color: #0f0;
+            border: 8px solid #222;
+            border-radius: 20px;
+            max-width: 320px;
+            margin: 20px auto;
+            box-shadow: 10px 10px 0 #000;
+        }
+        
+        .game-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slider-thumb {
+            accent-color: #00ff9d;
+        }
+        
+        .retro-text {
+            text-shadow: 0 0 8px currentColor;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white font-sans">
+    <div id="app" class="game-container">
+        <!-- NAVBAR -->
+        <nav class="bg-black border-b border-[#00ff9d]/30 p-3 flex items-center justify-between sticky top-0 z-50">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-[#00ff9d] rounded-full flex items-center justify-center text-black font-bold text-xl">🧥</div>
+                <h1 class="text-2xl font-bold tracking-tighter">SMUGGLER’S COAT</h1>
+            </div>
+            <div class="flex gap-2 text-sm">
+                <button onclick="switchTab(0)" id="tab-0"
+                        class="px-4 py-1 rounded-lg bg-[#00ff9d]/10 hover:bg-[#00ff9d]/20 transition-colors active-tab">PLAY</button>
+                <button onclick="switchTab(1)" id="tab-1"
+                        class="px-4 py-1 rounded-lg hover:bg-[#00ff9d]/10 transition-colors">VINTAGE</button>
+                <button onclick="switchTab(2)" id="tab-2"
+                        class="px-4 py-1 rounded-lg hover:bg-[#00ff9d]/10 transition-colors">CREDITS</button>
+            </div>
+        </nav>
+
+        <!-- TAB 0: MAIN GAME -->
+        <div id="tab-content-0" class="flex-1 flex flex-col p-4">
+            
+            <!-- HEADER STATS -->
+            <div class="grid grid-cols-4 gap-2 text-center bg-zinc-900 rounded-2xl p-3 mb-4 border border-[#00ff9d]/20">
+                <div>
+                    <div class="text-xs text-zinc-400">DAY</div>
+                    <div id="day" class="text-2xl font-bold text-[#00ff9d]">1 / 30</div>
+                </div>
+                <div>
+                    <div class="text-xs text-zinc-400">CASH</div>
+                    <div id="cash" class="text-2xl font-bold">$2,450</div>
+                </div>
+                <div>
+                    <div class="text-xs text-zinc-400">DEBT</div>
+                    <div id="debt" class="text-2xl font-bold text-red-400">$5,500</div>
+                </div>
+                <div>
+                    <div class="text-xs text-zinc-400">COAT</div>
+                    <div id="coat" class="text-2xl font-bold">42 / 120</div>
+                </div>
+            </div>
+
+            <!-- CURRENT LOCATION -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-sm font-medium">CURRENT LOCATION</div>
+                    <button onclick="travel()" 
+                            class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl flex items-center gap-1 transition-colors">
+                        <span id="location-name" class="font-bold">MANHATTAN</span>
+                        <span class="text-[#00ff9d]">→ TRAVEL</span>
+                    </button>
+                </div>
+                <div id="location-list" class="flex gap-2 overflow-x-auto pb-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- GOODS / INVENTORY -->
+            <div class="flex-1 bg-zinc-900 rounded-3xl p-4 overflow-y-auto border border-[#00ff9d]/20">
+                <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <span>YOUR COAT</span>
+                    <span id="trade-preview" class="ml-auto text-xs px-3 py-1 bg-[#00ff9d]/10 text-[#00ff9d] rounded-2xl flex items-center"></span>
+                </h2>
+                
+                <div id="goods-list" class="space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="flex gap-3 mt-6 sticky bottom-0 bg-zinc-900 pt-4 border-t border-zinc-800">
+                    <button onclick="undoTrade()" 
+                            class="flex-1 py-4 text-base font-semibold bg-zinc-800 hover:bg-red-900/30 text-red-400 rounded-2xl transition-colors">
+                        UNDO – RESET TO ARRIVAL
+                    </button>
+                    <button onclick="confirmTrade()" 
+                            class="flex-1 py-4 text-base font-semibold bg-[#00ff9d] hover:bg-[#00ff9d]/90 text-black rounded-2xl transition-colors">
+                        CONFIRM TRADE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: VINTAGE GALLERY -->
+        <div id="tab-content-1" class="flex-1 p-4 hidden flex-col">
+            <h2 class="text-xl font-bold mb-6 text-center">VINTAGE EDITIONS</h2>
+            
+            <!-- DOS 1984 -->
+            <div onclick="loadVintage(0)" class="dos-mode p-4 rounded-3xl mb-6 cursor-pointer border-4 border-[#00ff00]">
+                <div class="text-center text-[#00ff00] text-xl mb-2">DRUG WARS • 1984 DOS</div>
+                <div class="bg-black p-4 text-[#00ff00] font-mono text-sm leading-tight h-64 overflow-hidden">
+                    <pre id="dos-screen" class="text-left whitespace-pre"> 
+  LOCATION: MANHATTAN
+  COCAINE   $18,400   YOU HAVE 12
+  HEROIN     $6,200   YOU HAVE 8
+  WEED         $420   YOU HAVE 45
+  > BUY / SELL / TRAVEL
+  CASH: $1,240   DEBT: $5,500
+                    </pre>
+                </div>
+                <div class="text-center text-xs text-[#00ff00]/70 mt-2">Original by John E. Dell – IBM PC</div>
+            </div>
+
+            <!-- Palm OS 1999 -->
+            <div onclick="loadVintage(1)" class="palm-mode p-4 cursor-pointer">
+                <div class="text-center text-[#2a2a2a] text-sm font-bold mb-2">PALM OS • 1999</div>
+                <div class="bg-[#f0e8d0] p-4 rounded-2xl text-[#2a2a2a] text-xs h-64 flex flex-col">
+                    <div class="flex-1 text-center">📱 Palm Pilot<br><span class="font-mono">DOPE WARS v1.2</span></div>
+                    <div class="text-xs leading-tight">Manhattan prices flashing…<br>Coat space: 87/100</div>
+                </div>
+                <div class="text-center text-xs text-zinc-400 mt-2">Matthew Lee port – first mobile hit</div>
+            </div>
+
+            <!-- Java ME Phone 2003 -->
+            <div onclick="loadVintage(2)" class="java-mode p-6 cursor-pointer">
+                <div class="text-[#0f0] font-mono text-xs text-center">NOKIA 6600 • JAVA ME 2003</div>
+                <div class="h-56 bg-[#111] p-3 rounded-xl text-[#0f0] flex flex-col justify-center text-[10px]">
+                    <div>📍 Brooklyn</div>
+                    <div>CIGARS $340  [12]</div>
+                    <div>WHISKEY $890 [5]</div>
+                    <div class="text-[#0f0]/60">Press 5 to trade • 8 to travel</div>
+                </div>
+                <div class="text-center text-[10px] text-[#0f0]/70 mt-1">Feature-phone classic</div>
+            </div>
+            
+            <div class="text-center text-xs text-zinc-400 mt-auto">
+                Tap any screen above to load that vintage look on the main game
+            </div>
+        </div>
+
+        <!-- TAB 2: CREDITS -->
+        <div id="tab-content-2" class="flex-1 p-4 hidden overflow-y-auto">
+            <div class="max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-4">About Smuggler’s Coat</h2>
+                <p class="text-zinc-300 leading-relaxed mb-6">
+                    This is a modern HTML5 remake of the legendary 1984 text-based trading game <strong>Drug Wars</strong> (later known as Dope Wars). 
+                    The original was created by high-school student <strong>John E. Dell</strong> for IBM PC DOS. It spread to BBS door games, graphing calculators, 
+                    Palm OS (1999), and Java ME feature phones in the early 2000s.
+                </p>
+                
+                <div class="bg-zinc-900 rounded-3xl p-5 text-sm mb-8">
+                    <strong>Original Creator:</strong> John E. Dell, 1984<br>
+                    <strong>Inspired ports:</strong> Palm OS • Java ME • TI-82 calculators • Windows Beermat edition
+                </div>
+
+                <h3 class="font-semibold mb-2">Modern Upgrades in This Version</h3>
+                <ul class="text-sm text-zinc-300 space-y-2">
+                    <li class="flex gap-2"><span class="text-[#00ff9d]">✓</span> Real-time sliders – watch cash update instantly</li>
+                    <li class="flex gap-2"><span class="text-[#00ff9d]">✓</span> One-tap Confirm &amp; Undo</li>
+                    <li class="flex gap-2"><span class="text-[#00ff9d]">✓</span> Mobile-first – perfect on iPhone &amp; Android</li>
+                    <li class="flex gap-2"><span class="text-[#00ff9d]">✓</span> Smarter inventory that respects coat space</li>
+                    <li class="flex gap-2"><span class="text-[#00ff9d]">✓</span> Vintage visual modes</li>
+                </ul>
+
+                <div class="mt-8 text-xs text-center text-zinc-400">
+                    Say no to drugs.<br>
+                    This game is 100% fictional entertainment.
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROTATING MESSAGE -->
+        <div id="disclaimer" 
+             class="text-center text-xs py-3 bg-black border-t border-[#00ff9d]/30 text-[#00ff9d] font-medium transition-all duration-500">
+            SAY NO TO DRUGS
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script already loaded
+        function initTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: { extend: {} }
+            }
+        }
+
+        // GAME STATE
+        let game = {
+            day: 1,
+            maxDays: 30,
+            cash: 2450,
+            debt: 5500,
+            coatMax: 120,
+            coatUsed: 42,
+            currentLocation: 2, // index of locations
+            inventory: {0:12, 1:8, 2:45, 3:3, 4:5, 5:2}, // current held
+            pending: {}, // target amounts for this visit
+            arrivalInventory: {}, // snapshot on arrival for undo
+            prices: {},
+            locations: [
+                {name: "BRONX", emoji: "🏙️"},
+                {name: "MANHATTAN", emoji: "🌆"},
+                {name: "BROOKLYN", emoji: "🌉"},
+                {name: "QUEENS", emoji: "🛫"},
+                {name: "CONEY ISLAND", emoji: "🎡"}
+            ],
+            goods: [
+                {id:0, name:"Cuban Cigars",    base:520,  space:1},
+                {id:1, name:"Fine Whiskey",    base:1250, space:2},
+                {id:2, name:"Designer Perfume",base:780,  space:1},
+                {id:3, name:"Electronics",     base:3400, space:3},
+                {id:4, name:"Luxury Watches",  base:4600, space:1},
+                {id:5, name:"Gold Jewelry",    base:8200, space:2}
+            ]
+        }
+
+        // Generate fresh prices for the day
+        function generatePrices() {
+            game.prices = {}
+            game.goods.forEach(g => {
+                const variance = 0.6 + Math.random() * 0.8
+                game.prices[g.id] = Math.floor(g.base * variance * (1 + (game.currentLocation * 0.15 - 0.3)))
+            })
+        }
+
+        // Render header
+        function renderHeader() {
+            document.getElementById('day').textContent = `${game.day} / ${game.maxDays}`
+            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString()
+            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString()
+            document.getElementById('coat').innerHTML = `${game.coatUsed} <span class="text-xs">/ ${game.coatMax}</span>`
+        }
+
+        // Render location list
+        function renderLocations() {
+            const container = document.getElementById('location-list')
+            container.innerHTML = ''
+            game.locations.forEach((loc, i) => {
+                const active = i === game.currentLocation ? 'ring-2 ring-[#00ff9d]' : ''
+                const div = document.createElement('div')
+                div.className = `flex-shrink-0 px-5 py-3 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active}`
+                div.innerHTML = `
+                    <div class="text-2xl mb-1">${loc.emoji}</div>
+                    <div class="text-xs font-bold">${loc.name}</div>
+                `
+                div.onclick = () => {
+                    if (i !== game.currentLocation) {
+                        game.currentLocation = i
+                        travel()
+                    }
+                }
+                container.appendChild(div)
+            })
+        }
+
+        // Render goods with sliders
+        function renderGoods() {
+            const container = document.getElementById('goods-list')
+            container.innerHTML = ''
+            
+            game.goods.forEach(g => {
+                const currentHeld = game.inventory[g.id] || 0
+                const target = game.pending[g.id] !== undefined ? game.pending[g.id] : currentHeld
+                
+                const price = game.prices[g.id]
+                const delta = target - currentHeld
+                let cost = 0
+                if (delta > 0) cost = delta * price
+                if (delta < 0) cost = delta * price   // negative = money back
+                
+                // Space preview
+                let spaceDelta = 0
+                if (delta > 0) spaceDelta = delta * g.space
+                
+                const div = document.createElement('div')
+                div.className = 'flex flex-col gap-2 bg-zinc-800/50 rounded-2xl p-4'
+                div.innerHTML = `
+                    <div class="flex justify-between items-baseline">
+                        <div class="font-medium">${g.name}</div>
+                        <div class="text-[#00ff9d] font-mono">$${price}</div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-zinc-400">
+                        <div>Held: <span class="font-bold text-white">${currentHeld}</span></div>
+                        <div>Target: <span id="target-${g.id}" class="font-bold text-[#00ff9d]">${target}</span></div>
+                    </div>
+                    
+                    <!-- Slider -->
+                    <input type="range" 
+                           id="slider-${g.id}"
+                           min="0" 
+                           max="${Math.floor(game.coatMax / g.space) + 10}"
+                           value="${target}"
+                           class="slider-thumb w-full accent-[#00ff9d]">
+                    
+                    <div class="flex justify-between text-[10px]">
+                        <div class="text-zinc-400">0</div>
+                        <div class="text-zinc-400">MAX</div>
+                    </div>
+                    
+                    <div class="flex justify-between text-xs">
+                        <div class="${delta >= 0 ? 'text-emerald-400' : 'text-amber-400'}">
+                            ${delta > 0 ? 'BUY' : delta < 0 ? 'SELL' : 'HOLD'} ${Math.abs(delta)}
+                        </div>
+                        <div class="font-mono ${cost >= 0 ? 'text-red-400' : 'text-emerald-400'}">
+                            ${cost >= 0 ? '-' : '+'}$${Math.abs(cost)}
+                        </div>
+                    </div>
+                `
+                container.appendChild(div)
+                
+                // Live slider listener
+                const slider = div.querySelector(`#slider-${g.id}`)
+                slider.addEventListener('input', () => {
+                    const newTarget = parseInt(slider.value)
+                    game.pending[g.id] = newTarget
+                    
+                    // Re-render preview only
+                    renderTradePreview()
+                    document.getElementById(`target-${g.id}`).textContent = newTarget
+                })
+            })
+            
+            renderTradePreview()
+        }
+
+        function renderTradePreview() {
+            let totalCost = 0
+            let totalSpaceDelta = 0
+            
+            Object.keys(game.pending).forEach(id => {
+                const delta = game.pending[id] - (game.inventory[id] || 0)
+                const good = game.goods.find(g => g.id == id)
+                if (!good) return
+                totalCost += delta * game.prices[id]
+                totalSpaceDelta += delta * good.space
+            })
+            
+            const previewEl = document.getElementById('trade-preview')
+            if (totalCost === 0 && totalSpaceDelta === 0) {
+                previewEl.innerHTML = 'NO CHANGE'
+                previewEl.className = 'ml-auto text-xs px-3 py-1 bg-zinc-700 text-zinc-400 rounded-2xl flex items-center'
+            } else {
+                const sign = totalCost >= 0 ? '-' : '+'
+                previewEl.innerHTML = `
+                    ${sign}$${Math.abs(totalCost)} 
+                    <span class="ml-3 text-xs">${totalSpaceDelta >= 0 ? '–' : '+'}${Math.abs(totalSpaceDelta)} SPACE</span>
+                `
+                previewEl.className = `ml-auto text-xs px-3 py-1 ${totalCost >= 0 ? 'bg-red-900/30 text-red-300' : 'bg-emerald-900/30 text-emerald-300'} rounded-2xl flex items-center`
+            }
+        }
+
+        // Confirm the trade
+        function confirmTrade() {
+            let totalCost = 0
+            let totalSpaceDelta = 0
+            
+            Object.keys(game.pending).forEach(id => {
+                const delta = game.pending[id] - (game.inventory[id] || 0)
+                const good = game.goods.find(g => g.id == id)
+                if (!good) return
+                
+                totalCost += delta * game.prices[id]
+                totalSpaceDelta += delta * good.space
+                
+                // Update inventory
+                game.inventory[id] = game.pending[id]
+            })
+            
+            // Apply money
+            if (game.cash + totalCost < 0) {
+                alert("Not enough cash for this trade!")
+                return
+            }
+            
+            game.cash += totalCost
+            game.coatUsed = Object.keys(game.inventory).reduce((sum, id) => {
+                const good = game.goods.find(g => g.id == id)
+                return sum + (game.inventory[id] || 0) * good.space
+            }, 0)
+            
+            // Clear pending
+            game.pending = {}
+            
+            renderHeader()
+            renderGoods()
+            
+            // Small random event chance
+            if (Math.random() > 0.7) triggerRandomEvent()
+        }
+
+        // Undo – reset to arrival state
+        function undoTrade() {
+            if (Object.keys(game.pending).length === 0) return
+            game.pending = {...game.arrivalInventory}
+            renderGoods()
+        }
+
+        // Travel to new location (or just advance day if same)
+        function travel() {
+            // Advance day
+            game.day++
+            if (game.day > game.maxDays) {
+                endGame()
+                return
+            }
+            
+            // Daily debt interest
+            game.debt = Math.floor(game.debt * 1.015)
+            
+            // Generate new prices
+            generatePrices()
+            
+            // Snapshot inventory for undo
+            game.arrivalInventory = {...game.inventory}
+            game.pending = {}
+            
+            renderHeader()
+            renderLocations()
+            renderGoods()
+            
+            // Random event on travel
+            if (Math.random() > 0.65) triggerRandomEvent()
+        }
+
+        function triggerRandomEvent() {
+            const events = [
+                "Coast Guard tip: Electronics prices just spiked 3× in Queens!",
+                "Mugged! Lost $380 in loose cash.",
+                "Lucky find – free crate of watches added to coat.",
+                "Customs raid – you dodged it this time."
+            ]
+            const msg = events[Math.floor(Math.random() * events.length)]
+            alert("EVENT: " + msg)
+            
+            // Simple effects
+            if (msg.includes("spiked")) {
+                // For demo we just show
+            }
+            if (msg.includes("Mugged")) {
+                game.cash = Math.max(0, game.cash - 380)
+            }
+            if (msg.includes("free crate")) {
+                game.inventory[4] = (game.inventory[4] || 0) + 3
+            }
+            renderHeader()
+            renderGoods()
+        }
+
+        function endGame() {
+            const finalCash = game.cash - game.debt
+            alert(`GAME OVER\n\nDay ${game.day} complete.\nCash after paying debt: $${Math.max(0, finalCash)}\n\nThanks for playing Smuggler’s Coat!`)
+            // Reset for replay
+            location.reload()
+        }
+
+        // Vintage mode loader
+        function loadVintage(mode) {
+            // Switch main game to retro look
+            const app = document.getElementById('app')
+            app.classList.remove('dos-mode', 'palm-mode', 'java-mode')
+            
+            if (mode === 0) {
+                app.classList.add('dos-mode')
+                alert("🔥 DOS 1984 MODE ENABLED – green text, pixel font. Enjoy the nostalgia!")
+            } else if (mode === 1) {
+                app.classList.add('palm-mode')
+                alert("📟 Palm OS 1999 style activated – now you’re on a Pilot!")
+            } else if (mode === 2) {
+                app.classList.add('java-mode')
+                alert("📱 Java ME phone mode – tiny screen, old-school keypad feel.")
+            }
+            
+            // Stay on Play tab
+            switchTab(0)
+        }
+
+        // Tab switching
+        function switchTab(n) {
+            document.querySelectorAll('[id^="tab-content-"]').forEach(el => el.classList.add('hidden'))
+            document.getElementById(`tab-content-${n}`).classList.remove('hidden')
+            
+            // Highlight active tab
+            document.querySelectorAll('button[id^="tab-"]').forEach(btn => btn.classList.remove('active-tab', 'bg-[#00ff9d]/10'))
+            document.getElementById(`tab-${n}`).classList.add('active-tab', 'bg-[#00ff9d]/10')
+        }
+
+        // Rotating disclaimer
+        function startDisclaimerRotation() {
+            const messages = [
+                "SAY NO TO DRUGS",
+                "THIS IS FOR ENTERTAINMENT PURPOSES ONLY"
+            ]
+            let i = 0
+            const el = document.getElementById('disclaimer')
+            
+            setInterval(() => {
+                i = (i + 1) % messages.length
+                el.style.opacity = 0
+                setTimeout(() => {
+                    el.textContent = messages[i]
+                    el.style.opacity = 1
+                }, 400)
+            }, 4800)
+        }
+
+        // Initialize full game
+        function startGame() {
+            initTailwind()
+            generatePrices()
+            game.arrivalInventory = {...game.inventory}
+            renderHeader()
+            renderLocations()
+            renderGoods()
+            startDisclaimerRotation()
+            
+            console.log('%c✅ Smuggler’s Coat v1.0 ready for mobile!', 'color:#00ff9d; font-family:monospace')
+        }
+
+        // Boot the game
+        window.onload = startGame
+    </script>
+</body>
+</html>
