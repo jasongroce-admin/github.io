@@ -9,71 +9,99 @@
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         .game-container { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
         .loan-shark { background: linear-gradient(#4c1d16, #7f1d1d); }
+        .slider { accent-color: #10b981; }
     </style>
 </head>
-<body class="bg-zinc-950 text-white">
+<body class="bg-zinc-950 text-white font-sans">
     <div id="app" class="game-container">
         <!-- Navbar -->
-        <nav class="bg-black p-3 flex justify-between items-center border-b border-emerald-500/30">
-            <h1 class="font-bold text-xl">SMUGGLER’S COAT <span class="text-emerald-400 text-sm">LIVE</span></h1>
-            <div id="online-count" class="bg-emerald-900 px-3 py-1 rounded-full text-xs">12 online</div>
+        <nav class="bg-black p-3 flex justify-between items-center border-b border-emerald-500/30 sticky top-0 z-50">
+            <h1 class="font-bold text-2xl tracking-tight">SMUGGLER’S COAT</h1>
+            <div id="online-count" class="bg-emerald-900 px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                12 online
+            </div>
         </nav>
 
-        <!-- Main Game -->
-        <div class="flex-1 p-4 overflow-y-auto">
+        <!-- Main Content -->
+        <div class="flex-1 p-4 overflow-y-auto pb-20">
             <!-- Stats -->
-            <div class="grid grid-cols-4 gap-2 text-center bg-zinc-900 p-3 rounded-2xl mb-4">
-                <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-2xl font-bold">1</div></div>
-                <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-2xl font-bold">$2,450</div></div>
-                <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-2xl font-bold text-red-400">$5,500</div></div>
-                <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-2xl font-bold">42/120</div></div>
+            <div class="grid grid-cols-4 gap-2 text-center bg-zinc-900 p-3 rounded-3xl mb-5 border border-emerald-500/20">
+                <div>
+                    <div class="text-[10px] text-zinc-400">DAY</div>
+                    <div id="day" class="text-3xl font-bold text-emerald-400">12</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-zinc-400">CASH</div>
+                    <div id="cash" class="text-3xl font-bold">$18,420</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-zinc-400">DEBT</div>
+                    <div id="debt" class="text-3xl font-bold text-red-400">$3,200</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-zinc-400">COAT</div>
+                    <div id="coat" class="text-3xl font-bold">67/120</div>
+                </div>
             </div>
 
-            <!-- Location -->
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="font-medium text-lg" id="current-location">MANHATTAN</span>
-                    <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2 rounded-xl text-sm flex items-center gap-1">
+            <!-- Current Location -->
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="current-location" class="text-xl font-bold">MANHATTAN</span>
+                    <button onclick="travel()" 
+                            class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition-colors">
                         TRAVEL →
                     </button>
                 </div>
-                <div id="location-list" class="flex gap-2 overflow-x-auto pb-2"></div>
+                <div id="location-list" class="flex gap-3 overflow-x-auto pb-3"></div>
             </div>
 
-            <!-- Loan Shark Banner (appears when there) -->
-            <div id="loan-banner" class="hidden loan-shark rounded-3xl p-4 mb-6 text-center">
-                <div class="text-xl font-bold flex items-center justify-center gap-2">
+            <!-- Loan Shark Banner -->
+            <div id="loan-banner" class="hidden loan-shark rounded-3xl p-5 mb-6 text-center">
+                <div class="text-xl font-bold mb-1 flex items-center justify-center gap-3">
                     💰 LOAN SHARK OFFICE
                 </div>
                 <button onclick="payDebt()" 
-                        class="mt-4 w-full py-4 bg-red-600 hover:bg-red-700 rounded-2xl text-white font-semibold text-lg">
+                        class="w-full py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-white font-bold text-lg shadow-lg transition-colors">
                     PAY BACK DEBT NOW
                 </button>
             </div>
 
             <!-- Nearby Traders -->
-            <div class="bg-zinc-900 rounded-3xl p-4 mb-6">
-                <h3 class="text-sm font-medium mb-3">NEARBY SMUGGLERS</h3>
+            <div class="bg-zinc-900 rounded-3xl p-5 mb-6">
+                <h3 class="text-sm font-medium mb-4 flex items-center gap-2">
+                    NEARBY SMUGGLERS 
+                    <span id="nearby-count" class="text-emerald-400 text-xs">(4)</span>
+                </h3>
                 <div id="nearby-list" class="space-y-3"></div>
             </div>
 
             <!-- Your Coat -->
-            <div id="goods-list" class="space-y-4"></div>
+            <div class="bg-zinc-900 rounded-3xl p-5">
+                <h2 class="text-lg font-semibold mb-4">YOUR COAT</h2>
+                <div id="goods-list" class="space-y-6"></div>
+            </div>
         </div>
 
-        <!-- Bottom disclaimer -->
-        <div id="disclaimer" class="text-center text-xs py-3 bg-black border-t border-emerald-500/30 text-emerald-400">
+        <!-- Bottom Bar -->
+        <div id="disclaimer" 
+             class="fixed bottom-0 left-0 right-0 text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400 font-medium transition-all">
             THIS IS FOR ENTERTAINMENT PURPOSES ONLY
         </div>
     </div>
 
     <script>
+        // Game State
         let game = {
-            day: 1, maxDays: 30,
-            cash: 2450, debt: 5500,
-            coatMax: 120, coatUsed: 42,
-            currentLocation: 0,
-            inventory: {0:12, 1:8, 2:45},
+            day: 12,
+            maxDays: 30,
+            cash: 18420,
+            debt: 3200,
+            coatMax: 120,
+            coatUsed: 67,
+            currentLocation: 1,
+            inventory: {0: 12, 1: 5, 2: 23},
             locations: [
                 {name: "BRONX", emoji: "🏙️"},
                 {name: "MANHATTAN", emoji: "🌆"},
@@ -81,19 +109,31 @@
                 {name: "QUEENS", emoji: "🛫"},
                 {name: "CONEY ISLAND", emoji: "🎡"},
                 {name: "LOAN SHARK", emoji: "💰", isLoan: true}
+            ],
+            goods: [
+                {id:0, name:"Cuban Cigars", price:520, space:1},
+                {id:1, name:"Fine Whiskey", price:1250, space:2},
+                {id:2, name:"Designer Perfume", price:780, space:1},
+                {id:3, name:"Luxury Watches", price:4600, space:1}
             ]
         };
+
+        let nearbyPlayers = [
+            {id:1, name:"ShadowNYC", loc:"Manhattan", offer:{item:3, qty:6, price:5200}},
+            {id:2, name:"CoastKing", loc:"Brooklyn", offer:{item:1, qty:8, price:980}},
+            {id:3, name:"VegasRunner", loc:"Queens", offer:null}
+        ];
 
         function renderLocations() {
             const container = document.getElementById('location-list');
             container.innerHTML = '';
             game.locations.forEach((loc, i) => {
-                const active = i === game.currentLocation ? 'ring-2 ring-red-500' : '';
+                const active = i === game.currentLocation ? 'ring-2 ring-emerald-400 scale-105' : '';
                 const div = document.createElement('div');
-                div.className = `flex-shrink-0 px-5 py-3 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border border-red-500' : ''}`;
+                div.className = `flex-shrink-0 w-20 py-3 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
                 div.innerHTML = `
-                    <div class="text-3xl mb-1">${loc.emoji}</div>
-                    <div class="text-xs font-bold">${loc.name}</div>
+                    <div class="text-4xl mb-1">${loc.emoji}</div>
+                    <div class="text-[10px] font-bold leading-tight">${loc.name}</div>
                 `;
                 div.onclick = () => {
                     game.currentLocation = i;
@@ -105,6 +145,66 @@
             });
         }
 
+        function renderGoods() {
+            const container = document.getElementById('goods-list');
+            container.innerHTML = '';
+            
+            game.goods.forEach(g => {
+                const held = game.inventory[g.id] || 0;
+                const div = document.createElement('div');
+                div.className = 'bg-zinc-800 rounded-2xl p-4';
+                div.innerHTML = `
+                    <div class="flex justify-between mb-3">
+                        <div class="font-medium">${g.name}</div>
+                        <div class="text-emerald-400 font-mono">$${g.price}</div>
+                    </div>
+                    <div class="text-xs text-zinc-400 mb-2">Held: <span class="font-bold text-white">${held}</span></div>
+                    <input type="range" min="0" max="80" value="${held}" 
+                           class="slider w-full mb-1" 
+                           oninput="updatePreview(this, ${g.id})">
+                    <div class="flex justify-between text-[10px] text-zinc-400">
+                        <div>0</div>
+                        <div>MAX</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updatePreview(slider, id) {
+            // Simple live update simulation
+            console.log(`Adjusting item ${id} to ${slider.value}`);
+        }
+
+        function renderNearby() {
+            const container = document.getElementById('nearby-list');
+            container.innerHTML = nearbyPlayers.map(p => `
+                <div onclick="startTrade(${p.id})" class="bg-zinc-800 p-4 rounded-2xl flex justify-between items-center cursor-pointer active:bg-zinc-700">
+                    <div>
+                        <div class="font-medium">${p.name}</div>
+                        <div class="text-xs text-zinc-400">${p.loc}</div>
+                    </div>
+                    ${p.offer ? `
+                    <div class="text-right">
+                        <div class="text-emerald-400 text-sm">$${p.offer.price}</div>
+                        <div class="text-xs">${p.offer.qty} units</div>
+                    </div>` : `<div class="text-xs text-zinc-500">No current offer</div>`}
+                </div>
+            `).join('');
+            document.getElementById('nearby-count').textContent = `(${nearbyPlayers.length})`;
+        }
+
+        function startTrade(id) {
+            const trader = nearbyPlayers.find(p => p.id === id);
+            if (!trader || !trader.offer) return;
+            if (confirm(`Trade with ${trader.name}?\n${trader.offer.qty} ${game.goods[trader.offer.item].name} for $${trader.offer.price}?`)) {
+                game.cash -= trader.offer.price;
+                game.inventory[trader.offer.item] = (game.inventory[trader.offer.item] || 0) + trader.offer.qty;
+                renderHeader();
+                alert("✅ Trade complete! Goods added to coat.");
+            }
+        }
+
         function renderHeader() {
             document.getElementById('day').textContent = game.day;
             document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
@@ -113,39 +213,54 @@
         }
 
         function payDebt() {
-            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
+            const amount = prompt(`How much would you like to pay?\nCurrent debt: $${game.debt}`, game.debt);
             if (!amount) return;
-            const pay = Math.min(parseInt(amount) || 0, game.cash);
-            if (pay <= 0) return;
+            const pay = Math.min(Math.max(0, parseInt(amount) || 0), game.cash);
+            if (pay === 0) return;
             
             game.cash -= pay;
             game.debt = Math.max(0, game.debt - pay);
             renderHeader();
-            alert(`Paid $${pay}. New debt: $${game.debt}`);
+            alert(`✅ Paid $${pay.toLocaleString()}\nNew debt: $${game.debt.toLocaleString()}`);
         }
 
         function travel() {
             game.day++;
             if (game.day > game.maxDays) {
-                alert("Game Over! Final cash after debt: $" + Math.max(0, game.cash - game.debt));
+                const final = Math.max(0, game.cash - game.debt);
+                alert(`Game Over!\n\nFinal score after debt: $${final.toLocaleString()}\nThanks for playing Smuggler’s Coat!`);
                 return;
             }
+            // Daily interest
             game.debt = Math.floor(game.debt * 1.015);
             renderHeader();
-            alert("New day. Prices and players updated.");
+            alert(`Day ${game.day} started.\nNew prices and traders loaded.`);
         }
 
-        // Boot
-        window.onload = () => {
+        // Rotating disclaimer
+        function rotateDisclaimer() {
+            const messages = ["SAY NO TO DRUGS", "THIS IS FOR ENTERTAINMENT PURPOSES ONLY"];
+            let index = 0;
+            setInterval(() => {
+                index = (index + 1) % messages.length;
+                document.getElementById('disclaimer').textContent = messages[index];
+            }, 5000);
+        }
+
+        // Initialize everything
+        window.onload = function() {
             renderLocations();
             renderHeader();
-            // Rotating disclaimer
-            const msgs = ["SAY NO TO DRUGS", "THIS IS FOR ENTERTAINMENT PURPOSES ONLY"];
-            let i = 0;
-            setInterval(() => {
-                i = (i + 1) % msgs.length;
-                document.getElementById('disclaimer').textContent = msgs[i];
-            }, 4800);
+            renderGoods();
+            renderNearby();
+            rotateDisclaimer();
+            
+            // Make loan shark banner visible if starting there
+            if (game.locations[game.currentLocation].isLoan) {
+                document.getElementById('loan-banner').classList.remove('hidden');
+            }
+            
+            console.log("%c✅ Smuggler's Coat ready on your phone!", "color:#10b981; font-size:14px");
         };
     </script>
 </body>
