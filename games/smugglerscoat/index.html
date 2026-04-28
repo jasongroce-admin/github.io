@@ -62,7 +62,7 @@
               <div class="text-zinc-400 text-xs">CURRENT CITY</div>
               <div id="current-location" class="text-2xl">NEW YORK DOCKS</div>
             </div>
-            <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-2">TRAVEL -></button>
+            <button onclick="travel()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-xl px-6 py-3 text-xl shadow-[0_0_24px_rgba(16,185,129,0.45)] border-2 border-emerald-200">TRAVEL -></button>
           </div>
           <div id="location-list" class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2"></div>
           <div id="loan-hint" class="text-xs text-zinc-400 mt-2">Travel to LOAN SHARK HQ to repay debt.</div>
@@ -71,8 +71,9 @@
 
         <div class="bg-zinc-900 rounded-2xl p-4">
           <h2 class="text-xl">Day Flow</h2>
-          <p class="text-zinc-300">Travel -> forced story popup -> answer choices -> trade -> choose next city.</p>
+          <p class="text-zinc-200 text-lg">Travel -> Avoid Suspicion -> Trade -> Travel</p>
           <div id="event-feed" class="text-sm text-emerald-300 mt-2">Welcome to the run.</div>
+          <div id="story-progress" class="text-sm text-zinc-300 mt-2">Stories completed: 0</div>
         </div>
       </section>
 
@@ -147,41 +148,66 @@ const locations = [
   { name:'LOAN SHARK HQ', short:'LSH', specialtyBuy:null, isLoan:true }
 ];
 
-const funnyHandles = [
-  'Coupon Cobra', 'Sneaky Steve', 'Auntie Alibi', 'Neon Nancy', 'Grumpy Ledger',
-  'Forklift Fabio', 'Dicey Denise', 'Motel Mozart', 'Laser Larry', 'Vague Vinny',
-  'Bingo Blaze', 'Captain Side-Eye', 'Pigeon Prince', 'Dusty Deluxe', 'Salsa Shadow'
-];
-
 function buildStories() {
-  const seeds = [
-    ['Officer Beanbag wants paperwork for your coat lining.', 'Show old dry-cleaning slips', 'Flash fake warehouse pass', 'Sprint through fish market'],
-    ['A fake guru offers lucky maps for contraband routes.', 'Ask for references', 'Pretend to be rich investor', 'Call him cursed and leave'],
-    ['Two cousins argue over who owns your buyer contact.', 'Broker a truce', 'Play them against each other', 'Disappear before invoices appear'],
-    ['A radio host says your nickname is trending.', 'Lean into harmless fame', 'Claim it is your twin', 'Smash the radio and run'],
-    ['A street magician makes one crate vanish.', 'Pay for reverse trick', 'Bluff that crate is a decoy', 'Chase him into alley maze'],
-    ['A customs intern asks if your coat is humming.', 'Explain static lining', 'Invent military prototype story', 'Drop coat and bolt'],
-    ['A diner owner offers protection and pie.', 'Take deal and pie', 'Negotiate harder', 'Say no and sneak out kitchen'],
-    ['A rival named Taxman Terry tracks your route.', 'Share fake route', 'Threaten legal team', 'Jump in laundry truck'],
-    ['A wedding parade blocks the pickup point.', 'Join dance to blend in', 'Bribe band leader', 'Run with trumpet section'],
-    ['Night patrol drones spotlight your cab.', 'Keep speed steady and smile', 'Pretend you are city inspector', 'Duck into parking garage']
+  const characterSet = [
+    { name: 'Forklift Larry', role: 'night dock foreman', vibe: 'wants overtime cash and quiet paperwork' },
+    { name: 'Captain Crumbs', role: 'donut-obsessed transit cop', vibe: 'asks too many cheerful questions' },
+    { name: 'Manifest Molly', role: 'warehouse dispatcher', vibe: 'can hide pallets if respected' },
+    { name: 'Switchblade Sal', role: 'bus depot robber', vibe: 'hunts careless couriers' },
+    { name: 'Badge Betty', role: 'port security lieutenant', vibe: 'trusts details over bravado' },
+    { name: 'Towtruck Theo', role: 'impound yard owner', vibe: 'trades favors for fuel and gossip' },
+    { name: 'Invoice Ivy', role: 'freight accountant', vibe: 'spots fake receipts in seconds' },
+    { name: 'Pastor Pete', role: 'street mediator', vibe: 'can calm gangs if you stay respectful' },
+    { name: 'Razor Ramon', role: 'cargo hijacker', vibe: 'tests fear before taking goods' },
+    { name: 'Nurse Nova', role: 'ER quartermaster contact', vibe: 'moves medical stock through side doors' },
+    { name: 'Signal Sam', role: 'scanner hobbyist', vibe: 'hears police chatter before anyone' },
+    { name: 'Deputy Darlene', role: 'state trooper', vibe: 'gives one chance for clean answers' },
+    { name: 'Grease Monkey Gus', role: 'truck mechanic', vibe: 'fixes routes with wrench and rumor' },
+    { name: 'Queenie Quickdraw', role: 'casino floor thief', vibe: 'smiles while lifting wallets' },
+    { name: 'Harbor Hank', role: 'ferry loader', vibe: 'protects loyal runners from surprise checks' }
   ];
   const stories = [];
   for (let i = 0; i < 45; i++) {
-    const t = seeds[i % seeds.length];
+    const c = characterSet[i % characterSet.length];
+    const next = characterSet[(i + 5) % characterSet.length];
+    const cityName = locations[i % (locations.length - 1)].name;
+    const isCop = c.role.includes('cop') || c.role.includes('security') || c.role.includes('trooper');
+    const isRobber = c.role.includes('robber') || c.role.includes('hijacker') || c.role.includes('thief');
+    const openLine = isCop
+      ? `${c.name}, the ${c.role}, stops you near ${cityName} and asks why your coat inventory keeps changing.`
+      : isRobber
+      ? `${c.name}, a ${c.role}, corners you outside ${cityName} and demands a cut of tonight's haul.`
+      : `${c.name}, the ${c.role}, waves you into a side lane in ${cityName} with a business proposition.`;
+    const middleLine = `${c.name} says ${c.vibe}. ${next.name} circles nearby to see if you crack under pressure.`;
+    const deepLine = `By the third minute, the ask is clear: help now for smoother travel tomorrow, or refuse and risk heat on your route.`;
     stories.push({
       id: i + 1,
-      title: `${funnyHandles[i % funnyHandles.length]} crosses your path`,
+      title: `${c.name} in ${cityName}`,
       layers: [
-        `${t[0]} ${funnyHandles[(i + 3) % funnyHandles.length]} leans in and mutters, "This could get weird."`,
-        `Another voice cuts in and asks who sent you. ${funnyHandles[(i + 5) % funnyHandles.length]} watches your face for cracks.`,
-        `The scene tightens when someone asks for a favor next week before letting you go.`
+        openLine,
+        middleLine,
+        deepLine
       ],
-      question: 'What is your move?',
+      question: 'How do you respond?',
       options: {
-        a: { label: t[1], suspicion: -8, cash: 180 + (i % 4) * 35, text: 'Cool head wins a cleaner exit.' },
-        b: { label: t[2], suspicion: 7, cash: 260 + (i % 5) * 40, text: 'Bold play lands quick profit but eyes stay on you.' },
-        c: { label: t[3], suspicion: 12, cash: -120 - (i % 3) * 60, text: 'Chaos route works, but you drop value while escaping.' }
+        a: {
+          label: isCop ? 'Answer calmly with paperwork details' : isRobber ? 'Defuse it and offer a tiny decoy cut' : 'Take the fair deal and keep it clean',
+          suspicion: -8,
+          cash: 180 + (i % 4) * 35,
+          text: `${c.name} nods. You leave with less heat and a usable contact.`
+        },
+        b: {
+          label: isCop ? 'Confidently bluff your route story' : isRobber ? 'Bluff muscle and hold your line' : 'Push for a bigger margin',
+          suspicion: 7,
+          cash: 260 + (i % 5) * 40,
+          text: `You squeeze extra value, but ${c.name} marks you as high-risk.`
+        },
+        c: {
+          label: isCop ? 'Refuse and bolt through side streets' : isRobber ? 'Run before backup arrives' : 'Walk away and burn the bridge',
+          suspicion: 12,
+          cash: -120 - (i % 3) * 60,
+          text: `You escape the scene, but the route gets rougher and more expensive.`
+        }
       },
       lawChance: 0.25 + ((i % 6) * 0.03)
     });
@@ -200,6 +226,7 @@ const defaultGame = () => ({
   currentLocation: 0,
   inventory: { 0:3,1:2,2:4,3:2,4:1,5:0,6:6 },
   pendingStory: null,
+  completedStoryIds: [],
   eventFeed: 'Welcome to the run.',
   nicknames: {},
   multiplayerGifts: []
@@ -312,6 +339,7 @@ function renderHeader() {
   const used = Object.values(game.inventory).reduce((a,b) => a + Number(b || 0), 0);
   el('coat').textContent = `${used}/${game.coatMax}`;
   el('event-feed').textContent = game.eventFeed;
+  el('story-progress').textContent = `Stories completed: ${game.completedStoryIds.length}`;
 }
 
 function renderAll() {
@@ -412,6 +440,7 @@ function resolveStory(choice) {
   }
 
   game.eventFeed = `${out.text}${lawText}`;
+  if (!game.completedStoryIds.includes(s.id)) game.completedStoryIds.push(s.id);
   game.pendingStory = null;
   el('story-result').textContent = game.eventFeed;
   el('story-close').classList.remove('hidden');
