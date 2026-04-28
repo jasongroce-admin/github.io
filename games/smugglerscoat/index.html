@@ -20,51 +20,52 @@
             <button onclick="resetGame()" class="bg-red-600 px-4 py-1 rounded-xl text-sm">RESET</button>
         </nav>
 
-        <!-- MULTIPLAYER -->
+        <!-- Multiplayer -->
         <div class="bg-zinc-900 p-5 border-b border-emerald-500/30">
-            <button onclick="createRoom()" class="w-full py-6 bg-emerald-600 hover:bg-emerald-700 rounded-3xl text-xl font-bold mb-4">
+            <button onclick="createRoom()" class="w-full py-6 bg-emerald-600 hover:bg-emerald-700 rounded-3xl text-xl font-bold mb-3">
                 CREATE ROOM & SHARE LINK
             </button>
             <button onclick="joinRoom()" class="w-full py-6 bg-zinc-700 hover:bg-zinc-600 rounded-3xl text-xl font-bold">
                 JOIN ROOM
             </button>
-            <div id="room-display" class="text-center text-sm text-emerald-400 mt-4 hidden">
-                Room Code: <span id="room-code-display" class="font-bold"></span>
-            </div>
         </div>
 
-        <!-- Rest of game -->
-        <div class="flex-1 p-4 overflow-y-auto pb-20">
-            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6">
-                <div class="text-center"><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
+        <!-- Stats -->
+        <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl m-4 text-center">
+            <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
+            <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
+            <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
+            <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
+        </div>
+
+        <!-- Locations -->
+        <div class="mb-6 px-4">
+            <div class="flex justify-between items-center mb-3">
+                <span id="current-location" class="text-2xl font-bold">SHIP YARD</span>
+                <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm">TRAVEL →</button>
             </div>
+            <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
+        </div>
 
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <span id="current-location" class="text-2xl font-bold">SHIP YARD</span>
-                    <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm">TRAVEL →</button>
-                </div>
-                <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
-            </div>
+        <!-- Your Coat -->
+        <div class="bg-zinc-900 rounded-3xl p-5 mx-4">
+            <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
+            <div id="goods-list" class="space-y-6"></div>
 
-            <div class="bg-zinc-900 rounded-3xl p-5">
-                <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
-                <div id="goods-list" class="space-y-6"></div>
-
-                <div class="flex gap-4 mt-8">
-                    <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO</button>
-                    <button onclick="confirmTrade()" class="flex-1 py-6 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
-                </div>
+            <div class="flex gap-4 mt-8">
+                <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO</button>
+                <button onclick="confirmTrade()" class="flex-1 py-6 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
             </div>
         </div>
     </div>
 
     <script>
         let game = {
-            day: 1, cash: 2450, debt: 5500, coatMax: 120, coatUsed: 18,
+            day: 1,
+            cash: 2450,
+            debt: 5500,
+            coatMax: 120,
+            coatUsed: 18,
             currentLocation: 0,
             inventory: {0:3,1:2,2:4,3:2,4:1}
         };
@@ -74,68 +75,150 @@
         let myID = "";
         let roomCode = "";
 
+        const goodsList = [
+            {id:0, name:"Cuban Cigars", price:520},
+            {id:1, name:"Fine Whiskey", price:1250},
+            {id:2, name:"Designer Perfume", price:780},
+            {id:3, name:"Luxury Watches", price:4600},
+            {id:4, name:"Rare Painting", price:9200}
+        ];
+
+        const locations = [
+            {name: "SHIP YARD", emoji: "⚓", index: 0},
+            {name: "BRONX", emoji: "🏙️", index: 1},
+            {name: "MANHATTAN", emoji: "🌆", index: 2},
+            {name: "BROOKLYN", emoji: "🌉", index: 3},
+            {name: "QUEENS", emoji: "🛫", index: 4},
+            {name: "CONEY ISLAND", emoji: "🎡", index: 5},
+            {name: "LOAN SHARK", emoji: "💰", isLoan: true, index: 6}
+        ];
+
         function initPeer() {
             myPeer = new Peer();
-            myPeer.on('open', id => {
-                myID = id;
-            });
+            myPeer.on('open', id => myID = id);
         }
 
         function createRoom() {
             roomCode = Math.floor(10000 + Math.random() * 90000).toString();
-            
             setTimeout(() => {
                 const link = `${window.location.href.split('?')[0]}?room=${roomCode}&host=${myID}`;
+                const text = `Join my Smuggler’s Coat game!\nRoom Code: ${roomCode}\nLink: ${link}`;
                 
-                const shareText = `Join my Smuggler’s Coat game!\nRoom: ${roomCode}\nTap here: ${link}`;
-
                 if (navigator.share) {
-                    navigator.share({
-                        title: "Smuggler’s Coat",
-                        text: shareText,
-                        url: link
-                    });
+                    navigator.share({ title: "Smuggler’s Coat", text: text, url: link });
                 } else {
                     navigator.clipboard.writeText(link);
-                    alert(`✅ Link copied!\n\nSend this link to friends.\nThey just tap it and join automatically.`);
+                    alert(`✅ Link copied!\nShare this link with friends.`);
                 }
-
-                document.getElementById('room-code-display').textContent = roomCode;
             }, 500);
         }
 
         function joinRoom() {
             const params = new URLSearchParams(window.location.search);
             let host = params.get('host');
-            
-            if (!host) host = prompt("Enter Host's Peer ID (from the shared link):");
-            
+            if (!host) host = prompt("Enter Host Peer ID:");
             if (host && myPeer) {
                 myPeer.connect(host);
-                alert("✅ Connected to the game!");
+                alert("✅ Connected to room!");
             }
         }
 
-        // Trading functions (buy/sell working)
+        function renderLocations() {
+            const container = document.getElementById('location-list');
+            container.innerHTML = '';
+            locations.forEach(loc => {
+                const active = loc.index === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
+                const div = document.createElement('div');
+                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
+                div.onclick = () => {
+                    game.currentLocation = loc.index;
+                    document.getElementById('current-location').textContent = loc.name;
+                    renderLocations();
+                };
+                container.appendChild(div);
+            });
+        }
+
         function renderGoods() {
-            // ... (same as previous version - BUY/SELL buttons)
-            console.log("Coat rendered");
+            const container = document.getElementById('goods-list');
+            container.innerHTML = '';
+
+            goodsList.forEach(g => {
+                const held = game.inventory[g.id] || 0;
+                const target = pending[g.id] !== undefined ? pending[g.id] : held;
+                const delta = target - held;
+                const cost = delta * g.price;
+
+                const div = document.createElement('div');
+                div.className = 'bg-zinc-800 rounded-2xl p-5';
+                div.innerHTML = `
+                    <div class="flex justify-between mb-4">
+                        <div class="font-semibold">${g.name}</div>
+                        <div class="text-emerald-400">$${g.price}</div>
+                    </div>
+                    <div class="flex gap-4 mb-4">
+                        <button onclick="changeAmount(${g.id}, -1)" class="action-btn flex-1 bg-red-600 hover:bg-red-700 rounded-2xl text-white">SELL</button>
+                        <div class="text-center min-w-[80px]">
+                            <div class="text-5xl font-bold text-emerald-400">${target}</div>
+                        </div>
+                        <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
+                    </div>
+                    <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
+                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function changeAmount(id, delta) {
+            const current = pending[id] !== undefined ? pending[id] : (game.inventory[id] || 0);
+            pending[id] = Math.max(0, current + delta);
+            renderGoods();
         }
 
         function confirmTrade() {
-            // Cash flow is correct here
-            alert("✅ Trade confirmed! (Cash updated)");
+            let totalCost = 0;
+            Object.keys(pending).forEach(id => {
+                const delta = pending[id] - (game.inventory[id] || 0);
+                const price = goodsList.find(g => g.id === parseInt(id)).price;
+                totalCost += delta * price;
+                game.inventory[id] = pending[id];
+            });
+
+            game.cash += totalCost;   // Sell = positive, Buy = negative
+            if (game.cash < 0) game.cash = 0;
+
+            pending = {};
+            renderGoods();
+            renderHeader();
+            alert("✅ Trade completed!");
         }
 
-        function travel() { game.day++; alert(`Day ${game.day}`); }
+        function undoTrade() { pending = {}; renderGoods(); }
 
-        function resetGame() { if(confirm("Reset?")) location.reload(); }
+        function renderHeader() {
+            document.getElementById('day').textContent = game.day;
+            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
+            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
+        }
+
+        function travel() {
+            game.day++;
+            alert(`Advanced to Day ${game.day}`);
+            renderHeader();
+        }
+
+        function resetGame() {
+            if (confirm("Reset the game?")) location.reload();
+        }
 
         window.onload = () => {
             initPeer();
-            // Auto-join if link has parameters
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('host')) joinRoom();
+            renderLocations();
+            renderGoods();
+            renderHeader();
         };
     </script>
 </body>
