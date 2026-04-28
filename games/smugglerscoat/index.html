@@ -3,124 +3,460 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smuggler’s Coat</title>
+    <title>Smuggler's Coat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-        .game-container { max-width: 520px; margin: 0 auto; min-height: 100vh; }
-        .action-btn { height: 58px; font-size: 1.1rem; font-weight: bold; }
+        body { font-family: 'VT323', monospace; }
+        .game-container { width: 100%; max-width: none; margin: 0; min-height: 100vh; }
+        .action-btn { height: 58px; font-size: 1.1rem; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .game-container { max-width: 520px; margin: 0 auto; }
+        }
+
+        @media (min-width: 1024px) {
+            .desktop-shell {
+                display: grid;
+                grid-template-columns: minmax(340px, 0.9fr) minmax(560px, 1.1fr);
+                gap: 1.25rem;
+                align-items: start;
+                padding: 0 1.25rem 1.25rem;
+            }
+            .desktop-stack { margin: 0; }
+            .mp-btn { padding-top: 0.85rem; padding-bottom: 0.85rem; font-size: 1rem; border-radius: 1rem; }
+            .action-btn { height: 42px; font-size: 0.92rem; }
+            .trade-btn { padding-top: 0.8rem; padding-bottom: 0.8rem; font-size: 0.95rem; border-radius: 0.95rem; }
+            .location-pill { width: 92px; padding-top: 0.7rem; padding-bottom: 0.7rem; }
+            .goods-card { padding: 0.9rem; }
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     <div class="game-container flex flex-col">
 
-        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30 sticky top-0">
-            <h1 class="text-3xl font-bold">SMUGGLER’S COAT</h1>
-            <button onclick="resetGame()" class="bg-red-600 px-4 py-1 rounded-xl text-sm">RESET</button>
+        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30 sticky top-0 z-10">
+            <h1 class="text-3xl font-bold tracking-wide">SMUGGLER'S COAT</h1>
+            <button onclick="resetGame()" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-xl text-sm">RESET</button>
         </nav>
 
-        <!-- Multiplayer -->
-        <div class="bg-zinc-900 p-5 border-b border-emerald-500/30">
-            <button onclick="createRoom()" class="w-full py-6 bg-emerald-600 hover:bg-emerald-700 rounded-3xl text-xl font-bold mb-3">
-                CREATE ROOM & SHARE LINK
-            </button>
-            <button onclick="joinRoom()" class="w-full py-6 bg-zinc-700 hover:bg-zinc-600 rounded-3xl text-xl font-bold">
-                JOIN ROOM
-            </button>
-        </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl m-4 text-center">
-            <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
-            <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
-            <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
-            <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
-        </div>
-
-        <!-- Locations -->
-        <div class="mb-6 px-4">
-            <div class="flex justify-between items-center mb-3">
-                <span id="current-location" class="text-2xl font-bold">SHIP YARD</span>
-                <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm">TRAVEL →</button>
+        <div class="bg-zinc-900 p-4 border-b border-emerald-500/30">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <button onclick="createRoom()" class="mp-btn w-full py-4 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-lg font-bold">
+                    CREATE ROOM
+                </button>
+                <button onclick="joinRoom()" class="mp-btn w-full py-4 bg-zinc-700 hover:bg-zinc-600 rounded-2xl text-lg font-bold">
+                    JOIN ROOM
+                </button>
+                <button onclick="reconnectRoom()" class="mp-btn w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-lg font-bold">
+                    RECONNECT
+                </button>
             </div>
-            <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
+            <div id="mp-status" class="mt-2 text-sm text-zinc-300">Multiplayer: idle</div>
+            <div id="mp-players" class="text-sm text-emerald-300">Connected players: 1</div>
         </div>
 
-        <!-- Your Coat -->
-        <div class="bg-zinc-900 rounded-3xl p-5 mx-4">
-            <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
-            <div id="goods-list" class="space-y-6"></div>
+        <div class="desktop-shell">
+            <div class="desktop-stack space-y-4 px-4 pt-4 lg:px-0 lg:pt-4">
+                <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-2xl text-center">
+                    <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
+                    <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
+                    <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
+                    <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
+                </div>
 
-            <div class="flex gap-4 mt-8">
-                <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO</button>
-                <button onclick="confirmTrade()" class="flex-1 py-6 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
+                <div class="bg-zinc-900 rounded-2xl p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="current-location" class="text-2xl font-bold">SHIP YARD</span>
+                        <div class="flex gap-2">
+                            <button id="pay-loan-btn" onclick="payLoanShark()" class="bg-red-700 hover:bg-red-600 px-3 py-2 rounded-xl text-sm font-bold">PAY LOAN</button>
+                            <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl text-sm">TRAVEL -></button>
+                        </div>
+                    </div>
+                    <div id="location-list" class="flex gap-2 overflow-x-auto pb-1"></div>
+                    <div id="loan-hint" class="mt-2 text-xs text-zinc-400">Travel to LOAN SHARK to repay debt.</div>
+                </div>
+
+                <div class="bg-zinc-900 rounded-2xl p-4 border border-yellow-400/30">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xl font-bold">Street Story</h2>
+                        <div class="text-sm text-yellow-300">Suspicion: <span id="suspicion">0</span>%</div>
+                    </div>
+                    <p id="story-text" class="text-zinc-100 text-lg leading-tight">Travel to trigger your next encounter.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                        <button id="choice-calm" onclick="chooseStoryAction('calm')" class="bg-emerald-700 hover:bg-emerald-600 rounded-xl px-3 py-2 text-sm font-bold">Talk Calm</button>
+                        <button id="choice-bluff" onclick="chooseStoryAction('bluff')" class="bg-amber-700 hover:bg-amber-600 rounded-xl px-3 py-2 text-sm font-bold">Hard Bluff</button>
+                        <button id="choice-run" onclick="chooseStoryAction('run')" class="bg-red-700 hover:bg-red-600 rounded-xl px-3 py-2 text-sm font-bold">Run</button>
+                    </div>
+                    <div id="story-result" class="mt-2 text-sm text-zinc-300">No choice made yet.</div>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 rounded-2xl p-4 mx-4 mb-4 lg:mx-0 lg:mt-4">
+                <h2 class="text-xl font-bold mb-4">YOUR COAT</h2>
+                <div id="goods-list" class="space-y-3"></div>
+
+                <div class="flex gap-3 mt-4">
+                    <button onclick="undoTrade()" class="trade-btn flex-1 py-4 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-300 font-bold">UNDO</button>
+                    <button onclick="confirmTrade()" class="trade-btn flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let game = {
+        const defaultGame = () => ({
             day: 1,
             cash: 2450,
             debt: 5500,
             coatMax: 120,
             coatUsed: 18,
+            suspicion: 0,
             currentLocation: 0,
-            inventory: {0:3,1:2,2:4,3:2,4:1}
-        };
+            inventory: {0:3,1:2,2:4,3:2,4:1},
+            story: {
+                prompt: 'Travel to trigger your next encounter.',
+                result: 'No choice made yet.',
+                resolved: true
+            }
+        });
 
+        let game = defaultGame();
         let pending = {};
         let myPeer = null;
-        let myID = "";
-        let roomCode = "";
+        let myID = '';
+        let roomCode = '';
+        let conn = null;
+        let isHost = false;
+        let pendingInviteCode = null;
+        let lastInviteCode = '';
 
         const goodsList = [
-            {id:0, name:"Cuban Cigars", price:520},
-            {id:1, name:"Fine Whiskey", price:1250},
-            {id:2, name:"Designer Perfume", price:780},
-            {id:3, name:"Luxury Watches", price:4600},
-            {id:4, name:"Rare Painting", price:9200}
+            {id:0, name:'Cuban Cigars', price:520},
+            {id:1, name:'Fine Whiskey', price:1250},
+            {id:2, name:'Designer Perfume', price:780},
+            {id:3, name:'Luxury Watches', price:4600},
+            {id:4, name:'Rare Painting', price:9200}
         ];
 
         const locations = [
-            {name: "SHIP YARD", emoji: "⚓", index: 0},
-            {name: "BRONX", emoji: "🏙️", index: 1},
-            {name: "MANHATTAN", emoji: "🌆", index: 2},
-            {name: "BROOKLYN", emoji: "🌉", index: 3},
-            {name: "QUEENS", emoji: "🛫", index: 4},
-            {name: "CONEY ISLAND", emoji: "🎡", index: 5},
-            {name: "LOAN SHARK", emoji: "💰", isLoan: true, index: 6}
+            {name:'SHIP YARD', emoji:'⚓', index:0},
+            {name:'BRONX', emoji:'🏙️', index:1},
+            {name:'MANHATTAN', emoji:'🌆', index:2},
+            {name:'BROOKLYN', emoji:'🌉', index:3},
+            {name:'QUEENS', emoji:'🛫', index:4},
+            {name:'CONEY ISLAND', emoji:'🎡', index:5},
+            {name:'LOAN SHARK', emoji:'💰', isLoan:true, index:6}
         ];
 
-        function initPeer() {
-            myPeer = new Peer();
-            myPeer.on('open', id => myID = id);
+        const encounterPool = [
+            {
+                prompt: 'A plain-clothes officer asks why your coat hangs heavy. Your move?',
+                calm: { result: 'You show fake receipts and stay cool.', suspicion: -12, deal: 8 },
+                bluff: { result: 'Your confident story nearly works but sounds rehearsed.', suspicion: 10, deal: 14 }
+            },
+            {
+                prompt: 'A dock foreman recognizes you from last week and wants a cut.',
+                calm: { result: 'You talk him into a smaller fee and smoother pass-through.', suspicion: -6, deal: 6 },
+                bluff: { result: 'You threaten connections. He backs down but alerts others.', suspicion: 14, deal: 10 }
+            },
+            {
+                prompt: 'Street buyer says your goods are stale and tries to lowball you.',
+                calm: { result: 'You pitch quality details and recover some margin.', suspicion: -4, deal: 7 },
+                bluff: { result: 'You overhype. Buyer bites, crowd gets curious.', suspicion: 9, deal: 16 }
+            }
+        ];
+
+        function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+        function setMpStatus(text) {
+            document.getElementById('mp-status').textContent = `Multiplayer: ${text}`;
         }
 
-        function createRoom() {
-            roomCode = Math.floor(10000 + Math.random() * 90000).toString();
-            setTimeout(() => {
-                const link = `${window.location.href.split('?')[0]}?room=${roomCode}&host=${myID}`;
-                const text = `Join my Smuggler’s Coat game!\nRoom Code: ${roomCode}\nLink: ${link}`;
-                
-                if (navigator.share) {
-                    navigator.share({ title: "Smuggler’s Coat", text: text, url: link });
-                } else {
-                    navigator.clipboard.writeText(link);
-                    alert(`✅ Link copied!\nShare this link with friends.`);
+        function updatePlayerCount() {
+            const connectedOthers = conn && conn.open ? 1 : 0;
+            document.getElementById('mp-players').textContent = `Connected players: ${1 + connectedOthers}`;
+        }
+
+        function randomRoomCode() {
+            return Math.random().toString(36).slice(2, 8).toUpperCase();
+        }
+
+        function encodeInvite(room, host) {
+            return `${room}.${btoa(host).replace(/=+$/g, '')}`;
+        }
+
+        function decodeInvite(code) {
+            if (!code || !code.includes('.')) return null;
+            const parts = code.split('.', 2);
+            if (parts.length !== 2) return null;
+            try {
+                const padded = parts[1] + '='.repeat((4 - (parts[1].length % 4)) % 4);
+                return { room: parts[0], host: atob(padded) };
+            } catch {
+                return null;
+            }
+        }
+
+        function safeSend(payload) {
+            if (conn && conn.open) conn.send(payload);
+        }
+
+        function serializeGame() {
+            return JSON.parse(JSON.stringify(game));
+        }
+
+        function applyFullState(state) {
+            game = state;
+            pending = {};
+            renderAll();
+        }
+
+        function broadcastState() {
+            safeSend({ type: 'STATE', state: serializeGame() });
+        }
+
+        function reduceInventoryByPercent(percent) {
+            Object.keys(game.inventory).forEach(id => {
+                const qty = Number(game.inventory[id] || 0);
+                game.inventory[id] = Math.floor(qty * (1 - percent));
+            });
+        }
+
+        function resolveRunAttempt() {
+            const escapeChance = clamp(0.68 - (game.suspicion / 200), 0.25, 0.8);
+            const escaped = Math.random() < escapeChance;
+            if (escaped) {
+                game.story.result = 'You ran through side alleys and escaped this time.';
+                game.suspicion = clamp(game.suspicion + 8, 0, 100);
+            } else {
+                game.cash = Math.floor(game.cash * 0.6);
+                reduceInventoryByPercent(0.4);
+                game.story.result = 'Caught while running. 40% of cash and product was seized.';
+                game.suspicion = clamp(game.suspicion + 20, 0, 100);
+            }
+            game.story.resolved = true;
+        }
+
+        function triggerEncounter() {
+            const e = encounterPool[Math.floor(Math.random() * encounterPool.length)];
+            game.story = {
+                prompt: e.prompt,
+                result: 'Choose how to handle this encounter.',
+                calmOutcome: e.calm,
+                bluffOutcome: e.bluff,
+                resolved: false
+            };
+        }
+
+        function resolveTalk(style) {
+            if (!game.story || game.story.resolved) return;
+            const outcome = style === 'calm' ? game.story.calmOutcome : game.story.bluffOutcome;
+            if (!outcome) return;
+
+            game.suspicion = clamp(game.suspicion + outcome.suspicion, 0, 100);
+            game.story.result = outcome.result;
+            game.story.resolved = true;
+        }
+
+        function applyAction(action, fromRemote) {
+            if (!action || !action.type) return;
+
+            if (action.type === 'TRAVEL') {
+                game.day++;
+                triggerEncounter();
+            } else if (action.type === 'SET_LOCATION') {
+                game.currentLocation = action.index;
+            } else if (action.type === 'TRADE') {
+                game.inventory = action.inventory;
+                game.cash = action.cash;
+            } else if (action.type === 'PAY_DEBT') {
+                game.cash = action.cash;
+                game.debt = action.debt;
+                game.story.result = `You paid $${action.paid.toLocaleString()} to the loan shark.`;
+            } else if (action.type === 'RESET') {
+                game = defaultGame();
+            } else if (action.type === 'ENCOUNTER_CHOICE') {
+                if (action.choice === 'run') {
+                    resolveRunAttempt();
+                } else if (action.choice === 'calm' || action.choice === 'bluff') {
+                    resolveTalk(action.choice);
                 }
-            }, 500);
+            }
+
+            renderAll();
+            if (isHost && fromRemote) broadcastState();
+        }
+
+        function sendAction(action) {
+            if (!conn || !conn.open) {
+                applyAction(action, false);
+                return;
+            }
+            if (isHost) {
+                applyAction(action, false);
+                broadcastState();
+            } else {
+                safeSend({ type: 'ACTION', action });
+            }
+        }
+
+        function attachConnectionHandlers(connection) {
+            conn = connection;
+
+            connection.on('open', () => {
+                setMpStatus(`connected (${isHost ? 'host' : 'guest'})`);
+                updatePlayerCount();
+                if (isHost) {
+                    broadcastState();
+                } else {
+                    safeSend({ type: 'REQUEST_STATE' });
+                }
+            });
+
+            connection.on('data', msg => {
+                if (!msg || !msg.type) return;
+                if (msg.type === 'REQUEST_STATE' && isHost) {
+                    broadcastState();
+                } else if (msg.type === 'STATE') {
+                    applyFullState(msg.state);
+                } else if (msg.type === 'ACTION' && isHost) {
+                    applyAction(msg.action, true);
+                }
+            });
+
+            connection.on('error', err => {
+                console.error(err);
+                setMpStatus('connection error');
+                alert('Connection failed. Ask host to create a fresh invite link.');
+            });
+
+            connection.on('close', () => {
+                setMpStatus('disconnected');
+                conn = null;
+                updatePlayerCount();
+            });
+        }
+
+        function initPeer() {
+            setMpStatus('connecting to peer server...');
+            myPeer = new Peer();
+
+            myPeer.on('open', id => {
+                myID = id;
+                setMpStatus('ready');
+                updatePlayerCount();
+                if (pendingInviteCode) {
+                    connectWithInviteCode(pendingInviteCode);
+                    pendingInviteCode = null;
+                }
+            });
+
+            myPeer.on('connection', incoming => {
+                isHost = true;
+                setMpStatus('guest connecting...');
+                attachConnectionHandlers(incoming);
+            });
+
+            myPeer.on('error', err => {
+                console.error(err);
+                setMpStatus('peer error');
+            });
+        }
+
+        async function waitForPeerOpen(timeoutMs = 6000) {
+            if (myID) return true;
+            const started = Date.now();
+            while (!myID && Date.now() - started < timeoutMs) {
+                await new Promise(r => setTimeout(r, 100));
+            }
+            return !!myID;
+        }
+
+        async function createRoom() {
+            const ready = await waitForPeerOpen();
+            if (!ready) {
+                alert('Peer is not ready yet. Try again in a second.');
+                return;
+            }
+
+            isHost = true;
+            roomCode = randomRoomCode();
+            const inviteCode = encodeInvite(roomCode, myID);
+            lastInviteCode = inviteCode;
+            const link = `${window.location.href.split('?')[0]}?invite=${encodeURIComponent(inviteCode)}`;
+            const text = `Join my Smuggler's Coat game!\nInvite Code: ${inviteCode}\nLink: ${link}`;
+
+            if (navigator.share) {
+                navigator.share({ title: "Smuggler's Coat", text, url: link });
+            } else {
+                navigator.clipboard.writeText(link);
+                alert(`Link copied.\nShare this link:\n${link}`);
+            }
+
+            setMpStatus(`hosting room ${roomCode}`);
+        }
+
+        function connectWithInviteCode(inviteCode) {
+            const decoded = decodeInvite(inviteCode);
+            if (!decoded || !decoded.host) {
+                alert('Invalid invite code.');
+                return;
+            }
+            lastInviteCode = inviteCode;
+            roomCode = decoded.room || '';
+            setMpStatus(`joining room ${roomCode || 'unknown'}...`);
+            isHost = false;
+            const connection = myPeer.connect(decoded.host, { reliable: true });
+            attachConnectionHandlers(connection);
         }
 
         function joinRoom() {
             const params = new URLSearchParams(window.location.search);
-            let host = params.get('host');
-            if (!host) host = prompt("Enter Host Peer ID:");
-            if (host && myPeer) {
-                myPeer.connect(host);
-                alert("✅ Connected to room!");
+            const fromUrl = params.get('invite');
+            const inviteInput = fromUrl || prompt('Paste invite code or full invite link:');
+            if (!inviteInput) return;
+
+            let inviteCode = inviteInput.trim();
+            if (inviteCode.includes('http')) {
+                try {
+                    const u = new URL(inviteCode);
+                    inviteCode = u.searchParams.get('invite') || '';
+                } catch {}
             }
+
+            if (!inviteCode) {
+                alert('No invite code found.');
+                return;
+            }
+
+            if (!myID) {
+                pendingInviteCode = inviteCode;
+                setMpStatus('waiting for peer readiness...');
+                return;
+            }
+
+            connectWithInviteCode(inviteCode);
+        }
+
+        function reconnectRoom() {
+            if (conn && conn.open) {
+                setMpStatus('already connected');
+                return;
+            }
+            if (lastInviteCode) {
+                connectWithInviteCode(lastInviteCode);
+                return;
+            }
+            const params = new URLSearchParams(window.location.search);
+            const invite = params.get('invite');
+            if (invite) {
+                connectWithInviteCode(invite);
+                return;
+            }
+            setMpStatus('no invite to reconnect with');
+            alert('No prior invite code found. Join or create a room first.');
         }
 
         function renderLocations() {
@@ -129,15 +465,22 @@
             locations.forEach(loc => {
                 const active = loc.index === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
                 const div = document.createElement('div');
-                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
-                div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
-                div.onclick = () => {
-                    game.currentLocation = loc.index;
-                    document.getElementById('current-location').textContent = loc.name;
-                    renderLocations();
-                };
+                div.className = `location-pill flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.innerHTML = `<div class="text-4xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
+                div.onclick = () => sendAction({ type: 'SET_LOCATION', index: loc.index });
                 container.appendChild(div);
             });
+            const atLoan = game.currentLocation === 6;
+            const payBtn = document.getElementById('pay-loan-btn');
+            const loanHint = document.getElementById('loan-hint');
+            const canPay = atLoan && game.debt > 0 && game.cash > 0;
+            payBtn.disabled = !canPay;
+            payBtn.classList.toggle('opacity-50', !canPay);
+            payBtn.classList.toggle('cursor-not-allowed', !canPay);
+            if (!atLoan) loanHint.textContent = 'Travel to LOAN SHARK to repay debt.';
+            else if (game.debt <= 0) loanHint.textContent = 'Debt is clear. You are free.';
+            else if (game.cash <= 0) loanHint.textContent = 'You are at LOAN SHARK, but you have no cash to pay.';
+            else loanHint.textContent = `You can pay up to $${Math.min(game.cash, game.debt).toLocaleString()} now.`;
         }
 
         function renderGoods() {
@@ -151,25 +494,60 @@
                 const cost = delta * g.price;
 
                 const div = document.createElement('div');
-                div.className = 'bg-zinc-800 rounded-2xl p-5';
+                div.className = 'goods-card bg-zinc-800 rounded-xl p-4';
                 div.innerHTML = `
-                    <div class="flex justify-between mb-4">
-                        <div class="font-semibold">${g.name}</div>
+                    <div class="flex justify-between mb-2">
+                        <div class="font-semibold text-lg">${g.name}</div>
                         <div class="text-emerald-400">$${g.price}</div>
                     </div>
-                    <div class="flex gap-4 mb-4">
-                        <button onclick="changeAmount(${g.id}, -1)" class="action-btn flex-1 bg-red-600 hover:bg-red-700 rounded-2xl text-white">SELL</button>
-                        <div class="text-center min-w-[80px]">
-                            <div class="text-5xl font-bold text-emerald-400">${target}</div>
-                        </div>
-                        <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
+                    <div class="flex gap-2 mb-2 items-center">
+                        <button onclick="changeAmount(${g.id}, -1)" class="action-btn flex-1 bg-red-600 hover:bg-red-700 rounded-xl text-white">SELL</button>
+                        <div class="text-center min-w-[62px]"><div class="text-4xl font-bold text-emerald-400">${target}</div></div>
+                        <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">BUY</button>
                     </div>
                     <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
-                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
+                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} -> ${cost > 0 ? `-$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
                     </div>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function renderStory() {
+            document.getElementById('suspicion').textContent = game.suspicion;
+            document.getElementById('story-text').textContent = game.story?.prompt || 'Travel to trigger your next encounter.';
+            document.getElementById('story-result').textContent = game.story?.result || '';
+
+            const disabled = !!game.story?.resolved;
+            document.getElementById('choice-calm').disabled = disabled;
+            document.getElementById('choice-bluff').disabled = disabled;
+            document.getElementById('choice-run').disabled = disabled;
+
+            ['choice-calm', 'choice-bluff', 'choice-run'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.classList.toggle('opacity-50', disabled);
+                btn.classList.toggle('cursor-not-allowed', disabled);
+            });
+        }
+
+        function renderHeader() {
+            document.getElementById('day').textContent = game.day;
+            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
+            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
+        }
+
+        function renderCoat() {
+            const used = Object.values(game.inventory).reduce((a, b) => a + Number(b || 0), 0);
+            game.coatUsed = used;
+            document.getElementById('coat').textContent = `${used}/${game.coatMax}`;
+        }
+
+        function renderAll() {
+            renderLocations();
+            renderGoods();
+            renderHeader();
+            renderCoat();
+            renderStory();
         }
 
         function changeAmount(id, delta) {
@@ -180,45 +558,82 @@
 
         function confirmTrade() {
             let totalCost = 0;
+            const updatedInventory = JSON.parse(JSON.stringify(game.inventory));
+
             Object.keys(pending).forEach(id => {
+                const numericId = parseInt(id, 10);
                 const delta = pending[id] - (game.inventory[id] || 0);
-                const price = goodsList.find(g => g.id === parseInt(id)).price;
-                totalCost += delta * price;
-                game.inventory[id] = pending[id];
+                const basePrice = goodsList.find(g => g.id === numericId).price;
+                totalCost += delta * basePrice;
+                updatedInventory[id] = pending[id];
             });
 
-            game.cash += totalCost;   // Sell = positive, Buy = negative
-            if (game.cash < 0) game.cash = 0;
-
+            const nextCash = Math.max(0, game.cash - totalCost);
             pending = {};
-            renderGoods();
-            renderHeader();
-            alert("✅ Trade completed!");
+            sendAction({ type: 'TRADE', inventory: updatedInventory, cash: nextCash });
+            alert('Trade completed.');
         }
 
-        function undoTrade() { pending = {}; renderGoods(); }
+        function undoTrade() {
+            pending = {};
+            renderGoods();
+        }
 
-        function renderHeader() {
-            document.getElementById('day').textContent = game.day;
-            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
-            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
+        function chooseStoryAction(choice) {
+            if (!game.story || game.story.resolved) return;
+            sendAction({ type: 'ENCOUNTER_CHOICE', choice });
+        }
+
+        function payLoanShark() {
+            if (game.currentLocation !== 6) {
+                alert('Go to LOAN SHARK first to make a payment.');
+                return;
+            }
+            if (game.debt <= 0) {
+                alert('Your debt is already paid.');
+                return;
+            }
+            if (game.cash <= 0) {
+                alert('No cash available to pay debt.');
+                return;
+            }
+
+            const maxPay = Math.min(game.cash, game.debt);
+            const input = prompt(`Enter payment amount (max $${maxPay.toLocaleString()}):`, `${maxPay}`);
+            if (input === null) return;
+            const amount = Math.floor(Number(input.toString().replace(/[^0-9.]/g, '')));
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert('Enter a valid payment amount.');
+                return;
+            }
+            const paid = Math.min(amount, maxPay);
+            sendAction({
+                type: 'PAY_DEBT',
+                paid,
+                cash: game.cash - paid,
+                debt: game.debt - paid
+            });
+            alert(`Paid $${paid.toLocaleString()} to the loan shark.`);
         }
 
         function travel() {
-            game.day++;
+            sendAction({ type: 'TRAVEL' });
             alert(`Advanced to Day ${game.day}`);
-            renderHeader();
         }
 
         function resetGame() {
-            if (confirm("Reset the game?")) location.reload();
+            if (confirm('Reset the game?')) sendAction({ type: 'RESET' });
         }
 
         window.onload = () => {
             initPeer();
-            renderLocations();
-            renderGoods();
-            renderHeader();
+            renderAll();
+            updatePlayerCount();
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('invite')) {
+                setTimeout(() => joinRoom(), 200);
+            }
         };
     </script>
 </body>
