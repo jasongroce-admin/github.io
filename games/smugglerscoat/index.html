@@ -5,38 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smuggler’s Coat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         .game-container { max-width: 520px; margin: 0 auto; min-height: 100vh; }
-        .action-btn { height: 56px; font-size: 1.1rem; font-weight: bold; }
+        .action-btn { height: 58px; font-size: 1.15rem; font-weight: bold; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     <div class="game-container flex flex-col">
 
-        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30 sticky top-0">
+        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30">
             <h1 class="text-3xl font-bold">SMUGGLER’S COAT</h1>
-            <button onclick="resetGame()" class="bg-red-600 px-4 py-1 rounded-xl text-sm">RESET</button>
+            <div class="flex gap-2">
+                <button onclick="saveGame()" class="bg-emerald-700 px-4 py-1 rounded-xl text-sm">SAVE</button>
+                <button onclick="loadGame()" class="bg-zinc-700 px-4 py-1 rounded-xl text-sm">LOAD</button>
+                <button onclick="resetGame()" class="bg-red-600 px-4 py-1 rounded-xl text-sm">RESET</button>
+            </div>
         </nav>
 
-        <div class="flex-1 p-4 overflow-y-auto pb-20">
-            <!-- Multiplayer -->
-            <div class="bg-zinc-900 rounded-3xl p-5 mb-6">
-                <button onclick="createRoom()" class="w-full py-6 bg-emerald-600 hover:bg-emerald-700 rounded-3xl text-lg font-bold mb-3">
-                    CREATE ROOM & SHARE
-                </button>
-                <button onclick="joinRoom()" class="w-full py-6 bg-zinc-700 hover:bg-zinc-600 rounded-3xl text-lg font-bold">
-                    JOIN ROOM
-                </button>
+        <!-- Suspicion -->
+        <div class="bg-zinc-900 p-3 border-b border-amber-400/30">
+            <div class="flex justify-between text-xs mb-1 px-1">
+                <span>SUSPICION</span>
+                <span id="suspicion-text" class="font-bold">25%</span>
             </div>
+            <div class="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                <div id="suspicion-bar" class="h-3 bg-amber-400 transition-all duration-300" style="width:25%"></div>
+            </div>
+        </div>
 
+        <div class="flex-1 p-4 overflow-y-auto pb-20">
             <!-- Stats -->
-            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6">
-                <div class="text-center"><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
-                <div class="text-center"><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
+            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6 text-center">
+                <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
+                <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
+                <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
+                <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
             </div>
 
             <!-- Location -->
@@ -48,7 +52,7 @@
                 <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
 
-            <!-- Coat -->
+            <!-- Your Coat -->
             <div class="bg-zinc-900 rounded-3xl p-5">
                 <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
                 <div id="goods-list" class="space-y-6"></div>
@@ -67,23 +71,44 @@
 
     <script>
         let game = {
-            day: 1, cash: 2450, debt: 5500, coatMax: 120, coatUsed: 18,
+            day: 1,
+            cash: 2450,
+            debt: 5500,
+            coatMax: 120,
+            coatUsed: 18,
             currentLocation: 0,
+            suspicion: 25,
             inventory: {0:3,1:2,2:4,3:2,4:1}
         };
 
         let pending = {};
 
+        const goodsList = [
+            {id:0, name:"Cuban Cigars", price:520},
+            {id:1, name:"Fine Whiskey", price:1250},
+            {id:2, name:"Designer Perfume", price:780},
+            {id:3, name:"Luxury Watches", price:4600},
+            {id:4, name:"Rare Painting", price:9200}
+        ];
+
+        function saveGame() {
+            localStorage.setItem("smugglerSave", JSON.stringify(game));
+            alert("✅ Progress Saved!");
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem("smugglerSave");
+            if (saved) {
+                game = JSON.parse(saved);
+                renderGoods();
+                renderHeader();
+                alert("✅ Progress Loaded!");
+            }
+        }
+
         function renderGoods() {
             const container = document.getElementById('goods-list');
             container.innerHTML = '';
-            const goodsList = [
-                {id:0, name:"Cuban Cigars", price:520},
-                {id:1, name:"Fine Whiskey", price:1250},
-                {id:2, name:"Designer Perfume", price:780},
-                {id:3, name:"Luxury Watches", price:4600},
-                {id:4, name:"Rare Painting", price:9200}
-            ];
 
             goodsList.forEach(g => {
                 const held = game.inventory[g.id] || 0;
@@ -96,22 +121,15 @@
                 div.innerHTML = `
                     <div class="flex justify-between mb-4">
                         <div class="font-semibold">${g.name}</div>
-                        <div class="text-emerald-400 font-mono">$${g.price}</div>
+                        <div class="text-emerald-400">$${g.price}</div>
                     </div>
-                    
-                    <div class="flex items-center justify-center gap-4 mb-5">
-                        <button onclick="changeAmount(${g.id}, -1)" 
-                                class="action-btn flex-1 bg-red-600 hover:bg-red-700 rounded-2xl text-white">SELL</button>
-                        
+                    <div class="flex gap-4 mb-4">
+                        <button onclick="changeAmount(${g.id}, -1)" class="action-btn flex-1 bg-red-600 hover:bg-red-700 rounded-2xl text-white">SELL</button>
                         <div class="text-center min-w-[80px]">
                             <div class="text-5xl font-bold text-emerald-400">${target}</div>
-                            <div class="text-xs text-zinc-400">final</div>
                         </div>
-                        
-                        <button onclick="changeAmount(${g.id}, 1)" 
-                                class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
+                        <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
                     </div>
-
                     <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
                         ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'NO CHANGE'}
                         → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
@@ -130,20 +148,23 @@
 
         function confirmTrade() {
             let totalCost = 0;
+
             Object.keys(pending).forEach(id => {
                 const delta = pending[id] - (game.inventory[id] || 0);
-                const price = [520,1250,780,4600,9200][id];
-                totalCost += delta * price;
+                const price = goodsList.find(g => g.id === parseInt(id)).price;
+                totalCost += delta * price;           // ← Correct cash flow
                 game.inventory[id] = pending[id];
             });
 
-            game.cash += totalCost;
+            game.cash += totalCost;                   // Apply real money change
             if (game.cash < 0) game.cash = 0;
 
+            game.coatUsed = Object.values(game.inventory).reduce((a,b) => a + b, 0);
             pending = {};
+
             renderGoods();
             renderHeader();
-            alert("✅ Trade confirmed!");
+            alert("✅ Trade completed successfully!");
         }
 
         function undoTrade() {
@@ -160,16 +181,14 @@
 
         function travel() {
             game.day++;
-            alert(`Advanced to Day ${game.day}`);
+            game.debt = Math.floor(game.debt * 1.015);
             renderHeader();
+            alert(`Advanced to Day ${game.day}`);
         }
 
         function resetGame() {
-            if (confirm("Reset the entire game?")) location.reload();
+            if (confirm("Reset entire game?")) location.reload();
         }
-
-        function createRoom() { alert("Room sharing ready"); }
-        function joinRoom() { alert("Enter room code + host ID"); }
 
         window.onload = () => {
             renderGoods();
