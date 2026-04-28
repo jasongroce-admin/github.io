@@ -52,10 +52,9 @@
                 <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
 
-            <!-- Ship Yard Discount -->
+            <!-- Ship Yard Banner -->
             <div id="shipyard-banner" class="bg-gradient-to-r from-cyan-900 to-blue-900 rounded-3xl p-5 mb-6 text-center hidden">
-                <div class="font-bold">⚓ SHIP YARD WEEKLY DISCOUNT</div>
-                <p class="text-sm">All goods 30% off today!</p>
+                <div class="font-bold">⚓ SHIP YARD WEEKLY DISCOUNT (30% OFF)</div>
             </div>
 
             <!-- Loan Shark -->
@@ -119,7 +118,7 @@
             locations.forEach(loc => {
                 const active = loc.index === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
                 const div = document.createElement('div');
-                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
                 div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
                 div.onclick = () => {
                     game.currentLocation = loc.index;
@@ -157,7 +156,8 @@
                         <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
                     </div>
                     <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
-                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
+                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} 
+                        → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
                     </div>
                 `;
                 container.appendChild(div);
@@ -173,25 +173,30 @@
 
         function confirmTrade() {
             let totalCost = 0;
+
             Object.keys(pending).forEach(id => {
                 const delta = pending[id] - (game.inventory[id] || 0);
                 const price = goodsList.find(g => g.id === parseInt(id)).price;
-                totalCost += delta * price;
+                totalCost += delta * price;        // positive = buying, negative = selling
                 game.inventory[id] = pending[id];
             });
 
-            game.cash += totalCost;
+            game.cash -= totalCost;                // ← FIXED: subtract total cost
+
             if (game.cash < 0) game.cash = 0;
 
-            game.coatUsed = Object.values(game.inventory).reduce((a,b) => a + b, 0);
+            game.coatUsed = Object.values(game.inventory).reduce((a, b) => a + b, 0);
             pending = {};
 
             renderGoods();
             renderHeader();
-            alert("✅ Trade completed!");
+            alert("✅ Trade completed successfully!");
         }
 
-        function undoTrade() { pending = {}; renderGoods(); }
+        function undoTrade() {
+            pending = {};
+            renderGoods();
+        }
 
         function renderHeader() {
             document.getElementById('day').textContent = game.day;
@@ -201,7 +206,7 @@
         }
 
         function payDebt() {
-            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
+            const amount = prompt(`How much to pay? (Current debt: $${game.debt})`, game.debt);
             if (!amount) return;
             const pay = Math.min(parseInt(amount) || 0, game.cash);
             if (pay <= 0) return;
@@ -219,7 +224,7 @@
         }
 
         function resetGame() {
-            if (confirm("Reset entire game?")) location.reload();
+            if (confirm("Reset the entire game?")) location.reload();
         }
 
         function saveGame() {
