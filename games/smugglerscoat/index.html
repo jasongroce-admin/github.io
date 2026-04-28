@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smuggler’s Coat • LIVE</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         .game-container { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
@@ -17,62 +18,43 @@
         <!-- Navbar -->
         <nav class="bg-black p-3 flex justify-between items-center border-b border-emerald-500/30 sticky top-0 z-50">
             <h1 class="font-bold text-2xl tracking-tight">SMUGGLER’S COAT</h1>
-            <div id="online-count" class="bg-emerald-900 px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                12 online
+            <div class="flex gap-2">
+                <button onclick="joinRoom()" 
+                        class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1 rounded-xl text-sm">JOIN ROOM</button>
+                <button onclick="showMyID()" 
+                        class="bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-xl text-sm">MY ID</button>
             </div>
         </nav>
 
         <!-- Main Content -->
-        <div class="flex-1 p-4 overflow-y-auto pb-20">
+        <div class="flex-1 p-4 overflow-y-auto pb-24">
             <!-- Stats -->
             <div class="grid grid-cols-4 gap-2 text-center bg-zinc-900 p-3 rounded-3xl mb-5 border border-emerald-500/20">
-                <div>
-                    <div class="text-[10px] text-zinc-400">DAY</div>
-                    <div id="day" class="text-3xl font-bold text-emerald-400">12</div>
-                </div>
-                <div>
-                    <div class="text-[10px] text-zinc-400">CASH</div>
-                    <div id="cash" class="text-3xl font-bold">$18,420</div>
-                </div>
-                <div>
-                    <div class="text-[10px] text-zinc-400">DEBT</div>
-                    <div id="debt" class="text-3xl font-bold text-red-400">$3,200</div>
-                </div>
-                <div>
-                    <div class="text-[10px] text-zinc-400">COAT</div>
-                    <div id="coat" class="text-3xl font-bold">67/120</div>
-                </div>
+                <div><div class="text-[10px] text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">12</div></div>
+                <div><div class="text-[10px] text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$18,420</div></div>
+                <div><div class="text-[10px] text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$3,200</div></div>
+                <div><div class="text-[10px] text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">67/120</div></div>
             </div>
 
-            <!-- Current Location -->
+            <!-- Location -->
             <div class="mb-5">
                 <div class="flex justify-between items-center mb-3">
                     <span id="current-location" class="text-xl font-bold">MANHATTAN</span>
-                    <button onclick="travel()" 
-                            class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition-colors">
-                        TRAVEL →
-                    </button>
+                    <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm flex items-center gap-2">TRAVEL →</button>
                 </div>
                 <div id="location-list" class="flex gap-3 overflow-x-auto pb-3"></div>
             </div>
 
-            <!-- Loan Shark Banner -->
+            <!-- Loan Shark -->
             <div id="loan-banner" class="hidden loan-shark rounded-3xl p-5 mb-6 text-center">
-                <div class="text-xl font-bold mb-1 flex items-center justify-center gap-3">
-                    💰 LOAN SHARK OFFICE
-                </div>
-                <button onclick="payDebt()" 
-                        class="w-full py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-white font-bold text-lg shadow-lg transition-colors">
-                    PAY BACK DEBT NOW
-                </button>
+                <div class="text-xl font-bold mb-2 flex items-center justify-center gap-2">💰 LOAN SHARK OFFICE</div>
+                <button onclick="payDebt()" class="w-full py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-white font-bold text-lg">PAY BACK DEBT NOW</button>
             </div>
 
-            <!-- Nearby Traders -->
+            <!-- Nearby Smugglers -->
             <div class="bg-zinc-900 rounded-3xl p-5 mb-6">
                 <h3 class="text-sm font-medium mb-4 flex items-center gap-2">
-                    NEARBY SMUGGLERS 
-                    <span id="nearby-count" class="text-emerald-400 text-xs">(4)</span>
+                    NEARBY SMUGGLERS <span id="nearby-count" class="text-emerald-400">(0)</span>
                 </h3>
                 <div id="nearby-list" class="space-y-3"></div>
             </div>
@@ -84,24 +66,20 @@
             </div>
         </div>
 
-        <!-- Bottom Bar -->
-        <div id="disclaimer" 
-             class="fixed bottom-0 left-0 right-0 text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400 font-medium transition-all">
+        <!-- Disclaimer -->
+        <div id="disclaimer" class="fixed bottom-0 left-0 right-0 text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400 font-medium">
             THIS IS FOR ENTERTAINMENT PURPOSES ONLY
         </div>
     </div>
 
     <script>
-        // Game State
+        // ====================== GAME STATE ======================
         let game = {
-            day: 12,
-            maxDays: 30,
-            cash: 18420,
-            debt: 3200,
-            coatMax: 120,
-            coatUsed: 67,
+            day: 12, maxDays: 30,
+            cash: 18420, debt: 3200,
+            coatMax: 120, coatUsed: 67,
             currentLocation: 1,
-            inventory: {0: 12, 1: 5, 2: 23},
+            inventory: {0:12, 1:5, 2:23},
             locations: [
                 {name: "BRONX", emoji: "🏙️"},
                 {name: "MANHATTAN", emoji: "🌆"},
@@ -118,12 +96,51 @@
             ]
         };
 
-        let nearbyPlayers = [
-            {id:1, name:"ShadowNYC", loc:"Manhattan", offer:{item:3, qty:6, price:5200}},
-            {id:2, name:"CoastKing", loc:"Brooklyn", offer:{item:1, qty:8, price:980}},
-            {id:3, name:"VegasRunner", loc:"Queens", offer:null}
-        ];
+        // ====================== PEERJS MULTIPLAYER ======================
+        let myPeer = null;
+        let connections = [];
+        let myID = "";
 
+        function initPeer() {
+            myPeer = new Peer(); // Free public broker
+            myPeer.on('open', id => {
+                myID = id;
+                console.log("Your Peer ID:", id);
+            });
+            myPeer.on('connection', conn => {
+                connections.push(conn);
+                conn.on('data', data => handleTradeOffer(data, conn));
+            });
+        }
+
+        function joinRoom() {
+            const code = prompt("Enter friend's Peer ID or room code:");
+            if (!code) return;
+            const conn = myPeer.connect(code);
+            conn.on('open', () => {
+                connections.push(conn);
+                alert("✅ Connected! You can now trade with them.");
+            });
+        }
+
+        function showMyID() {
+            if (myID) {
+                alert("Your Peer ID (share this with friends):\n\n" + myID);
+            } else {
+                alert("PeerJS is still connecting...");
+            }
+        }
+
+        function handleTradeOffer(data, conn) {
+            if (confirm(`Trade offer from peer:\n${data.qty} ${data.itemName} for $${data.price}`)) {
+                game.cash -= data.price;
+                game.inventory[data.itemId] = (game.inventory[data.itemId] || 0) + data.qty;
+                renderHeader();
+                alert("✅ Trade accepted!");
+            }
+        }
+
+        // ====================== RENDER FUNCTIONS ======================
         function renderLocations() {
             const container = document.getElementById('location-list');
             container.innerHTML = '';
@@ -131,10 +148,7 @@
                 const active = i === game.currentLocation ? 'ring-2 ring-emerald-400 scale-105' : '';
                 const div = document.createElement('div');
                 div.className = `flex-shrink-0 w-20 py-3 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
-                div.innerHTML = `
-                    <div class="text-4xl mb-1">${loc.emoji}</div>
-                    <div class="text-[10px] font-bold leading-tight">${loc.name}</div>
-                `;
+                div.innerHTML = `<div class="text-4xl mb-1">${loc.emoji}</div><div class="text-[10px] font-bold">${loc.name}</div>`;
                 div.onclick = () => {
                     game.currentLocation = i;
                     document.getElementById('current-location').textContent = loc.name;
@@ -148,7 +162,6 @@
         function renderGoods() {
             const container = document.getElementById('goods-list');
             container.innerHTML = '';
-            
             game.goods.forEach(g => {
                 const held = game.inventory[g.id] || 0;
                 const div = document.createElement('div');
@@ -158,51 +171,31 @@
                         <div class="font-medium">${g.name}</div>
                         <div class="text-emerald-400 font-mono">$${g.price}</div>
                     </div>
-                    <div class="text-xs text-zinc-400 mb-2">Held: <span class="font-bold text-white">${held}</span></div>
-                    <input type="range" min="0" max="80" value="${held}" 
-                           class="slider w-full mb-1" 
-                           oninput="updatePreview(this, ${g.id})">
-                    <div class="flex justify-between text-[10px] text-zinc-400">
-                        <div>0</div>
-                        <div>MAX</div>
-                    </div>
+                    <div class="text-xs text-zinc-400 mb-2">Held: <span class="font-bold">${held}</span></div>
+                    <input type="range" min="0" max="80" value="${held}" class="slider w-full" 
+                           oninput="console.log('Adjusting ${g.name}')">
                 `;
                 container.appendChild(div);
             });
         }
 
-        function updatePreview(slider, id) {
-            // Simple live update simulation
-            console.log(`Adjusting item ${id} to ${slider.value}`);
-        }
-
         function renderNearby() {
+            // Demo players + connected peers
+            const demo = [
+                {name:"ShadowNYC", loc:"Manhattan", offer:{itemId:3, itemName:"Luxury Watches", qty:6, price:5200}}
+            ];
             const container = document.getElementById('nearby-list');
-            container.innerHTML = nearbyPlayers.map(p => `
-                <div onclick="startTrade(${p.id})" class="bg-zinc-800 p-4 rounded-2xl flex justify-between items-center cursor-pointer active:bg-zinc-700">
-                    <div>
-                        <div class="font-medium">${p.name}</div>
-                        <div class="text-xs text-zinc-400">${p.loc}</div>
-                    </div>
-                    ${p.offer ? `
-                    <div class="text-right">
-                        <div class="text-emerald-400 text-sm">$${p.offer.price}</div>
-                        <div class="text-xs">${p.offer.qty} units</div>
-                    </div>` : `<div class="text-xs text-zinc-500">No current offer</div>`}
+            container.innerHTML = demo.map(p => `
+                <div onclick="sendDemoTrade()" class="bg-zinc-800 p-4 rounded-2xl flex justify-between cursor-pointer active:bg-zinc-700">
+                    <div><div class="font-medium">${p.name}</div><div class="text-xs text-zinc-400">${p.loc}</div></div>
+                    <div class="text-right"><div class="text-emerald-400">$${p.offer.price}</div><div class="text-xs">${p.offer.qty} units</div></div>
                 </div>
             `).join('');
-            document.getElementById('nearby-count').textContent = `(${nearbyPlayers.length})`;
+            document.getElementById('nearby-count').textContent = `(${demo.length})`;
         }
 
-        function startTrade(id) {
-            const trader = nearbyPlayers.find(p => p.id === id);
-            if (!trader || !trader.offer) return;
-            if (confirm(`Trade with ${trader.name}?\n${trader.offer.qty} ${game.goods[trader.offer.item].name} for $${trader.offer.price}?`)) {
-                game.cash -= trader.offer.price;
-                game.inventory[trader.offer.item] = (game.inventory[trader.offer.item] || 0) + trader.offer.qty;
-                renderHeader();
-                alert("✅ Trade complete! Goods added to coat.");
-            }
+        function sendDemoTrade() {
+            alert("This is a demo trade.\n\nFor real multiplayer, share your Peer ID with friends and use JOIN ROOM.");
         }
 
         function renderHeader() {
@@ -213,54 +206,50 @@
         }
 
         function payDebt() {
-            const amount = prompt(`How much would you like to pay?\nCurrent debt: $${game.debt}`, game.debt);
+            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
             if (!amount) return;
-            const pay = Math.min(Math.max(0, parseInt(amount) || 0), game.cash);
+            const pay = Math.min(Math.max(0, parseInt(amount)), game.cash);
             if (pay === 0) return;
-            
             game.cash -= pay;
             game.debt = Math.max(0, game.debt - pay);
             renderHeader();
-            alert(`✅ Paid $${pay.toLocaleString()}\nNew debt: $${game.debt.toLocaleString()}`);
+            alert(`Paid $${pay.toLocaleString()}. New debt: $${game.debt.toLocaleString()}`);
         }
 
         function travel() {
             game.day++;
             if (game.day > game.maxDays) {
-                const final = Math.max(0, game.cash - game.debt);
-                alert(`Game Over!\n\nFinal score after debt: $${final.toLocaleString()}\nThanks for playing Smuggler’s Coat!`);
+                alert(`Game Over!\nFinal cash after debt: $${Math.max(0, game.cash - game.debt)}`);
                 return;
             }
-            // Daily interest
             game.debt = Math.floor(game.debt * 1.015);
             renderHeader();
-            alert(`Day ${game.day} started.\nNew prices and traders loaded.`);
+            alert(`Day ${game.day} started.`);
         }
 
-        // Rotating disclaimer
         function rotateDisclaimer() {
-            const messages = ["SAY NO TO DRUGS", "THIS IS FOR ENTERTAINMENT PURPOSES ONLY"];
-            let index = 0;
+            const msgs = ["SAY NO TO DRUGS", "THIS IS FOR ENTERTAINMENT PURPOSES ONLY"];
+            let i = 0;
             setInterval(() => {
-                index = (index + 1) % messages.length;
-                document.getElementById('disclaimer').textContent = messages[index];
+                i = (i + 1) % msgs.length;
+                document.getElementById('disclaimer').textContent = msgs[i];
             }, 5000);
         }
 
-        // Initialize everything
-        window.onload = function() {
+        // ====================== START ======================
+        window.onload = () => {
             renderLocations();
             renderHeader();
             renderGoods();
             renderNearby();
             rotateDisclaimer();
+            initPeer();
             
-            // Make loan shark banner visible if starting there
             if (game.locations[game.currentLocation].isLoan) {
                 document.getElementById('loan-banner').classList.remove('hidden');
             }
             
-            console.log("%c✅ Smuggler's Coat ready on your phone!", "color:#10b981; font-size:14px");
+            console.log("%c✅ Smuggler’s Coat with PeerJS ready!", "color:#10b981");
         };
     </script>
 </body>
