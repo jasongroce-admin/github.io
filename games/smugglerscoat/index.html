@@ -8,13 +8,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         .game-container { max-width: 520px; margin: 0 auto; min-height: 100vh; }
-        .action-btn { height: 58px; font-size: 1.15rem; font-weight: bold; }
+        .action-btn { height: 58px; font-size: 1.1rem; font-weight: bold; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     <div class="game-container flex flex-col">
 
-        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30">
+        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30 sticky top-0">
             <h1 class="text-3xl font-bold">SMUGGLER’S COAT</h1>
             <div class="flex gap-2">
                 <button onclick="saveGame()" class="bg-emerald-700 px-4 py-1 rounded-xl text-sm">SAVE</button>
@@ -30,26 +30,38 @@
                 <span id="suspicion-text" class="font-bold">25%</span>
             </div>
             <div class="h-3 bg-zinc-800 rounded-full overflow-hidden">
-                <div id="suspicion-bar" class="h-3 bg-amber-400 transition-all duration-300" style="width:25%"></div>
+                <div id="suspicion-bar" class="h-3 bg-amber-400 transition-all" style="width:25%"></div>
             </div>
         </div>
 
         <div class="flex-1 p-4 overflow-y-auto pb-20">
             <!-- Stats -->
-            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6 text-center">
-                <div><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
-                <div><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
-                <div><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
-                <div><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
+            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6">
+                <div class="text-center"><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">1</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$2,450</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$5,500</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">18/120</div></div>
             </div>
 
-            <!-- Location -->
+            <!-- Locations -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <span id="current-location" class="text-2xl font-bold">SHIP YARD</span>
                     <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm">TRAVEL →</button>
                 </div>
                 <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
+            </div>
+
+            <!-- Ship Yard Discount -->
+            <div id="shipyard-banner" class="bg-gradient-to-r from-cyan-900 to-blue-900 rounded-3xl p-5 mb-6 text-center hidden">
+                <div class="font-bold">⚓ SHIP YARD WEEKLY DISCOUNT</div>
+                <p class="text-sm">All goods 30% off today!</p>
+            </div>
+
+            <!-- Loan Shark -->
+            <div id="loan-banner" class="hidden bg-gradient-to-br from-red-900 to-red-950 rounded-3xl p-6 mb-6 text-center">
+                <div class="text-2xl font-bold mb-4">💰 LOAN SHARK OFFICE</div>
+                <button onclick="payDebt()" class="w-full py-6 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-bold">PAY BACK DEBT NOW</button>
             </div>
 
             <!-- Your Coat -->
@@ -91,19 +103,33 @@
             {id:4, name:"Rare Painting", price:9200}
         ];
 
-        function saveGame() {
-            localStorage.setItem("smugglerSave", JSON.stringify(game));
-            alert("✅ Progress Saved!");
-        }
+        const locations = [
+            {name: "SHIP YARD", emoji: "⚓", index: 0},
+            {name: "BRONX", emoji: "🏙️", index: 1},
+            {name: "MANHATTAN", emoji: "🌆", index: 2},
+            {name: "BROOKLYN", emoji: "🌉", index: 3},
+            {name: "QUEENS", emoji: "🛫", index: 4},
+            {name: "CONEY ISLAND", emoji: "🎡", index: 5},
+            {name: "LOAN SHARK", emoji: "💰", isLoan: true, index: 6}
+        ];
 
-        function loadGame() {
-            const saved = localStorage.getItem("smugglerSave");
-            if (saved) {
-                game = JSON.parse(saved);
-                renderGoods();
-                renderHeader();
-                alert("✅ Progress Loaded!");
-            }
+        function renderLocations() {
+            const container = document.getElementById('location-list');
+            container.innerHTML = '';
+            locations.forEach(loc => {
+                const active = loc.index === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
+                const div = document.createElement('div');
+                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
+                div.onclick = () => {
+                    game.currentLocation = loc.index;
+                    document.getElementById('current-location').textContent = loc.name;
+                    document.getElementById('loan-banner').classList.toggle('hidden', !loc.isLoan);
+                    document.getElementById('shipyard-banner').classList.toggle('hidden', !(loc.index === 0 && game.day % 7 === 0));
+                    renderLocations();
+                };
+                container.appendChild(div);
+            });
         }
 
         function renderGoods() {
@@ -131,8 +157,7 @@
                         <button onclick="changeAmount(${g.id}, 1)" class="action-btn flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">BUY</button>
                     </div>
                     <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
-                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'NO CHANGE'}
-                        → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
+                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
                     </div>
                 `;
                 container.appendChild(div);
@@ -148,15 +173,14 @@
 
         function confirmTrade() {
             let totalCost = 0;
-
             Object.keys(pending).forEach(id => {
                 const delta = pending[id] - (game.inventory[id] || 0);
                 const price = goodsList.find(g => g.id === parseInt(id)).price;
-                totalCost += delta * price;           // ← Correct cash flow
+                totalCost += delta * price;
                 game.inventory[id] = pending[id];
             });
 
-            game.cash += totalCost;                   // Apply real money change
+            game.cash += totalCost;
             if (game.cash < 0) game.cash = 0;
 
             game.coatUsed = Object.values(game.inventory).reduce((a,b) => a + b, 0);
@@ -164,19 +188,27 @@
 
             renderGoods();
             renderHeader();
-            alert("✅ Trade completed successfully!");
+            alert("✅ Trade completed!");
         }
 
-        function undoTrade() {
-            pending = {};
-            renderGoods();
-        }
+        function undoTrade() { pending = {}; renderGoods(); }
 
         function renderHeader() {
             document.getElementById('day').textContent = game.day;
             document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
             document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
             document.getElementById('coat').textContent = game.coatUsed + '/' + game.coatMax;
+        }
+
+        function payDebt() {
+            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
+            if (!amount) return;
+            const pay = Math.min(parseInt(amount) || 0, game.cash);
+            if (pay <= 0) return;
+            game.cash -= pay;
+            game.debt = Math.max(0, game.debt - pay);
+            renderHeader();
+            alert(`Paid $${pay.toLocaleString()}`);
         }
 
         function travel() {
@@ -190,7 +222,24 @@
             if (confirm("Reset entire game?")) location.reload();
         }
 
+        function saveGame() {
+            localStorage.setItem("smugglerSave", JSON.stringify(game));
+            alert("✅ Game Saved!");
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem("smugglerSave");
+            if (saved) {
+                game = JSON.parse(saved);
+                renderGoods();
+                renderHeader();
+                renderLocations();
+                alert("✅ Game Loaded!");
+            }
+        }
+
         window.onload = () => {
+            renderLocations();
             renderGoods();
             renderHeader();
         };
