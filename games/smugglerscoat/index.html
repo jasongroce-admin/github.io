@@ -5,25 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smuggler’s Coat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-        body { font-family: system-ui, sans-serif; }
         .game-container { max-width: 520px; margin: 0 auto; min-height: 100vh; }
-        .big-btn { width: 56px; height: 56px; font-size: 28px; line-height: 1; }
+        .big-btn { width: 64px; height: 64px; font-size: 32px; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     <div class="game-container flex flex-col">
 
-        <!-- HEADER -->
         <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30">
-            <h1 class="text-3xl font-bold tracking-tighter">SMUGGLER’S COAT</h1>
-            <div class="text-xs bg-emerald-900 px-3 py-2 rounded-2xl">DEMO MODE</div>
+            <h1 class="text-3xl font-bold">SMUGGLER’S COAT</h1>
+            <div class="flex gap-2">
+                <button onclick="resetGame()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-sm">RESET GAME</button>
+            </div>
         </nav>
 
         <div class="flex-1 p-4 overflow-y-auto">
-            
-            <!-- STATS -->
+            <!-- Stats -->
             <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6">
                 <div class="text-center"><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">12</div></div>
                 <div class="text-center"><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$18,420</div></div>
@@ -31,7 +31,17 @@
                 <div class="text-center"><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">67/120</div></div>
             </div>
 
-            <!-- LOCATIONS -->
+            <!-- Multiplayer Room -->
+            <div class="bg-zinc-900 rounded-3xl p-4 mb-6 text-center">
+                <div class="text-sm text-emerald-400 mb-2">MULTIPLAYER ROOM</div>
+                <div onclick="copyRoomInfo()" class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 rounded-2xl p-4">
+                    <div class="text-xs text-zinc-400">ROOM CODE</div>
+                    <div id="room-code" class="text-4xl font-bold text-emerald-400">47291</div>
+                    <div class="text-xs text-zinc-500 mt-1">Tap to copy • Share with friends</div>
+                </div>
+            </div>
+
+            <!-- Locations -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3 px-1">
                     <span id="current-location" class="text-2xl font-bold">MANHATTAN</span>
@@ -40,43 +50,43 @@
                 <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
 
-            <!-- LOAN SHARK -->
+            <!-- Loan Shark -->
             <div id="loan-banner" class="hidden bg-gradient-to-br from-red-900 to-red-950 rounded-3xl p-6 mb-6 text-center">
                 <div class="text-2xl font-bold mb-4">💰 LOAN SHARK OFFICE</div>
                 <button onclick="payDebt()" class="w-full py-6 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-bold">PAY BACK DEBT NOW</button>
             </div>
 
-            <!-- COAT SECTION -->
-            <div class="bg-zinc-900 rounded-3xl p-5 mb-6">
+            <!-- Trading -->
+            <div class="bg-zinc-900 rounded-3xl p-5">
                 <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl p-4 mb-6 text-sm">
                     <strong>How to trade:</strong><br>
-                    Use the + and – buttons or tap the number to change quantity.<br>
-                    Watch the cost preview. Tap <strong>CONFIRM TRADE</strong> when ready.
+                    • <span class="text-emerald-400">+</span> = BUY (costs money)<br>
+                    • <span class="text-red-400">–</span> = SELL (earns money)<br>
+                    Big number = final amount after trade
                 </div>
 
                 <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
                 <div id="goods-list" class="space-y-6"></div>
 
                 <div class="flex gap-4 mt-8">
-                    <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO CHANGES</button>
+                    <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO</button>
                     <button onclick="confirmTrade()" class="flex-1 py-6 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
                 </div>
             </div>
         </div>
 
-        <!-- FOOTER -->
         <div class="text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400">
-            THIS IS FOR ENTERTAINMENT PURPOSES ONLY • SAY NO TO DRUGS
+            THIS IS FOR ENTERTAINMENT PURPOSES ONLY
         </div>
     </div>
 
     <script>
         let game = {
-            day: 12, maxDays: 30,
-            cash: 18420, debt: 3200,
-            coatMax: 120, coatUsed: 67,
+            day: 1, maxDays: 30,
+            cash: 2450, debt: 5500,
+            coatMax: 120, coatUsed: 42,
             currentLocation: 1,
-            inventory: {0:12, 1:5, 2:23, 3:4},
+            inventory: {0:0, 1:0, 2:0, 3:0},
             locations: [
                 {name: "BRONX", emoji: "🏙️"},
                 {name: "MANHATTAN", emoji: "🌆"},
@@ -94,14 +104,40 @@
         };
 
         let pending = {};
+        let roomCode = "47291";
 
+        function generateRoomCode() {
+            roomCode = Math.floor(10000 + Math.random() * 90000).toString();
+            document.getElementById('room-code').textContent = roomCode;
+        }
+
+        function copyRoomInfo() {
+            navigator.clipboard.writeText(`Room Code: ${roomCode}`);
+            alert(`✅ Copied!\nRoom Code: ${roomCode}\nShare this with friends!`);
+        }
+
+        function resetGame() {
+            if (confirm("Reset entire game and start fresh?")) {
+                game.day = 1;
+                game.cash = 2450;
+                game.debt = 5500;
+                game.coatUsed = 42;
+                game.inventory = {0:0, 1:0, 2:0, 3:0};
+                pending = {};
+                renderHeader();
+                renderGoods();
+                alert("Game has been reset!");
+            }
+        }
+
+        // Rest of functions (renderLocations, renderGoods, etc.)
         function renderLocations() {
             const container = document.getElementById('location-list');
             container.innerHTML = '';
             game.locations.forEach((loc, i) => {
-                const active = i === game.currentLocation ? 'ring-2 ring-emerald-400 scale-110' : '';
+                const active = i === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
                 const div = document.createElement('div');
-                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
                 div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
                 div.onclick = () => {
                     game.currentLocation = i;
@@ -129,18 +165,17 @@
                         <div class="font-semibold text-lg">${g.name}</div>
                         <div class="text-emerald-400 font-mono">$${g.price}</div>
                     </div>
-                    <div class="flex items-center justify-center gap-4 mb-4">
-                        <button onclick="changeAmount(${g.id}, -1)" class="big-btn bg-red-600 hover:bg-red-700 rounded-2xl text-white flex items-center justify-center">-</button>
-                        <input type="number" value="${target}" 
-                               class="text-center text-5xl font-bold bg-transparent w-28 focus:outline-none text-emerald-400"
-                               onchange="setAmount(${g.id}, this.value)">
-                        <button onclick="changeAmount(${g.id}, 1)" class="big-btn bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white flex items-center justify-center">+</button>
+                    <div class="flex items-center justify-center gap-6 mb-5">
+                        <button onclick="changeAmount(${g.id}, -1)" class="big-btn bg-red-600 hover:bg-red-700 rounded-2xl text-white">-</button>
+                        <div class="text-center">
+                            <div class="text-6xl font-bold text-emerald-400">${target}</div>
+                            <div class="text-xs text-zinc-400">final amount</div>
+                        </div>
+                        <button onclick="changeAmount(${g.id}, 1)" class="big-btn bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white">+</button>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span>Held: <strong>${held}</strong></span>
-                        <span class="${cost >= 0 ? 'text-red-400' : 'text-emerald-400'} font-medium">
-                            ${cost >= 0 ? '–' : '+'}$${Math.abs(cost)}
-                        </span>
+                    <div class="text-center text-sm font-medium ${delta > 0 ? 'text-red-400' : delta < 0 ? 'text-emerald-400' : 'text-zinc-400'}">
+                        ${delta > 0 ? `BUY ${delta}` : delta < 0 ? `SELL ${Math.abs(delta)}` : 'NO CHANGE'}
+                        → ${cost > 0 ? `–$${cost}` : cost < 0 ? `+$${Math.abs(cost)}` : '$0'}
                     </div>
                 `;
                 container.appendChild(div);
@@ -149,16 +184,11 @@
 
         function changeAmount(id, delta) {
             const current = pending[id] !== undefined ? pending[id] : (game.inventory[id] || 0);
+            let newTarget = Math.max(0, current + delta);
             const good = game.goods.find(g => g.id === id);
-            let newVal = Math.max(0, current + delta);
             const max = Math.floor(game.coatMax / good.space);
-            if (newVal > max) newVal = max;
-            pending[id] = newVal;
-            renderGoods();
-        }
-
-        function setAmount(id, val) {
-            pending[id] = Math.max(0, parseInt(val) || 0);
+            if (newTarget > max) newTarget = max;
+            pending[id] = newTarget;
             renderGoods();
         }
 
@@ -172,17 +202,13 @@
             });
             if (game.cash + totalCost < 0) return alert("Not enough cash!");
             game.cash += totalCost;
-            game.coatUsed = Object.values(game.inventory).reduce((a,b)=>a+b,0); // simplified
             pending = {};
             renderHeader();
             renderGoods();
             alert("✅ Trade confirmed!");
         }
 
-        function undoTrade() {
-            pending = {};
-            renderGoods();
-        }
+        function undoTrade() { pending = {}; renderGoods(); }
 
         function renderHeader() {
             document.getElementById('day').textContent = game.day;
@@ -192,9 +218,9 @@
         }
 
         function payDebt() {
-            const amount = prompt(`How much to pay? (Current debt: $${game.debt})`, game.debt);
+            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
             if (!amount) return;
-            const pay = Math.min(parseInt(amount) || 0, game.cash);
+            const pay = Math.min(parseInt(amount), game.cash);
             if (pay <= 0) return;
             game.cash -= pay;
             game.debt = Math.max(0, game.debt - pay);
@@ -207,15 +233,15 @@
             if (game.day > game.maxDays) return alert("Game Over!");
             game.debt = Math.floor(game.debt * 1.015);
             renderHeader();
-            alert(`Advanced to day ${game.day}`);
+            alert(`Day ${game.day} started`);
         }
 
-        // Initialize
+        // Start the game
         window.onload = () => {
+            generateRoomCode();
             renderLocations();
             renderHeader();
             renderGoods();
-            console.log("%c✅ Smuggler’s Coat ready on phone & desktop!", "color:#10b981;font-size:16px");
         };
     </script>
 </body>
