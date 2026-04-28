@@ -3,89 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smuggler’s Coat • LIVE</title>
+    <title>Smuggler’s Coat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-        .game-container { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-        .loan-shark { background: linear-gradient(#4c1d16, #7f1d1d); }
-        .btn-big { width: 48px; height: 48px; font-size: 1.5rem; line-height: 1; }
+        body { font-family: system-ui, sans-serif; }
+        .game-container { max-width: 520px; margin: 0 auto; min-height: 100vh; }
+        .big-btn { width: 56px; height: 56px; font-size: 28px; line-height: 1; }
     </style>
 </head>
-<body class="bg-zinc-950 text-white font-sans">
-    <div id="app" class="game-container">
-        <nav class="bg-black p-3 flex justify-between items-center border-b border-emerald-500/30 sticky top-0">
-            <h1 class="font-bold text-2xl">SMUGGLER’S COAT</h1>
-            <div class="flex gap-2">
-                <button onclick="createRoom()" class="bg-emerald-600 px-4 py-1 rounded-xl text-sm">CREATE ROOM</button>
-                <button onclick="joinRoom()" class="bg-zinc-700 px-4 py-1 rounded-xl text-sm">JOIN ROOM</button>
-            </div>
+<body class="bg-zinc-950 text-white">
+    <div class="game-container flex flex-col">
+
+        <!-- HEADER -->
+        <nav class="bg-black p-4 flex justify-between items-center border-b border-emerald-500/30">
+            <h1 class="text-3xl font-bold tracking-tighter">SMUGGLER’S COAT</h1>
+            <div class="text-xs bg-emerald-900 px-3 py-2 rounded-2xl">DEMO MODE</div>
         </nav>
 
-        <div class="flex-1 p-4 overflow-y-auto pb-24">
-            <!-- Stats -->
-            <div class="grid grid-cols-4 gap-2 text-center bg-zinc-900 p-3 rounded-3xl mb-5">
-                <div><div class="text-[10px] text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">12</div></div>
-                <div><div class="text-[10px] text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$18,420</div></div>
-                <div><div class="text-[10px] text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$3,200</div></div>
-                <div><div class="text-[10px] text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">67/120</div></div>
+        <div class="flex-1 p-4 overflow-y-auto">
+            
+            <!-- STATS -->
+            <div class="grid grid-cols-4 gap-3 bg-zinc-900 p-4 rounded-3xl mb-6">
+                <div class="text-center"><div class="text-xs text-zinc-400">DAY</div><div id="day" class="text-3xl font-bold text-emerald-400">12</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">CASH</div><div id="cash" class="text-3xl font-bold">$18,420</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">DEBT</div><div id="debt" class="text-3xl font-bold text-red-400">$3,200</div></div>
+                <div class="text-center"><div class="text-xs text-zinc-400">COAT</div><div id="coat" class="text-3xl font-bold">67/120</div></div>
             </div>
 
-            <!-- Location -->
-            <div class="mb-5">
-                <div class="flex justify-between items-center mb-3">
-                    <span id="current-location" class="text-xl font-bold">MANHATTAN</span>
+            <!-- LOCATIONS -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <span id="current-location" class="text-2xl font-bold">MANHATTAN</span>
                     <button onclick="travel()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl text-sm">TRAVEL →</button>
                 </div>
-                <div id="location-list" class="flex gap-3 overflow-x-auto pb-3"></div>
+                <div id="location-list" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
 
-            <!-- Loan Shark -->
-            <div id="loan-banner" class="hidden loan-shark rounded-3xl p-5 mb-6 text-center">
-                <div class="text-xl font-bold mb-2">💰 LOAN SHARK OFFICE</div>
-                <button onclick="payDebt()" class="w-full py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-white font-bold text-lg">PAY BACK DEBT NOW</button>
+            <!-- LOAN SHARK -->
+            <div id="loan-banner" class="hidden bg-gradient-to-br from-red-900 to-red-950 rounded-3xl p-6 mb-6 text-center">
+                <div class="text-2xl font-bold mb-4">💰 LOAN SHARK OFFICE</div>
+                <button onclick="payDebt()" class="w-full py-6 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-bold">PAY BACK DEBT NOW</button>
             </div>
 
-            <!-- Nearby -->
+            <!-- COAT SECTION -->
             <div class="bg-zinc-900 rounded-3xl p-5 mb-6">
-                <h3 class="text-sm font-medium mb-4">NEARBY SMUGGLERS <span id="nearby-count" class="text-emerald-400">(0)</span></h3>
-                <div id="nearby-list" class="space-y-3"></div>
-            </div>
-
-            <!-- YOUR COAT - IMPROVED -->
-            <div class="bg-zinc-900 rounded-3xl p-5">
-                <div class="mb-5 bg-emerald-900/30 rounded-2xl p-4 text-sm">
+                <div class="bg-emerald-900/30 border border-emerald-500/30 rounded-2xl p-4 mb-6 text-sm">
                     <strong>How to trade:</strong><br>
-                    Tap the big <span class="text-emerald-400">+</span> or <span class="text-red-400">–</span> buttons (or type a number) to change how many you want.<br>
-                    Watch the <strong>COST</strong> preview below. When ready, tap <strong>CONFIRM TRADE</strong>.
+                    Use the + and – buttons or tap the number to change quantity.<br>
+                    Watch the cost preview. Tap <strong>CONFIRM TRADE</strong> when ready.
                 </div>
 
-                <h2 class="text-lg font-semibold mb-4">YOUR COAT</h2>
+                <h2 class="text-xl font-bold mb-5">YOUR COAT</h2>
                 <div id="goods-list" class="space-y-6"></div>
 
-                <!-- Trade summary and buttons -->
-                <div id="trade-summary" class="mt-6 p-4 bg-zinc-800 rounded-2xl text-center text-sm hidden"></div>
-
-                <div class="flex gap-3 mt-6">
-                    <button onclick="undoTrade()" class="flex-1 py-5 bg-zinc-800 hover:bg-red-900/30 text-red-400 font-semibold rounded-2xl">UNDO</button>
-                    <button onclick="confirmTrade()" class="flex-1 py-5 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
+                <div class="flex gap-4 mt-8">
+                    <button onclick="undoTrade()" class="flex-1 py-6 bg-zinc-800 hover:bg-red-900/30 rounded-2xl text-red-400 font-bold">UNDO CHANGES</button>
+                    <button onclick="confirmTrade()" class="flex-1 py-6 bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-2xl">CONFIRM TRADE</button>
                 </div>
             </div>
         </div>
 
-        <div id="disclaimer" class="fixed bottom-0 left-0 right-0 text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400">
-            THIS IS FOR ENTERTAINMENT PURPOSES ONLY
+        <!-- FOOTER -->
+        <div class="text-center text-xs py-4 bg-black border-t border-emerald-500/30 text-emerald-400">
+            THIS IS FOR ENTERTAINMENT PURPOSES ONLY • SAY NO TO DRUGS
         </div>
     </div>
 
     <script>
-        // Game state (same as before)
         let game = {
-            day: 12, maxDays: 30, cash: 18420, debt: 3200,
-            coatMax: 120, coatUsed: 67, currentLocation: 1,
-            inventory: {0:12, 1:5, 2:23},
-            locations: [{name:"BRONX",emoji:"🏙️"},{name:"MANHATTAN",emoji:"🌆"},{name:"BROOKLYN",emoji:"🌉"},{name:"QUEENS",emoji:"🛫"},{name:"CONEY ISLAND",emoji:"🎡"},{name:"LOAN SHARK",emoji:"💰",isLoan:true}],
+            day: 12, maxDays: 30,
+            cash: 18420, debt: 3200,
+            coatMax: 120, coatUsed: 67,
+            currentLocation: 1,
+            inventory: {0:12, 1:5, 2:23, 3:4},
+            locations: [
+                {name: "BRONX", emoji: "🏙️"},
+                {name: "MANHATTAN", emoji: "🌆"},
+                {name: "BROOKLYN", emoji: "🌉"},
+                {name: "QUEENS", emoji: "🛫"},
+                {name: "CONEY ISLAND", emoji: "🎡"},
+                {name: "LOAN SHARK", emoji: "💰", isLoan: true}
+            ],
             goods: [
                 {id:0, name:"Cuban Cigars", price:520, space:1},
                 {id:1, name:"Fine Whiskey", price:1250, space:2},
@@ -94,24 +93,16 @@
             ]
         };
 
-        let pending = {}; // what the player is changing right now
+        let pending = {};
 
-        // PeerJS (same simple room system)
-        let myPeer = null, myID = "";
-        function initPeer() {
-            myPeer = new Peer();
-            myPeer.on('open', id => myID = id);
-        }
-        function createRoom() { alert("Room code example: ABC123\n\n(Share your Peer ID with friends)"); }
-        function joinRoom() { alert("Enter room code + host Peer ID"); }
-
-        function renderLocations() { /* same as previous */ 
+        function renderLocations() {
             const container = document.getElementById('location-list');
             container.innerHTML = '';
-            game.locations.forEach((loc,i) => {
+            game.locations.forEach((loc, i) => {
+                const active = i === game.currentLocation ? 'ring-2 ring-emerald-400 scale-110' : '';
                 const div = document.createElement('div');
-                div.className = `flex-shrink-0 w-20 py-3 bg-zinc-800 rounded-2xl text-center cursor-pointer ${i===game.currentLocation?'ring-2 ring-emerald-400':''} ${loc.isLoan?'border-2 border-red-500':''}`;
-                div.innerHTML = `<div class="text-4xl mb-1">${loc.emoji}</div><div class="text-[10px] font-bold">${loc.name}</div>`;
+                div.className = `flex-shrink-0 w-20 py-4 bg-zinc-800 rounded-2xl text-center cursor-pointer transition-all ${active} ${loc.isLoan ? 'border-2 border-red-500' : ''}`;
+                div.innerHTML = `<div class="text-5xl mb-1">${loc.emoji}</div><div class="text-xs font-bold">${loc.name}</div>`;
                 div.onclick = () => {
                     game.currentLocation = i;
                     document.getElementById('current-location').textContent = loc.name;
@@ -132,22 +123,22 @@
                 const cost = delta * g.price;
 
                 const div = document.createElement('div');
-                div.className = 'bg-zinc-800 rounded-2xl p-4';
+                div.className = 'bg-zinc-800 rounded-2xl p-5';
                 div.innerHTML = `
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="font-medium">${g.name}</div>
+                    <div class="flex justify-between mb-4">
+                        <div class="font-semibold text-lg">${g.name}</div>
                         <div class="text-emerald-400 font-mono">$${g.price}</div>
                     </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <button onclick="changeAmount(${g.id}, -1)" class="btn-big bg-red-600 hover:bg-red-700 rounded-xl text-white flex items-center justify-center">-</button>
-                        <input type="text" value="${target}" 
-                               class="text-center text-4xl font-bold bg-transparent w-24 focus:outline-none text-emerald-400"
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <button onclick="changeAmount(${g.id}, -1)" class="big-btn bg-red-600 hover:bg-red-700 rounded-2xl text-white flex items-center justify-center">-</button>
+                        <input type="number" value="${target}" 
+                               class="text-center text-5xl font-bold bg-transparent w-28 focus:outline-none text-emerald-400"
                                onchange="setAmount(${g.id}, this.value)">
-                        <button onclick="changeAmount(${g.id}, 1)" class="btn-big bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white flex items-center justify-center">+</button>
+                        <button onclick="changeAmount(${g.id}, 1)" class="big-btn bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white flex items-center justify-center">+</button>
                     </div>
-                    <div class="text-xs flex justify-between">
+                    <div class="flex justify-between text-sm">
                         <span>Held: <strong>${held}</strong></span>
-                        <span class="${cost >= 0 ? 'text-red-400' : 'text-emerald-400'}">
+                        <span class="${cost >= 0 ? 'text-red-400' : 'text-emerald-400'} font-medium">
                             ${cost >= 0 ? '–' : '+'}$${Math.abs(cost)}
                         </span>
                     </div>
@@ -158,9 +149,10 @@
 
         function changeAmount(id, delta) {
             const current = pending[id] !== undefined ? pending[id] : (game.inventory[id] || 0);
-            const maxPossible = Math.floor(game.coatMax / game.goods.find(g => g.id === id).space);
+            const good = game.goods.find(g => g.id === id);
             let newVal = Math.max(0, current + delta);
-            if (newVal > maxPossible) newVal = maxPossible;
+            const max = Math.floor(game.coatMax / good.space);
+            if (newVal > max) newVal = max;
             pending[id] = newVal;
             renderGoods();
         }
@@ -168,13 +160,6 @@
         function setAmount(id, val) {
             pending[id] = Math.max(0, parseInt(val) || 0);
             renderGoods();
-        }
-
-        function renderHeader() {
-            document.getElementById('day').textContent = game.day;
-            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
-            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
-            document.getElementById('coat').textContent = game.coatUsed + '/' + game.coatMax;
         }
 
         function confirmTrade() {
@@ -185,11 +170,9 @@
                 totalCost += delta * good.price;
                 game.inventory[id] = pending[id];
             });
-            if (game.cash + totalCost < 0) {
-                alert("Not enough cash!");
-                return;
-            }
+            if (game.cash + totalCost < 0) return alert("Not enough cash!");
             game.cash += totalCost;
+            game.coatUsed = Object.values(game.inventory).reduce((a,b)=>a+b,0); // simplified
             pending = {};
             renderHeader();
             renderGoods();
@@ -201,31 +184,38 @@
             renderGoods();
         }
 
-        function payDebt() { /* same as before */ 
-            const amount = prompt(`How much to pay? (Debt: $${game.debt})`, game.debt);
+        function renderHeader() {
+            document.getElementById('day').textContent = game.day;
+            document.getElementById('cash').textContent = '$' + game.cash.toLocaleString();
+            document.getElementById('debt').textContent = '$' + game.debt.toLocaleString();
+            document.getElementById('coat').textContent = game.coatUsed + '/' + game.coatMax;
+        }
+
+        function payDebt() {
+            const amount = prompt(`How much to pay? (Current debt: $${game.debt})`, game.debt);
             if (!amount) return;
-            const pay = Math.min(Math.max(0, parseInt(amount)), game.cash);
-            if (pay === 0) return;
+            const pay = Math.min(parseInt(amount) || 0, game.cash);
+            if (pay <= 0) return;
             game.cash -= pay;
             game.debt = Math.max(0, game.debt - pay);
             renderHeader();
             alert(`Paid $${pay.toLocaleString()}`);
         }
 
-        function travel() { /* same as before */ 
+        function travel() {
             game.day++;
-            if (game.day > game.maxDays) { alert("Game Over!"); return; }
+            if (game.day > game.maxDays) return alert("Game Over!");
             game.debt = Math.floor(game.debt * 1.015);
             renderHeader();
-            alert(`Day ${game.day} started`);
+            alert(`Advanced to day ${game.day}`);
         }
 
+        // Initialize
         window.onload = () => {
             renderLocations();
             renderHeader();
             renderGoods();
-            initPeer();
-            console.log("%c✅ Mobile-friendly trading ready!", "color:#10b981");
+            console.log("%c✅ Smuggler’s Coat ready on phone & desktop!", "color:#10b981;font-size:16px");
         };
     </script>
 </body>
