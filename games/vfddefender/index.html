@@ -28088,7 +28088,7 @@ function getBossIgnitionTargets() {
     .map((ent) => ({ ent, box: getEntityBounds(ent) }))
     .filter(({ box }) => !!box)
     .map((item) => {
-      const t = String(item.ent?.type || '').toLowerCase();
+      const t = `${item.ent?.type || ''} ${item.ent?.spriteKey || ''} ${item.ent?.variant || ''}`.toLowerCase();
       const houseScore = /(house|home|school|cottage)/.test(t) ? 5 : 0;
       const treeScore = /(tree|oak|maple|pine)/.test(t) ? 4 : 0;
       const vehicleScore = /(sedan|pickup|truck|bus|tractor|vehicle)/.test(t) ? 2 : 0;
@@ -28099,7 +28099,7 @@ function getBossIgnitionTargets() {
   if (!ranked.length) return [];
   const selected = [];
   const pushFirst = (regex) => {
-    const pick = ranked.find((item) => regex.test(String(item.ent?.type || '').toLowerCase()) && !selected.includes(item));
+    const pick = ranked.find((item) => regex.test(`${item.ent?.type || ''} ${item.ent?.spriteKey || ''} ${item.ent?.variant || ''}`.toLowerCase()) && !selected.includes(item));
     if (pick) selected.push(pick);
   };
   pushFirst(/house|home|school|cottage/);
@@ -29440,6 +29440,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 

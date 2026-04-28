@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smuggler's Coat</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; letter-spacing: 0.01em; }
-    h1, h2, h3, #day, #cash, #debt, #coat, #suspicion, #current-location { font-family: 'Orbitron', 'Inter', sans-serif; }
+    h1, h2, h3, #day, #cash, #debt, #bank, #coat, #suspicion, #current-location { font-family: 'Orbitron', 'Inter', sans-serif; }
     .action-btn { height: 52px; font-size: 1.05rem; font-weight: 700; }
-    .guide-arrow { font-size: 1.2rem; color: #34d399; }
   </style>
 </head>
 <body class="bg-zinc-950 text-white">
@@ -20,38 +18,19 @@
       <h1 class="text-3xl tracking-wide">SMUGGLER'S COAT</h1>
       <div class="flex gap-2">
         <button onclick="openGuide()" class="bg-zinc-800 hover:bg-zinc-700 rounded-xl px-3 py-1">HOW TO</button>
-        <button onclick="toggleMultiplayerMenu()" class="bg-emerald-700 hover:bg-emerald-600 rounded-xl px-3 py-1">MULTIPLAYER MENU</button>
+        <button onclick="openStore()" class="bg-amber-700 hover:bg-amber-600 rounded-xl px-3 py-1">STORE</button>
+        <button onclick="openAtm()" class="bg-cyan-700 hover:bg-cyan-600 rounded-xl px-3 py-1">ATM</button>
         <button onclick="resetGame()" class="bg-red-700 hover:bg-red-600 rounded-xl px-3 py-1">RESET</button>
       </div>
     </nav>
 
-    <div id="mp-menu" class="hidden bg-zinc-900 border-b border-emerald-500/30 p-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <button onclick="createRoom()" class="bg-emerald-600 hover:bg-emerald-500 rounded-xl py-2 font-bold">CREATE ROOM</button>
-        <button onclick="joinRoom()" class="bg-zinc-700 hover:bg-zinc-600 rounded-xl py-2 font-bold">JOIN ROOM</button>
-        <button onclick="reconnectRoom()" class="bg-zinc-800 hover:bg-zinc-700 rounded-xl py-2 font-bold">RECONNECT</button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <input id="chat-name" maxlength="22" placeholder="trader nickname" class="bg-zinc-800 rounded-xl px-3 py-2 text-white" />
-        <button onclick="saveNickname()" class="bg-blue-700 hover:bg-blue-600 rounded-xl py-2 font-bold">SET TRADER NAME</button>
-        <button onclick="giveMoneyPrompt()" class="bg-amber-700 hover:bg-amber-600 rounded-xl py-2 font-bold">GIVE MONEY</button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-        <button onclick="offerGoodsPrompt()" class="bg-purple-700 hover:bg-purple-600 rounded-xl py-2 font-bold">OFFER GOODS TRADE</button>
-        <div class="bg-cyan-900/40 rounded-xl py-2 px-3 text-sm text-cyan-200">Messaging is trade-only. No free chat.</div>
-      </div>
-      <div id="mp-status" class="text-sm text-zinc-300">Multiplayer: idle</div>
-      <div id="mp-players" class="text-sm text-emerald-300">Connected players: 1</div>
-      <div id="mp-invite" class="text-xs text-zinc-400 mt-1 break-all"></div>
-      <div id="chat-log" class="mt-2 h-28 overflow-y-auto bg-zinc-800 rounded-xl p-2 text-sm"></div>
-    </div>
-
-    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-center">
-      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">DAY</div><div id="day" class="text-5xl text-emerald-400">1</div></div>
-      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">CASH</div><div id="cash" class="text-5xl">$2450</div></div>
-      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">DEBT</div><div id="debt" class="text-5xl text-red-400">$5500</div></div>
-      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">COAT</div><div id="coat" class="text-5xl">18/120</div></div>
-      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">SUSPICION</div><div id="suspicion" class="text-5xl text-yellow-300">0%</div></div>
+    <div class="p-4 grid grid-cols-2 md:grid-cols-6 gap-3 text-center">
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">DAY</div><div id="day" class="text-4xl text-emerald-400">1</div></div>
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">CASH</div><div id="cash" class="text-4xl">$2450</div></div>
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">BANK</div><div id="bank" class="text-4xl text-cyan-300">$0</div></div>
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">DEBT</div><div id="debt" class="text-4xl text-red-400">$5500</div></div>
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">COAT</div><div id="coat" class="text-4xl">0/25</div></div>
+      <div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-400 text-xs">SUSPICION</div><div id="suspicion" class="text-4xl text-yellow-300">0%</div></div>
     </div>
 
     <div class="px-4 pb-4 grid lg:grid-cols-[1fr_1.2fr] gap-4">
@@ -62,7 +41,7 @@
               <div class="text-zinc-400 text-xs">CURRENT CITY</div>
               <div id="current-location" class="text-2xl">NEW YORK DOCKS</div>
             </div>
-            <button onclick="travel()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-xl px-6 py-3 text-xl shadow-[0_0_24px_rgba(16,185,129,0.45)] border-2 border-emerald-200">TRAVEL -></button>
+            <button onclick="travel()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-xl px-6 py-3 text-xl">TRAVEL -></button>
           </div>
           <div id="location-list" class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2"></div>
           <div id="loan-hint" class="text-xs text-zinc-400 mt-2">Travel to LOAN SHARK HQ to repay debt.</div>
@@ -71,9 +50,10 @@
 
         <div class="bg-zinc-900 rounded-2xl p-4">
           <h2 class="text-xl">Day Flow</h2>
-          <p class="text-zinc-200 text-lg">Travel -> Avoid Suspicion -> Trade -> Travel</p>
+          <p class="text-zinc-200 text-lg">Travel -> Story Event -> Trade -> Upgrade</p>
           <div id="event-feed" class="text-sm text-emerald-300 mt-2">Welcome to the run.</div>
           <div id="story-progress" class="text-sm text-zinc-300 mt-2">Stories completed: 0</div>
+          <div id="buff-summary" class="text-sm text-amber-200 mt-2"></div>
         </div>
       </section>
 
@@ -88,600 +68,92 @@
     </div>
   </div>
 
-  <div id="story-modal" class="hidden fixed inset-0 z-40 bg-black/75 p-4">
-    <div class="max-w-2xl mx-auto bg-zinc-900 rounded-2xl p-4 border border-yellow-500/50 mt-12">
-      <h3 class="text-2xl text-yellow-300">Street Event</h3>
-      <div id="story-head" class="text-lg mt-2"></div>
-      <div id="story-layer" class="text-zinc-300 mt-1"></div>
-      <div id="story-question" class="text-xl mt-3"></div>
-      <div class="grid sm:grid-cols-3 gap-2 mt-3">
-        <button id="choice-a" onclick="answerStory('a')" class="bg-emerald-700 hover:bg-emerald-600 rounded-xl py-2"></button>
-        <button id="choice-b" onclick="answerStory('b')" class="bg-amber-700 hover:bg-amber-600 rounded-xl py-2"></button>
-        <button id="choice-c" onclick="answerStory('c')" class="bg-red-700 hover:bg-red-600 rounded-xl py-2"></button>
-      </div>
-      <div id="story-result" class="mt-3 text-sm text-zinc-300"></div>
-      <button id="story-close" onclick="closeStoryModal()" class="mt-3 bg-zinc-700 hover:bg-zinc-600 rounded-xl px-3 py-2 hidden">Continue</button>
-    </div>
-  </div>
+  <div id="story-modal" class="hidden fixed inset-0 z-40 bg-black/75 p-4"><div class="max-w-2xl mx-auto bg-zinc-900 rounded-2xl p-4 border border-yellow-500/50 mt-12"><h3 class="text-2xl text-yellow-300">Street Event</h3><div id="story-head" class="text-lg mt-2"></div><div id="story-layer" class="text-zinc-300 mt-1"></div><div id="story-question" class="text-xl mt-3"></div><div class="grid sm:grid-cols-3 gap-2 mt-3"><button id="choice-a" onclick="answerStory('a')" class="bg-emerald-700 hover:bg-emerald-600 rounded-xl py-2"></button><button id="choice-b" onclick="answerStory('b')" class="bg-amber-700 hover:bg-amber-600 rounded-xl py-2"></button><button id="choice-c" onclick="answerStory('c')" class="bg-red-700 hover:bg-red-600 rounded-xl py-2"></button></div><div id="story-result" class="mt-3 text-sm text-zinc-300"></div><button id="story-close" onclick="closeStoryModal()" class="mt-3 bg-zinc-700 hover:bg-zinc-600 rounded-xl px-3 py-2 hidden">Continue</button></div></div>
 
-  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-black/80 p-4">
-    <div class="max-w-2xl mx-auto bg-zinc-900 rounded-2xl p-5 border border-emerald-500/40 mt-8">
-      <h3 class="text-2xl">How To Play</h3>
-      <p class="mt-2"><span class="guide-arrow">-></span> Pick a city with good buy prices.</p>
-      <p><span class="guide-arrow">-></span> Buy low, travel, sell high in another city.</p>
-      <p><span class="guide-arrow">-></span> After every travel, answer the story/event question.</p>
-      <p><span class="guide-arrow">-></span> Keep suspicion low to avoid major losses.</p>
-      <p><span class="guide-arrow">-></span> Pay down debt before it buries your run.</p>
-      <p><span class="guide-arrow">-></span> Multiplayer is optional inside Multiplayer Menu.</p>
-      <div class="flex gap-2 mt-4">
-        <button onclick="closeGuide()" class="bg-emerald-700 hover:bg-emerald-600 rounded-xl px-4 py-2">START</button>
-        <button onclick="skipGuide()" class="bg-zinc-700 hover:bg-zinc-600 rounded-xl px-4 py-2">SKIP</button>
-      </div>
-    </div>
-  </div>
+  <div id="store-modal" class="hidden fixed inset-0 z-50 bg-black/80 p-4"><div class="max-w-3xl mx-auto bg-zinc-900 rounded-2xl p-5 border border-amber-400/50 mt-8"><div class="flex items-center justify-between"><h3 class="text-2xl text-amber-300">Underground Store</h3><button onclick="closeStore()" class="bg-zinc-700 hover:bg-zinc-600 rounded px-3 py-1">Close</button></div><div id="store-list" class="grid md:grid-cols-2 gap-3 mt-4"></div></div></div>
+
+  <div id="atm-modal" class="hidden fixed inset-0 z-50 bg-black/80 p-4"><div class="max-w-lg mx-auto bg-zinc-900 rounded-2xl p-5 border border-cyan-400/50 mt-12"><h3 class="text-2xl text-cyan-300">ATM & Safe Bank</h3><p class="text-zinc-300 mt-2">Banked money is protected from robbery events.</p><div class="text-lg mt-3">Cash: <span id="atm-cash"></span></div><div class="text-lg">Bank: <span id="atm-bank"></span></div><div class="flex gap-2 mt-4"><button onclick="atmDeposit()" class="flex-1 bg-cyan-700 hover:bg-cyan-600 rounded-xl py-2">Deposit</button><button onclick="atmWithdraw()" class="flex-1 bg-emerald-700 hover:bg-emerald-600 rounded-xl py-2">Withdraw</button><button onclick="closeAtm()" class="flex-1 bg-zinc-700 hover:bg-zinc-600 rounded-xl py-2">Done</button></div></div></div>
+
+  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-black/80 p-4"><div class="max-w-2xl mx-auto bg-zinc-900 rounded-2xl p-5 border border-emerald-500/40 mt-8"><h3 class="text-2xl">How To Play</h3><p class="mt-2">-> Start with a 25-slot jacket. Buy bigger coats and hidden gear in Store.</p><p>-> Use ATM to protect cash from robbery.</p><p>-> Every city stop has different people, histories, and outcomes.</p><p>-> Upgrades like tattoos, teeth, mohawk, and defense gear affect survival odds.</p><button onclick="closeGuide()" class="mt-4 bg-emerald-700 hover:bg-emerald-600 rounded-xl px-4 py-2">START</button></div></div>
 
 <script>
-const goodsList = [
-  { id: 0, name: 'Cuban Cigars', base: 520 },
-  { id: 1, name: 'Fine Whiskey', base: 1250 },
-  { id: 2, name: 'Designer Perfume', base: 780 },
-  { id: 3, name: 'Luxury Watches', base: 4600 },
-  { id: 4, name: 'Rare Painting', base: 9200 },
-  { id: 5, name: 'Microchips', base: 2100 },
-  { id: 6, name: 'Vintage Vinyl', base: 680 },
-  { id: 7, name: 'Cobalt Batteries', base: 3300, unlockDay: 6 },
-  { id: 8, name: 'Medical Nanogel', base: 5400, unlockDay: 12 },
-  { id: 9, name: 'Satellite Modems', base: 4100, unlockDay: 18 },
-  { id: 10, name: 'Crypto Cold Wallets', base: 6200, unlockDay: 24 },
-  { id: 11, name: 'Quantum Lenses', base: 8800, unlockDay: 30 }
+const goodsList=[{id:0,name:'Cuban Cigars',base:520},{id:1,name:'Fine Whiskey',base:1250},{id:2,name:'Designer Perfume',base:780},{id:3,name:'Luxury Watches',base:4600},{id:4,name:'Rare Painting',base:9200},{id:5,name:'Microchips',base:2100},{id:6,name:'Vintage Vinyl',base:680}];
+const locations=[{name:'NEW YORK DOCKS',short:'NYC',specialtyBuy:0,isLoan:false},{name:'MIAMI',short:'MIA',specialtyBuy:1,isLoan:false},{name:'CHICAGO',short:'CHI',specialtyBuy:6,isLoan:false},{name:'LOS ANGELES',short:'LAX',specialtyBuy:2,isLoan:false},{name:'SEATTLE',short:'SEA',specialtyBuy:5,isLoan:false},{name:'DALLAS',short:'DAL',specialtyBuy:3,isLoan:false},{name:'INDIANAPOLIS',short:'IND',specialtyBuy:4,isLoan:false},{name:'LAS VEGAS',short:'LAS',specialtyBuy:3,isLoan:false},{name:'LOAN SHARK HQ',short:'LSH',specialtyBuy:null,isLoan:true}];
+const storeItems=[
+{id:'jacket_xl',name:'XL Jacket (+20 slots)',cost:1600,type:'capacity',capacity:20,desc:'Bigger lining for extra movement.'},
+{id:'jacket_heavy',name:'Heavy Longcoat (+35 slots)',cost:2900,type:'capacity',capacity:35,desc:'Built for deep runs.'},
+{id:'false_bottom',name:'False-Bottom Suitcase (+15 slots)',cost:950,type:'capacity',capacity:15,desc:'Old trick, still works.'},
+{id:'hidden_backpack',name:'Hidden-Compartment Backpack (+18 slots)',cost:1300,type:'capacity',capacity:18,desc:'Looks normal, packs heavy.'},
+{id:'gold_teeth',name:'Gold Teeth',cost:700,type:'style',intimidation:6,sneak:1,desc:'Looks tougher, talks louder.'},
+{id:'diamond_teeth',name:'Diamond Teeth Upgrade',cost:1600,type:'style',intimidation:12,sneak:2,requires:'gold_teeth',desc:'Flash + fear factor.'},
+{id:'mohawk',name:'Mohawk',cost:450,type:'style',intimidation:4,sneak:1,desc:'Street signal: not easy prey.'},
+{id:'disguise',name:'Disguise Kit',cost:1200,type:'style',intimidation:1,sneak:9,desc:'Switch your look between stops.'},
+{id:'tattoos',name:'Visible Tattoos',cost:850,type:'style',intimidation:5,sneak:0,desc:'Reputation boost in rough blocks.'},
+{id:'piercings',name:'Piercings',cost:500,type:'style',intimidation:3,sneak:1,desc:'Adds edge, small risk.'},
+{id:'taser',name:'Taser',cost:1400,type:'defense',escape:12,desc:'Emergency shutdown tool.'},
+{id:'taser_charges',name:'Taser Shots (x3)',cost:380,type:'consumable',charges:3,desc:'Keeps taser hot in chases.'}
 ];
+const cityHistory={NYC:['dock strike week','customs scanner upgrades','night crane blackout'],MIA:['hurricane reroute days','club district sting','port labor slowdown'],CHI:['rail yard theft crackdown','river tunnel repairs','old union truce talks'],LAX:['studio prop smuggling rumors','airport cargo reshuffle','freeway closure spillover'],SEA:['fog week at the harbor','ferry manifest audit','tech expo security surge'],DAL:['county fair patrol overtime','truck stop camera expansion','freight tax dispute'],IND:['warehouse rezoning push','state police budget boost','factory shift layoffs'],LAS:['casino security summit','desert checkpoint drills','vip convoy traffic']};
 
-const locations = [
-  { name:'NEW YORK DOCKS', short:'NYC', specialtyBuy:0, isLoan:false },
-  { name:'MIAMI', short:'MIA', specialtyBuy:1, isLoan:false },
-  { name:'CHICAGO', short:'CHI', specialtyBuy:6, isLoan:false },
-  { name:'LOS ANGELES', short:'LAX', specialtyBuy:2, isLoan:false },
-  { name:'SEATTLE', short:'SEA', specialtyBuy:5, isLoan:false },
-  { name:'DALLAS', short:'DAL', specialtyBuy:3, isLoan:false },
-  { name:'INDIANAPOLIS', short:'IND', specialtyBuy:4, isLoan:false },
-  { name:'LAS VEGAS', short:'LAS', specialtyBuy:3, isLoan:false },
-  { name:'LOAN SHARK HQ', short:'LSH', specialtyBuy:null, isLoan:true }
-];
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+const el=id=>document.getElementById(id);
 
-function buildStories() {
-  const characterSet = [
-    { name: 'Forklift Larry', role: 'night dock foreman', vibe: 'wants overtime cash and quiet paperwork' },
-    { name: 'Captain Crumbs', role: 'donut-obsessed transit cop', vibe: 'asks too many cheerful questions' },
-    { name: 'Manifest Molly', role: 'warehouse dispatcher', vibe: 'can hide pallets if respected' },
-    { name: 'Switchblade Sal', role: 'bus depot robber', vibe: 'hunts careless couriers' },
-    { name: 'Badge Betty', role: 'port security lieutenant', vibe: 'trusts details over bravado' },
-    { name: 'Towtruck Theo', role: 'impound yard owner', vibe: 'trades favors for fuel and gossip' },
-    { name: 'Invoice Ivy', role: 'freight accountant', vibe: 'spots fake receipts in seconds' },
-    { name: 'Pastor Pete', role: 'street mediator', vibe: 'can calm gangs if you stay respectful' },
-    { name: 'Razor Ramon', role: 'cargo hijacker', vibe: 'tests fear before taking goods' },
-    { name: 'Nurse Nova', role: 'ER quartermaster contact', vibe: 'moves medical stock through side doors' },
-    { name: 'Signal Sam', role: 'scanner hobbyist', vibe: 'hears police chatter before anyone' },
-    { name: 'Deputy Darlene', role: 'state trooper', vibe: 'gives one chance for clean answers' },
-    { name: 'Grease Monkey Gus', role: 'truck mechanic', vibe: 'fixes routes with wrench and rumor' },
-    { name: 'Queenie Quickdraw', role: 'casino floor thief', vibe: 'smiles while lifting wallets' },
-    { name: 'Harbor Hank', role: 'ferry loader', vibe: 'protects loyal runners from surprise checks' }
-  ];
-  const stories = [];
-  for (let i = 0; i < 45; i++) {
-    const c = characterSet[i % characterSet.length];
-    const next = characterSet[(i + 5) % characterSet.length];
-    const cityName = locations[i % (locations.length - 1)].name;
-    const isCop = c.role.includes('cop') || c.role.includes('security') || c.role.includes('trooper');
-    const isRobber = c.role.includes('robber') || c.role.includes('hijacker') || c.role.includes('thief');
-    const openLine = isCop
-      ? `${c.name}, the ${c.role}, stops you near ${cityName} and asks why your coat inventory keeps changing.`
-      : isRobber
-      ? `${c.name}, a ${c.role}, corners you outside ${cityName} and demands a cut of tonight's haul.`
-      : `${c.name}, the ${c.role}, waves you into a side lane in ${cityName} with a business proposition.`;
-    const middleLine = `${c.name} says ${c.vibe}. ${next.name} circles nearby to see if you crack under pressure.`;
-    const deepLine = `By the third minute, the ask is clear: help now for smoother travel tomorrow, or refuse and risk heat on your route.`;
-    stories.push({
-      id: i + 1,
-      title: `${c.name} in ${cityName}`,
-      layers: [
-        openLine,
-        middleLine,
-        deepLine
-      ],
-      question: 'How do you respond?',
-      options: {
-        a: {
-          label: isCop ? 'Answer calmly with paperwork details' : isRobber ? 'Defuse it and offer a tiny decoy cut' : 'Take the fair deal and keep it clean',
-          suspicion: -8,
-          cash: 180 + (i % 4) * 35,
-          text: `${c.name} nods. You leave with less heat and a usable contact.`
-        },
-        b: {
-          label: isCop ? 'Confidently bluff your route story' : isRobber ? 'Bluff muscle and hold your line' : 'Push for a bigger margin',
-          suspicion: 7,
-          cash: 260 + (i % 5) * 40,
-          text: `You squeeze extra value, but ${c.name} marks you as high-risk.`
-        },
-        c: {
-          label: isCop ? 'Refuse and bolt through side streets' : isRobber ? 'Run before backup arrives' : 'Walk away and burn the bridge',
-          suspicion: 12,
-          cash: -120 - (i % 3) * 60,
-          text: `You escape the scene, but the route gets rougher and more expensive.`
-        }
-      },
-      lawChance: 0.25 + ((i % 6) * 0.03)
-    });
-  }
-  return stories;
+const defaultGame=()=>({day:1,cash:2450,bank:0,debt:5500,coatMax:25,suspicion:0,currentLocation:0,inventory:{0:0,1:0,2:0,3:0,4:0,5:0,6:0},pendingStory:null,completedStoryIds:[],eventFeed:'Welcome to the run.',ownedUpgrades:[],taserShots:0,stats:{intimidation:0,sneak:0,escape:0},market:{buyDiscount:0,sellBonus:0,suspicionShield:0,fearBonus:0}});
+let game=defaultGame();
+let pending={};
+
+function getCityPrice(goodId, cityIndex){const good=goodsList.find(g=>g.id===goodId);const loc=locations[cityIndex];const wave=0.78+((cityIndex*17+goodId*11+game.day*7)%60)/100;let price=Math.round(good.base*wave);if(loc.specialtyBuy===goodId) price=Math.round(price*0.62);if(loc.isLoan) price=Math.round(price*1.35);return Math.max(40,price);}
+function getTradeUnitPrice(goodId, cityIndex, delta){const base=getCityPrice(goodId, cityIndex);if(delta>0){return Math.max(30,Math.round(base*(1-(game.market.buyDiscount||0))));}if(delta<0){return Math.max(30,Math.round(base*(1+(game.market.sellBonus||0))));}return base;}
+
+function buildStory(){
+  const loc=locations[game.currentLocation];
+  const namePool=['Larry','Molly','Darlene','Ramon','Nova','Theo','Betty','Ivy','Pete','Gus','Queenie','Sam'];
+  const rolePool=['port cop','garage hustler','casino thief','dispatcher','state trooper','dock foreman','street mediator','scanner nerd'];
+  const n=namePool[(game.day+game.currentLocation*3)%namePool.length];
+  const r=rolePool[(game.day*2+game.currentLocation)%rolePool.length];
+  const history=(cityHistory[loc.short]||['tense streets'])[(game.day+game.suspicion)%3];
+  const risk=Math.random();
+  const fearMoney = Math.round((game.market.fearBonus || 0) * 180);
+  return {id:`${game.day}-${game.currentLocation}`,title:`${n} in ${loc.name}`,layers:[`You hit ${loc.name} during ${history}.`,`A ${r} named ${n} clocks your jacket and asks what run you are on.`,`Rumor says two crews got hit here yesterday, so every answer matters.`],question:'What is your move?',options:{a:{label:'Stay calm, give clean details',suspicion:-8,cash:150,text:'You stay smooth and pass.'},b:{label:'Push attitude and bully through',suspicion:4,cash:260+fearMoney,text:'You weaponize your reputation and take a fear premium.'},c:{label:'Slip away through side routes',suspicion:-2,cash:40,text:'You disappear before the trap closes.'}},lawChance:0.2+risk*0.35,robberyChance:0.22+risk*0.22};
 }
 
-const storyDeck = buildStories();
+function renderLocations(){const wrap=el('location-list');wrap.innerHTML='';locations.forEach((loc,index)=>{const active=index===game.currentLocation?'ring-2 ring-emerald-400':'';const special=loc.specialtyBuy!==null&&loc.specialtyBuy!==undefined?`Cheap: ${goodsList.find(g=>g.id===loc.specialtyBuy).name}`:'No specialty';const btn=document.createElement('button');btn.className=`text-left bg-zinc-800 hover:bg-zinc-700 rounded-xl p-2 ${active}`;btn.innerHTML=`<div class="font-bold">${loc.name}</div><div class="text-xs text-zinc-400">${special}</div>`;btn.onclick=()=>{if(game.pendingStory)return alert('Resolve story first.');game.currentLocation=index;renderAll();};wrap.appendChild(btn);});const atLoan=locations[game.currentLocation].isLoan;const canPay=atLoan&&game.debt>0&&game.cash>0;el('pay-loan-btn').disabled=!canPay;el('pay-loan-btn').classList.toggle('opacity-50',!canPay);el('current-location').textContent=locations[game.currentLocation].name;el('loan-hint').textContent=atLoan?`You can pay up to $${Math.min(game.cash,game.debt).toLocaleString()}.`:'Travel to LOAN SHARK HQ to repay debt.';}
+function renderGoods(){const list=el('goods-list');list.innerHTML='';goodsList.forEach(g=>{const held=Number(game.inventory[g.id]||0);const target=pending[g.id]!==undefined?pending[g.id]:held;const delta=target-held;const buyPrice=getTradeUnitPrice(g.id,game.currentLocation,1);const sellPrice=getTradeUnitPrice(g.id,game.currentLocation,-1);const unitPrice=delta>0?buyPrice:delta<0?sellPrice:getCityPrice(g.id,game.currentLocation);const cost=delta*unitPrice;const card=document.createElement('div');card.className='bg-zinc-800 rounded-xl p-3';card.innerHTML=`<div class="flex justify-between items-end"><div class="text-xl font-semibold">${g.name}</div><div class="text-3xl font-extrabold text-emerald-300">Buy $${buyPrice.toLocaleString()} / Sell $${sellPrice.toLocaleString()}</div></div><div class="text-sm text-zinc-400 mb-2">Base $${g.base.toLocaleString()}</div><div class="flex items-center gap-2"><button class="action-btn flex-1 bg-red-700 hover:bg-red-600 rounded-xl" onclick="changeAmount(${g.id},-1)">SELL</button><div class="w-24 text-center text-5xl font-extrabold text-emerald-400">${target}</div><button class="action-btn flex-1 bg-emerald-700 hover:bg-emerald-600 rounded-xl" onclick="changeAmount(${g.id},1)">BUY</button></div><div class="text-lg mt-1 font-bold ${delta>0?'text-red-300':delta<0?'text-emerald-300':'text-zinc-400'}">${delta>0?`BUY ${delta}`:delta<0?`SELL ${Math.abs(delta)}`:'HOLD'} => ${cost>=0?'-$'+cost.toLocaleString():'+$'+Math.abs(cost).toLocaleString()}</div>`;list.appendChild(card);});}
+function renderHeader(){const used=Object.values(game.inventory).reduce((a,b)=>a+Number(b||0),0);el('day').textContent=game.day;el('cash').textContent=`$${game.cash.toLocaleString()}`;el('bank').textContent=`$${game.bank.toLocaleString()}`;el('debt').textContent=`$${game.debt.toLocaleString()}`;el('suspicion').textContent=`${game.suspicion}%`;el('coat').textContent=`${used}/${game.coatMax}`;el('event-feed').textContent=game.eventFeed;el('story-progress').textContent=`Stories completed: ${game.completedStoryIds.length}`;el('buff-summary').textContent=`Edge: Intimidation +${game.stats.intimidation}, Sneak +${game.stats.sneak}, Escape +${game.stats.escape}, Fear $ +${Math.round((game.market.fearBonus||0)*100)}%, Buy -${Math.round((game.market.buyDiscount||0)*100)}%, Sell +${Math.round((game.market.sellBonus||0)*100)}%, Suspicion Shield -${Math.round((game.market.suspicionShield||0)*100)}%, Taser shots: ${game.taserShots}`;}
+function renderAll(){renderLocations();renderGoods();renderHeader();}
 
-const defaultGame = () => ({
-  day: 1,
-  cash: 2450,
-  debt: 5500,
-  coatMax: 120,
-  suspicion: 0,
-  currentLocation: 0,
-  inventory: { 0:3,1:2,2:4,3:2,4:1,5:0,6:6 },
-  pendingStory: null,
-  completedStoryIds: [],
-  eventFeed: 'Welcome to the run.',
-  nicknames: {},
-  multiplayerGifts: []
-});
+function changeAmount(id,delta){if(game.pendingStory)return alert('Resolve story popup first.');const cur=pending[id]!==undefined?pending[id]:Number(game.inventory[id]||0);pending[id]=Math.max(0,cur+delta);renderGoods();}
+function confirmTrade(){if(game.pendingStory)return alert('Resolve the story/event before trading.');let total=0;const updated=JSON.parse(JSON.stringify(game.inventory));for(const id of Object.keys(pending)){const num=Number(id);const delta=pending[id]-Number(game.inventory[id]||0);total+=delta*getTradeUnitPrice(num,game.currentLocation,delta);updated[id]=pending[id];}const used=Object.values(updated).reduce((a,b)=>a+Number(b||0),0);if(used>game.coatMax)return alert('Coat capacity exceeded. Visit Store for bigger gear.');if(game.cash-total<0)return alert('Not enough cash. Withdraw from ATM if needed.');game.inventory=updated;game.cash-=total;pending={};game.eventFeed='Trade locked in.';renderAll();}
+function undoTrade(){pending={};renderGoods();}
 
-let game = defaultGame();
-let pending = {};
-let myPeer = null;
-let myID = '';
-let conn = null;
-let isHost = false;
-let pendingInviteCode = null;
-let lastInviteCode = '';
-let localNickname = '';
+function triggerStory(){game.pendingStory=buildStory();openStoryModal();}
+function openStoryModal(){if(!game.pendingStory)return;const s=game.pendingStory;el('story-modal').classList.remove('hidden');el('story-close').classList.add('hidden');el('story-result').textContent='';el('story-head').textContent=s.title;el('story-layer').textContent=s.layers[s.step||0]||'';el('story-question').textContent=(s.step||0)<s.layers.length-1?'Continue deeper into the scene.':s.question;el('choice-a').textContent=(s.step||0)<s.layers.length-1?'Keep listening':s.options.a.label;el('choice-b').textContent=(s.step||0)<s.layers.length-1?'Ask for details':s.options.b.label;el('choice-c').textContent=(s.step||0)<s.layers.length-1?'Cut to the chase':s.options.c.label;}
+function closeStoryModal(){if(game.pendingStory)return;el('story-modal').classList.add('hidden');}
+function answerStory(choice){if(!game.pendingStory)return;const s=game.pendingStory;s.step=s.step||0;if(s.step<s.layers.length-1){s.step+=1;openStoryModal();return;}resolveStory(choice);}
+function resolveStory(choice){const s=game.pendingStory;const out=s.options[choice]||s.options.a;const suspicionShift=Math.max(-15,out.suspicion-game.stats.sneak*0.2-(game.market.suspicionShield||0)*8);game.suspicion=clamp(game.suspicion+suspicionShift,0,100);game.cash=Math.max(0,game.cash+out.cash);if(choice==='b'){const fearCut=Math.round((game.market.fearBonus||0)*200);if(fearCut>0){game.cash+=fearCut;}}let text=out.text;const lawRoll=Math.random();const intimidationBlock=Math.random()<(game.stats.intimidation/100);if(lawRoll<s.lawChance+(game.suspicion/250)){if(choice==='a' || intimidationBlock){game.suspicion=clamp(game.suspicion-5,0,100);text+=' You outtalk the heat.';}else{let penalty=Math.max(80,Math.floor(game.cash*0.16));if(game.taserShots>0&&Math.random()<0.45+game.stats.escape/100){game.taserShots-=1;penalty=Math.floor(penalty*0.35);text+=' You burn a taser shot and break contact.';}game.cash=Math.max(0,game.cash-penalty);game.suspicion=clamp(game.suspicion+12,0,100);text+=` Law squeeze cost you $${penalty.toLocaleString()}.`;}}
+if(Math.random()<s.robberyChance && game.cash>0){const protectedPct=Math.min(0.9,game.stats.escape/100);const robbery=Math.floor(game.cash*(0.12*(1-protectedPct)));game.cash=Math.max(0,game.cash-robbery);text+=robbery>0?` Street robbery hit cash for $${robbery.toLocaleString()}, bank money stayed safe.`:'';}
+game.eventFeed=text;if(!game.completedStoryIds.includes(s.id))game.completedStoryIds.push(s.id);game.pendingStory=null;el('story-result').textContent=text;el('story-close').classList.remove('hidden');setTimeout(()=>el('story-modal').classList.add('hidden'),900);renderAll();}
 
-const clamp = (n,min,max) => Math.max(min, Math.min(max,n));
-const el = id => document.getElementById(id);
+function travel(){if(game.pendingStory)return alert('Finish current story first.');game.day+=1;game.debt=Math.round(game.debt*1.015);triggerStory();renderAll();}
+function payLoanShark(){if(!locations[game.currentLocation].isLoan)return alert('Go to LOAN SHARK HQ first.');if(game.debt<=0)return alert('Debt already paid.');const maxPay=Math.min(game.cash,game.debt);if(maxPay<=0)return alert('No cash to pay right now.');const raw=prompt(`Pay how much? Max $${maxPay.toLocaleString()}`,`${maxPay}`);if(raw===null)return;const pay=Math.max(0,Math.floor(Number(String(raw).replace(/[^0-9]/g,''))));if(!pay)return alert('Invalid amount.');const amt=Math.min(pay,maxPay);game.cash-=amt;game.debt-=amt;game.eventFeed=`Paid $${amt.toLocaleString()} to loan shark.`;renderAll();}
 
-function setMpStatus(text) { el('mp-status').textContent = `Multiplayer: ${text}`; }
-function updatePlayerCount() { el('mp-players').textContent = `Connected players: ${1 + (conn && conn.open ? 1 : 0)}`; }
-function randomRoomCode() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
-function encodeInvite(room, host) { return `${room}.${btoa(host).replace(/=+$/g, '')}`; }
-function decodeInvite(code) {
-  if (!code || !code.includes('.')) return null;
-  const [room,b64] = code.split('.',2);
-  try {
-    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
-    return { room, host: atob(padded) };
-  } catch { return null; }
-}
-function safeSend(payload) { if (conn && conn.open) conn.send(payload); }
-function serializeGame() { return JSON.parse(JSON.stringify(game)); }
-function broadcastState() { safeSend({ type:'STATE', state:serializeGame() }); }
+function recalcStats(){let intimidation=0,sneak=0,escape=0;game.ownedUpgrades.forEach(id=>{const item=storeItems.find(s=>s.id===id);if(!item)return;intimidation+=item.intimidation||0;sneak+=item.sneak||0;escape+=item.escape||0;});const buyDiscount=clamp((sneak*0.0035)+(game.ownedUpgrades.includes('false_bottom')?0.02:0)+(game.ownedUpgrades.includes('hidden_backpack')?0.015:0),0,0.2);const sellBonus=clamp((intimidation*0.0045)+(game.ownedUpgrades.includes('diamond_teeth')?0.03:0),0,0.3);const suspicionShield=clamp((sneak*0.005)+(game.ownedUpgrades.includes('disguise')?0.05:0),0,0.35);const fearBonus=clamp((intimidation*0.005)+(game.ownedUpgrades.includes('mohawk')?0.03:0)+(game.ownedUpgrades.includes('tattoos')?0.025:0),0,0.45);game.stats={intimidation,sneak,escape};game.market={buyDiscount,sellBonus,suspicionShield,fearBonus};}
+function openStore(){renderStore();el('store-modal').classList.remove('hidden');}
+function closeStore(){el('store-modal').classList.add('hidden');}
+function renderStore(){const wrap=el('store-list');wrap.innerHTML='';storeItems.forEach(item=>{const owned=game.ownedUpgrades.includes(item.id)&&item.type!=='consumable';const blocked=item.requires&&!game.ownedUpgrades.includes(item.requires);const canBuy=!blocked && game.cash>=item.cost;const card=document.createElement('div');card.className='bg-zinc-800 rounded-xl p-3';card.innerHTML=`<div class="flex justify-between"><div class="font-bold">${item.name}</div><div class="text-amber-300">$${item.cost.toLocaleString()}</div></div><div class="text-xs text-zinc-400 mt-1">${item.desc}</div><button class="mt-3 w-full rounded-xl py-2 ${owned?'bg-zinc-700':canBuy?'bg-amber-700 hover:bg-amber-600':'bg-zinc-700 opacity-50'}" ${owned||blocked?'disabled':''}>${owned?'Owned':blocked?'Requires '+storeItems.find(s=>s.id===item.requires).name:'Buy'}</button>`;const btn=card.querySelector('button');if(!owned&&!blocked){btn.onclick=()=>buyStoreItem(item.id);}wrap.appendChild(card);});}
+function buyStoreItem(id){const item=storeItems.find(s=>s.id===id);if(!item)return;if(item.requires&&!game.ownedUpgrades.includes(item.requires))return alert('Required upgrade missing.');if(game.cash<item.cost)return alert('Not enough cash.');if(item.type!=='consumable'&&game.ownedUpgrades.includes(id))return alert('Already owned.');game.cash-=item.cost;if(item.type==='capacity')game.coatMax+=item.capacity;if(item.type==='consumable')game.taserShots+=item.charges||0;else game.ownedUpgrades.push(id);recalcStats();game.eventFeed=`Bought ${item.name}.`;renderStore();renderAll();}
 
-function getCityPrice(goodId, cityIndex) {
-  const good = goodsList.find(g => g.id === goodId);
-  const loc = locations[cityIndex];
-  const wave = 0.78 + ((cityIndex * 17 + goodId * 11 + game.day * 7) % 60) / 100;
-  let price = Math.round(good.base * wave);
-  if (loc.specialtyBuy === goodId) price = Math.round(price * 0.62);
-  if (loc.isLoan) price = Math.round(price * 1.35);
-  return Math.max(40, price);
-}
+function openAtm(){el('atm-modal').classList.remove('hidden');renderAtm();}
+function closeAtm(){el('atm-modal').classList.add('hidden');}
+function renderAtm(){el('atm-cash').textContent=`$${game.cash.toLocaleString()}`;el('atm-bank').textContent=`$${game.bank.toLocaleString()}`;}
+function atmDeposit(){const raw=prompt(`Deposit amount? Cash available $${game.cash.toLocaleString()}`,'500');if(raw===null)return;const amt=Math.max(0,Math.floor(Number(String(raw).replace(/[^0-9]/g,''))));if(!amt||amt>game.cash)return alert('Invalid amount.');game.cash-=amt;game.bank+=amt;game.eventFeed=`Deposited $${amt.toLocaleString()} into protected bank.`;renderAtm();renderAll();}
+function atmWithdraw(){const raw=prompt(`Withdraw amount? Bank available $${game.bank.toLocaleString()}`,'500');if(raw===null)return;const amt=Math.max(0,Math.floor(Number(String(raw).replace(/[^0-9]/g,''))));if(!amt||amt>game.bank)return alert('Invalid amount.');game.bank-=amt;game.cash+=amt;game.eventFeed=`Withdrew $${amt.toLocaleString()} from bank.`;renderAtm();renderAll();}
 
-function renderLocations() {
-  const wrap = el('location-list');
-  wrap.innerHTML = '';
-  locations.forEach((loc, index) => {
-    const active = index === game.currentLocation ? 'ring-2 ring-emerald-400' : '';
-    const special = loc.specialtyBuy !== null && loc.specialtyBuy !== undefined ? `Cheap: ${goodsList.find(g => g.id === loc.specialtyBuy).name}` : 'No specialty';
-    const btn = document.createElement('button');
-    btn.className = `text-left bg-zinc-800 hover:bg-zinc-700 rounded-xl p-2 ${active}`;
-    btn.innerHTML = `<div class="font-bold">${loc.name}</div><div class="text-xs text-zinc-400">${special}</div>`;
-    btn.onclick = () => sendAction({ type:'SET_LOCATION', index });
-    wrap.appendChild(btn);
-  });
+function openGuide(){el('guide-modal').classList.remove('hidden');}
+function closeGuide(){el('guide-modal').classList.add('hidden');localStorage.setItem('smugglers-guide-skip','1');}
+function resetGame(){if(confirm('Reset game state?')){game=defaultGame();pending={};renderAll();openGuide();}}
 
-  const atLoan = locations[game.currentLocation].isLoan;
-  const canPay = atLoan && game.debt > 0 && game.cash > 0;
-  el('pay-loan-btn').disabled = !canPay;
-  el('pay-loan-btn').classList.toggle('opacity-50', !canPay);
-  el('current-location').textContent = locations[game.currentLocation].name;
-  el('loan-hint').textContent = atLoan ? `You can pay up to $${Math.min(game.cash, game.debt).toLocaleString()}.` : 'Travel to LOAN SHARK HQ to repay debt.';
-}
-
-function renderGoods() {
-  const list = el('goods-list');
-  list.innerHTML = '';
-  goodsList.forEach(g => {
-    if (g.unlockDay && game.day < g.unlockDay) {
-      const lockCard = document.createElement('div');
-      lockCard.className = 'bg-zinc-800/70 rounded-xl p-4 border border-zinc-700';
-      lockCard.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div class="text-xl font-semibold">${g.name}</div>
-          <div class="text-sm text-amber-300">Unlocks Day ${g.unlockDay}</div>
-        </div>
-      `;
-      list.appendChild(lockCard);
-      return;
-    }
-    const held = Number(game.inventory[g.id] || 0);
-    const target = pending[g.id] !== undefined ? pending[g.id] : held;
-    const delta = target - held;
-    const cityPrice = getCityPrice(g.id, game.currentLocation);
-    const cost = delta * cityPrice;
-    const card = document.createElement('div');
-    card.className = 'bg-zinc-800 rounded-xl p-3';
-    card.innerHTML = `
-      <div class="flex justify-between items-end">
-        <div class="text-xl font-semibold">${g.name}</div>
-        <div class="text-4xl font-extrabold text-emerald-300">$${cityPrice.toLocaleString()}</div>
-      </div>
-      <div class="text-sm text-zinc-400 mb-2">Base $${g.base.toLocaleString()}</div>
-      <div class="flex items-center gap-2">
-        <button class="action-btn flex-1 bg-red-700 hover:bg-red-600 rounded-xl" onclick="changeAmount(${g.id}, -1)">SELL</button>
-        <div class="w-24 text-center text-5xl font-extrabold text-emerald-400">${target}</div>
-        <button class="action-btn flex-1 bg-emerald-700 hover:bg-emerald-600 rounded-xl" onclick="changeAmount(${g.id}, 1)">BUY</button>
-      </div>
-      <div class="text-lg mt-1 font-bold ${delta>0 ? 'text-red-300' : delta<0 ? 'text-emerald-300' : 'text-zinc-400'}">${delta>0 ? `BUY ${delta}` : delta<0 ? `SELL ${Math.abs(delta)}` : 'HOLD'} => ${cost>=0?'-$'+cost.toLocaleString():'+$'+Math.abs(cost).toLocaleString()}</div>`;
-    list.appendChild(card);
-  });
-}
-
-function renderHeader() {
-  el('day').textContent = game.day;
-  el('cash').textContent = `$${game.cash.toLocaleString()}`;
-  el('debt').textContent = `$${game.debt.toLocaleString()}`;
-  el('suspicion').textContent = `${game.suspicion}%`;
-  const used = Object.values(game.inventory).reduce((a,b) => a + Number(b || 0), 0);
-  el('coat').textContent = `${used}/${game.coatMax}`;
-  el('event-feed').textContent = game.eventFeed;
-  el('story-progress').textContent = `Stories completed: ${game.completedStoryIds.length}`;
-}
-
-function renderAll() {
-  renderLocations();
-  renderGoods();
-  renderHeader();
-}
-
-function changeAmount(id, delta) {
-  if (game.pendingStory) return alert('Resolve the story popup first.');
-  const cur = pending[id] !== undefined ? pending[id] : Number(game.inventory[id] || 0);
-  pending[id] = Math.max(0, cur + delta);
-  renderGoods();
-}
-
-function confirmTrade() {
-  if (game.pendingStory) return alert('You must resolve the story/event before trading.');
-  let total = 0;
-  const updated = JSON.parse(JSON.stringify(game.inventory));
-  for (const id of Object.keys(pending)) {
-    const num = Number(id);
-    const delta = pending[id] - Number(game.inventory[id] || 0);
-    total += delta * getCityPrice(num, game.currentLocation);
-    updated[id] = pending[id];
-  }
-  const used = Object.values(updated).reduce((a,b) => a + Number(b || 0), 0);
-  if (used > game.coatMax) return alert('Coat capacity exceeded.');
-  if (game.cash - total < 0) return alert('Not enough cash.');
-  pending = {};
-  sendAction({ type:'TRADE', inventory:updated, cash: game.cash - total, note:'Trade locked in.' });
-}
-
-function undoTrade() { pending = {}; renderGoods(); }
-
-function triggerStory() {
-  const pick = storyDeck[(game.day + game.currentLocation * 3) % storyDeck.length];
-  game.pendingStory = {
-    id: pick.id,
-    title: pick.title,
-    layers: [...pick.layers],
-    step: 0,
-    question: pick.question,
-    options: pick.options,
-    lawChance: pick.lawChance
-  };
-  openStoryModal();
-}
-
-function openStoryModal() {
-  if (!game.pendingStory) return;
-  const s = game.pendingStory;
-  el('story-modal').classList.remove('hidden');
-  el('story-close').classList.add('hidden');
-  el('story-result').textContent = '';
-  el('story-head').textContent = s.title;
-  el('story-layer').textContent = s.layers[s.step] || '';
-  el('story-question').textContent = s.step < s.layers.length - 1 ? 'Continue deeper into the scene.' : s.question;
-  el('choice-a').textContent = s.step < s.layers.length - 1 ? 'Keep listening' : s.options.a.label;
-  el('choice-b').textContent = s.step < s.layers.length - 1 ? 'Ask for details' : s.options.b.label;
-  el('choice-c').textContent = s.step < s.layers.length - 1 ? 'Cut to the chase' : s.options.c.label;
-}
-
-function closeStoryModal() {
-  if (game.pendingStory) return;
-  el('story-modal').classList.add('hidden');
-}
-
-function answerStory(choice) {
-  if (!game.pendingStory) return;
-  if (game.pendingStory.step < game.pendingStory.layers.length - 1) {
-    game.pendingStory.step += 1;
-    openStoryModal();
-    return;
-  }
-  sendAction({ type:'RESOLVE_STORY', choice });
-}
-
-function resolveStory(choice) {
-  const s = game.pendingStory;
-  if (!s) return;
-  const out = s.options[choice] || s.options.a;
-  game.suspicion = clamp(game.suspicion + out.suspicion, 0, 100);
-  game.cash = Math.max(0, game.cash + out.cash);
-
-  const lawRoll = Math.random();
-  let lawText = '';
-  if (lawRoll < s.lawChance + game.suspicion / 260) {
-    const rightAnswer = choice === 'a' || (choice === 'b' && game.suspicion < 65);
-    if (rightAnswer) {
-      lawText = ' Law run-in: you answered clean, and talked your way out.';
-      game.suspicion = clamp(game.suspicion - 4, 0, 100);
-    } else {
-      const penalty = Math.max(70, Math.floor(game.cash * 0.14));
-      game.cash = Math.max(0, game.cash - penalty);
-      game.suspicion = clamp(game.suspicion + 10, 0, 100);
-      lawText = ` Law run-in: shaken down for $${penalty.toLocaleString()}, but you still escaped.`;
-    }
-  }
-
-  game.eventFeed = `${out.text}${lawText}`;
-  if (!game.completedStoryIds.includes(s.id)) game.completedStoryIds.push(s.id);
-  game.pendingStory = null;
-  el('story-result').textContent = game.eventFeed;
-  el('story-close').classList.remove('hidden');
-  setTimeout(() => el('story-modal').classList.add('hidden'), 700);
-}
-
-function travel() {
-  if (game.pendingStory) return alert('Finish the current story/event first.');
-  sendAction({ type:'TRAVEL' });
-}
-
-function payLoanShark() {
-  if (!locations[game.currentLocation].isLoan) return alert('Go to LOAN SHARK HQ first.');
-  if (game.debt <= 0) return alert('Debt already paid.');
-  const maxPay = Math.min(game.cash, game.debt);
-  if (maxPay <= 0) return alert('No cash to pay right now.');
-  const raw = prompt(`Pay how much? Max $${maxPay.toLocaleString()}`, `${maxPay}`);
-  if (raw === null) return;
-  const pay = Math.max(0, Math.floor(Number(String(raw).replace(/[^0-9]/g, ''))));
-  if (!pay) return alert('Invalid amount.');
-  const amt = Math.min(pay, maxPay);
-  sendAction({ type:'PAY_DEBT', paid:amt, cash: game.cash - amt, debt: game.debt - amt });
-}
-
-function applyAction(action, fromRemote) {
-  if (!action || !action.type) return;
-  if (action.type === 'TRAVEL') {
-    game.day += 1;
-    game.debt = Math.round(game.debt * 1.015);
-    triggerStory();
-  } else if (action.type === 'SET_LOCATION') {
-    if (game.pendingStory) return;
-    game.currentLocation = action.index;
-  } else if (action.type === 'TRADE') {
-    game.inventory = action.inventory;
-    game.cash = action.cash;
-    game.eventFeed = action.note || 'Trade complete.';
-  } else if (action.type === 'PAY_DEBT') {
-    game.cash = action.cash;
-    game.debt = action.debt;
-    game.eventFeed = `Paid $${action.paid.toLocaleString()} to loan shark.`;
-  } else if (action.type === 'RESOLVE_STORY') {
-    resolveStory(action.choice);
-  } else if (action.type === 'SET_NAME') {
-    game.nicknames[action.peer] = action.name;
-  } else if (action.type === 'GIVE_MONEY') {
-    const amt = Math.min(action.amount, game.cash);
-    game.cash -= amt;
-    game.multiplayerGifts.push(`${action.from} sent $${amt.toLocaleString()} to ${action.to}`);
-    appendChat(`[Gift] ${action.from} -> ${action.to}: $${amt.toLocaleString()}`);
-  } else if (action.type === 'OFFER_GOODS') {
-    appendChat(`[Trade Offer] ${action.from}: ${action.qty} x ${action.good} for $${action.price.toLocaleString()}`);
-  } else if (action.type === 'RESET') {
-    game = defaultGame();
-    pending = {};
-  }
-
-  renderAll();
-  if (isHost && fromRemote) broadcastState();
-}
-
-function sendAction(action) {
-  if (!conn || !conn.open) return applyAction(action, false);
-  if (isHost) {
-    applyAction(action, false);
-    broadcastState();
-  } else {
-    safeSend({ type:'ACTION', action });
-  }
-}
-
-function applyFullState(state) {
-  game = state;
-  pending = {};
-  renderAll();
-}
-
-function appendChat(text) {
-  const log = el('chat-log');
-  const row = document.createElement('div');
-  row.textContent = text;
-  log.appendChild(row);
-  log.scrollTop = log.scrollHeight;
-}
-
-function attachConnectionHandlers(connection) {
-  conn = connection;
-  connection.on('open', () => {
-    setMpStatus(`connected (${isHost ? 'host' : 'guest'})`);
-    updatePlayerCount();
-    if (localNickname) sendAction({ type:'SET_NAME', peer: myID || 'local', name: localNickname });
-    if (isHost) broadcastState();
-    else safeSend({ type:'REQUEST_STATE' });
-  });
-
-  connection.on('data', msg => {
-    if (!msg || !msg.type) return;
-    if (msg.type === 'REQUEST_STATE' && isHost) broadcastState();
-    else if (msg.type === 'STATE') applyFullState(msg.state);
-    else if (msg.type === 'ACTION' && isHost) applyAction(msg.action, true);
-  });
-
-  connection.on('close', () => {
-    setMpStatus('disconnected');
-    conn = null;
-    updatePlayerCount();
-    if (myID) delete game.nicknames[myID];
-  });
-
-  connection.on('error', () => {
-    setMpStatus('connection error');
-    alert('Connection issue. Ask host for a fresh invite message.');
-  });
-}
-
-function initPeer() {
-  setMpStatus('connecting peer...');
-  myPeer = new Peer();
-  myPeer.on('open', id => {
-    myID = id;
-    setMpStatus('ready');
-    updatePlayerCount();
-    if (pendingInviteCode) { connectWithInviteCode(pendingInviteCode); pendingInviteCode = null; }
-  });
-  myPeer.on('connection', incoming => { isHost = true; setMpStatus('guest connecting...'); attachConnectionHandlers(incoming); });
-  myPeer.on('error', () => setMpStatus('peer error'));
-}
-
-async function waitForPeerOpen(timeoutMs = 7000) {
-  if (myID) return true;
-  const st = Date.now();
-  while (!myID && Date.now() - st < timeoutMs) await new Promise(r => setTimeout(r, 100));
-  return !!myID;
-}
-
-async function createRoom() {
-  const ok = await waitForPeerOpen();
-  if (!ok) return alert('Peer not ready yet.');
-  isHost = true;
-  const room = randomRoomCode();
-  const inviteCode = encodeInvite(room, myID);
-  lastInviteCode = inviteCode;
-  const base = window.location.href.split('?')[0];
-  const link = `${base}?invite=${encodeURIComponent(inviteCode)}&host=${encodeURIComponent(myID)}&room=${encodeURIComponent(room)}`;
-  const msg = [
-    'SMUGGLER\'S COAT ROOM INVITE',
-    `1) Click this game link: ${link}`,
-    `2) If needed, paste Invite Code: ${inviteCode}`,
-    `3) Host Peer ID (long ID): ${myID}`,
-    `4) Set your nickname in Multiplayer Menu, then play.`
-  ].join('\n');
-  el('mp-invite').textContent = msg;
-  navigator.clipboard.writeText(msg).catch(() => {});
-  alert('Invite message copied. Send it to your friend.');
-  setMpStatus(`hosting room ${room}`);
-}
-
-function connectWithInviteCode(inviteCode) {
-  const dec = decodeInvite(inviteCode);
-  if (!dec || !dec.host) return alert('Invalid invite code.');
-  lastInviteCode = inviteCode;
-  isHost = false;
-  setMpStatus(`joining room ${dec.room || 'unknown'}...`);
-  const connection = myPeer.connect(dec.host, { reliable: true });
-  attachConnectionHandlers(connection);
-}
-
-function joinRoom() {
-  const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('invite');
-  const raw = fromUrl || prompt('Paste invite code or full invite link:');
-  if (!raw) return;
-  let inviteCode = raw.trim();
-  if (inviteCode.includes('http')) {
-    try {
-      const u = new URL(inviteCode);
-      inviteCode = u.searchParams.get('invite') || '';
-    } catch {}
-  }
-  if (!inviteCode) return alert('No invite code found.');
-  if (!myID) { pendingInviteCode = inviteCode; setMpStatus('waiting for peer...'); return; }
-  connectWithInviteCode(inviteCode);
-}
-
-function reconnectRoom() {
-  if (conn && conn.open) return setMpStatus('already connected');
-  if (lastInviteCode) return connectWithInviteCode(lastInviteCode);
-  const invite = new URLSearchParams(window.location.search).get('invite');
-  if (invite) return connectWithInviteCode(invite);
-  setMpStatus('no invite to reconnect with');
-  alert('No prior invite code found.');
-}
-
-function saveNickname() {
-  const name = (el('chat-name').value || '').trim();
-  if (!name) return alert('Enter nickname first.');
-  localNickname = name;
-  sendAction({ type:'SET_NAME', peer: myID || 'local', name });
-  appendChat(`[System] Nickname set to ${name}.`);
-}
-
-function giveMoneyPrompt() {
-  if (!(conn && conn.open)) return alert('Connect to multiplayer first.');
-  const to = prompt('Send money to nickname (label only):', 'Partner');
-  if (!to) return;
-  const amtRaw = prompt('Amount to send:', '100');
-  if (!amtRaw) return;
-  const amount = Math.floor(Number(String(amtRaw).replace(/[^0-9]/g, '')));
-  if (!amount || amount < 1) return alert('Invalid amount.');
-  if (amount > game.cash) return alert('Not enough cash.');
-  const from = localNickname || 'NoName Runner';
-  sendAction({ type:'GIVE_MONEY', from, to, amount });
-}
-
-function offerGoodsPrompt() {
-  if (!(conn && conn.open)) return alert('Connect to multiplayer first.');
-  const good = prompt('Goods name to offer:', goodsList[0].name);
-  if (!good) return;
-  const qty = Math.max(1, Math.floor(Number(prompt('Quantity:', '1') || '1')));
-  const price = Math.max(0, Math.floor(Number(prompt('Total price offer:', '500') || '500')));
-  const from = localNickname || 'NoName Runner';
-  sendAction({ type:'OFFER_GOODS', from, good, qty, price });
-}
-
-function toggleMultiplayerMenu() { el('mp-menu').classList.toggle('hidden'); }
-function openGuide() { el('guide-modal').classList.remove('hidden'); }
-function closeGuide() { el('guide-modal').classList.add('hidden'); }
-function skipGuide() { localStorage.setItem('smugglers-guide-skip', '1'); closeGuide(); }
-
-function resetGame() {
-  if (confirm('Reset game state?')) sendAction({ type:'RESET' });
-}
-
-window.onload = () => {
-  initPeer();
-  renderAll();
-  updatePlayerCount();
-  if (!localStorage.getItem('smugglers-guide-skip')) openGuide();
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('invite')) setTimeout(() => joinRoom(), 220);
-};
+window.onload=()=>{renderAll();if(!localStorage.getItem('smugglers-guide-skip'))openGuide();};
 </script>
 </body>
 </html>
