@@ -22,11 +22,8 @@
       .toolPanel h3 { margin: 0 0 8px; font-size: 1rem; }
       .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
       .tools label { display: grid; gap: 4px; font-size: 0.82rem; color: #e3dcff; }
-      .tools select,
-      .tools input { color: #e3dcff; background: #10223a; border: 1px solid #446; }
       .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
       .canvasWrap {
-        position: relative;
         background: #070b14;
         border: 1px solid #345;
         border-radius: 12px;
@@ -39,7 +36,6 @@
         background: #080b18;
         touch-action: none;
       }
-      #overlay { position: absolute; inset: 0; pointer-events: none; background: transparent; }
       .hint { font-size: .8rem; opacity: .9; color: #e3dcff; }
       .toggleBtn {
         margin-left: auto;
@@ -60,7 +56,6 @@
       <section class="panel">
         <div class="top">
           <a class="btn" href="index.html">← Utilities</a>
-          <a class="btn" href="magic-screen-pro.html">Magic Screen Pro</a>
           <a class="btn" href="../index.html">Home</a>
         </div>
 
@@ -75,24 +70,6 @@
             </div>
 
             <div class="tools">
-              <label>Tool
-                <select id="toolType">
-                  <option value="pencil">Pencil</option>
-                  <option value="pen">Pen</option>
-                  <option value="marker">Marker</option>
-                  <option value="select">Select</option>
-                </select>
-              </label>
-              <label>Tip
-                <select id="tipType">
-                  <option value="fine">Fine</option>
-                  <option value="hard">Hard</option>
-                  <option value="med" selected>Med</option>
-                  <option value="soft">Soft</option>
-                  <option value="broad">Broad</option>
-                  <option value="chisel">Chisel</option>
-                </select>
-              </label>
               <label>Brush Size <input id="size" type="range" min="1" max="60" value="8" /></label>
               <label>Opacity <input id="alpha" type="range" min="0.05" max="1" step="0.05" value="1" /></label>
               <label>Glow <input id="glow" type="range" min="0" max="50" value="14" /></label>
@@ -128,7 +105,6 @@
               <button class="btn" id="undo" type="button">Undo</button>
               <button class="btn" id="redo" type="button">Redo</button>
               <button class="btn" id="clear" type="button">Clear</button>
-              <button class="btn" id="duplicate" type="button">Duplicate Selection</button>
               <button class="btn" id="save" type="button">Save PNG</button>
               <button class="btn" id="resetSettings" type="button">Reset Tools</button>
             </div>
@@ -137,7 +113,6 @@
 
           <div class="canvasWrap">
             <canvas id="board"></canvas>
-            <canvas id="overlay"></canvas>
           </div>
         </div>
       </section>
@@ -146,8 +121,6 @@
     <script>
       const canvas = document.getElementById('board');
       const ctx = canvas.getContext('2d');
-      const overlay = document.getElementById('overlay');
-      const overlayCtx = overlay.getContext('2d');
       const sizeInput = document.getElementById('size');
       const alphaInput = document.getElementById('alpha');
       const glowInput = document.getElementById('glow');
@@ -156,8 +129,6 @@
       const colorInput = document.getElementById('color');
       const effectInput = document.getElementById('effect');
       const symmetryInput = document.getElementById('symmetry');
-      const toolInput = document.getElementById('toolType');
-      const tipInput = document.getElementById('tipType');
       const toggleTools = document.getElementById('toggleTools');
       const toolPanel = document.getElementById('toolPanel');
 
@@ -165,19 +136,13 @@
       let redoStack = [];
       let drawing = false;
       let last = null;
-      let selecting = false;
-      let selection = null;
-      let clipRegion = null;
 
       function resize() {
         const rect = canvas.getBoundingClientRect();
         const scale = window.devicePixelRatio || 1;
         canvas.width = rect.width * scale;
         canvas.height = rect.height * scale;
-        overlay.width = rect.width * scale;
-        overlay.height = rect.height * scale;
         ctx.scale(scale, scale);
-        overlayCtx.scale(scale, scale);
       }
       resize();
       window.addEventListener('resize', () => {
@@ -258,54 +223,7 @@
           ctx.moveTo(sx, sy);
           ctx.lineTo(ex, ey);
           ctx.stroke();
-          applyStrokeTexture(sx, sy, ex, ey);
         });
-      }
-
-      function applyStrokeProfile() {
-        const tool = toolInput.value;
-        const tip = tipInput.value;
-        let width = +sizeInput.value;
-
-        if (tool === 'pencil') width *= 0.48;
-        if (tool === 'pen') width *= 1.15;
-        if (tool === 'marker') width *= 1.75;
-
-        if (tip === 'fine') width *= 0.55;
-        if (tip === 'hard') width *= 0.9;
-        if (tip === 'soft') width *= 1.15;
-        if (tip === 'broad') width *= 1.85;
-        if (tip === 'chisel') width *= 1.45;
-
-        ctx.lineWidth = Math.max(1, width);
-        ctx.lineCap = tip === 'chisel' ? 'butt' : (tool === 'pencil' ? 'round' : 'round');
-        ctx.lineJoin = 'round';
-      }
-
-      function applyStrokeTexture(sx, sy, ex, ey) {
-        const tool = toolInput.value;
-        if (tool !== 'pencil') return;
-
-        const dx = ex - sx;
-        const dy = ey - sy;
-        const dist = Math.hypot(dx, dy);
-        const dots = Math.max(2, Math.floor(dist / 3));
-        const px = -dy / (dist || 1);
-        const py = dx / (dist || 1);
-
-        ctx.save();
-        ctx.globalAlpha = Math.max(0.08, +alphaInput.value * 0.22);
-        ctx.fillStyle = brushColor();
-        for (let i = 0; i <= dots; i++) {
-          const t = i / dots;
-          const bx = sx + dx * t;
-          const by = sy + dy * t;
-          const jitter = (Math.random() - 0.5) * Math.max(0.7, ctx.lineWidth * 0.3);
-          ctx.beginPath();
-          ctx.arc(bx + px * jitter, by + py * jitter, Math.max(0.35, ctx.lineWidth * 0.08), 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
       }
 
       function tickFade() {
@@ -319,14 +237,6 @@
       }
 
       function pointerDown(e) {
-        if (toolInput.value === 'select') {
-          const rect = canvas.getBoundingClientRect();
-          selecting = true;
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          selection = { x, y, w: 0, h: 0 };
-          return;
-        }
         drawing = true;
         const rect = canvas.getBoundingClientRect();
         last = { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -334,18 +244,11 @@
       }
 
       function pointerMove(e) {
-        if (selecting && selection) {
-          const rect = canvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          selection.w = x - selection.x;
-          selection.h = y - selection.y;
-          return;
-        }
         if (!drawing) return;
         const rect = canvas.getBoundingClientRect();
         const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        applyStrokeProfile();
+        ctx.lineWidth = +sizeInput.value;
+        ctx.lineCap = 'round';
         ctx.strokeStyle = brushColor();
         applyGlow();
         drawLine(last, pos);
@@ -353,60 +256,8 @@
       }
 
       function pointerUp() {
-        if (selecting && selection) {
-          selecting = false;
-          selection = normalizeRect(selection);
-          if (selection.w > 1 && selection.h > 1) {
-            selection.imageData = ctx.getImageData(selection.x, selection.y, selection.w, selection.h);
-          } else {
-            selection = null;
-          }
-          return;
-        }
         drawing = false;
         last = null;
-      }
-
-      function normalizeRect(rect) {
-        const x = rect.w < 0 ? rect.x + rect.w : rect.x;
-        const y = rect.h < 0 ? rect.y + rect.h : rect.y;
-        const w = Math.abs(rect.w);
-        const h = Math.abs(rect.h);
-        return { x, y, w, h };
-      }
-
-      function drawSelectionOverlay() {
-        const w = overlay.getBoundingClientRect().width;
-        const h = overlay.getBoundingClientRect().height;
-        overlayCtx.clearRect(0, 0, w, h);
-        if (!selection) return;
-        overlayCtx.save();
-        overlayCtx.setLineDash([6, 4]);
-        overlayCtx.strokeStyle = '#ffffff';
-        overlayCtx.lineWidth = 1.5;
-        overlayCtx.strokeRect(selection.x + 0.5, selection.y + 0.5, selection.w, selection.h);
-        overlayCtx.restore();
-      }
-
-      function copySelection() {
-        if (!selection || selection.w < 1 || selection.h < 1) return false;
-        clipRegion = ctx.getImageData(selection.x, selection.y, selection.w, selection.h);
-        return true;
-      }
-
-      function pasteSelection() {
-        if (!clipRegion) return;
-        saveState();
-        const x = selection ? Math.min(selection.x + 16, canvas.getBoundingClientRect().width - clipRegion.width) : 24;
-        const y = selection ? Math.min(selection.y + 16, canvas.getBoundingClientRect().height - clipRegion.height) : 24;
-        ctx.putImageData(clipRegion, Math.max(0, x), Math.max(0, y));
-        selection = { x: Math.max(0, x), y: Math.max(0, y), w: clipRegion.width, h: clipRegion.height };
-      }
-
-      function deleteSelection() {
-        if (!selection) return;
-        saveState();
-        ctx.clearRect(selection.x, selection.y, selection.w, selection.h);
       }
 
       canvas.addEventListener('pointerdown', pointerDown);
@@ -429,11 +280,6 @@
       document.getElementById('clear').onclick = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         saveState();
-        selection = null;
-      };
-      document.getElementById('duplicate').onclick = () => {
-        if (!copySelection()) return;
-        pasteSelection();
       };
       document.getElementById('save').onclick = () => {
         const link = document.createElement('a');
@@ -442,8 +288,6 @@
         link.click();
       };
       document.getElementById('resetSettings').onclick = () => {
-        toolInput.value = 'pencil';
-        tipInput.value = 'med';
         sizeInput.value = 8;
         alphaInput.value = 1;
         glowInput.value = 14;
@@ -458,40 +302,8 @@
         toggleTools.textContent = toolPanel.classList.contains('collapsed') ? 'Expand Toolbox' : 'Collapse Toolbox';
       };
 
-      document.addEventListener('keydown', (e) => {
-        const ctrl = e.ctrlKey || e.metaKey;
-        if (ctrl && e.key.toLowerCase() === 'c') {
-          if (copySelection()) e.preventDefault();
-        }
-        if (ctrl && e.key.toLowerCase() === 'v') {
-          if (clipRegion) {
-            pasteSelection();
-            e.preventDefault();
-          }
-        }
-        if (ctrl && e.key.toLowerCase() === 'd') {
-          if (copySelection()) {
-            pasteSelection();
-            e.preventDefault();
-          }
-        }
-        if (ctrl && e.key.toLowerCase() === 'z') {
-          document.getElementById('undo').click();
-          e.preventDefault();
-        }
-        if (ctrl && e.key.toLowerCase() === 'y') {
-          document.getElementById('redo').click();
-          e.preventDefault();
-        }
-        if (e.key === 'Delete') {
-          deleteSelection();
-          e.preventDefault();
-        }
-      });
-
       function animate() {
         tickFade();
-        drawSelectionOverlay();
         requestAnimationFrame(animate);
       }
       animate();

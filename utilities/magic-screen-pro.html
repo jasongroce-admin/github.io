@@ -27,6 +27,8 @@
         .header h1 { margin:0; font-size:1.35rem; background:linear-gradient(90deg,#66ccff,#ff66cc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .btn { padding:7px 14px; background:#0b1b30; border:1px solid #446; border-radius:8px; color:#e3dcff; cursor:pointer; font-size:0.93rem; transition:all .2s; }
         .btn:hover { background:#112b44; border-color:var(--accent); }
+        select, input { color:#e3dcff; }
+        select option { color:#ffffff; background:#112b44; }
         .main { display:flex; height:calc(100vh - 57px); overflow:hidden; }
 
         .sidebar, .inspector {
@@ -100,6 +102,7 @@
             position: relative; width: 100%; height: 100%;
         }
         canvas { display:block; background:#080b18; touch-action: none; width: 100%; height: 100%; }
+        #overlay { position:absolute; inset:0; pointer-events:none; background:transparent; }
         .layer-item { display:flex; align-items:center; gap:10px; padding:8px; background:#112b44; border-radius:8px; margin-bottom:6px; font-size:0.93rem; cursor:grab; user-select:none; }
         .layer-item.active { border:2px solid var(--accent); }
         .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
@@ -109,6 +112,9 @@
 <body>
     <div class="header">
         <h1>✨ Magic Screen PRO ✨</h1>
+        <button class="btn" onclick="location.href='index.html'">Utilities</button>
+        <button class="btn" onclick="location.href='magic-screen.html'">Magic Screen Legacy</button>
+        <button class="btn" onclick="location.href='../index.html'">Home</button>
         <div style="flex:1"></div>
         <button class="btn" id="newBtn">🆕 New</button>
         <button class="btn" id="clearBtn">🗑️ Clear</button>
@@ -119,6 +125,7 @@
         <button class="btn" id="cameraBtn">📸 Camera</button>
         <button class="btn" id="uploadBtn">📤 Upload</button>
         <button class="btn" id="copyAllBtn">📋 Copy All</button>
+        <button class="btn" id="duplicateBtn">⧉ Duplicate</button>
         <button class="btn" id="fullscreenBtn">⛶ Full</button>
     </div>
 
@@ -141,6 +148,9 @@
                     <button class="tool-btn active" data-tip="med">Med</button>
                     <button class="tool-btn" data-tip="soft">Soft</button>
                     <button class="tool-btn" data-tip="broad">Broad</button>
+                    <button class="tool-btn" data-tip="round">Round</button>
+                    <button class="tool-btn" data-tip="needle">Needle</button>
+                    <button class="tool-btn" data-tip="square">Square</button>
                     <button class="tool-btn" data-tip="chisel">Chisel</button>
                 </div>
             </div>
@@ -170,6 +180,7 @@
         <div class="canvas-container" id="canvasContainer">
             <div class="canvasWrap" id="canvasWrap">
                 <canvas id="board"></canvas>
+                <canvas id="overlay"></canvas>
             </div>
         </div>
 
@@ -236,6 +247,8 @@
         <script>
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const overlayCtx = overlay.getContext('2d');
         const sidebar = document.getElementById('sidebar');
         const inspector = document.getElementById('inspector');
 
@@ -248,6 +261,9 @@
         let currentTip = 'med';
         let currentArrowStyle = 'simple';
         let startPos = null;
+        let selecting = false;
+        let selection = null;
+        let clipRegion = null;
 
         let settings = {
             size: 24, alpha: 0.94, flow: 0.96, glow: 0,
@@ -268,7 +284,56 @@
             const dpr = window.devicePixelRatio || 1;
             canvas.width = Math.floor(rect.width * dpr);
             canvas.height = Math.floor(rect.height * dpr);
+            overlay.width = Math.floor(rect.width * dpr);
+            overlay.height = Math.floor(rect.height * dpr);
             ctx.scale(dpr, dpr);
+            overlayCtx.scale(dpr, dpr);
+            renderAllLayers();
+        }
+
+        function normalizeRect(rect) {
+            const x = rect.w < 0 ? rect.x + rect.w : rect.x;
+            const y = rect.h < 0 ? rect.y + rect.h : rect.y;
+            const w = Math.abs(rect.w);
+            const h = Math.abs(rect.h);
+            return { x, y, w, h };
+        }
+
+        function drawSelectionOverlay() {
+            const rect = overlay.getBoundingClientRect();
+            overlayCtx.clearRect(0, 0, rect.width, rect.height);
+            if (!selection) return;
+            overlayCtx.save();
+            overlayCtx.setLineDash([8, 5]);
+            overlayCtx.strokeStyle = '#ffffff';
+            overlayCtx.lineWidth = 1.5;
+            overlayCtx.strokeRect(selection.x + 0.5, selection.y + 0.5, selection.w, selection.h);
+            overlayCtx.restore();
+        }
+
+        function copySelection() {
+            if (!selection || !layers[currentLayerIndex]) return false;
+            const layerCtx = layers[currentLayerIndex].ctx;
+            clipRegion = layerCtx.getImageData(selection.x, selection.y, selection.w, selection.h);
+            return true;
+        }
+
+        function pasteSelection() {
+            if (!clipRegion || !layers[currentLayerIndex]) return;
+            saveState();
+            const maxX = canvas.width / (window.devicePixelRatio || 1) - clipRegion.width;
+            const maxY = canvas.height / (window.devicePixelRatio || 1) - clipRegion.height;
+            const x = selection ? Math.min(selection.x + 18, maxX) : 28;
+            const y = selection ? Math.min(selection.y + 18, maxY) : 28;
+            layers[currentLayerIndex].ctx.putImageData(clipRegion, Math.max(0, x), Math.max(0, y));
+            selection = { x: Math.max(0, x), y: Math.max(0, y), w: clipRegion.width, h: clipRegion.height };
+            renderAllLayers();
+        }
+
+        function deleteSelection() {
+            if (!selection || !layers[currentLayerIndex]) return;
+            saveState();
+            layers[currentLayerIndex].ctx.clearRect(selection.x, selection.y, selection.w, selection.h);
             renderAllLayers();
         }
 
@@ -381,17 +446,24 @@
             const symTo = getSymmetryPoints(to.x, to.y);
             let width = settings.size * settings.flow;
 
-            if (currentTool === 'pencil') width *= 0.7;
-            if (currentTool === 'pen') width *= 0.9;
-            if (currentTool === 'marker') width *= 1.35;
-            if (currentTip === 'fine') width *= 0.55;
-            if (currentTip === 'broad') width *= 1.9;
-            if (currentTip === 'chisel') width *= 1.45;
+            if (currentTool === 'pencil') width *= 0.5;
+            if (currentTool === 'pen') width *= 1.15;
+            if (currentTool === 'marker') width *= 1.95;
 
-            layerCtx.lineWidth = width;
+            if (currentTip === 'fine') width *= 0.52;
+            if (currentTip === 'hard') width *= 0.88;
+            if (currentTip === 'med') width *= 1.0;
+            if (currentTip === 'soft') width *= 1.16;
+            if (currentTip === 'broad') width *= 1.95;
+            if (currentTip === 'round') width *= 1.1;
+            if (currentTip === 'needle') width *= 0.38;
+            if (currentTip === 'square') width *= 1.25;
+            if (currentTip === 'chisel') width *= 1.48;
+
+            layerCtx.lineWidth = Math.max(1, width);
             layerCtx.globalAlpha = settings.alpha;
             layerCtx.shadowBlur = settings.glow;
-            layerCtx.lineCap = currentTip === 'chisel' ? 'butt' : 'round';
+            layerCtx.lineCap = (currentTip === 'chisel' || currentTip === 'square') ? 'butt' : 'round';
             layerCtx.lineJoin = 'round';
 
             symFrom.forEach((p1, i) => {
@@ -403,6 +475,27 @@
                     layerCtx.moveTo(p1[0], p1[1]);
                     layerCtx.lineTo(p2[0], p2[1]);
                     layerCtx.stroke();
+                    if (currentTool === 'pencil') {
+                        const dx = p2[0] - p1[0];
+                        const dy = p2[1] - p1[1];
+                        const dist = Math.hypot(dx, dy);
+                        const dots = Math.max(2, Math.floor(dist / 3));
+                        const px = -dy / (dist || 1);
+                        const py = dx / (dist || 1);
+                        layerCtx.save();
+                        layerCtx.globalAlpha = Math.max(0.08, settings.alpha * 0.2);
+                        layerCtx.fillStyle = settings.color;
+                        for (let d = 0; d <= dots; d++) {
+                            const t = d / dots;
+                            const bx = p1[0] + dx * t;
+                            const by = p1[1] + dy * t;
+                            const jitter = (Math.random() - 0.5) * Math.max(0.8, width * 0.3);
+                            layerCtx.beginPath();
+                            layerCtx.arc(bx + px * jitter, by + py * jitter, Math.max(0.4, width * 0.09), 0, Math.PI * 2);
+                            layerCtx.fill();
+                        }
+                        layerCtx.restore();
+                    }
                 } else {
                     // Effects override color completely
                     if (settings.effect === 'neon') {
@@ -470,6 +563,12 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
+            if (currentTool === 'select') {
+                selecting = true;
+                selection = { x, y, w: 0, h: 0 };
+                return;
+            }
+
             if (currentTool === 'arrow') {
                 startPos = {x, y};
                 saveState();
@@ -485,6 +584,12 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            if (currentTool === 'select' && selecting && selection) {
+                selection.w = x - selection.x;
+                selection.h = y - selection.y;
+                return;
+            }
 
             if (currentTool === 'arrow' && startPos) {
                 renderAllLayers();
@@ -504,6 +609,13 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            if (currentTool === 'select' && selecting && selection) {
+                selecting = false;
+                selection = normalizeRect(selection);
+                if (selection.w <= 1 || selection.h <= 1) selection = null;
+                return;
+            }
 
             if (currentTool === 'arrow' && startPos) {
                 const width = settings.size * settings.flow * 1.2;
@@ -546,19 +658,45 @@
         }
 
         function attachUI() {
-            document.querySelectorAll('.tool-btn').forEach(btn => {
+            document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    if (btn.dataset.tool) currentTool = btn.dataset.tool;
-                    if (btn.dataset.tip) currentTip = btn.dataset.tip;
-                    if (btn.dataset.arrow) currentArrowStyle = btn.dataset.arrow;
+                    currentTool = btn.dataset.tool;
                     document.getElementById('arrowMenu').style.display = (currentTool === 'arrow') ? 'block' : 'none';
                     saveSettings();
                 });
             });
 
+            document.querySelectorAll('.tool-btn[data-tip]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn[data-tip]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTip = btn.dataset.tip;
+                    saveSettings();
+                });
+            });
+
+            document.querySelectorAll('.tool-btn[data-arrow]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn[data-arrow]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentArrowStyle = btn.dataset.arrow;
+                    saveSettings();
+                });
+            });
+
             document.getElementById('color').addEventListener('input', e => { settings.color = e.target.value; saveSettings(); });
+            document.getElementById('copyAllBtn').onclick = () => {
+                const c = document.createElement('canvas');
+                c.width = canvas.width;
+                c.height = canvas.height;
+                c.getContext('2d').drawImage(canvas, 0, 0);
+                clipRegion = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+            };
+            document.getElementById('duplicateBtn').onclick = () => {
+                if (copySelection()) pasteSelection();
+            };
 
             // camera, upload, drag/drop, paste listeners (same as before)
             document.getElementById('cameraBtn').onclick = () => {
@@ -645,6 +783,37 @@
                     renderAllLayers();
                 }
             };
+
+            document.addEventListener('keydown', (e) => {
+                const ctrl = e.ctrlKey || e.metaKey;
+                if (ctrl && e.key.toLowerCase() === 'c') {
+                    if (copySelection()) e.preventDefault();
+                }
+                if (ctrl && e.key.toLowerCase() === 'v') {
+                    if (clipRegion) {
+                        pasteSelection();
+                        e.preventDefault();
+                    }
+                }
+                if (ctrl && e.key.toLowerCase() === 'd') {
+                    if (copySelection()) {
+                        pasteSelection();
+                        e.preventDefault();
+                    }
+                }
+                if (ctrl && e.key.toLowerCase() === 'z') {
+                    document.getElementById('undoBtn').click();
+                    e.preventDefault();
+                }
+                if (ctrl && e.key.toLowerCase() === 'y') {
+                    document.getElementById('redoBtn').click();
+                    e.preventDefault();
+                }
+                if (e.key === 'Delete') {
+                    deleteSelection();
+                    e.preventDefault();
+                }
+            });
         }
 
         function renderLayersList() {
@@ -707,6 +876,7 @@
         }
 
         function animate() {
+            drawSelectionOverlay();
             requestAnimationFrame(animate);
         }
 
