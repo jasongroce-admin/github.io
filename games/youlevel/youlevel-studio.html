@@ -1771,8 +1771,11 @@ body {
         <div class="builder-field">
           <label>Upload Image</label>
           <div class="builder-mini-actions" style="margin-top:0;">
-            <button id="builderUploadImageBtn" type="button">Upload PNG</button>
+            <button id="builderUploadImageBtn" type="button">Upload PNG/JPG/WEBP</button>
             <button id="builderCaptureImageBtn" type="button">Camera Snap</button>
+          </div>
+          <div class="builder-inline-note" style="margin-top:6px;">
+            Preferred format: <strong>WEBP</strong> for best performance and size. PNG/JPG are supported and can be used in levels.
           </div>
           <div class="builder-mini-actions" style="margin-top:6px;">
             <label for="builderUploadCategory" style="font-size:12px;min-width:102px;">Upload Category</label>
@@ -1852,7 +1855,7 @@ body {
             <button id="builderRedoBtn" type="button" class="secondary-btn builder-title-btn" title="Redo">Redo</button>
             <button id="builderHelpBtn" type="button" class="secondary-btn builder-title-btn">Help</button>
             <select id="builderTopLevelLoader" class="builder-title-level-loader" title="Load scene template into editor"></select>
-            <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn">Quick Play</button>
+            <button id="builderQuickPlayBtn" type="button" class="difficulty-btn builder-title-btn" onclick="builderTestLevel()">Quick Play</button>
           </div>
           <div class="builder-title-status">
             <span id="builderStatusText">Build your own level, save and play.</span>
@@ -2101,6 +2104,58 @@ body {
             <option value="7">Alien Storm</option>
             <option value="8">Alien Night</option>
           </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderStarfieldEnabled">Starfield Overlay</label>
+          <select id="builderStarfieldEnabled">
+            <option value="0">Off</option>
+            <option value="1">On</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBgBackSprite">Background Composer - Back Layer</label>
+          <select id="builderBgBackSprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBgMidSprite">Background Composer - Mid Layer</label>
+          <select id="builderBgMidSprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBgForeSprite">Background Composer - Fore Layer</label>
+          <select id="builderBgForeSprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBgOverlaySprite">Background Composer - Sky Overlay</label>
+          <select id="builderBgOverlaySprite"></select>
+        </div>
+        <div class="builder-field">
+          <label for="builderBgExtraSprite">Background Composer - Extra Layer</label>
+          <select id="builderBgExtraSprite"></select>
+          <div class="builder-inline-note">Tip: stack Back/Mid/Fore plus Extra to build parallax scenes.</div>
+        </div>
+        <div class="builder-field">
+          <label for="builderControlsMode">Controls Mode</label>
+          <select id="builderControlsMode">
+            <option value="auto">Auto</option>
+            <option value="joystick">Joystick</option>
+            <option value="arrows">Arrows</option>
+          </select>
+        </div>
+        <div class="builder-field">
+          <label for="builderJoystickAnchorX">Joystick X Anchor (%)</label>
+          <input id="builderJoystickAnchorX" type="number" min="0" max="100" step="1" value="8">
+        </div>
+        <div class="builder-field">
+          <label for="builderJoystickAnchorY">Joystick Y Anchor (%)</label>
+          <input id="builderJoystickAnchorY" type="number" min="0" max="100" step="1" value="86">
+        </div>
+        <div class="builder-field">
+          <label for="builderArrowsAnchorX">Arrow Controls X Anchor (%)</label>
+          <input id="builderArrowsAnchorX" type="number" min="0" max="100" step="1" value="50">
+        </div>
+        <div class="builder-field">
+          <label for="builderArrowsAnchorY">Arrow Controls Y Anchor (%)</label>
+          <input id="builderArrowsAnchorY" type="number" min="0" max="100" step="1" value="88">
         </div>
         <div class="builder-field">
           <label for="builderTankerStart">Tanker Arrival (ms)</label>
@@ -2784,7 +2839,7 @@ body {
           <button id="builderShareBtn" type="button">Copy Package JSON</button>
           <button id="builderSaveSubmissionBtn" type="button" class="alt">Download Source Submission File</button>
           <button id="builderPrintBtn" type="button" class="alt">Print Level Summary</button>
-          <button id="builderTestBtn" type="button">Test Level</button>
+            <button id="builderTestBtn" type="button" onclick="builderTestLevel()">Test Level</button>
           <button id="builderPublishBtn" type="button">Save To Game Slot</button>
           <button id="builderCloseBtn" type="button" class="warn">Exit Builder</button>
         </div>
@@ -2846,8 +2901,8 @@ body {
     <h3>Do you want instructions?</h3>
     <p style="margin:0; color:#c6daee; font-size:13px; line-height:1.35;">Choose <strong>Show Instructions</strong> for a quick guided tour with arrows and click-through tips, or <strong>Go To Builder</strong> to start editing immediately.</p>
     <div class="builder-help-actions">
-      <button id="builderInstructionsNoBtn" type="button" class="secondary-btn">Go To Builder</button>
-      <button id="builderInstructionsYesBtn" type="button" class="difficulty-btn">Show Instructions</button>
+      <button id="builderInstructionsNoBtn" type="button" class="secondary-btn" onclick="builderShowInstructionsPrompt(false)">Go To Builder</button>
+      <button id="builderInstructionsYesBtn" type="button" class="difficulty-btn" onclick="builderStartTour(true)">Show Instructions</button>
     </div>
   </div>
 </div>
@@ -4678,6 +4733,17 @@ const BUILDER_UI = {
   truckEntryDelayRange: document.getElementById('builderTruckEntryDelayRange'),
   truckEntryDelay: document.getElementById('builderTruckEntryDelay'),
   timeOfDay: document.getElementById('builderTimeOfDay'),
+  starfieldEnabled: document.getElementById('builderStarfieldEnabled'),
+  bgBackSprite: document.getElementById('builderBgBackSprite'),
+  bgMidSprite: document.getElementById('builderBgMidSprite'),
+  bgForeSprite: document.getElementById('builderBgForeSprite'),
+  bgOverlaySprite: document.getElementById('builderBgOverlaySprite'),
+  bgExtraSprite: document.getElementById('builderBgExtraSprite'),
+  controlsMode: document.getElementById('builderControlsMode'),
+  joystickAnchorX: document.getElementById('builderJoystickAnchorX'),
+  joystickAnchorY: document.getElementById('builderJoystickAnchorY'),
+  arrowsAnchorX: document.getElementById('builderArrowsAnchorX'),
+  arrowsAnchorY: document.getElementById('builderArrowsAnchorY'),
   tankerStart: document.getElementById('builderTankerStart'),
   tankerRepeat: document.getElementById('builderTankerRepeat'),
   tankerHold: document.getElementById('builderTankerHold'),
@@ -4878,6 +4944,9 @@ function createEmptyBuilderLevel() {
     truckPlaced: true,
     truckEntryDelayMs: 0,
     timeOfDay: 0,
+    starfieldEnabled: false,
+    backgroundComposer: { back: '', mid: '', fore: '', overlay: '', extra: '' },
+    controlsLayout: { mode: 'auto', joystick: { x: 0.08, y: 0.86 }, arrows: { x: 0.50, y: 0.88 } },
     fireBehavior: { rekindleDelayMs: 3200, vehicleExplosionMinMs: 8000, vehicleExplosionMaxMs: 10000 },
     blackBoxPlan: { enabled: false, firstAt: 7200, returnDelay: 3200, firstDir: 1 },
     entities: []
@@ -5633,6 +5702,18 @@ function builderApplyStateToUi() {
   const truckField = BUILDER_UI.truckSide?.closest('.builder-field');
   if (truckField) truckField.classList.toggle('required', !builderHasTruckPlaced());
   BUILDER_UI.timeOfDay.value = String(clamp(Number(builderState.timeOfDay ?? 0), 0, 8));
+  if (BUILDER_UI.starfieldEnabled) BUILDER_UI.starfieldEnabled.value = builderState.starfieldEnabled ? '1' : '0';
+  builderPopulateBackgroundSpriteOptions();
+  if (BUILDER_UI.bgBackSprite) BUILDER_UI.bgBackSprite.value = String(builderState?.backgroundComposer?.back || '');
+  if (BUILDER_UI.bgMidSprite) BUILDER_UI.bgMidSprite.value = String(builderState?.backgroundComposer?.mid || '');
+  if (BUILDER_UI.bgForeSprite) BUILDER_UI.bgForeSprite.value = String(builderState?.backgroundComposer?.fore || '');
+  if (BUILDER_UI.bgOverlaySprite) BUILDER_UI.bgOverlaySprite.value = String(builderState?.backgroundComposer?.overlay || '');
+  if (BUILDER_UI.bgExtraSprite) BUILDER_UI.bgExtraSprite.value = String(builderState?.backgroundComposer?.extra || '');
+  if (BUILDER_UI.controlsMode) BUILDER_UI.controlsMode.value = (builderState?.controlsLayout?.mode === 'joystick' || builderState?.controlsLayout?.mode === 'arrows') ? builderState.controlsLayout.mode : 'auto';
+  if (BUILDER_UI.joystickAnchorX) BUILDER_UI.joystickAnchorX.value = String(Math.round(clamp(Number(builderState?.controlsLayout?.joystick?.x ?? 0.08), 0, 1) * 100));
+  if (BUILDER_UI.joystickAnchorY) BUILDER_UI.joystickAnchorY.value = String(Math.round(clamp(Number(builderState?.controlsLayout?.joystick?.y ?? 0.86), 0, 1) * 100));
+  if (BUILDER_UI.arrowsAnchorX) BUILDER_UI.arrowsAnchorX.value = String(Math.round(clamp(Number(builderState?.controlsLayout?.arrows?.x ?? 0.50), 0, 1) * 100));
+  if (BUILDER_UI.arrowsAnchorY) BUILDER_UI.arrowsAnchorY.value = String(Math.round(clamp(Number(builderState?.controlsLayout?.arrows?.y ?? 0.88), 0, 1) * 100));
   BUILDER_UI.tankerStart.value = String(builderState?.tankerSchedule?.firstAt ?? 15000);
   BUILDER_UI.tankerRepeat.value = String(builderState?.tankerSchedule?.repeat ?? 33000);
   BUILDER_UI.tankerHold.value = String(builderState?.tankerSchedule?.hold ?? 8000);
@@ -5819,6 +5900,26 @@ function builderReadUiIntoState() {
   if (builderState.primaryVehicleSprite) ensureSpritesLoaded([builderState.primaryVehicleSprite]);
   builderState.truckEntryDelayMs = clamp(Number(BUILDER_UI.truckEntryDelay?.value || BUILDER_UI.truckEntryDelayRange?.value || 0), 0, 120000);
   builderState.timeOfDay = clamp(Number(BUILDER_UI.timeOfDay.value || 0), 0, 8);
+  builderState.starfieldEnabled = BUILDER_UI.starfieldEnabled?.value === '1';
+  builderState.backgroundComposer = builderState.backgroundComposer || {};
+  builderState.backgroundComposer.back = resolveSpriteKey(BUILDER_UI.bgBackSprite?.value || '') || '';
+  builderState.backgroundComposer.mid = resolveSpriteKey(BUILDER_UI.bgMidSprite?.value || '') || '';
+  builderState.backgroundComposer.fore = resolveSpriteKey(BUILDER_UI.bgForeSprite?.value || '') || '';
+  builderState.backgroundComposer.overlay = resolveSpriteKey(BUILDER_UI.bgOverlaySprite?.value || '') || '';
+  builderState.backgroundComposer.extra = resolveSpriteKey(BUILDER_UI.bgExtraSprite?.value || '') || '';
+  builderState.controlsLayout = builderState.controlsLayout || {};
+  builderState.controlsLayout.mode = (BUILDER_UI.controlsMode?.value === 'joystick' || BUILDER_UI.controlsMode?.value === 'arrows') ? BUILDER_UI.controlsMode.value : 'auto';
+  builderState.controlsLayout.joystick = builderState.controlsLayout.joystick || {};
+  builderState.controlsLayout.arrows = builderState.controlsLayout.arrows || {};
+  builderState.controlsLayout.joystick.x = clamp(Number(BUILDER_UI.joystickAnchorX?.value || 8) / 100, 0, 1);
+  builderState.controlsLayout.joystick.y = clamp(Number(BUILDER_UI.joystickAnchorY?.value || 86) / 100, 0, 1);
+  builderState.controlsLayout.arrows.x = clamp(Number(BUILDER_UI.arrowsAnchorX?.value || 50) / 100, 0, 1);
+  builderState.controlsLayout.arrows.y = clamp(Number(BUILDER_UI.arrowsAnchorY?.value || 88) / 100, 0, 1);
+  const controlsMode = String(builderState.controlsLayout.mode || 'auto');
+  if (controlsMode === 'joystick' || controlsMode === 'arrows' || controlsMode === 'auto') {
+    localStorage.setItem('controlsMode', controlsMode);
+  }
+  syncThumbStickVisibility();
   builderState.tankerSchedule.firstAt = clamp(Number(BUILDER_UI.tankerStart.value || 15000), 3000, 120000);
   builderState.tankerSchedule.repeat = clamp(Number(BUILDER_UI.tankerRepeat.value || 33000), 6000, 180000);
   builderState.tankerSchedule.hold = clamp(Number(BUILDER_UI.tankerHold.value || 8000), 2000, 30000);
@@ -7021,6 +7122,7 @@ function builderLoadFromLevel(levelData) {
 }
 
 function builderOpen(levelData = null) {
+  try {
   builderSetLeftPanelCollapsed(false);
   builderInitCollapsibleSections();
   const selectedCol = document.getElementById('builderTopSelectedColumn');
@@ -7086,6 +7188,11 @@ function builderOpen(levelData = null) {
     builderAutoCollapseTimer = null;
   }, 2000);
   setTimeout(() => builderShowInstructionsPrompt(true), 120);
+  } catch (err) {
+    console.error('builderOpen failed:', err);
+    builderSetStatus(`Could not open builder: ${String(err?.message || err)}`);
+    alert(`Builder could not open.\n\n${String(err?.message || err)}\n\nPlease reload and try again.`);
+  }
 }
 
 function builderClose() {
@@ -7228,6 +7335,39 @@ function builderAddUploadedImage(file) {
   reader.readAsDataURL(file);
 }
 
+function builderPopulateBackgroundSpriteOptions() {
+  const fields = [
+    BUILDER_UI.bgBackSprite,
+    BUILDER_UI.bgMidSprite,
+    BUILDER_UI.bgForeSprite,
+    BUILDER_UI.bgOverlaySprite,
+    BUILDER_UI.bgExtraSprite
+  ].filter(Boolean);
+  if (!fields.length) return;
+  const assets = builderGetAssets()
+    .filter((asset) => {
+      const key = String(asset?.key || '');
+      const file = String(asset?.file || SPRITE_FILES[key] || '');
+      return !!key && /\.(webp|png|jpg|jpeg)$/i.test(file);
+    })
+    .sort((a, b) => getAssetDisplayName(a.key).localeCompare(getAssetDisplayName(b.key)));
+  fields.forEach((select) => {
+    const current = String(select.value || '');
+    select.innerHTML = '';
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = 'None';
+    select.appendChild(none);
+    assets.forEach((asset) => {
+      const opt = document.createElement('option');
+      opt.value = asset.key;
+      opt.textContent = getAssetDisplayName(asset.key);
+      select.appendChild(opt);
+    });
+    select.value = [...select.options].some((o) => o.value === current) ? current : '';
+  });
+}
+
 function builderChooseUploadDestination(fileName = 'image') {
   const response = prompt(
     `Upload mode for ${fileName}:\n1 = Builder only (browser local)\n2 = Builder + local repo source update\n3 = Builder + local + online publish`,
@@ -7325,6 +7465,7 @@ function builderRenderAssetList() {
   });
   builderPopulateCollisionSwapSelectors();
   builderPopulatePrimaryVehicleOptions();
+  builderPopulateBackgroundSpriteOptions();
 }
 
 function builderCreateEntity(spriteKey, x, baseY, spriteFile = '') {
@@ -14383,6 +14524,10 @@ function normalizeBuilderEntity(ent, idx = 0) {
   const type = typeof ent.type === 'string' ? ent.type : 'builderSprite';
   const id = (typeof ent.id === 'string' && ent.id) ? ent.id : `be_${Date.now()}_${idx}_${Math.floor(Math.random() * 100000)}`;
   const lockedPosition = ent.lockedPosition == null ? !(ent.movableWithWater || ent.fallWithTornado) : !!ent.lockedPosition;
+  const enemySpawnMinDelayMs = clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000);
+  const enemySpawnMaxDelayMs = Math.max(enemySpawnMinDelayMs, clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
+  const enemyHoverMinMs = clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000);
+  const enemyHoverMaxMs = Math.max(enemyHoverMinMs, clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000));
   if (type === 'requiredFireTruck') {
     return {
       id,
@@ -14514,10 +14659,6 @@ function normalizeBuilderEntity(ent, idx = 0) {
       civilianFirefighterModelKey: resolveSpriteKey(String(ent.civilianFirefighterModelKey || '')) || ''
     };
   }
-  const enemySpawnMinDelayMs = clamp(Number(ent.enemySpawnMinDelayMs ?? 300), 80, 5000);
-  const enemySpawnMaxDelayMs = Math.max(enemySpawnMinDelayMs, clamp(Number(ent.enemySpawnMaxDelayMs ?? 1200), 120, 10000));
-  const enemyHoverMinMs = clamp(Number(ent.enemyHoverMinMs ?? 620), 100, 5000);
-  const enemyHoverMaxMs = Math.max(enemyHoverMinMs, clamp(Number(ent.enemyHoverMaxMs ?? 1650), 120, 8000));
   const normalized = {
     ...ent,
     id,
@@ -14760,6 +14901,25 @@ const primaryVehicleScale = clamp(Number(level.primaryVehicleScale ?? primaryVeh
     truckPlacementX: clamp(Number(level.truckPlacementX ?? lane.spawnX), -220, 1520),
     truckEntryDelayMs: clamp(Number(level.truckEntryDelayMs ?? 0), 0, 120000),
     timeOfDay: clamp(Number(level.timeOfDay ?? 0), 0, 8),
+    starfieldEnabled: !!level.starfieldEnabled,
+    backgroundComposer: {
+      back: resolveSpriteKey(String(level?.backgroundComposer?.back || '')) || '',
+      mid: resolveSpriteKey(String(level?.backgroundComposer?.mid || '')) || '',
+      fore: resolveSpriteKey(String(level?.backgroundComposer?.fore || '')) || '',
+      overlay: resolveSpriteKey(String(level?.backgroundComposer?.overlay || '')) || '',
+      extra: resolveSpriteKey(String(level?.backgroundComposer?.extra || '')) || ''
+    },
+    controlsLayout: {
+      mode: (level?.controlsLayout?.mode === 'joystick' || level?.controlsLayout?.mode === 'arrows') ? level.controlsLayout.mode : 'auto',
+      joystick: {
+        x: clamp(Number(level?.controlsLayout?.joystick?.x ?? 0.08), 0, 1),
+        y: clamp(Number(level?.controlsLayout?.joystick?.y ?? 0.86), 0, 1)
+      },
+      arrows: {
+        x: clamp(Number(level?.controlsLayout?.arrows?.x ?? 0.50), 0, 1),
+        y: clamp(Number(level?.controlsLayout?.arrows?.y ?? 0.88), 0, 1)
+      }
+    },
     tankerRightOnly: !!level.tankerRightOnly,
     tankerSchedule: {
       firstAt: clamp(Number(level?.tankerSchedule?.firstAt ?? 15000), 3000, 120000),
@@ -18241,6 +18401,17 @@ BUILDER_UI.setPrimaryFromSelectedBtn?.addEventListener('click', () => {
   builderReadUiIntoState();
 }));
 BUILDER_UI.timeOfDay?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.starfieldEnabled?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.bgBackSprite?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.bgMidSprite?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.bgForeSprite?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.bgOverlaySprite?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.bgExtraSprite?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.controlsMode?.addEventListener('change', () => builderReadUiIntoState());
+BUILDER_UI.joystickAnchorX?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.joystickAnchorY?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.arrowsAnchorX?.addEventListener('input', () => builderReadUiIntoState());
+BUILDER_UI.arrowsAnchorY?.addEventListener('input', () => builderReadUiIntoState());
 BUILDER_UI.tankerStart?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerRepeat?.addEventListener('change', () => builderReadUiIntoState());
 BUILDER_UI.tankerHold?.addEventListener('change', () => builderReadUiIntoState());
@@ -20155,6 +20326,20 @@ function applyWaterPushToEntities() {
 }
 
 function drawBackground() {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const bgComposer = levelData?.backgroundComposer || {};
+  const drawBgLayer = (spriteKey, widthScale = 1.12, yBase = 520, drift = 0, alpha = 1) => {
+    const key = resolveSpriteKey(String(spriteKey || ''));
+    if (!key) return;
+    const layerW = Math.round(1200 * widthScale);
+    const layerH = 520;
+    const shift = ((levelElapsedMs * drift) % layerW);
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha, 0.08, 1);
+    drawSpriteFitted(key, -shift, yBase - layerH, layerW, layerH, true);
+    drawSpriteFitted(key, layerW - shift - 2, yBase - layerH, layerW, layerH, true);
+    ctx.restore();
+  };
   const mode = clamp(Number(timeOfDay || 0), 0, 8);
   const presets = {
     0: { sky1: '#7BC4FF', sky2: '#C0E4FF', sunColor: '#FFDD00', sunX: 300, sunY: 120, grassColor: '#3D8C40', fieldTop: '#73b85f', fieldBottom: '#244f22', cloud: 'rgba(255,255,255,0.32)', star: false, alien: false },
@@ -20178,6 +20363,7 @@ function drawBackground() {
   const grad = ctx.createLinearGradient(0, 0, 0, 520);
   grad.addColorStop(0, sky1); grad.addColorStop(1, sky2);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 520);
+  drawBgLayer(bgComposer.overlay, 1.0, 420, 0.0018, 0.9);
   ctx.fillStyle = sunColor; ctx.beginPath(); ctx.arc(sunX, sunY, 45, 0, Math.PI*2); ctx.fill();
   if (theme.alien) {
     ctx.save();
@@ -20200,6 +20386,7 @@ function drawBackground() {
   fieldGrad.addColorStop(1, theme.fieldBottom);
   ctx.fillStyle = fieldGrad;
   ctx.fillRect(0, 430, 1200, 170);
+  drawBgLayer(bgComposer.back, 1.2, 508, 0.006, 0.62);
 
   const horizonGrad = ctx.createLinearGradient(0, 360, 0, 470);
   horizonGrad.addColorStop(0, theme.alien ? 'rgba(104,255,179,0.20)' : (mode === 0 ? 'rgba(115,184,95,0.30)' : mode === 1 ? 'rgba(77,143,67,0.25)' : 'rgba(38,79,42,0.22)'));
@@ -20215,6 +20402,7 @@ function drawBackground() {
   ctx.lineTo(0, 470);
   ctx.closePath();
   ctx.fill();
+  drawBgLayer(bgComposer.mid, 1.15, 520, 0.011, 0.8);
 
   const cloudShift = (levelElapsedMs * 0.018) % 340;
   if (!theme.star || theme.alien) {
@@ -20277,6 +20465,8 @@ function drawBackground() {
       ctx.globalAlpha = 1;
     });
   }
+  drawBgLayer(bgComposer.fore, 1.12, 542, 0.018, 0.92);
+  drawBgLayer(bgComposer.extra, 1.08, 550, 0.024, 0.78);
 
   ctx.fillStyle = theme.alien ? 'rgba(130,255,213,0.05)' : (mode === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,214,120,0.05)');
   for (let i = 0; i < 10; i++) {
@@ -20312,7 +20502,7 @@ function drawBackground() {
     ctx.lineTo(x + 18, 600);
     ctx.stroke();
   }
-  if (theme.star) {
+  if (theme.star || levelData?.starfieldEnabled) {
     ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.8;
     const twinkle = Math.sin(levelElapsedMs / 650) * 0.35 + 0.65;
     ctx.globalAlpha = 0.5 + twinkle * 0.35;
@@ -22329,19 +22519,52 @@ function updateThumbKnob(dx) {
   knob.style.transform = `translate(${Math.max(-max, Math.min(max, dx * max))}px, 0px)`;
 }
 
+function getLevelControlsLayout(levelData = null) {
+  const level = levelData || (gameState === 'builder' && builderState ? builderState : (baseLevels[currentLevel - 1] || {}));
+  const mode = (level?.controlsLayout?.mode === 'joystick' || level?.controlsLayout?.mode === 'arrows')
+    ? level.controlsLayout.mode
+    : 'auto';
+  return {
+    mode,
+    joystick: {
+      x: clamp(Number(level?.controlsLayout?.joystick?.x ?? 0.08), 0, 1),
+      y: clamp(Number(level?.controlsLayout?.joystick?.y ?? 0.86), 0, 1)
+    },
+    arrows: {
+      x: clamp(Number(level?.controlsLayout?.arrows?.x ?? 0.50), 0, 1),
+      y: clamp(Number(level?.controlsLayout?.arrows?.y ?? 0.88), 0, 1)
+    }
+  };
+}
+
+function applyControlLayoutPositions(levelData = null) {
+  const stick = document.getElementById('thumbStick');
+  const controls = document.getElementById('truckControls');
+  if (!stick || !controls) return;
+  const layout = getLevelControlsLayout(levelData);
+  stick.style.left = `${(layout.joystick.x * 100).toFixed(2)}vw`;
+  stick.style.top = `${(layout.joystick.y * 100).toFixed(2)}vh`;
+  stick.style.bottom = 'auto';
+  controls.style.left = `${(layout.arrows.x * 100).toFixed(2)}vw`;
+  controls.style.top = `${(layout.arrows.y * 100).toFixed(2)}vh`;
+  controls.style.bottom = 'auto';
+  controls.style.transform = 'translate(-50%, -50%)';
+}
+
 function syncThumbStickVisibility() {
   const stick = document.getElementById('thumbStick');
   const controls = document.getElementById('truckControls');
   const hasAnyFinePointer = window.matchMedia('(any-pointer: fine)').matches;
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
   const noHover = window.matchMedia('(hover: none)').matches;
-  const stored = (localStorage.getItem('controlsMode') || 'auto').toLowerCase();
+  const layout = getLevelControlsLayout();
+  const stored = (layout.mode || localStorage.getItem('controlsMode') || 'auto').toLowerCase();
   const forcedJoystick = stored === 'joystick';
   const forcedArrows = stored === 'arrows';
   const isMobileLike = noHover && coarsePointer && !hasAnyFinePointer;
   stick.style.display = (forcedArrows ? false : (forcedJoystick || isMobileLike)) ? 'block' : 'none';
   controls.style.display = 'flex';
-  controls.style.bottom = (stick.style.display === 'block') ? '12px' : '18px';
+  applyControlLayoutPositions();
 }
 
 function clearMoveCue() {
