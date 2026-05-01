@@ -21,7 +21,28 @@
       }
       .toolPanel h3 { margin: 0 0 8px; font-size: 1rem; }
       .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-      .tools label { display: grid; gap: 4px; font-size: 0.82rem; color: #e3dcff; }
+      .tools label { display: grid; gap: 4px; font-size: 0.86rem; color: #f1f6ff; }
+      .toolPanel input,
+      .toolPanel select {
+        color: #f5fbff;
+        background: rgba(6, 18, 30, 0.86);
+        border: 1px solid rgba(150, 190, 235, 0.36);
+        border-radius: 10px;
+        padding: 8px 10px;
+      }
+      .toolPanel select option {
+        color: #071018;
+        background: #eaf4ff;
+      }
+      .toolPanel input:focus-visible,
+      .toolPanel select:focus-visible,
+      .toolPanel button:focus-visible,
+      .panel .btn:focus-visible,
+      .panel a:focus-visible {
+        outline: 3px solid rgba(255, 214, 78, 0.95);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(255, 214, 78, 0.20);
+      }
       .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
       .canvasWrap {
         background: #070b14;
@@ -36,7 +57,7 @@
         background: #080b18;
         touch-action: none;
       }
-      .hint { font-size: .8rem; opacity: .9; color: #e3dcff; }
+      .hint { font-size: .86rem; opacity: .96; color: rgba(223, 240, 255, 0.94); }
       .toggleBtn {
         margin-left: auto;
         background: linear-gradient(180deg,#db4c4c,#7f1717);
@@ -47,7 +68,10 @@
       .toolPanel.collapsed .tools,
       .toolPanel.collapsed .advanced,
       .toolPanel.collapsed .hint { display: none; }
-      .panel { background: linear-gradient(180deg, #101b36, #0a1023); }
+      .panel {
+        background: linear-gradient(180deg, #101b36, #0a1023);
+        color: #f5fbff;
+      }
       .btn { display: inline-flex; align-items: center; gap: 6px; }
     </style>
   </head>
