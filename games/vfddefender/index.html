@@ -8253,16 +8253,18 @@ function addTruckHullRepair(amount, source = 'pickup') {
 
 function spawnEnemyHealthDrop(x, y, amount = 8) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+  const levelData = baseLevels[currentLevel - 1] || {};
+  const zeroGravity = isYear2043Level(currentLevel) || isScifiTruckActive(levelData);
   const kind = Math.random() < 0.58 ? 'health' : 'fuel';
   const spriteKey = kind === 'fuel' ? 'spaceFuelCanister' : 'spaceHealthCanister';
   enemyHealthDrops.push({
     x,
     y,
-    vx: (Math.random() - 0.5) * 1.2,
-    vy: -1.2 - Math.random() * 0.8,
+    vx: zeroGravity ? 0 : ((Math.random() - 0.5) * 1.2),
+    vy: zeroGravity ? 0 : (-1.2 - Math.random() * 0.8),
     amount: clamp(Number(amount || 8), 2, 24),
     ttlMs: 12000,
-    phase: 'fall',
+    phase: zeroGravity ? 'hover' : 'fall',
     kind,
     spriteKey,
     _seed: Math.random() * 100000
