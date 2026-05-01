@@ -59,7 +59,8 @@ body.builder-active #gameContainer > canvas {
 #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; text-align: center; z-index: 1200; }
 #titleScreen { pointer-events: auto; position: relative; z-index: 1201; }
 #titleScreen * { pointer-events: auto; }
-.site-header { position: relative; z-index: 1400; }
+/* VFDDefender is a full-screen game; hide the shared site nav so it never covers play. */
+.site-header { display: none !important; }
 body.builder-active .site-header { display: none !important; }
 
 button { 
