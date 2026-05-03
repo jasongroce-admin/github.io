@@ -732,6 +732,68 @@ button:hover { filter: brightness(1.2); }
 #truckControls .wide {
   display: none;
 }
+#mobileSciFiActions {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  pointer-events: auto;
+  touch-action: none;
+}
+#mobileAimStick {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  pointer-events: auto;
+  touch-action: none;
+}
+#mobileAimStick .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(142,226,255,0.32);
+  background: rgba(0,0,0,0.18);
+}
+#mobileAimStick .knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  margin-left: -21px;
+  margin-top: -21px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #b4f3ff, #286fb5);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+}
+#mobileSciFiActions .fire-row {
+  display: flex;
+  gap: 10px;
+}
+#mobileSciFiActions button {
+  width: 74px;
+  height: 58px;
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: #f3fbff;
+  background: rgba(10, 20, 40, 0.86);
+  border: 1px solid rgba(132, 219, 255, 0.52);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.38);
+  touch-action: none;
+}
+#mobileSciFiActions button.active {
+  background: rgba(18, 94, 148, 0.96);
+  border-color: rgba(192, 244, 255, 0.92);
+  box-shadow: 0 0 18px rgba(105, 207, 255, 0.48);
+}
 #firefighterMountBtn {
   position: fixed;
   bottom: 66px;
@@ -3059,6 +3121,17 @@ button:hover { filter: brightness(1.2); }
     <div class="dispatch-actions">
       <button id="dispatchGoBtn" class="difficulty-btn" onclick="dismissDispatchScreen()">Let's Roll</button>
     </div>
+  </div>
+</div>
+
+<div id="mobileSciFiActions" aria-hidden="true">
+  <div id="mobileAimStick" aria-label="Aim weapon">
+    <div class="ring"></div>
+    <div id="mobileAimKnob" class="knob"></div>
+  </div>
+  <div class="fire-row">
+    <button id="mobileLaserBtn" type="button" aria-label="Fire laser">LASER</button>
+    <button id="mobileRocketBtn" type="button" aria-label="Fire plasma missile">E</button>
   </div>
 </div>
 
@@ -29092,6 +29165,7 @@ function updateThumbKnob(dx, dy = 0) {
 function syncThumbStickVisibility() {
   const stick = document.getElementById('thumbStick');
   const controls = document.getElementById('truckControls');
+  const sciFiActions = document.getElementById('mobileSciFiActions');
   const hasAnyFinePointer = window.matchMedia('(any-pointer: fine)').matches;
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
   const noHover = window.matchMedia('(hover: none)').matches;
@@ -29103,6 +29177,11 @@ function syncThumbStickVisibility() {
   stick.style.display = useJoystick ? 'block' : 'none';
   controls.style.display = useJoystick ? 'none' : 'flex';
   const activeLevelData = baseLevels[currentLevel - 1] || {};
+  const sciFiCombat = gameState === 'playing' && isActiveLaserCombatMode(activeLevelData);
+  if (sciFiActions) {
+    sciFiActions.style.display = (useJoystick && sciFiCombat) ? 'flex' : 'none';
+    sciFiActions.setAttribute('aria-hidden', (useJoystick && sciFiCombat) ? 'false' : 'true');
+  }
   const flightMode = isPrimaryFlightModeActive(activeLevelData) || isYear2043Level(currentLevel);
   controls.classList.toggle('flight-mode', flightMode);
   dockHudControlsToCanvasEdge();
@@ -29326,6 +29405,9 @@ function drawTimeSelectorCue() {
 }
 
 let thumbPointerId = null;
+let mobileAimPointerId = null;
+let mobileAimX = 1;
+let mobileAimY = 0;
 const thumbStick = document.getElementById('thumbStick');
 thumbStick.addEventListener('pointerdown', (e) => {
   thumbPointerId = e.pointerId;
@@ -29372,6 +29454,103 @@ document.getElementById('truckDownBtn')?.addEventListener('pointerup', () => set
 document.getElementById('truckUpBtn')?.addEventListener('pointercancel', () => setTruckFlightButtonInput(0));
 document.getElementById('truckDownBtn')?.addEventListener('pointercancel', () => setTruckFlightButtonInput(0));
 document.getElementById('firefighterMountBtn')?.addEventListener('click', () => toggleFirefighterMountState());
+
+function updateMobileAimKnob(dx, dy) {
+  const knob = document.getElementById('mobileAimKnob');
+  if (!knob) return;
+  const max = 40;
+  knob.style.transform = 'translate(' + clamp(Number(dx || 0), -1, 1) * max + 'px, ' + clamp(Number(dy || 0), -1, 1) * max + 'px)';
+}
+
+function applyMobileAim(dx, dy) {
+  let x = clamp(Number(dx || 0), -1, 1);
+  let y = clamp(Number(dy || 0), -1, 1);
+  const len = Math.hypot(x, y);
+  if (len >= 0.14) {
+    x /= len;
+    y /= len;
+    mobileAimX = x;
+    mobileAimY = y;
+  } else {
+    x = mobileAimX;
+    y = mobileAimY;
+  }
+  const origin = getHoseSprayOriginPoint() || getTruckNozzlePoint();
+  const aimLength = Math.min(getTruckHoseLengthLimit(), 300);
+  mouseX = clamp(origin.x + x * aimLength, 0, 1200);
+  mouseY = clamp(origin.y + y * aimLength, 0, 600);
+  updateMobileAimKnob(x, y);
+}
+
+const mobileAimStick = document.getElementById('mobileAimStick');
+mobileAimStick?.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dismissYear2043ControlCue();
+  mobileAimPointerId = e.pointerId;
+  try { mobileAimStick.setPointerCapture?.(e.pointerId); } catch (_) {}
+  const rect = mobileAimStick.getBoundingClientRect();
+  applyMobileAim((e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2), (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2));
+});
+mobileAimStick?.addEventListener('pointermove', (e) => {
+  if (mobileAimPointerId !== e.pointerId) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const rect = mobileAimStick.getBoundingClientRect();
+  applyMobileAim((e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2), (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2));
+});
+function releaseMobileAim(e) {
+  if (e && mobileAimPointerId !== e.pointerId) return;
+  e?.preventDefault?.();
+  e?.stopPropagation?.();
+  mobileAimPointerId = null;
+}
+mobileAimStick?.addEventListener('pointerup', releaseMobileAim);
+mobileAimStick?.addEventListener('pointercancel', releaseMobileAim);
+
+function bindMobileSciFiActionButton(id, mode) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  const setActive = (active) => {
+    btn.classList.toggle('active', !!active);
+    const levelData = baseLevels[currentLevel - 1] || {};
+    if (!isActiveLaserCombatMode(levelData) || gameState !== 'playing' || !playerControlsEnabled) {
+      isLaserFiring = false;
+      isRocketFiring = false;
+      return;
+    }
+    applyMobileAim(mobileAimX, mobileAimY);
+    if (mode === 'laser') {
+      isLaserFiring = !!active;
+      if (active) {
+        isRocketFiring = false;
+        isSpraying = false;
+      }
+    } else {
+      isRocketFiring = !!active;
+      if (active) {
+        isLaserFiring = false;
+        isSpraying = false;
+      }
+    }
+  };
+  btn.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dismissYear2043ControlCue();
+    try { btn.setPointerCapture?.(event.pointerId); } catch (_) {}
+    setActive(true);
+  });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((eventName) => {
+    btn.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setActive(false);
+    });
+  });
+}
+bindMobileSciFiActionButton('mobileLaserBtn', 'laser');
+bindMobileSciFiActionButton('mobileRocketBtn', 'rocket');
 window.addEventListener('resize', syncThumbStickVisibility);
 syncThumbStickVisibility();
 
