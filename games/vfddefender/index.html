@@ -3163,6 +3163,8 @@ const SPRITE_FILES = {
   blackBoxTruck: 'vehicle_black_box_truck_1284x635.webp',
   spaceHealthCanister: 'space_health_medical_canister_512x512.webp',
   spaceFuelCanister: 'space_power_fuel_canister_512x512.webp',
+  alienMissileMine: 'scifi_alien_missile_mine_256x256.webp',
+  plasmaMissile: 'scifi_plasma_missile_256x256.webp',
   spaceEngineLeft: 'vehicle_spacefiretruck_rightside.webp',
   spaceEngineRight: 'vehicle_spacefiretruck.webp',
   ufo: 'scifi_ufo_920x416.webp',
@@ -3646,7 +3648,14 @@ function trimSpriteWhitespace(img) {
 }
 
 function getCachedSprite(key, w, h) {
-  if (!SPRITE_READY[key]) return null;
+  if (!SPRITE_READY[key]) {
+    const maybeLoaded = SPRITES[key];
+    if (maybeLoaded?.complete && (maybeLoaded.naturalWidth || maybeLoaded.width) && (maybeLoaded.naturalHeight || maybeLoaded.height)) {
+      SPRITE_READY[key] = true;
+    } else {
+      return null;
+    }
+  }
   const cacheKey = `${key}:${Math.round(w)}x${Math.round(h)}`;
   if (SPRITE_CACHE[cacheKey]) return SPRITE_CACHE[cacheKey];
 
@@ -3847,10 +3856,17 @@ function preloadLevelSprites(lvl) {
   if (primaryVehicleSprite) needed.add(primaryVehicleSprite);
   const backdropSprite = resolveSpriteKey(levelData?.backgroundSpriteKey || '');
   if (backdropSprite) needed.add(backdropSprite);
+  if (isHeroHullModeActive(levelData) || isYear2043Level(lvl) || isScifiTruckActive(levelData)) {
+    needed.add('spaceHealthCanister');
+    needed.add('spaceFuelCanister');
+    needed.add('alienMissileMine');
+    needed.add('plasmaMissile');
+  }
   normalizeEnemyModelKeyList(levelData?.enemyRaid?.modelKeys || levelData?.enemyModelKeys || '').forEach((key) => needed.add(key));
   entities.forEach((ent) => {
-    if (ent.type === 'builderSprite' && ent.spriteKey && SPRITE_FILES[ent.spriteKey]) {
-      needed.add(ent.spriteKey);
+    if (ent.type === 'builderSprite' && ent.spriteKey) {
+      const spriteKey = resolveSpriteKey(ent.spriteKey);
+      if (spriteKey && SPRITE_FILES[spriteKey]) needed.add(spriteKey);
     }
     if (ent?.civilianModelKey) addAnimatedActorKeys(ent.civilianModelKey, 'civilian');
     if (ent?.civilianFirefighterModelKey) addAnimatedActorKeys(ent.civilianFirefighterModelKey, 'firefighter');
@@ -4087,7 +4103,8 @@ function drawCatalogEntity(ent) {
 }
 
 function getBuilderSpriteBaseSize(spriteKey) {
-  const sprite = SPRITES[spriteKey];
+  const key = resolveSpriteKey(spriteKey) || spriteKey;
+  const sprite = SPRITES[key];
   if (!sprite || !sprite.width || !sprite.height) return { w: 220, h: 160 };
   const maxW = 290;
   const maxH = 250;
@@ -4097,11 +4114,12 @@ function getBuilderSpriteBaseSize(spriteKey) {
 
 function getBuilderSpriteRect(ent) {
   if (!ent || !ent.spriteKey) return null;
+  const resolvedKey = resolveSpriteKey(ent.spriteKey) || ent.spriteKey;
   const rawBaseW = Number(ent.baseW);
   const rawBaseH = Number(ent.baseH);
   const size = (Number.isFinite(rawBaseW) && rawBaseW > 0 && Number.isFinite(rawBaseH) && rawBaseH > 0)
     ? { w: rawBaseW, h: rawBaseH }
-    : getBuilderSpriteBaseSize(ent.spriteKey);
+    : getBuilderSpriteBaseSize(resolvedKey);
   const scale = clamp(Number(ent.scale || 1), BUILDER_MIN_SCALE, BUILDER_MAX_SCALE);
   const drawW = size.w * scale;
   const drawH = size.h * scale;
@@ -4824,6 +4842,7 @@ let tankerSupport = null;
 let nextTankerSupportAt = 15000;
 let boroTankerSupport = null;
 let nextBoroTankerAt = 26000;
+let nextMutualAidRefillAt = 0;
 let blackBoxTruckLevels = new Set();
 let blackBoxTruckState = null;
 let blackBoxTruckPlan = null;
@@ -4840,6 +4859,8 @@ let hasShownLevel6TimeCue = false;
 let timeCueUntilMs = 0;
 let hasShownFirefighterMoveCue = false;
 let firefighterCueUntilMs = 0;
+let year2043ControlCueUntilMs = 0;
+let year2043ControlCueDismissed = false;
 let hoseExperimentState = { showMountHintUntilMs: 0 };
 let hoseCrewCarryMode = 'hidden';
 let level1GuidePending = false;
@@ -8215,6 +8236,8 @@ function isHoseExperimentLevel(levelData = null, level = currentLevel) {
 }
 
 function resetYear2043State() {
+  year2043ControlCueUntilMs = 0;
+  year2043ControlCueDismissed = false;
   year2043State = {
     previewUnlocked: false,
     inCampaign: false,
@@ -8255,20 +8278,32 @@ function spawnEnemyHealthDrop(x, y, amount = 8) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
   const levelData = baseLevels[currentLevel - 1] || {};
   const zeroGravity = isYear2043Level(currentLevel) || isScifiTruckActive(levelData);
-  const kind = Math.random() < 0.58 ? 'health' : 'fuel';
+  const kind = Math.random() < 0.72 ? 'health' : 'fuel';
   const spriteKey = kind === 'fuel' ? 'spaceFuelCanister' : 'spaceHealthCanister';
   enemyHealthDrops.push({
     x,
     y,
     vx: zeroGravity ? 0 : ((Math.random() - 0.5) * 1.2),
     vy: zeroGravity ? 0 : (-1.2 - Math.random() * 0.8),
-    amount: clamp(Number(amount || 8), 2, 24),
+    amount: clamp(Number(amount || 8) * (isYear2043Level(currentLevel) ? 1.35 : 1), 2, 32),
     ttlMs: 12000,
     phase: zeroGravity ? 'hover' : 'fall',
     kind,
     spriteKey,
     _seed: Math.random() * 100000
   });
+}
+
+function shouldSpawnEnemyHealthDrop(ent, reason = 'down') {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (!ent?._raidSpawned || !isHeroHullModeActive(levelData)) return false;
+  const damageRatio = clamp(Number(year2043State?.truckDamage || 0) / Math.max(1, YEAR2043_HULL_MAX), 0, 1);
+  const keyText = String(ent?.spriteKey || ent?.enemyModelKey || ent?.type || '').toLowerCase();
+  const isHeavy = /(mothership|cargohauler|large_cigar|mech|armored)/.test(keyText);
+  const baseChance = reason === 'collision' ? 0.12 : 0.24;
+  const damageHelp = damageRatio * 0.28;
+  const heavyBonus = isHeavy ? 0.16 : 0;
+  return Math.random() < clamp(baseChance + damageHelp + heavyBonus, 0.08, 0.62);
 }
 
 function getYear2043WaveTotal(levelData, level = currentLevel) {
@@ -8365,7 +8400,7 @@ function markRaidAttackerDestroyed(ent, reason = 'down', popupX = null, popupY =
     awardGameplayPoints(bonus);
     addPointPopup(cx, cy - 28, `+${bonus}`, '#9dfbcf', 58);
   }
-  if (ent._raidSpawned && isHeroHullModeActive(baseLevels[currentLevel - 1] || {})) {
+  if (shouldSpawnEnemyHealthDrop(ent, reason)) {
     const heal = reason === 'collision' ? 4 : (isUfo ? 10 : 7);
     spawnEnemyHealthDrop(cx, cy, heal);
   }
@@ -9279,6 +9314,7 @@ baseLevels[22] = {
   abductionScenario: true,
   timeOfDay: 2,
   truckSide: 'left',
+  tankerSchedule: { firstAt: 9000, repeat: 21000, hold: 12000 },
   entities: [
     { type: 'bgTreeOakRealistic', grid: { col: 'J', line: 8.85 }, scale: 0.44, alpha: 0.16, silhouette: true },
     {
@@ -9300,6 +9336,16 @@ baseLevels[22] = {
       civilianModelKey: 'misc_human_female_civilian_side_standing_right_459x200',
       civilianFirefighterModelKey: 'misc_human_firefighter_side_standing_right_459x200',
       civilianWaitForFire: false
+    },
+    {
+      type: 'builderSprite',
+      spriteKey: 'img_building_home_rundown_shack_459x145',
+      x: 760,
+      scale: 0.96,
+      baseY: 488,
+      burnableOverride: true,
+      burnZonesEnabled: [true, true, false],
+      burnZoneDifficultyTiers: [1, 1, 3]
     },
     { type: 'treeOakRealistic', x: 890, scale: 0.88, baseY: 488 },
     { type: 'fenceWhiteRow', x: 742, scale: 0.72 },
@@ -9325,6 +9371,23 @@ baseLevels[22] = {
   ]
 };
 
+function renumberLevelNameForSlot(level, slot) {
+  if (!level || !Number.isFinite(Number(slot))) return;
+  const cleanName = String(level.name || `Level ${slot}`).replace(/\s+\d+$/, '');
+  level.name = `${cleanName} ${slot}`;
+}
+
+function swapCampaignLevelSlots(slotA, slotB) {
+  const indexA = Math.max(0, Number(slotA || 1) - 1);
+  const indexB = Math.max(0, Number(slotB || 1) - 1);
+  if (!baseLevels[indexA] || !baseLevels[indexB]) return;
+  const temp = baseLevels[indexA];
+  baseLevels[indexA] = baseLevels[indexB];
+  baseLevels[indexB] = temp;
+  renumberLevelNameForSlot(baseLevels[indexA], slotA);
+  renumberLevelNameForSlot(baseLevels[indexB], slotB);
+}
+
 function buildHoseExperimentLevel() {
   const source = deepClone(baseLevels[22] || {});
   source.name = 'Hose Firefighter Experiment 24';
@@ -9344,7 +9407,7 @@ const LOCKED_LEVEL_23 = deepClone(baseLevels[22] || {});
 const YEAR2043_LEVEL_COUNT = 4;
 const YEAR2043_START_LEVEL = 24;
 const YEAR2043_END_LEVEL = YEAR2043_START_LEVEL + YEAR2043_LEVEL_COUNT - 1;
-const YEAR2043_HULL_MAX = 180;
+const YEAR2043_HULL_MAX = 220;
 
 const YEAR2043_BACKDROPS = [
   'scifi_background_alienplanet1_wide_792x276',
@@ -9379,7 +9442,7 @@ function buildYear2043Levels() {
     return {
       name: levelNames[idx],
       safetyTip: 'Future tactics: keep moving, target fast UFOs first, and dodge incoming plasma fire.',
-      dispatchBody: idx === 0 ? `Dispatch to Unit Prime: entering ${levelNames[idx]}. Controls: use WASD/arrow keys or mobile stick to move in full 360, aim with mouse/touch, hold Fire for laser, and hold E for missiles.` : `Dispatch to Unit Prime: entering ${levelNames[idx]}. Hostile UFO waves detected from deep space.`,
+      dispatchBody: idx === 0 ? `Dispatch to Unit Prime: entering ${levelNames[idx]}. Controls: use WASD/arrow keys or mobile stick to move in full 360. Mouse/touch shoots the Laser. E shoots the Plasma Blast.` : `Dispatch to Unit Prime: entering ${levelNames[idx]}. Hostile UFO waves detected from deep space.`,
       dispatchClearBody: `Dispatch confirms ${levelNames[idx]} is secure. Route to the next corridor is open.`,
       timeOfDay: 8,
       truckSide: 'left',
@@ -9409,8 +9472,8 @@ function buildYear2043Levels() {
         waveBurstMax: idx >= 2 ? 4 : 2,
         formationChance: idx >= 2 ? 0.9 : 0.35,
         laserColor: '#ff6c7a',
-        bombType: idx >= 4 ? 'plasma' : 'bomb',
-        bombColor: idx >= 4 ? '#ffad64' : '#ff9d55',
+        bombType: idx >= 1 ? 'mine' : 'bomb',
+        bombColor: idx >= 1 ? '#ffad64' : '#ff9d55',
         modelKeys: [...airModelSets[idx]],
         airModelKeys: airModelSets[idx],
         groundModelKeys: [],
@@ -21408,6 +21471,8 @@ function applyDefaultCivilianEmitterMix() {
 loadBuilderSourceOverrides();
 loadBuilderOfficialOverrides();
 enforceFixedCampaignLevels();
+// Space the farm scenes apart after source/builder overrides are applied.
+swapCampaignLevelSlots(8, 20);
 applyUniqueSafetyTipsToBaseLevels();
 applyDefaultCivilianEmitterMix();
 builderState = normalizeBuilderLevel(safeJsonParse(localStorage.getItem(BUILDER_LAST_DRAFT_KEY) || '', null) || {});
@@ -22321,8 +22386,8 @@ function getDifficultyTuning(diff, level, spotCount = 0) {
   const waterCapacity = isEasy
     ? 100
     : isHard
-      ? clamp(Math.round((96 - (lvl * 1.0)) - (rangeTier === 3 ? 6 : 0)), 64, 94)
-      : clamp(Math.round((108 - (lvl * 0.8)) - (rangeTier === 3 ? 4 : 0)), 78, 106);
+      ? clamp(Math.round((100 - (lvl * 0.82)) - (rangeTier === 3 ? 4 : 0)), 72, 96)
+      : clamp(Math.round((112 - (lvl * 0.7)) - (rangeTier === 3 ? 2 : 0)), 86, 108);
   const waterDrainPerMs = isEasy
     ? 0
     : isHard
@@ -22336,19 +22401,47 @@ function getDifficultyTuning(diff, level, spotCount = 0) {
   const growthMult = isEasy
     ? clamp((0.98 + (lvl * 0.006)) * rangeGrowthBoost, 0.90, 1.32)
     : isHard
-      ? clamp((1.46 + (lvl * 0.015)) * rangeGrowthBoost, 1.45, 2.45)
-      : clamp((1.18 + (lvl * 0.010)) * rangeGrowthBoost, 1.18, 1.95);
+      ? clamp((1.28 + (lvl * 0.011)) * rangeGrowthBoost, 1.34, 2.10)
+      : clamp((1.04 + (lvl * 0.007)) * rangeGrowthBoost, 1.06, 1.62);
   const regrowthChance = isEasy
     ? clamp((0.014 + (lvl * 0.00023)) * rangeRegrowthBoost, 0.012, 0.024)
     : isHard
-      ? clamp((0.030 + (lvl * 0.00045)) * rangeRegrowthBoost, 0.030, 0.050)
-      : clamp((0.022 + (lvl * 0.00035)) * rangeRegrowthBoost, 0.022, 0.038);
+      ? clamp((0.019 + (lvl * 0.00028)) * rangeRegrowthBoost, 0.018, 0.034)
+      : clamp((0.013 + (lvl * 0.00022)) * rangeRegrowthBoost, 0.012, 0.026);
   const damageMult = isEasy
     ? clamp((1.00 - (lvl * 0.0022)) * rangeDamageCut, 0.86, 1.06)
     : isHard
       ? clamp((0.84 - (lvl * 0.0050)) * rangeDamageCut, 0.56, 0.86)
       : clamp((0.93 - (lvl * 0.0034)) * rangeDamageCut, 0.72, 0.95);
-  return { waterCapacity, waterDrainPerMs, healthMult, growthMult, regrowthChance, damageMult };
+  const tuning = { waterCapacity, waterDrainPerMs, healthMult, growthMult, regrowthChance, damageMult };
+  if (rangeTier === 3 && !isEasy) {
+    tuning.healthMult *= isHard ? 0.90 : 0.92;
+    tuning.growthMult *= isHard ? 0.76 : 0.72;
+    tuning.regrowthChance *= isHard ? 0.55 : 0.48;
+    tuning.damageMult = Math.min(1.08, tuning.damageMult * (isHard ? 1.16 : 1.14));
+  }
+  if (lvl === 16 && !isEasy && !isHard) {
+    tuning.waterCapacity = Math.max(tuning.waterCapacity, 96);
+    tuning.healthMult *= 0.84;
+    tuning.growthMult *= 0.82;
+    tuning.regrowthChance *= 0.72;
+    tuning.damageMult = Math.min(1.02, tuning.damageMult * 1.12);
+  }
+  if (lvl === 21 && !isEasy) {
+    tuning.healthMult *= isHard ? 0.86 : 0.82;
+    tuning.growthMult *= 0.68;
+    tuning.regrowthChance *= 0.45;
+    tuning.damageMult = Math.min(1.10, tuning.damageMult * 1.18);
+    tuning.waterCapacity = Math.max(tuning.waterCapacity, isHard ? 82 : 98);
+  }
+  if (lvl === 23 && !isEasy) {
+    tuning.healthMult *= isHard ? 0.82 : 0.86;
+    tuning.growthMult *= isHard ? 0.62 : 0.68;
+    tuning.regrowthChance *= 0.40;
+    tuning.damageMult = Math.min(1.14, tuning.damageMult * (isHard ? 1.24 : 1.18));
+    tuning.waterCapacity = Math.max(tuning.waterCapacity, isHard ? 98 : 104);
+  }
+  return tuning;
 }
 
 function getHealthBudgetCap(diff, level, spotCount = 0) {
@@ -22692,6 +22785,28 @@ function tryShowQueuedLevel1Guide() {
   showLevel1Guide();
 }
 
+function showYear2043ControlCue() {
+  if (currentLevel !== YEAR2043_START_LEVEL || gameState !== 'playing' || pendingDispatchLevel !== null) return;
+  year2043ControlCueDismissed = false;
+  year2043ControlCueUntilMs = performance.now() + 3000;
+  addPointPopup(canvas.width * 0.5, 78, 'MOVE WITH WASD / ARROWS OR MOBILE STICK', '#7dd9ff', 190);
+  addPointPopup(canvas.width * 0.5, 104, 'MOUSE / TOUCH SHOOTS LASER - E SHOOTS PLASMA BLAST', '#9de7ff', 190);
+}
+
+function isYear2043ControlCueActive() {
+  return currentLevel === YEAR2043_START_LEVEL
+    && gameState === 'playing'
+    && !year2043ControlCueDismissed
+    && performance.now() < year2043ControlCueUntilMs;
+}
+
+function dismissYear2043ControlCue() {
+  if (!isYear2043ControlCueActive()) return false;
+  year2043ControlCueDismissed = true;
+  year2043ControlCueUntilMs = 0;
+  return true;
+}
+
 function dismissDispatchScreen(fromAuto = false) {
   const dispatchLevel = pendingDispatchLevel;
   const screen = document.getElementById('dispatchScreen');
@@ -22706,6 +22821,7 @@ function dismissDispatchScreen(fromAuto = false) {
   }
   pendingDispatchLevel = null;
   if (dispatchLevel === 6) showLevel6TimeCue();
+  if (dispatchLevel === YEAR2043_START_LEVEL) setTimeout(() => showYear2043ControlCue(), 250);
   tryShowQueuedLevel1Guide();
 }
 
@@ -23135,6 +23251,10 @@ function loadLevel(lvl, options = {}) {
     hasShownLevel6TimeCue = false;
     timeCueUntilMs = 0;
   }
+  if (lvl !== YEAR2043_START_LEVEL) {
+    year2043ControlCueUntilMs = 0;
+    year2043ControlCueDismissed = false;
+  }
   clearMoveCue();
   syncThumbStickVisibility();
   if (moveCueTimer) {
@@ -23285,6 +23405,7 @@ function loadLevel(lvl, options = {}) {
   const boroTiming = getBoroTankerSupportSchedule(lvl, difficulty);
   nextBoroTankerAt = boroTiming.firstAt;
   boroTankerSupport = null;
+  nextMutualAidRefillAt = 0;
   blackBoxTruckState = null;
   blackBoxTruckPlan = null;
   ufoRaid = null;
@@ -23359,7 +23480,8 @@ function loadLevel(lvl, options = {}) {
   if (difficulty > 1) {
     // Guarantee that Medium/Hard cannot be cleared off a single tank alone.
     // This keeps refill tanker mechanics meaningful.
-    currentDifficultyTuning.waterCapacity = Math.min(currentDifficultyTuning.waterCapacity, difficulty >= 3 ? 88 : 98);
+    const maxTank = lvl === 23 ? (difficulty >= 3 ? 98 : 104) : (difficulty >= 3 ? 88 : 98);
+    currentDifficultyTuning.waterCapacity = Math.min(currentDifficultyTuning.waterCapacity, maxTank);
   }
   fireSpots = oppositeSideTemplate.map(s => {
     const behavior = s.entityKey ? fireBehaviorByKey.get(s.entityKey) : null;
@@ -23420,14 +23542,15 @@ function loadLevel(lvl, options = {}) {
     );
     const nextTotal = fireSpots.reduce((sum, spot) => sum + Math.max(1, Number(spot.maxHealth || 1)), 0);
     if (nextTotal < minNeedsRefillHealth) {
-      const maxAllowed = Math.max(minNeedsRefillHealth, healthCap);
-      const desiredTotal = Math.min(maxAllowed, minNeedsRefillHealth);
-      const ratioUp = desiredTotal / Math.max(1, nextTotal);
-      fireSpots = fireSpots.map((spot) => {
-        const nextMax = Math.max(80, Math.round((spot.maxHealth || 100) * ratioUp));
-        const nextHealth = Math.max(10, Math.min(nextMax, Math.round((spot.health || nextMax) * ratioUp)));
-        return { ...spot, maxHealth: nextMax, health: nextHealth };
-      });
+      const desiredTotal = Math.min(healthCap, minNeedsRefillHealth);
+      if (desiredTotal > nextTotal) {
+        const ratioUp = desiredTotal / Math.max(1, nextTotal);
+        fireSpots = fireSpots.map((spot) => {
+          const nextMax = Math.max(80, Math.round((spot.maxHealth || 100) * ratioUp));
+          const nextHealth = Math.max(10, Math.min(nextMax, Math.round((spot.health || nextMax) * ratioUp)));
+          return { ...spot, maxHealth: nextMax, health: nextHealth };
+        });
+      }
     }
   }
   if (isFinalAbductionScenario(levelData, lvl)) {
@@ -23453,11 +23576,8 @@ function loadLevel(lvl, options = {}) {
   // Keep fire anchored to burnable model zones; do not shift spots off art.
   if (lvl === ABDUCTION_LEVEL) initUfoRaid();
   if (lvl === 21) initUfoPreview();
-  if (lvl === YEAR2043_START_LEVEL) {
-    setTimeout(() => {
-      addPointPopup(canvas.width * 0.5, 78, 'SPACE CONTROLS: MOVE + AIM + HOLD E FOR MISSILES', '#7dd9ff', 140);
-      addPointPopup(canvas.width * 0.5, 104, 'MOBILE: THUMBSTICK SUPPORTS FULL 360 MOVEMENT', '#9de7ff', 120);
-    }, 350);
+  if (lvl === YEAR2043_START_LEVEL && skipDispatch) {
+    setTimeout(() => showYear2043ControlCue(), 350);
   }
   if (lvl === 7) {
     const treeEnt = (levelData.entities || []).find((ent) => ent.type === 'treePineRealistic' || ent.type === 'treeOakRealistic' || ent.type === 'tree');
@@ -24977,11 +25097,13 @@ class Particle {
   }
   draw() { 
     const denom = this.type === 'smoke' ? 180 : (this.type === 'spark' ? 34 : 45);
-    const minA = this.type === 'smoke' ? 0.05 : 0.15;
+    const minA = this.type === 'smoke' ? 0.05 : (this.type === 'water' ? 0.34 : 0.22);
     ctx.globalAlpha = Math.max(minA, this.life / denom); 
     ctx.fillStyle = this.color; 
     if (this.type === 'water') { 
-      ctx.fillRect(this.x - 1.8, this.y - 3, 3.6, 7); 
+      const w = Math.max(4.2, this.size * 1.35);
+      const h = Math.max(9, this.size * 3.0);
+      ctx.fillRect(this.x - w * 0.5, this.y - h * 0.5, w, h);
     } else if (this.type === 'spark') {
       const s = Math.max(2, this.size);
       ctx.fillRect(this.x - s * 0.5, this.y - 1, s, 2);
@@ -24990,32 +25112,52 @@ class Particle {
     } else if (this.type === 'smoke') {
       ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
     } else { 
-      ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size); 
+      const s = Math.max(4.4, this.size);
+      ctx.fillRect(this.x - s/2, this.y - s/2, s, s);
     } 
     ctx.globalAlpha = 1; 
   }
 }
 
+const PARTICLE_BUDGET = 620;
+const WATER_PARTICLE_BUDGET = 260;
+
+function countParticlesByType(type) {
+  let count = 0;
+  for (let i = 0; i < particles.length; i++) {
+    if (particles[i]?.type === type) count++;
+  }
+  return count;
+}
+
+function canAddParticle(type = '') {
+  if (particles.length >= PARTICLE_BUDGET) return false;
+  if (type === 'water' && countParticlesByType('water') >= WATER_PARTICLE_BUDGET) return false;
+  return true;
+}
+
 function createFireParticles(x, y, intensity, sizeScale = 1, opts = {}) {
-  const count = Math.max(0, Math.min(10, Math.round(intensity * 0.78)));
+  const count = Math.max(0, Math.min(8, Math.round(intensity * 0.56)));
   const spreadX = 8 + 8 * sizeScale;
   const spreadY = 6 + 7 * sizeScale;
   for (let i = 0; i < count; i++) {
+    if (!canAddParticle('fire')) break;
     const vx = (Math.random() - 0.5) * (1.6 + 1.2 * sizeScale);
     const vy = -(1.8 + Math.random() * (2.8 + 1.6 * sizeScale));
     let color = '#FFEE55';
     if (Math.random() < 0.30) color = '#FFAA22';
     else if (Math.random() < 0.60) color = '#FF5500';
-    const size = (2.4 + Math.random() * 2.4) * (0.85 + sizeScale * 0.35);
+    const size = (4.0 + Math.random() * 3.2) * (0.88 + sizeScale * 0.34);
     particles.push(new Particle(
       x + (Math.random() - 0.5) * spreadX,
       y + (Math.random() - 0.5) * spreadY,
       vx, vy, color, 34 + Math.random() * 14, size, 'fire'
     ));
   }
-  if ((opts.roof || opts.big) && Math.random() < 0.35) {
-    const smokeCount = opts.big ? 2 : 1;
+  if ((opts.roof || opts.big) && Math.random() < 0.22) {
+    const smokeCount = opts.big ? 1 : 1;
     for (let s = 0; s < smokeCount; s++) {
+      if (!canAddParticle('smoke')) break;
       particles.push(new Particle(
         x + (Math.random() - 0.5) * (18 + 10 * sizeScale),
         y + (Math.random() - 0.5) * (10 + 8 * sizeScale),
@@ -25032,6 +25174,7 @@ function createFireParticles(x, y, intensity, sizeScale = 1, opts = {}) {
 
 function createSmoke(x, y) {
   for (let i = 0; i < 12; i++) {
+    if (!canAddParticle('smoke')) break;
     particles.push(new Particle(x + (Math.random()-0.5)*45, y + (Math.random()-0.5)*26, (Math.random()-0.5)*2.1, -1.0 - Math.random()*1.7, '#555555', 580, 8 + Math.random()*8, 'smoke'));
   }
 }
@@ -25106,6 +25249,7 @@ function getClampedHoseEnd() {
 }
 
 function createWaterParticles() {
+  if (particles.length >= PARTICLE_BUDGET - 24) return;
   const levelData = baseLevels[currentLevel - 1] || {};
   const origin = getHoseSprayOriginPoint();
   const tip = getClampedHoseEnd();
@@ -25141,25 +25285,29 @@ function createWaterParticles() {
   const perpY = dirX;
 
   // Near nozzle drag: wide/short. Far drag: tight/long.
-  const stretchFactor = Math.min(tip.length / getTruckHoseLengthLimit(), 1);
+  const aimLength = firefighterMode ? Math.hypot(targetX - originX, targetY - originY) : tip.length;
+  const stretchFactor = Math.min(aimLength / getTruckHoseLengthLimit(), 1);
   const closeBoost = Math.pow(1 - stretchFactor, 1.15);
   const spreadBase = (firefighterMode ? 31 : 34) * (0.30 + closeBoost);
-  const hitReduction = impact ? 0.45 : 1;
-  const waterSpeed = ((5.2 + stretchFactor * 20.2) + (firefighterMode ? 2.2 : 0)) * hitReduction;
-  const numStreams = impact ? 3 : (stretchFactor > 0.78 ? 5 : (closeBoost > 0.55 ? 15 : 11));
-  const gravityBias = firefighterMode ? 0.45 : 2.2;
+  const hitReduction = impact ? (0.82 + stretchFactor * 0.12) : 1;
+  const waterSpeed = ((6.6 + stretchFactor * 24.5) + (firefighterMode ? 2.4 : 0)) * hitReduction;
+  const numStreams = stretchFactor > 0.78 ? 4 : (closeBoost > 0.55 ? 10 : 7);
+  const particlesPerStream = closeBoost > 0.55 ? 2 : (stretchFactor > 0.78 ? 3 : 2);
+  const gravityBias = (firefighterMode ? 0.16 : 0.70) + closeBoost * (firefighterMode ? 0.55 : 1.55);
   const foamChance = firefighterMode ? 0.0 : (0.25 + closeBoost * 0.55);
-  const particleLifeBase = impact ? 14 : (firefighterMode ? 38 : (30 + closeBoost * 10));
-  const particleSizeBase = 2.6 + closeBoost * (firefighterMode ? 0.2 : 0.9);
+  const particleLifeBase = 18 + stretchFactor * (firefighterMode ? 30 : 26) + closeBoost * 7;
+  const particleSizeBase = 3.4 + closeBoost * (firefighterMode ? 0.85 : 1.95);
 
   for (let s = 0; s < numStreams; s++) {
+    if (!canAddParticle('water')) break;
     const lateral = (Math.random() - 0.5) * spreadBase;
     const startX = originX + perpX * lateral + dirX * (0.8 + Math.random() * 1.2);
     const startY = originY + perpY * lateral + dirY * (0.8 + Math.random() * 1.2);
     const vx = dirX * waterSpeed + perpX * ((Math.random() - 0.5) * spreadBase * 0.11);
     const vy = dirY * waterSpeed + perpY * ((Math.random() - 0.5) * spreadBase * 0.11) + gravityBias;
-    for (let i = 0; i < 5; i++) {
-      const jitter = i * 0.18;
+    for (let i = 0; i < particlesPerStream; i++) {
+      if (!canAddParticle('water')) break;
+      const jitter = i * 0.42;
       particles.push(new Particle(
         startX + dirX * jitter, startY + dirY * jitter,
         vx * (0.9 + Math.random() * 0.12), vy * (0.9 + Math.random() * 0.12),
@@ -25287,7 +25435,7 @@ function pulsePlayerRockets(dt, levelData) {
   const rocketType = (levelData?.primaryRocketType === 'plasma' || levelData?.primaryRocketType === 'missile') ? levelData.primaryRocketType : 'rocket';
   const configuredColor = /^#[0-9a-fA-F]{6}$/.test(String(levelData?.primaryRocketColor || '')) ? String(levelData.primaryRocketColor) : '';
   const trailColor = configuredColor || (rocketType === 'plasma' ? '#b08cff' : (rocketType === 'missile' ? '#ffcf8a' : '#9ad8ff'));
-  const popupText = rocketType === 'plasma' ? 'PLASMA' : (rocketType === 'missile' ? 'MISSILE' : 'ROCKET');
+  const popupText = rocketType === 'plasma' ? 'PLASMA BLAST' : (rocketType === 'missile' ? 'MISSILE' : 'ROCKET');
   const nowMs = performance.now();
   const cooldown = rocketType === 'plasma' ? 340 : (rocketType === 'missile' ? 520 : 420);
   if (nowMs - lastRocketPulseAt < cooldown) return;
@@ -25310,6 +25458,7 @@ function pulsePlayerRockets(dt, levelData) {
     ttlMs: 1200,
     type: rocketType,
     color: trailColor,
+    spriteKey: rocketType === 'plasma' ? 'plasmaMissile' : '',
     text: popupText
   });
 }
@@ -25370,23 +25519,31 @@ function updateDrawPlayerRocketShots(dt, levelData) {
     ctx.save();
     ctx.translate(shot.x, shot.y);
     ctx.rotate(angle);
-    ctx.fillStyle = String(shot.color || '#9ad8ff');
-    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(9, 0);
-    ctx.lineTo(2, 4);
-    ctx.lineTo(-9, 4);
-    ctx.lineTo(-12, 0);
-    ctx.lineTo(-9, -4);
-    ctx.lineTo(2, -4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(255, 210, 140, 0.9)';
-    ctx.beginPath();
-    ctx.arc(-12, 0, 2.4, 0, Math.PI * 2);
-    ctx.fill();
+    const spriteKey = resolveSpriteKey(String(shot.spriteKey || ''));
+    const sprite = spriteKey ? getCachedSprite(spriteKey, 44, 22) : null;
+    if (sprite && sprite.width && sprite.height) {
+      ctx.shadowColor = String(shot.color || '#b8d7ff');
+      ctx.shadowBlur = 14;
+      ctx.drawImage(sprite, -22, -11, 44, 22);
+    } else {
+      ctx.fillStyle = String(shot.color || '#9ad8ff');
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(9, 0);
+      ctx.lineTo(2, 4);
+      ctx.lineTo(-9, 4);
+      ctx.lineTo(-12, 0);
+      ctx.lineTo(-9, -4);
+      ctx.lineTo(2, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255, 210, 140, 0.9)';
+      ctx.beginPath();
+      ctx.arc(-12, 0, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
     const hit = dist <= Math.max(10, Math.hypot(shot.x - prevX, shot.y - prevY) + 4);
     if (hit || shot.ttlMs <= 0 || shot.x < -260 || shot.x > 1460 || shot.y < -120 || shot.y > 720) {
@@ -25579,15 +25736,21 @@ function getManualKvfdCooldownMs() {
   return difficulty >= 3 ? 45000 : 30000;
 }
 
+function getMutualAidRefillCooldownMs() {
+  return difficulty >= 3 ? 45000 : 30000;
+}
+
 function getKvfdApproachDirFromTruck() {
   return truck.x < (canvas.width * 0.5) ? -1 : 1;
 }
 
 function getKvfdTargetX(layout, approachDir) {
+  const width = Number(layout?.w || ENTITY_LAYOUT.semiTankRight.w);
+  const truckPoint = getTruckNozzlePoint();
   if (approachDir < 0) {
-    return Math.min(canvas.width - layout.w - 28, truck.x + TANKER_FOLLOW_OFFSET_X);
+    return Math.max(24, Math.min(canvas.width - width - 28, truckPoint.x - 58));
   }
-  return Math.max(24, Math.min(canvas.width - layout.w - 24, truck.x - (layout.w - 72)));
+  return Math.max(24, Math.min(canvas.width - width - 24, truckPoint.x - width + 58));
 }
 
 function startKvfdManualRefill() {
@@ -25618,11 +25781,17 @@ function startKvfdManualRefill() {
   return true;
 }
 
+function getSupportTruckConnectionPoint(support, truckPoint = getTruckNozzlePoint()) {
+  const leftPort = { x: support.x + 58, y: support.y + 92 };
+  const rightPort = { x: support.x + support.w - 58, y: support.y + 92 };
+  return Math.abs(leftPort.x - truckPoint.x) <= Math.abs(rightPort.x - truckPoint.x) ? leftPort : rightPort;
+}
+
 function isSupportTruckConnected(support, activeState) {
   if (!support || support.state !== activeState) return false;
   const truckPoint = getTruckNozzlePoint();
-  const supportPointX = support.x + (support.facing < 0 ? 58 : support.w - 58);
-  return Math.abs(supportPointX - truckPoint.x) <= 118;
+  const supportPoint = getSupportTruckConnectionPoint(support, truckPoint);
+  return Math.abs(supportPoint.x - truckPoint.x) <= 190;
 }
 
 function updateTankerSupport(dt) {
@@ -25695,6 +25864,16 @@ function drawTankerSupport() {
   });
 }
 
+function getBoroTankerApproachDir() {
+  return 1;
+}
+
+function getBoroTankerTargetX(layout) {
+  const width = Number(layout?.w || ENTITY_LAYOUT.boroTankerRight.w);
+  const truckPoint = getTruckNozzlePoint();
+  return Math.max(24, Math.min(canvas.width - width - 24, truckPoint.x - width + 58));
+}
+
 function startBoroTankerSupport(source = 'scheduled') {
   const levelData = baseLevels[currentLevel - 1] || {};
   if (isScifiTruckActive(levelData)) return;
@@ -25702,7 +25881,7 @@ function startBoroTankerSupport(source = 'scheduled') {
   if (boroTankerSupport) return;
   const layout = ENTITY_LAYOUT.boroTankerRight;
   const timing = getBoroTankerSupportSchedule(currentLevel, difficulty);
-  const targetX = Math.max(24, Math.min(canvas.width - layout.w - 24, truck.x - (layout.w - 72)));
+  const targetX = getBoroTankerTargetX(layout);
   boroTankerSupport = {
     x: -layout.w - 220,
     y: TANKER_LANE_Y - layout.h,
@@ -25723,17 +25902,17 @@ function updateBoroTankerSupport(dt) {
   const step = Math.max(0.2, dt / 16.67);
   boroTankerSupport.y = TANKER_LANE_Y - boroTankerSupport.h;
   if (boroTankerSupport.state === 'arrive') {
-    boroTankerSupport.facing = 1;
+    boroTankerSupport.facing = getBoroTankerApproachDir();
     boroTankerSupport.x += boroTankerSupport.speed * step;
-    boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
+    boroTankerSupport.targetX = getBoroTankerTargetX(boroTankerSupport);
     if (boroTankerSupport.x >= boroTankerSupport.targetX) {
       boroTankerSupport.x = boroTankerSupport.targetX;
       boroTankerSupport.state = 'hold';
       boroTankerSupport.holdUntil = levelElapsedMs + boroTankerSupport.holdMs;
     }
   } else if (boroTankerSupport.state === 'hold') {
-    boroTankerSupport.facing = 1;
-    boroTankerSupport.targetX = Math.max(24, Math.min(canvas.width - boroTankerSupport.w - 24, truck.x - (boroTankerSupport.w - 72)));
+    boroTankerSupport.facing = getBoroTankerApproachDir();
+    boroTankerSupport.targetX = getBoroTankerTargetX(boroTankerSupport);
     boroTankerSupport.x += (boroTankerSupport.targetX - boroTankerSupport.x) * Math.min(0.18, 0.06 * step);
     if (isTankerRefillEnabled() && isSupportTruckConnected(boroTankerSupport, 'hold')) addWater(Math.max(0, dt) * 0.019);
     if (levelElapsedMs >= boroTankerSupport.holdUntil) {
@@ -25761,10 +25940,7 @@ function drawTankerConnection() {
     if (!support || support.state !== activeState) return;
     if (!isSupportTruckConnected(support, activeState)) return;
     const truckPoint = getTruckNozzlePoint();
-    const tankerPoint = {
-      x: support.x + (support.facing < 0 ? 58 : support.w - 58),
-      y: support.y + 92
-    };
+    const tankerPoint = getSupportTruckConnectionPoint(support, truckPoint);
     ctx.strokeStyle = hoseColor;
     ctx.lineWidth = 10;
     ctx.lineCap = 'round';
@@ -25882,7 +26058,10 @@ function drawWaterGauge() {
 }
 
 function hasEarlyRefillAvailable() {
-  return gameState === 'playing' && score >= EARLY_REFILL_PENALTY_POINTS && !boroTankerSupport;
+  return gameState === 'playing'
+    && score >= EARLY_REFILL_PENALTY_POINTS
+    && !boroTankerSupport
+    && levelElapsedMs >= nextMutualAidRefillAt;
 }
 
 function isPointInRect(x, y, rect) {
@@ -25944,6 +26123,7 @@ function triggerMutualAidRefill() {
     earlyRefillWarningAccepted = true;
   }
   score = Math.max(0, score - EARLY_REFILL_PENALTY_POINTS);
+  nextMutualAidRefillAt = levelElapsedMs + getMutualAidRefillCooldownMs();
   startBoroTankerSupport('manual');
   return true;
 }
@@ -27141,14 +27321,14 @@ function getEnemyLaserColorForSprite(spriteKey, fallback = '#ff5772') {
 
 function getScifiShipTuning(spriteKey) {
   const key = String(spriteKey || '').toLowerCase();
-  if (/mothership/.test(key)) return { role: 'mothership', scale: 0.42, farScale: 0.045, speed: 0.82, skill: 0.82, hullMult: 3.2, laserDamage: 14, bombDamage: 28, formation: 5 };
-  if (/cargohauler/.test(key)) return { role: 'carrier', scale: 0.46, farScale: 0.050, speed: 0.74, skill: 0.76, hullMult: 3.05, laserDamage: 13, bombDamage: 27, formation: 5 };
-  if (/large_cigar/.test(key)) return { role: 'large', scale: 0.48, farScale: 0.038, speed: 1.04, skill: 0.92, hullMult: 2.0, laserDamage: 11, bombDamage: 21, formation: 3 };
-  if (/modular_ring/.test(key)) return { role: 'drone', scale: 0.27, farScale: 0.030, speed: 1.20, skill: 1.0, hullMult: 1.35, laserDamage: 9, bombDamage: 16, formation: 2 };
-  if (/medium_delta/.test(key)) return { role: 'medium-basic', scale: 0.26, farScale: 0.024, speed: 1.36, skill: 1.03, hullMult: 1.0, laserDamage: 7, bombDamage: 13, formation: 0 };
-  if (/small_saucer/.test(key)) return { role: 'small-basic', scale: 0.34, farScale: 0.026, speed: 1.45, skill: 1.05, hullMult: 0.9, laserDamage: 7, bombDamage: 12, formation: 0 };
-  if (key === 'ufo' || /scifi_ufo_920/.test(key)) return { role: 'basic-ufo', scale: 0.17, farScale: 0.022, speed: 1.38, skill: 1.02, hullMult: 1.05, laserDamage: 8, bombDamage: 14, formation: 0 };
-  return { role: 'basic', scale: 0.28, farScale: 0.026, speed: 1.28, skill: 1.0, hullMult: 1.0, laserDamage: 8, bombDamage: 14, formation: 0 };
+  if (/mothership/.test(key)) return { role: 'mothership', scale: 0.78, farScale: 0.080, speed: 0.70, skill: 0.74, hullMult: 3.55, laserDamage: 14, bombDamage: 28, formation: 5 };
+  if (/cargohauler/.test(key)) return { role: 'carrier', scale: 0.72, farScale: 0.074, speed: 0.68, skill: 0.72, hullMult: 3.25, laserDamage: 13, bombDamage: 27, formation: 5 };
+  if (/large_cigar/.test(key)) return { role: 'large', scale: 0.66, farScale: 0.060, speed: 0.92, skill: 0.86, hullMult: 2.2, laserDamage: 11, bombDamage: 21, formation: 3 };
+  if (/modular_ring/.test(key)) return { role: 'drone', scale: 0.39, farScale: 0.040, speed: 1.10, skill: 0.96, hullMult: 1.35, laserDamage: 9, bombDamage: 16, formation: 2 };
+  if (/medium_delta/.test(key)) return { role: 'medium-basic', scale: 0.38, farScale: 0.036, speed: 1.26, skill: 1.0, hullMult: 1.0, laserDamage: 7, bombDamage: 13, formation: 0 };
+  if (/small_saucer/.test(key)) return { role: 'small-basic', scale: 0.42, farScale: 0.038, speed: 1.34, skill: 1.02, hullMult: 0.9, laserDamage: 7, bombDamage: 12, formation: 0 };
+  if (key === 'ufo' || /scifi_ufo_920/.test(key)) return { role: 'basic-ufo', scale: 0.34, farScale: 0.034, speed: 1.26, skill: 0.98, hullMult: 1.05, laserDamage: 8, bombDamage: 14, formation: 0 };
+  return { role: 'basic', scale: 0.36, farScale: 0.034, speed: 1.18, skill: 0.98, hullMult: 1.0, laserDamage: 8, bombDamage: 14, formation: 0 };
 }
 
 function applyScifiProfileTuning(profile) {
@@ -27189,9 +27369,9 @@ function createEnemyRaidClone(spriteKey, options = {}) {
   const sourceScale = clamp(Number(options.sourceScale ?? 1), 0.1, 3);
   const minScale = clamp(Number(options.scaleMin ?? 0.55), 0.1, 3);
   const maxScale = Math.max(minScale, clamp(Number(options.scaleMax ?? 1.1), 0.1, 3));
-  const nearScale = isScifiRaid ? clamp(maxScale, 0.12, 0.62) : clamp(sourceScale + ((Math.random() - 0.5) * 0.18), minScale, maxScale);
+  const nearScale = isScifiRaid ? clamp(maxScale, 0.12, 1.05) : clamp(sourceScale + ((Math.random() - 0.5) * 0.18), minScale, maxScale);
   const farScale = isScifiRaid
-    ? clamp(Number(options.spawnFarScale ?? 0.025), 0.006, 0.08)
+    ? clamp(Number(options.spawnFarScale ?? 0.025), 0.006, 0.12)
     : clamp(nearScale * (0.72 + Math.random() * 0.16), minScale * 0.5, nearScale);
   const scale = isScifiRaid ? farScale : nearScale;
   const spawnX = Number.isFinite(Number(options.x))
@@ -27466,7 +27646,7 @@ function isFiniteRect(rect) {
 
 function updateEnemyRaid(dt, levelData) {
   if (!enemyRaidState || gameState !== 'playing' || !playerControlsEnabled) return;
-  if (pendingDispatchLevel !== null || level1GuideOpen) return;
+  if (pendingDispatchLevel !== null || level1GuideOpen || isYear2043ControlCueActive()) return;
   updateYear2043WaveProgress();
   ensureEnemyRaidCount(dt);
   const step = Math.max(0.2, Number(dt || 16.67) / 16.67);
@@ -27604,6 +27784,9 @@ function updateEnemyRaid(dt, levelData) {
         const sy = bounds.y + bounds.h * 0.9;
         const tx2 = targetRect.x + targetRect.w * 0.5;
         if (!Number.isFinite(sx) || !Number.isFinite(sy) || !Number.isFinite(tx2)) return;
+        const configuredBombType = (ent.enemyBombType === 'plasma' || ent.enemyBombType === 'mine') ? ent.enemyBombType : '';
+        const raidBombType = (enemyRaidState?.bombType === 'plasma' || enemyRaidState?.bombType === 'mine') ? enemyRaidState.bombType : '';
+        const shotType = (raidIsScifi || ent._raidIsScifi) ? (raidBombType || configuredBombType || 'bomb') : (configuredBombType || raidBombType || 'bomb');
         enemyBombShots.push({
           x: sx,
           y: sy,
@@ -27612,7 +27795,8 @@ function updateEnemyRaid(dt, levelData) {
           ttlMs: 3200,
           damage: clamp(Number(ent.bombDamage ?? 16), 1, 80),
           color: ent.enemyBombColor || enemyRaidState.bombColor || '#ffa047',
-          type: ent.enemyBombType || enemyRaidState.bombType || 'bomb'
+          type: shotType,
+          spriteKey: shotType === 'mine' ? 'alienMissileMine' : ''
         });
       }
       ent._enemyBombCdMs = clamp(Number(ent.bombCooldownMs ?? 1200), 120, 5000) / Math.max(0.45, skill);
@@ -27778,10 +27962,10 @@ function drawEnemyRaidOverlays() {
     const x = Number(d.x || 0);
     const y = Number(d.y || 0);
     const key = resolveSpriteKey(String(d.spriteKey || ''));
-    const img = key ? SPRITES[key] : null;
+    const img = key ? getCachedSprite(key, 38, 38) : null;
     ctx.save();
     ctx.globalAlpha = alpha;
-    if (key && SPRITE_READY[key] && img && img.width && img.height) {
+    if (img && img.width && img.height) {
       const w = 38;
       const h = 38;
       ctx.drawImage(img, x - w * 0.5, y - h * 0.5, w, h);
@@ -27866,6 +28050,17 @@ function drawEnemyRaidOverlays() {
   enemyBombShots.forEach((shot) => {
     if (!shot || !Number.isFinite(Number(shot.x)) || !Number.isFinite(Number(shot.y))) return;
     ctx.save();
+    const mineKey = shot.type === 'mine' ? resolveSpriteKey(String(shot.spriteKey || 'alienMissileMine')) : '';
+    const mineSprite = mineKey ? getCachedSprite(mineKey, 30, 30) : null;
+    if (mineSprite && mineSprite.width && mineSprite.height) {
+      const pulse = 1 + Math.sin((levelElapsedMs + Number(shot.ttlMs || 0)) / 115) * 0.08;
+      const size = 30 * pulse;
+      ctx.shadowColor = String(shot.color || '#ffad64');
+      ctx.shadowBlur = 14;
+      ctx.drawImage(mineSprite, Number(shot.x) - size * 0.5, Number(shot.y) - size * 0.5, size, size);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = String(shot.color || '#ffa047');
     ctx.shadowColor = String(shot.color || '#ffa047');
     ctx.shadowBlur = 15;
@@ -28999,7 +29194,7 @@ function showFirefighterMoveCue() {
   if (!ff || ff.mode !== 'active') return;
   hasShownFirefighterMoveCue = true;
   firefighterCueUntilMs = levelElapsedMs + 4600;
-  addPointPopup(ff.x, FIRETRUCK_LANE_Y - 78, 'SAVE THE CITIZENS - USE ARROWS', '#ffe36d', 96);
+  addPointPopup(ff.x, FIRETRUCK_LANE_Y - 78, 'MOVE - USE ARROWS', '#ffe36d', 96);
 }
 
 function updateFirefighterMountButton() {
@@ -29185,6 +29380,10 @@ function stopTruckDrive() {
 }
 
 window.addEventListener('keydown', (e) => {
+  if (dismissYear2043ControlCue()) {
+    e.preventDefault();
+    return;
+  }
   if (level1GuideOpen) {
     if (e.key === 'Escape' || e.key === 'Esc') closeLevel1Guide();
     e.preventDefault();
@@ -29246,6 +29445,9 @@ window.addEventListener('keydown', (e) => {
     isSpraying = false;
   }
 }, true);
+window.addEventListener('pointerdown', () => {
+  dismissYear2043ControlCue();
+}, true);
 window.addEventListener('keyup', (e) => {
   if (level1GuideOpen) {
     setTruckDrive(0);
@@ -29283,6 +29485,12 @@ function loop() {
       isLaserFiring = false;
       isRocketFiring = false;
     }
+    if (isYear2043ControlCueActive()) {
+      setTruckDrive(0);
+      truckFlightInput = 0;
+      isLaserFiring = false;
+      isRocketFiring = false;
+    }
     if (playerControlsEnabled && !isFirefighterControlActive()) {
       truck.x += truckDrive * truck.speed;
       const levelDataDrift = baseLevels[currentLevel - 1] || {};
@@ -29297,7 +29505,7 @@ function loop() {
       setTruckDrive(0);
     }
     updateTruckFlight(dt, baseLevels[currentLevel - 1] || {});
-    if (gameState === 'playing' && pendingDispatchLevel === null) {
+    if (gameState === 'playing' && pendingDispatchLevel === null && !isYear2043ControlCueActive()) {
       levelElapsedMs += dt;
       if (!isManualKvfdRefillMode() && !tankerSupport && fireSpots.some(s => s.health > 0) && levelElapsedMs >= nextTankerSupportAt) {
         startTankerSupport();
@@ -29589,16 +29797,16 @@ if (false && currentLevel === 11) drawPlacementGrid();
       if (spot.outAtMs == null) spot.outAtMs = levelElapsedMs;
       if (unresolvedFire && levelElapsedMs >= (spot.outAtMs + fireBehaviorTiming.rekindleDelayMs)) {
         const reigniteRateMult = clamp(Number(spot.reigniteRateMult ?? 1), 0.4, 2.5);
-        const baseReigniteChance = difficulty <= 1 ? 0.0018 : (difficulty >= 3 ? 0.0042 : 0.0030);
-        const rekindleChance = clamp(baseReigniteChance * reigniteRateMult, 0.0008, 0.012);
+        const baseReigniteChance = difficulty <= 1 ? 0.0009 : (difficulty >= 3 ? 0.0015 : 0.0010);
+        const rekindleChance = clamp(baseReigniteChance * reigniteRateMult, 0.00025, 0.0045);
         if (Math.random() < rekindleChance) {
-          const rekindleHealth = Math.max(14, spot.maxHealth * (0.08 + (difficulty >= 3 ? 0.05 : 0.03)));
+          const rekindleHealth = Math.max(10, spot.maxHealth * (difficulty >= 3 ? 0.065 : 0.045));
           spot.health = Math.min(spot.maxHealth, rekindleHealth);
           spot.emitMs = 0;
           spot.outAtMs = null;
         }
       }
-      if (spot.vehicleExplosionEnabled) {
+      if (spot.vehicleExplosionEnabled && !spot.outAwarded) {
         if (spot.nextVehicleExplosionAt == null) {
           const minDelay = fireBehaviorTiming.vehicleExplosionMinMs;
           const maxDelay = fireBehaviorTiming.vehicleExplosionMaxMs;
@@ -29618,8 +29826,8 @@ if (false && currentLevel === 11) drawPlacementGrid();
       return;
     }
     spot.outAtMs = null;
-    const regrowthChance = clamp(Number(currentDifficultyTuning?.regrowthChance ?? (difficulty === 1 ? 0.015 : 0.022)), 0.008, 0.04) * clamp(Number(spot.reigniteRateMult ?? 1), 0.4, 2.5);
-    if (Math.random() < regrowthChance) spot.health = Math.min(spot.health + (spot.growthRate || 4.2), spot.maxHealth);
+    const regrowthChance = clamp(Number(currentDifficultyTuning?.regrowthChance ?? (difficulty === 1 ? 0.015 : 0.022)), 0.004, 0.028) * clamp(Number(spot.reigniteRateMult ?? 1), 0.4, 2.5);
+    if (Math.random() < regrowthChance) spot.health = Math.min(spot.health + ((spot.growthRate || 4.2) * (isSpraying ? 0.38 : 0.72)), spot.maxHealth);
     const healthPercent = spot.health / spot.maxHealth;
     const area = Math.max(1, spot.w * spot.h);
     const sizeScale = Math.max(0.70, Math.min(2.25, Math.sqrt(area) / 85));
@@ -29632,11 +29840,11 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (spot.emitMs <= 0) {
       createFireParticles(
         spot.x + spot.w/2, spot.y + spot.h/2,
-        intensity * sizeScale, sizeScale,
+        intensity * sizeScale * (isSpraying ? 0.70 : 1), sizeScale,
         { roof: !!spot.roof, big: !!spot.isSemi || !!spot.isHay }
       );
-      const cadence = 48 - Math.min(20, sizeScale * 7);
-      spot.emitMs = Math.max(18, cadence);
+      const cadence = (68 - Math.min(18, sizeScale * 6)) * (isSpraying ? 1.45 : 1);
+      spot.emitMs = Math.max(isSpraying ? 48 : 30, cadence);
     }
 
     const level9FireLock = currentLevel === 9 && tornadoTravelX < 400;
@@ -29645,10 +29853,10 @@ if (false && currentLevel === 11) drawPlacementGrid();
       if (p.type === 'water' && p.x > spot.x && p.x < spot.x + spot.w && p.y > spot.y && p.y < spot.y + spot.h) {
         const damageMult = clamp(Number(currentDifficultyTuning?.damageMult ?? 1), 0.72, 1.12);
         const resistance = clamp(Number(spot.zoneResistance || 1), 0.62, 3.6);
-        let damage = (difficulty === 1 ? 0.10 : difficulty === 2 ? 0.068 : 0.050) * damageMult;
-        if (spot.isHay) damage = (difficulty === 1 ? 0.032 : 0.022) * damageMult;
-        else if (spot.isSemi) damage = (difficulty === 1 ? 0.09 : difficulty === 2 ? 0.065 : 0.05) * damageMult;
-        else if (spot.isVehicle) damage = (difficulty === 1 ? 0.055 : 0.04) * damageMult;
+        let damage = (difficulty === 1 ? 0.24 : difficulty === 2 ? 0.185 : 0.145) * damageMult;
+        if (spot.isHay) damage = (difficulty === 1 ? 0.082 : difficulty === 2 ? 0.064 : 0.054) * damageMult;
+        else if (spot.isSemi) damage = (difficulty === 1 ? 0.216 : difficulty === 2 ? 0.174 : 0.138) * damageMult;
+        else if (spot.isVehicle) damage = (difficulty === 1 ? 0.136 : difficulty === 2 ? 0.110 : 0.096) * damageMult;
         damage /= resistance;
         if (!level9FireLock) spot.health -= damage;
         p.life = 8;

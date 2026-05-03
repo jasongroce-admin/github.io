@@ -161,6 +161,11 @@
               <input id="anchorSize" type="range" min="3" max="10" value="6" />
               <button id="toggleAnchorsBtn" type="button">Hide Anchors</button>
             </div>
+            <div class="row">
+              <button id="calibrateMapBtn" type="button">Calibrate Grid</button>
+              <span class="label">Known Distance (ft)</span>
+              <input id="calibrateFeet" type="number" min="1" max="2000" value="50" />
+            </div>
             <div class="tiny" id="scaleNote">Each grid square equals 5 feet.</div>
           </div>
 
@@ -168,17 +173,37 @@
             <div class="row">
               <input id="addressInput" type="text" placeholder="Address or ZIP" />
               <button id="openGoogleBtn" type="button">Open Google Map</button>
+              <button id="openStreetViewBtn" type="button">Street View</button>
             </div>
             <div class="row">
+              <label class="label">Source</label>
+              <select id="mapSource">
+                <option value="esri">Esri World Imagery</option>
+                <option value="usgs">USGS Topo</option>
+              </select>
               <button id="loadStaticMapBtn" type="button">Load Overhead in Canvas</button>
               <label class="label">Snap Upload</label>
               <input id="mapSnapInput" type="file" accept="image/*" />
+              <button id="pasteSnapBtn" type="button">Paste Snap</button>
+              <button id="openParcelSearchBtn" type="button">Parcel Search</button>
             </div>
             <div class="row">
               <label class="label">Map opacity</label>
               <input id="mapOpacity" type="range" min="0" max="1" step="0.05" value="0.45" />
               <button id="toggleMapBtn" type="button">Hide Snap</button>
             </div>
+            <div class="row">
+              <label class="label">Map zoom</label>
+              <input id="mapZoom" type="range" min="0.5" max="5" step="0.05" value="1" />
+              <label class="label">Rotate</label>
+              <input id="mapRotate" type="range" min="-180" max="180" step="1" value="0" />
+              <button id="lockToMapBtn" type="button">Lock Drawings To Map: Off</button>
+              <button id="mapAdjustBtn" type="button">Adjust Map</button>
+              <button id="resetMapViewBtn" type="button">Reset View</button>
+              <button id="retryMapBtn" type="button">Retry Map</button>
+              <button id="resetMapLayerBtn" type="button">Reset Map Layer</button>
+            </div>
+            <div class="tiny" id="mapStatus">Map status: ready.</div>
             <div class="tiny">Google maps cannot be directly captured in-browser, so this tool opens Google Maps and lets you snap/upload or load a free overhead reference.</div>
           </div>
 
@@ -193,8 +218,12 @@
               <button id="toolMove" type="button">Move</button>
             </div>
             <div class="row">
-              <button id="closeYardBtn" type="button">Close Yard</button>
+              <button id="closeYardBtn" type="button">Finish Snap</button>
+              <button id="undoYardPointBtn" type="button">Undo Yard Point</button>
+              <button id="finishHouseBtn" type="button">Finish House</button>
+              <button id="undoHousePointBtn" type="button">Undo House Point</button>
               <button id="finishDrivewayBtn" type="button">Finish Driveway</button>
+              <button id="undoDrivewayPointBtn" type="button">Undo Driveway Point</button>
               <button id="smoothDrivewayBtn" type="button">Smooth Driveway</button>
               <button id="clearBtn" type="button">Clear</button>
             </div>
@@ -216,8 +245,22 @@
             </div>
             <div class="row">
               <span class="label">Selected size</span><input id="selectedSize" type="range" min="0.5" max="2.5" step="0.1" value="1" />
-              <span class="label">Selected width</span><input id="selectedWidth" type="range" min="4" max="80" value="18" />
+              <span class="label">Driveway width (ft)</span><input id="selectedWidth" type="range" min="6" max="40" value="12" />
+              <span class="tiny" id="drivewayWidthLabel">12 ft</span>
             </div>
+            <div class="row">
+              <button id="layerUpBtn" type="button">Bring Forward</button>
+              <button id="layerDownBtn" type="button">Send Back</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Workflow</div>
+            <div class="tiny" id="workflowStatus">1) Draw yard and close it. 2) Add house/trees/no-go/driveway. 3) Set start + direction. 4) Apply striping.</div>
+            <div class="row">
+              <button id="buildOrderBtn" type="button">Build Work Order</button>
+            </div>
+            <ol id="workOrderList" class="tiny" style="margin:0.15rem 0 0 1.2rem; padding:0; display:grid; gap:0.2rem"></ol>
           </div>
 
           <div id="mowingPanel" class="group">
@@ -290,13 +333,27 @@
         const scaleNote = document.getElementById("scaleNote");
         const anchorSize = document.getElementById("anchorSize");
         const toggleAnchorsBtn = document.getElementById("toggleAnchorsBtn");
+        const calibrateMapBtn = document.getElementById("calibrateMapBtn");
+        const calibrateFeet = document.getElementById("calibrateFeet");
 
         const addressInput = document.getElementById("addressInput");
         const openGoogleBtn = document.getElementById("openGoogleBtn");
+        const openStreetViewBtn = document.getElementById("openStreetViewBtn");
         const loadStaticMapBtn = document.getElementById("loadStaticMapBtn");
+        const mapSource = document.getElementById("mapSource");
         const mapSnapInput = document.getElementById("mapSnapInput");
+        const openParcelSearchBtn = document.getElementById("openParcelSearchBtn");
         const mapOpacity = document.getElementById("mapOpacity");
         const toggleMapBtn = document.getElementById("toggleMapBtn");
+        const pasteSnapBtn = document.getElementById("pasteSnapBtn");
+        const mapZoom = document.getElementById("mapZoom");
+        const mapRotate = document.getElementById("mapRotate");
+        const lockToMapBtn = document.getElementById("lockToMapBtn");
+        const mapAdjustBtn = document.getElementById("mapAdjustBtn");
+        const resetMapViewBtn = document.getElementById("resetMapViewBtn");
+        const retryMapBtn = document.getElementById("retryMapBtn");
+        const resetMapLayerBtn = document.getElementById("resetMapLayerBtn");
+        const mapStatus = document.getElementById("mapStatus");
 
         const toolButtons = {
           boundary: document.getElementById("toolBoundary"),
@@ -308,7 +365,11 @@
           move: document.getElementById("toolMove")
         };
         const closeYardBtn = document.getElementById("closeYardBtn");
+        const undoYardPointBtn = document.getElementById("undoYardPointBtn");
+        const finishHouseBtn = document.getElementById("finishHouseBtn");
+        const undoHousePointBtn = document.getElementById("undoHousePointBtn");
         const finishDrivewayBtn = document.getElementById("finishDrivewayBtn");
+        const undoDrivewayPointBtn = document.getElementById("undoDrivewayPointBtn");
         const smoothDrivewayBtn = document.getElementById("smoothDrivewayBtn");
         const clearBtn = document.getElementById("clearBtn");
 
@@ -318,6 +379,12 @@
         const drivewayTexture = document.getElementById("drivewayTexture");
         const selectedSize = document.getElementById("selectedSize");
         const selectedWidth = document.getElementById("selectedWidth");
+        const drivewayWidthLabel = document.getElementById("drivewayWidthLabel");
+        const layerUpBtn = document.getElementById("layerUpBtn");
+        const layerDownBtn = document.getElementById("layerDownBtn");
+        const workflowStatus = document.getElementById("workflowStatus");
+        const buildOrderBtn = document.getElementById("buildOrderBtn");
+        const workOrderList = document.getElementById("workOrderList");
 
         const mowerWidth = document.getElementById("mowerWidth");
         const stripeColor = document.getElementById("stripeColor");
@@ -351,6 +418,7 @@
           boundary: [],
           boundaryClosed: false,
           houses: [],
+          houseDraft: [],
           trees: [],
           noGos: [],
           driveways: [],
@@ -363,7 +431,12 @@
           placingDeck: false,
           selected: null,
           drag: null,
-          mapOverlay: { image: null, opacity: Number(mapOpacity.value), visible: true }
+          mapOverlay: { image: null, opacity: Number(mapOpacity.value), visible: true, scale: 1, rotate: 0, offsetX: 0, offsetY: 0 },
+          adjustMap: false,
+          calibratingScale: false,
+          calibrationDraft: [],
+          lastMapLoad: null,
+          lockDrawingsToMap: false
         };
 
         function pxPerFt() {
@@ -467,10 +540,118 @@
           if (!state.mapOverlay.image || !state.mapOverlay.visible) return;
           const w = parseFloat(canvas.style.width);
           const h = parseFloat(canvas.style.height);
+          const scale = Math.max(0.1, state.mapOverlay.scale || 1);
+          const rotate = ((state.mapOverlay.rotate || 0) * Math.PI) / 180;
+          const ox = state.mapOverlay.offsetX || 0;
+          const oy = state.mapOverlay.offsetY || 0;
           ctx.save();
           ctx.globalAlpha = state.mapOverlay.opacity;
-          ctx.drawImage(state.mapOverlay.image, 0, 0, w, h);
+          ctx.translate(w / 2 + ox, h / 2 + oy);
+          ctx.rotate(rotate);
+          ctx.scale(scale, scale);
+          ctx.drawImage(state.mapOverlay.image, -w / 2, -h / 2, w, h);
           ctx.restore();
+        }
+
+        function setMapZoomValue(next, focus = null) {
+          const prev = Math.max(0.1, state.mapOverlay.scale || 1);
+          const zoom = Math.max(0.5, Math.min(5, next));
+          if (state.lockDrawingsToMap && prev !== zoom) {
+            scaleAllGeometryAround(focus || { x: parseFloat(canvas.style.width) / 2, y: parseFloat(canvas.style.height) / 2 }, zoom / prev);
+          }
+          const f = focus || { x: parseFloat(canvas.style.width) / 2, y: parseFloat(canvas.style.height) / 2 };
+          const wx = (f.x - (state.mapOverlay.offsetX || 0)) / prev;
+          const wy = (f.y - (state.mapOverlay.offsetY || 0)) / prev;
+          state.mapOverlay.scale = zoom;
+          state.mapOverlay.offsetX = f.x - wx * zoom;
+          state.mapOverlay.offsetY = f.y - wy * zoom;
+          mapZoom.value = String(zoom);
+        }
+
+        function resetMapView() {
+          state.mapOverlay.scale = 1;
+          state.mapOverlay.rotate = 0;
+          state.mapOverlay.offsetX = 0;
+          state.mapOverlay.offsetY = 0;
+          mapZoom.value = "1";
+          mapRotate.value = "0";
+          draw();
+        }
+
+        function resetMapLayer() {
+          state.mapOverlay.image = null;
+          state.mapOverlay.visible = true;
+          state.mapOverlay.opacity = Number(mapOpacity.value) || 0.45;
+          state.adjustMap = false;
+          state.calibratingScale = false;
+          state.calibrationDraft = [];
+          mapAdjustBtn.classList.remove("active");
+          calibrateMapBtn.classList.remove("active");
+          resetMapView();
+          mapStatus.textContent = "Map status: map layer reset. Drawings preserved.";
+          draw();
+        }
+
+        function withAllPoints(mutator) {
+          const applyArray = (arr, pointKey = null) => {
+            arr.forEach((item) => {
+              if (pointKey && item[pointKey]?.length) {
+                item[pointKey] = item[pointKey].map((p) => mutator(p));
+              } else if (Number.isFinite(item.x) && Number.isFinite(item.y)) {
+                const m = mutator({ x: item.x, y: item.y });
+                item.x = m.x;
+                item.y = m.y;
+              }
+            });
+          };
+          state.boundary = state.boundary.map((p) => mutator(p));
+          state.houseDraft = state.houseDraft.map((p) => mutator(p));
+          state.drivewayDraft = state.drivewayDraft.map((p) => mutator(p));
+          state.houses.forEach((h) => {
+            if (h.points?.length) h.points = h.points.map((p) => mutator(p));
+            else if (Number.isFinite(h.x) && Number.isFinite(h.y)) {
+              const m = mutator({ x: h.x, y: h.y });
+              h.x = m.x;
+              h.y = m.y;
+            }
+          });
+          state.driveways.forEach((d) => {
+            d.points = d.points.map((p) => mutator(p));
+          });
+          applyArray(state.trees);
+          applyArray(state.noGos);
+          applyArray(state.things);
+          applyArray(state.decks);
+          if (state.startArrow) {
+            state.startArrow.start = mutator(state.startArrow.start);
+            state.startArrow.end = mutator(state.startArrow.end);
+          }
+        }
+
+        function translateAllGeometry(dx, dy) {
+          withAllPoints((p) => ({ x: p.x + dx, y: p.y + dy }));
+        }
+
+        function scaleAllGeometryAround(center, factor) {
+          if (!Number.isFinite(factor) || factor <= 0) return;
+          withAllPoints((p) => ({
+            x: center.x + (p.x - center.x) * factor,
+            y: center.y + (p.y - center.y) * factor
+          }));
+          state.trees.forEach((t) => {
+            t.r = Math.max(4, t.r * factor);
+          });
+        }
+
+        function rotateAllGeometryAround(center, deg) {
+          const rad = (deg * Math.PI) / 180;
+          const c = Math.cos(rad);
+          const s = Math.sin(rad);
+          withAllPoints((p) => {
+            const x = p.x - center.x;
+            const y = p.y - center.y;
+            return { x: center.x + x * c - y * s, y: center.y + x * s + y * c };
+          });
         }
 
         function drawBoundary() {
@@ -521,16 +702,64 @@
           ctx.fillRect(tree.x - 3, tree.y + tree.r * 0.4, 6, 9);
         }
 
+        function drawPoly(points, fill, stroke, lineWidth = 2, label = "") {
+          if (!points || points.length < 2) return;
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; i += 1) ctx.lineTo(points[i].x, points[i].y);
+          if (points.length >= 3) ctx.closePath();
+          if (fill) {
+            ctx.fillStyle = fill;
+            ctx.fill();
+          }
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+          if (label && points.length) {
+            const c = polyCenter(points);
+            ctx.fillStyle = "#fff";
+            ctx.font = "700 12px system-ui, sans-serif";
+            ctx.fillText(label, c.x - 18, c.y + 4);
+          }
+        }
+
+        function polyCenter(points) {
+          if (!points?.length) return { x: 0, y: 0 };
+          let sx = 0;
+          let sy = 0;
+          points.forEach((p) => {
+            sx += p.x;
+            sy += p.y;
+          });
+          return { x: sx / points.length, y: sy / points.length };
+        }
+
+        function drawHouse(house) {
+          if (house.points?.length >= 2) {
+            drawPoly(house.points, "rgba(97,102,109,0.65)", "#51575f", 3, "House");
+            return;
+          }
+          if (Number.isFinite(house.x) && Number.isFinite(house.w)) drawRectItem(house, "#61666d", "House");
+        }
+
+        function drivewayWidthPx(d) {
+          const widthFt = d.widthFt ?? d.width ?? Number(selectedWidth.value);
+          return Math.max(4, widthFt * pxPerFt());
+        }
+
         function drawDriveway(d) {
-          if (d.points.length < 2) return;
+          if (d.points.length < 3) return;
           ctx.save();
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
-          ctx.strokeStyle = d.color;
-          ctx.lineWidth = d.width;
           ctx.beginPath();
           ctx.moveTo(d.points[0].x, d.points[0].y);
           for (let i = 1; i < d.points.length; i += 1) ctx.lineTo(d.points[i].x, d.points[i].y);
+          ctx.closePath();
+          ctx.fillStyle = `${d.color}aa`;
+          ctx.fill();
+          ctx.strokeStyle = `${d.color}dd`;
+          ctx.lineWidth = Math.max(2, drivewayWidthPx(d) * 0.08);
           ctx.stroke();
           if (d.texture === "gravel") {
             ctx.strokeStyle = "rgba(255,255,255,0.28)";
@@ -611,6 +840,30 @@
           }
         }
 
+        function drawCalibrationGuide() {
+          if (!state.calibrationDraft.length) return;
+          ctx.save();
+          ctx.strokeStyle = "#1d3f8a";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 5]);
+          const a = state.calibrationDraft[0];
+          ctx.beginPath();
+          ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
+          ctx.stroke();
+          if (state.calibrationDraft.length > 1) {
+            const b = state.calibrationDraft[1];
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+
         function drawStripes() {
           if (!state.stripes || !state.boundaryClosed || !state.startArrow) return;
           const { angle, spacing, color, pattern } = state.stripes;
@@ -661,7 +914,80 @@
 
         function drawDraftDriveway() {
           if (state.drivewayDraft.length < 2) return;
-          drawDriveway({ points: state.drivewayDraft, width: Number(selectedWidth.value), color: drivewayColor.value, texture: drivewayTexture.value });
+          ctx.save();
+          ctx.strokeStyle = drivewayColor.value;
+          ctx.lineWidth = 3;
+          ctx.setLineDash([8, 6]);
+          ctx.beginPath();
+          ctx.moveTo(state.drivewayDraft[0].x, state.drivewayDraft[0].y);
+          for (let i = 1; i < state.drivewayDraft.length; i += 1) ctx.lineTo(state.drivewayDraft[i].x, state.drivewayDraft[i].y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+
+        function drawDraftHouse() {
+          if (state.houseDraft.length < 2) return;
+          ctx.save();
+          ctx.strokeStyle = "#51575f";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([8, 6]);
+          ctx.beginPath();
+          ctx.moveTo(state.houseDraft[0].x, state.houseDraft[0].y);
+          for (let i = 1; i < state.houseDraft.length; i += 1) ctx.lineTo(state.houseDraft[i].x, state.houseDraft[i].y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+
+        function updateWorkflowStatus() {
+          const step1 = state.boundaryClosed ? "[done] Draw yard and close it" : "[todo] Draw yard and close it";
+          const hasLayout = state.houses.length + state.trees.length + state.noGos.length + state.driveways.length + state.things.length > 0;
+          const step2 = hasLayout ? "[done] Add house/trees/no-go/driveway/objects" : "[todo] Add house/trees/no-go/driveway/objects";
+          const step3 = state.startArrow ? "[done] Set start + direction" : "[todo] Set start + direction";
+          const step4 = state.stripes ? "[done] Apply striping plan/order" : "[todo] Apply striping plan/order";
+          workflowStatus.textContent = `${step1} | ${step2} | ${step3} | ${step4}`;
+        }
+
+        function getOrderScore(x, y, ux, uy) {
+          return x * ux + y * uy;
+        }
+
+        function itemCenter(item) {
+          if (item.points?.length) return polyCenter(item.points);
+          return { x: item.x, y: item.y };
+        }
+
+        function buildWorkOrder() {
+          const lines = [];
+          lines.push("Step 1: Walk the outside edge once (trim pass).");
+          if (state.startArrow) {
+            const dx = state.startArrow.end.x - state.startArrow.start.x;
+            const dy = state.startArrow.end.y - state.startArrow.start.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const ux = dx / len;
+            const uy = dy / len;
+            const objects = [];
+            state.houses.forEach((h, i) => objects.push({ label: `House edge pass ${i + 1}`, ...itemCenter(h) }));
+            state.noGos.forEach((n, i) => objects.push({ label: `No-go perimeter ${i + 1}`, ...itemCenter(n) }));
+            state.trees.forEach((t, i) => objects.push({ label: `Tree circle ${i + 1}`, ...itemCenter(t) }));
+            state.things.forEach((t, i) => objects.push({ label: `Obstacle perimeter ${i + 1}`, ...itemCenter(t) }));
+            state.driveways.forEach((d, i) => {
+              const p = d.points[0];
+              objects.push({ label: `Driveway edge ${i + 1}`, x: p.x, y: p.y });
+            });
+            objects.sort((a, b) => getOrderScore(a.x, a.y, ux, uy) - getOrderScore(b.x, b.y, ux, uy));
+            objects.forEach((o, i) => lines.push(`Step ${i + 2}: ${o.label}.`));
+            lines.push(`Step ${objects.length + 2}: Follow the numbered stripe arrows from the Start point.`);
+          } else {
+            lines.push("Step 2: Click Set Start + Direction to generate row order.");
+          }
+          workOrderList.innerHTML = "";
+          lines.forEach((text) => {
+            const li = document.createElement("li");
+            li.textContent = text;
+            workOrderList.appendChild(li);
+          });
         }
 
         function drawSelection() {
@@ -686,7 +1012,15 @@
             }
           } else {
             const obj = s.type === "house" ? state.houses[s.index] : s.type === "nogo" ? state.noGos[s.index] : s.type === "deck" ? state.decks[s.index] : state.things[s.index];
-            ctx.strokeRect(obj.x - obj.w / 2 - 6, obj.y - obj.h / 2 - 6, obj.w + 12, obj.h + 12);
+            if (s.type === "house" && obj?.points?.length >= 2) {
+              ctx.beginPath();
+              ctx.moveTo(obj.points[0].x, obj.points[0].y);
+              for (let i = 1; i < obj.points.length; i += 1) ctx.lineTo(obj.points[i].x, obj.points[i].y);
+              if (obj.points.length >= 3) ctx.closePath();
+              ctx.stroke();
+            } else {
+              ctx.strokeRect(obj.x - obj.w / 2 - 6, obj.y - obj.h / 2 - 6, obj.w + 12, obj.h + 12);
+            }
           }
           ctx.restore();
         }
@@ -694,13 +1028,15 @@
         function draw() {
           drawGrid();
           drawMapOverlay();
+          drawCalibrationGuide();
           drawStripes();
           state.noGos.forEach((n) => drawRectItem(n, `${noGoColor.value}cc`, "NO GO"));
-          state.houses.forEach((h) => drawRectItem(h, "#61666d", "House"));
+          state.houses.forEach(drawHouse);
           state.trees.forEach(drawTree);
           state.things.forEach((t) => drawRectItem(t, t.color, "Thing"));
           state.driveways.forEach(drawDriveway);
           drawDraftDriveway();
+          drawDraftHouse();
           state.decks.forEach(drawDeck);
           drawBoundary();
           if (state.startArrow) drawArrow(state.startArrow.start, state.startArrow.end, "#0f4b1f", "Start");
@@ -720,7 +1056,9 @@
           }
           for (let i = state.houses.length - 1; i >= 0; i -= 1) {
             const h = state.houses[i];
-            if (Math.abs(pos.x - h.x) <= h.w / 2 && Math.abs(pos.y - h.y) <= h.h / 2) return { type: "house", index: i };
+            if (h.points?.length >= 3) {
+              if (pointInPoly(pos, h.points)) return { type: "house", index: i };
+            } else if (Math.abs(pos.x - h.x) <= h.w / 2 && Math.abs(pos.y - h.y) <= h.h / 2) return { type: "house", index: i };
           }
           for (let i = state.noGos.length - 1; i >= 0; i -= 1) {
             const n = state.noGos[i];
@@ -733,7 +1071,8 @@
           for (let i = state.trees.length - 1; i >= 0; i -= 1) if (dist(pos, state.trees[i]) <= state.trees[i].r + 8) return { type: "tree", index: i };
           for (let i = state.driveways.length - 1; i >= 0; i -= 1) {
             const d = state.driveways[i];
-            for (let j = 0; j < d.points.length; j += 1) if (dist(pos, d.points[j]) <= d.width * 0.45 + 8) return { type: "driveway", index: i };
+            if (d.points.length >= 3 && pointInPoly(pos, d.points)) return { type: "driveway", index: i };
+            for (let j = 0; j < d.points.length; j += 1) if (dist(pos, d.points[j]) <= 12) return { type: "driveway", index: i };
           }
           return null;
         }
@@ -744,11 +1083,24 @@
 
         function onDown(ev) {
           ev.preventDefault();
-          const pos = clamp(getPos(ev));
+          const pos = state.adjustMap ? getPos(ev) : clamp(getPos(ev));
+
+          if (state.calibratingScale) {
+            state.calibrationDraft.push(pos);
+            if (state.calibrationDraft.length >= 2) applyMapCalibration();
+            draw();
+            return;
+          }
 
           if (state.setDirection) {
             state.startArrow = { start: pos, end: { x: pos.x + 40, y: pos.y } };
             state.drag = { kind: "startArrow" };
+            return;
+          }
+
+          if (state.adjustMap && state.mapOverlay.image && state.mapOverlay.visible) {
+            state.drag = { kind: "mapPan", start: pos, ox: state.mapOverlay.offsetX || 0, oy: state.mapOverlay.offsetY || 0 };
+            mapStatus.textContent = "Map status: dragging map for alignment.";
             return;
           }
 
@@ -783,6 +1135,13 @@
               if (hit.type === "driveway") {
                 const d = state.driveways[hit.index];
                 state.drag = { kind: "driveway", index: hit.index, start: pos, snapshot: d.points.map((p) => ({ ...p })) };
+              } else if (hit.type === "house") {
+                const h = state.houses[hit.index];
+                if (h.points?.length >= 2) {
+                  state.drag = { kind: "housePoly", index: hit.index, start: pos, snapshot: h.points.map((p) => ({ ...p })) };
+                } else {
+                  state.drag = { kind: "house", index: hit.index, ox: pos.x - h.x, oy: pos.y - h.y };
+                }
               } else {
                 const obj = hit.type === "tree" ? state.trees[hit.index] : hit.type === "house" ? state.houses[hit.index] : hit.type === "nogo" ? state.noGos[hit.index] : hit.type === "deck" ? state.decks[hit.index] : state.things[hit.index];
                 state.drag = { kind: hit.type, index: hit.index, ox: pos.x - obj.x, oy: pos.y - obj.y };
@@ -795,23 +1154,46 @@
           }
 
           if (state.tool === "boundary") {
-            if (!state.boundaryClosed) state.boundary.push(pos);
+            if (!state.boundaryClosed) {
+              if (state.boundary.length >= 3 && dist(pos, state.boundary[0]) <= 14) {
+                state.boundaryClosed = true;
+                mapStatus.textContent = "Map status: yard perimeter snapped closed.";
+              } else {
+                state.boundary.push(pos);
+              }
+            }
             draw();
             return;
           }
 
           if (state.tool === "driveway") {
-            if (insideYard(pos)) state.drivewayDraft.push(pos);
+            if (insideYard(pos)) {
+              if (state.drivewayDraft.length >= 3 && dist(pos, state.drivewayDraft[0]) <= 12) {
+                finishDriveway();
+              } else {
+                state.drivewayDraft.push(pos);
+              }
+            }
+            draw();
+            return;
+          }
+
+          if (state.tool === "house") {
+            if (insideYard(pos)) {
+              if (state.houseDraft.length >= 3 && dist(pos, state.houseDraft[0]) <= 12) {
+                finishHouse();
+              } else {
+                state.houseDraft.push(pos);
+              }
+            }
             draw();
             return;
           }
 
           if (!insideYard(pos)) return;
-          if (state.tool === "house") {
-            const s = pxPerFt() * 16;
-            state.houses.push({ x: pos.x, y: pos.y, w: s * 1.3, h: s * 0.9 });
-          } else if (state.tool === "tree") {
-            state.trees.push({ x: pos.x, y: pos.y, r: Math.max(10, pxPerFt() * 2.2) });
+          if (state.tool === "tree") {
+            state.trees.push({ x: pos.x, y: pos.y, r: Math.max(8, pxPerFt() * 0.8) });
+            state.drag = { kind: "treeCreate", index: state.trees.length - 1, cx: pos.x, cy: pos.y };
           } else if (state.tool === "nogo") {
             const s = pxPerFt() * 9;
             state.noGos.push({ x: pos.x, y: pos.y, w: s * 1.2, h: s * 1.2 });
@@ -825,11 +1207,31 @@
         function onMove(ev) {
           if (!state.drag) return;
           ev.preventDefault();
-          const pos = clamp(getPos(ev));
+          const pos = state.drag.kind === "mapPan" ? getPos(ev) : clamp(getPos(ev));
           if (state.drag.kind === "anchor") {
             state.boundary[state.drag.index] = pos;
           } else if (state.drag.kind === "startArrow" && state.startArrow) {
             state.startArrow.end = pos;
+          } else if (state.drag.kind === "mapPan") {
+            const dx = pos.x - state.drag.start.x;
+            const dy = pos.y - state.drag.start.y;
+            state.mapOverlay.offsetX = state.drag.ox + dx;
+            state.mapOverlay.offsetY = state.drag.oy + dy;
+            if (state.lockDrawingsToMap) {
+              const pdx = dx - (state.drag.lastDx || 0);
+              const pdy = dy - (state.drag.lastDy || 0);
+              if (pdx || pdy) translateAllGeometry(pdx, pdy);
+              state.drag.lastDx = dx;
+              state.drag.lastDy = dy;
+            }
+          } else if (state.drag.kind === "treeCreate") {
+            const t = state.trees[state.drag.index];
+            if (t) t.r = Math.max(6, dist(pos, { x: state.drag.cx, y: state.drag.cy }));
+          } else if (state.drag.kind === "housePoly") {
+            const h = state.houses[state.drag.index];
+            const dx = pos.x - state.drag.start.x;
+            const dy = pos.y - state.drag.start.y;
+            h.points = state.drag.snapshot.map((p) => ({ x: p.x + dx, y: p.y + dy }));
           } else if (state.drag.kind === "driveway") {
             const d = state.driveways[state.drag.index];
             const dx = pos.x - state.drag.start.x;
@@ -850,15 +1252,27 @@
           if (state.drag && state.drag.kind === "startArrow") {
             state.setDirection = false;
             setStartBtn.classList.remove("active");
+          } else if (state.drag && state.drag.kind === "mapPan") {
+            mapStatus.textContent = "Map status: map aligned.";
+          } else if (state.drag && state.drag.kind === "treeCreate") {
+            const t = state.trees[state.drag.index];
+            if (t && t.r < 6) t.r = 6;
           }
           state.drag = null;
         }
 
+        function finishHouse() {
+          if (state.houseDraft.length < 3) return;
+          state.houses.push({ points: state.houseDraft.map((p) => ({ ...p })) });
+          state.houseDraft = [];
+          draw();
+        }
+
         function finishDriveway() {
-          if (state.drivewayDraft.length < 2) return;
+          if (state.drivewayDraft.length < 3) return;
           state.driveways.push({
             points: state.drivewayDraft.map((p) => ({ ...p })),
-            width: Number(selectedWidth.value),
+            widthFt: Number(selectedWidth.value),
             color: drivewayColor.value,
             texture: drivewayTexture.value
           });
@@ -879,10 +1293,76 @@
           draw();
         }
 
+        function applyMapCalibration() {
+          if (state.calibrationDraft.length < 2) return;
+          if (!state.mapOverlay.image || !state.mapOverlay.visible) {
+            state.calibratingScale = false;
+            state.calibrationDraft = [];
+            calibrateMapBtn.classList.remove("active");
+            mapStatus.textContent = "Map status: load/show map snap before calibration.";
+            return;
+          }
+          const feet = Math.max(1, Number(calibrateFeet.value) || 0);
+          const px = dist(state.calibrationDraft[0], state.calibrationDraft[1]);
+          if (!px) return;
+          const targetFeetPerGrid = Math.max(1, Math.min(40, (44 * feet) / px));
+          feetPerGrid.value = String(Number(targetFeetPerGrid.toFixed(2)));
+          scaleNote.textContent = `Each grid square equals ${feetPerGrid.value} feet.`;
+          state.calibratingScale = false;
+          state.calibrationDraft = [];
+          calibrateMapBtn.classList.remove("active");
+          mapStatus.textContent = `Map status: calibrated. 44px = ${feetPerGrid.value} ft (using ${feet} ft reference).`;
+          draw();
+        }
+
+        function undoYardPoint() {
+          if (state.boundaryClosed) {
+            state.boundaryClosed = false;
+          } else if (state.boundary.length) {
+            state.boundary.pop();
+          }
+          draw();
+        }
+
+        function undoDrivewayPoint() {
+          if (!state.drivewayDraft.length) return;
+          state.drivewayDraft.pop();
+          draw();
+        }
+
+        function undoHousePoint() {
+          if (!state.houseDraft.length) return;
+          state.houseDraft.pop();
+          draw();
+        }
+
+        function moveSelectedLayer(step) {
+          if (!state.selected) return;
+          const typeToArray = {
+            house: state.houses,
+            tree: state.trees,
+            nogo: state.noGos,
+            driveway: state.driveways,
+            thing: state.things,
+            deck: state.decks
+          };
+          const arr = typeToArray[state.selected.type];
+          if (!arr) return;
+          const i = state.selected.index;
+          const j = i + step;
+          if (j < 0 || j >= arr.length) return;
+          const tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+          state.selected.index = j;
+          draw();
+        }
+
         function clearAll() {
           state.boundary = [];
           state.boundaryClosed = false;
           state.houses = [];
+          state.houseDraft = [];
           state.trees = [];
           state.noGos = [];
           state.driveways = [];
@@ -915,13 +1395,18 @@
           if (state.selected.type === "tree") {
             state.trees[state.selected.index].r = Math.max(6, 10 * scale);
           } else if (state.selected.type === "driveway") {
-            state.driveways[state.selected.index].width = width;
+            state.driveways[state.selected.index].widthFt = width;
             state.driveways[state.selected.index].color = drivewayColor.value;
             state.driveways[state.selected.index].texture = drivewayTexture.value;
           } else if (state.selected.type === "house") {
             const h = state.houses[state.selected.index];
-            h.w = Math.max(20, h.w * scale);
-            h.h = Math.max(16, h.h * scale);
+            if (h.points?.length >= 2) {
+              const c = polyCenter(h.points);
+              h.points = h.points.map((p) => ({ x: c.x + (p.x - c.x) * scale, y: c.y + (p.y - c.y) * scale }));
+            } else {
+              h.w = Math.max(20, h.w * scale);
+              h.h = Math.max(16, h.h * scale);
+            }
             selectedSize.value = "1";
           } else if (state.selected.type === "nogo") {
             const n = state.noGos[state.selected.index];
@@ -950,45 +1435,118 @@
           window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, "_blank", "noopener");
         }
 
+        async function resolveAddressLatLon(q) {
+          const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`;
+          const geo = await fetch(geoUrl, { headers: { Accept: "application/json" } }).then((r) => r.json());
+          if (!geo.length) return null;
+          return { lat: Number(geo[0].lat), lon: Number(geo[0].lon) };
+        }
+
+        async function openStreetView() {
+          const q = addressInput.value.trim();
+          if (!q) return;
+          mapStatus.textContent = "Map status: opening Street View...";
+          try {
+            const loc = await resolveAddressLatLon(q);
+            if (!loc) {
+              mapStatus.textContent = "Map status: Street View location not found.";
+              return;
+            }
+            window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lon}`, "_blank", "noopener");
+            mapStatus.textContent = "Map status: Street View opened.";
+          } catch {
+            mapStatus.textContent = "Map status: could not open Street View.";
+          }
+        }
+
+        function openParcelSearch() {
+          const q = addressInput.value.trim();
+          if (!q) return;
+          const query = encodeURIComponent(`${q} parcel map county assessor GIS`);
+          window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener");
+        }
+
         async function loadOverheadFromAddress() {
           const q = addressInput.value.trim();
           if (!q) return;
+          mapStatus.textContent = "Map status: locating address...";
           try {
-            const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`;
-            const geo = await fetch(geoUrl, { headers: { Accept: "application/json" } }).then((r) => r.json());
-            if (!geo.length) return;
-            const lat = Number(geo[0].lat);
-            const lon = Number(geo[0].lon);
+            const loc = await resolveAddressLatLon(q);
+            if (!loc) {
+              mapStatus.textContent = "Map status: address not found.";
+              return;
+            }
+            const lat = loc.lat;
+            const lon = loc.lon;
             const d = 0.0034;
             const w = Math.round(parseFloat(canvas.style.width));
             const h = Math.round(parseFloat(canvas.style.height));
-            const imgUrl = `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&bboxSR=4326&size=${w},${h}&format=png&f=image`;
+            const provider = mapSource.value;
+            state.lastMapLoad = { query: q, provider };
+            const imgUrl =
+              provider === "usgs"
+                ? `https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/export?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&bboxSR=4326&size=${w},${h}&format=png32&f=image`
+                : `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&bboxSR=4326&size=${w},${h}&format=png&f=image`;
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.onload = () => {
               state.mapOverlay.image = img;
               state.mapOverlay.visible = true;
+              mapStatus.textContent = `Map status: ${provider === "usgs" ? "USGS topo" : "Esri imagery"} loaded.`;
               draw();
+            };
+            img.onerror = () => {
+              mapStatus.textContent = "Map status: overhead failed. Use Open Google Map + Snap Upload or Paste Snap.";
             };
             img.src = imgUrl;
           } catch {
-            // silent fail by design
+            mapStatus.textContent = "Map status: request failed. Use Snap Upload or Paste Snap.";
           }
         }
 
         function loadMapSnapFile(file) {
           if (!file) return;
+          state.lastMapLoad = null;
           const reader = new FileReader();
           reader.onload = () => {
             const img = new Image();
             img.onload = () => {
               state.mapOverlay.image = img;
               state.mapOverlay.visible = true;
+              mapStatus.textContent = "Map status: snapshot loaded.";
               draw();
             };
             img.src = reader.result;
           };
           reader.readAsDataURL(file);
+        }
+
+        async function pasteMapSnap() {
+          try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+              const type = item.types.find((t) => t.startsWith("image/"));
+              if (!type) continue;
+              const blob = await item.getType(type);
+              loadMapSnapFile(blob);
+              return;
+            }
+            mapStatus.textContent = "Map status: no image found on clipboard.";
+          } catch {
+            mapStatus.textContent = "Map status: clipboard blocked. Use Snap Upload.";
+          }
+        }
+
+        async function retryMapLoad() {
+          const q = addressInput.value.trim() || state.lastMapLoad?.query || "";
+          if (!q) {
+            mapStatus.textContent = "Map status: no address to retry. Enter address first.";
+            return;
+          }
+          if (state.lastMapLoad?.provider) mapSource.value = state.lastMapLoad.provider;
+          addressInput.value = q;
+          mapStatus.textContent = "Map status: retrying map load...";
+          await loadOverheadFromAddress();
         }
 
         function download(filename, href) {
@@ -1025,10 +1583,14 @@
               mapOverlay: {
                 imageData: state.mapOverlay.image ? state.mapOverlay.image.src : null,
                 opacity: state.mapOverlay.opacity,
-                visible: state.mapOverlay.visible
+                visible: state.mapOverlay.visible,
+                scale: state.mapOverlay.scale ?? 1,
+                rotate: state.mapOverlay.rotate ?? 0,
+                offsetX: state.mapOverlay.offsetX ?? 0,
+                offsetY: state.mapOverlay.offsetY ?? 0
               }
-            }
-          };
+              }
+            };
           const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
           download("yard-prep-plan.json", URL.createObjectURL(blob));
         }
@@ -1045,14 +1607,31 @@
               Object.assign(state, {
                 ...loaded,
                 drag: null,
-                mapOverlay: { image: null, opacity: loaded.mapOverlay?.opacity ?? 0.45, visible: loaded.mapOverlay?.visible ?? true }
+                calibratingScale: false,
+                calibrationDraft: [],
+                houseDraft: [],
+                drivewayDraft: [],
+                mapOverlay: {
+                  image: null,
+                  opacity: loaded.mapOverlay?.opacity ?? 0.45,
+                  visible: loaded.mapOverlay?.visible ?? true,
+                  scale: loaded.mapOverlay?.scale ?? 1,
+                  rotate: loaded.mapOverlay?.rotate ?? 0,
+                  offsetX: loaded.mapOverlay?.offsetX ?? 0,
+                  offsetY: loaded.mapOverlay?.offsetY ?? 0
+                }
               });
+              mapZoom.value = String(state.mapOverlay.scale);
+              mapRotate.value = String(state.mapOverlay.rotate);
+              lockToMapBtn.classList.toggle("active", !!state.lockDrawingsToMap);
+              lockToMapBtn.textContent = `Lock Drawings To Map: ${state.lockDrawingsToMap ? "On" : "Off"}`;
               setCanvasDimensions(canvasSize.value);
               scaleNote.textContent = `Each grid square equals ${feetPerGrid.value} feet.`;
               if (loaded.mapOverlay?.imageData) {
                 const img = new Image();
                 img.onload = () => {
                   state.mapOverlay.image = img;
+                  mapStatus.textContent = "Map status: snapshot restored from plan.";
                   draw();
                 };
                 img.src = loaded.mapOverlay.imageData;
@@ -1102,14 +1681,64 @@
           toggleAnchorsBtn.textContent = state.showAnchors ? "Hide Anchors" : "Show Anchors";
           draw();
         });
+        calibrateMapBtn.addEventListener("click", () => {
+          state.calibratingScale = !state.calibratingScale;
+          state.calibrationDraft = [];
+          calibrateMapBtn.classList.toggle("active", state.calibratingScale);
+          mapStatus.textContent = state.calibratingScale
+            ? "Map status: calibration on. Click two map points with known distance."
+            : "Map status: calibration off.";
+          draw();
+        });
 
         openGoogleBtn.addEventListener("click", openGoogleMap);
+        openStreetViewBtn.addEventListener("click", openStreetView);
         loadStaticMapBtn.addEventListener("click", loadOverheadFromAddress);
+        openParcelSearchBtn.addEventListener("click", openParcelSearch);
         mapSnapInput.addEventListener("change", (e) => loadMapSnapFile(e.target.files?.[0]));
+        pasteSnapBtn.addEventListener("click", pasteMapSnap);
         mapOpacity.addEventListener("input", () => {
           state.mapOverlay.opacity = Number(mapOpacity.value);
           draw();
         });
+        mapZoom.addEventListener("input", () => {
+          setMapZoomValue(Number(mapZoom.value));
+          draw();
+        });
+        mapRotate.addEventListener("input", () => {
+          if (state.lockDrawingsToMap) {
+            const prev = Number(state.mapOverlay.rotate || 0);
+            const next = Number(mapRotate.value);
+            const delta = next - prev;
+            const center = {
+              x: parseFloat(canvas.style.width) / 2 + (state.mapOverlay.offsetX || 0),
+              y: parseFloat(canvas.style.height) / 2 + (state.mapOverlay.offsetY || 0)
+            };
+            if (delta) rotateAllGeometryAround(center, delta);
+          }
+          state.mapOverlay.rotate = Number(mapRotate.value);
+          draw();
+        });
+        lockToMapBtn.addEventListener("click", () => {
+          state.lockDrawingsToMap = !state.lockDrawingsToMap;
+          lockToMapBtn.classList.toggle("active", state.lockDrawingsToMap);
+          lockToMapBtn.textContent = `Lock Drawings To Map: ${state.lockDrawingsToMap ? "On" : "Off"}`;
+          mapStatus.textContent = state.lockDrawingsToMap
+            ? "Map status: lock on. Drawings follow map pan/zoom/rotate."
+            : "Map status: lock off. Drawings move independently.";
+        });
+        mapAdjustBtn.addEventListener("click", () => {
+          state.adjustMap = !state.adjustMap;
+          mapAdjustBtn.classList.toggle("active", state.adjustMap);
+          mapStatus.textContent = state.adjustMap
+            ? "Map status: adjust mode on. Drag to pan, wheel to zoom, Shift+wheel to rotate."
+            : "Map status: adjust mode off.";
+        });
+        resetMapViewBtn.addEventListener("click", resetMapView);
+        retryMapBtn.addEventListener("click", () => {
+          retryMapLoad();
+        });
+        resetMapLayerBtn.addEventListener("click", resetMapLayer);
         toggleMapBtn.addEventListener("click", () => {
           state.mapOverlay.visible = !state.mapOverlay.visible;
           toggleMapBtn.textContent = state.mapOverlay.visible ? "Hide Snap" : "Show Snap";
@@ -1117,9 +1746,16 @@
         });
 
         closeYardBtn.addEventListener("click", closeYard);
+        undoYardPointBtn.addEventListener("click", undoYardPoint);
+        finishHouseBtn.addEventListener("click", finishHouse);
+        undoHousePointBtn.addEventListener("click", undoHousePoint);
         finishDrivewayBtn.addEventListener("click", finishDriveway);
+        undoDrivewayPointBtn.addEventListener("click", undoDrivewayPoint);
         smoothDrivewayBtn.addEventListener("click", smoothLastDriveway);
         clearBtn.addEventListener("click", clearAll);
+        layerUpBtn.addEventListener("click", () => moveSelectedLayer(1));
+        layerDownBtn.addEventListener("click", () => moveSelectedLayer(-1));
+        buildOrderBtn.addEventListener("click", buildWorkOrder);
 
         setStartBtn.addEventListener("click", () => {
           state.setDirection = !state.setDirection;
@@ -1141,7 +1777,9 @@
 
         selectedSize.addEventListener("change", applySelectedAdjust);
         selectedWidth.addEventListener("input", () => {
+          drivewayWidthLabel.textContent = `${selectedWidth.value} ft`;
           if (state.selected?.type === "driveway") applySelectedAdjust();
+          draw();
         });
         drivewayColor.addEventListener("input", () => {
           if (state.selected?.type === "driveway") applySelectedAdjust();
@@ -1163,8 +1801,51 @@
         canvas.addEventListener("touchstart", onDown, { passive: false });
         canvas.addEventListener("touchmove", onMove, { passive: false });
         canvas.addEventListener("touchend", onUp, { passive: false });
+        canvas.addEventListener(
+          "wheel",
+          (ev) => {
+            if (!state.adjustMap || !state.mapOverlay.image || !state.mapOverlay.visible) return;
+            ev.preventDefault();
+            const pos = clamp(getPos(ev));
+            if (ev.shiftKey) {
+              const r = (state.mapOverlay.rotate || 0) + (ev.deltaY > 0 ? 2 : -2);
+              state.mapOverlay.rotate = Math.max(-180, Math.min(180, r));
+              mapRotate.value = String(state.mapOverlay.rotate);
+            } else {
+              const delta = ev.deltaY > 0 ? 0.92 : 1.08;
+              setMapZoomValue((state.mapOverlay.scale || 1) * delta, pos);
+            }
+            draw();
+          },
+          { passive: false }
+        );
+        window.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape") {
+            state.drivewayDraft = [];
+            state.setDirection = false;
+            setStartBtn.classList.remove("active");
+            draw();
+          } else if (ev.key === "Enter" && state.tool === "driveway") {
+            finishDriveway();
+          } else if (ev.key === "Enter" && state.tool === "house") {
+            finishHouse();
+          } else if (state.adjustMap && state.mapOverlay.image) {
+            if (ev.key === "ArrowLeft") state.mapOverlay.offsetX -= 14;
+            if (ev.key === "ArrowRight") state.mapOverlay.offsetX += 14;
+            if (ev.key === "ArrowUp") state.mapOverlay.offsetY -= 14;
+            if (ev.key === "ArrowDown") state.mapOverlay.offsetY += 14;
+            draw();
+          }
+        });
 
         setCanvasDimensions("normal");
+        drivewayWidthLabel.textContent = `${selectedWidth.value} ft`;
+        updateWorkflowStatus();
+        const originalDraw = draw;
+        draw = function drawWithWorkflowStatus() {
+          originalDraw();
+          updateWorkflowStatus();
+        };
         draw();
       })();
     </script>
