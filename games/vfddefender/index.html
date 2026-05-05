@@ -734,18 +734,22 @@ button:hover { filter: brightness(1.2); }
 }
 #mobileSciFiActions {
   position: fixed;
-  right: 14px;
+  left: 0;
+  right: 0;
   bottom: 14px;
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   z-index: 1000;
-  pointer-events: auto;
+  pointer-events: none;
   touch-action: none;
 }
 #mobileAimStick {
-  position: relative;
+  position: fixed;
+  left: 138px;
+  bottom: 14px;
   width: 112px;
   height: 112px;
   pointer-events: auto;
@@ -771,8 +775,12 @@ button:hover { filter: brightness(1.2); }
   box-shadow: 0 4px 14px rgba(0,0,0,0.45);
 }
 #mobileSciFiActions .fire-row {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
   display: flex;
   gap: 10px;
+  pointer-events: auto;
 }
 #mobileSciFiActions button {
   width: 74px;
@@ -887,7 +895,19 @@ button:hover { filter: brightness(1.2); }
     width: clamp(82px, 22vw, 104px);
     height: clamp(82px, 22vw, 104px);
   }
+  #mobileAimStick {
+    left: calc(max(8px, env(safe-area-inset-left)) + clamp(82px, 22vw, 104px) + 12px);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: clamp(82px, 22vw, 104px);
+    height: clamp(82px, 22vw, 104px);
+  }
   #thumbStick .knob {
+    width: clamp(34px, 9vw, 42px);
+    height: clamp(34px, 9vw, 42px);
+    margin-left: calc(clamp(34px, 9vw, 42px) / -2);
+    margin-top: calc(clamp(34px, 9vw, 42px) / -2);
+  }
+  #mobileAimStick .knob {
     width: clamp(34px, 9vw, 42px);
     height: clamp(34px, 9vw, 42px);
     margin-left: calc(clamp(34px, 9vw, 42px) / -2);
@@ -905,6 +925,16 @@ button:hover { filter: brightness(1.2); }
     height: clamp(48px, 14vw, 58px);
     font-size: clamp(20px, 6vw, 24px);
     border-radius: 10px;
+  }
+  #mobileSciFiActions .fire-row {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 7px;
+  }
+  #mobileSciFiActions button {
+    width: clamp(58px, 16vw, 70px);
+    height: clamp(48px, 14vw, 58px);
+    font-size: clamp(12px, 3.8vw, 15px);
   }
   #firefighterMountBtn {
     min-width: 116px;
@@ -25321,6 +25351,50 @@ function getClampedHoseEnd() {
   return { x: attachX + dx * ratio, y: attachY + dy * ratio, length: hoseLimit };
 }
 
+function drawMobileAimGuideLine() {
+  const levelData = baseLevels[currentLevel - 1] || {};
+  if (gameState !== 'playing' || !isActiveLaserCombatMode(levelData)) return;
+  const sciFiActions = document.getElementById('mobileSciFiActions');
+  if (!sciFiActions || sciFiActions.style.display === 'none') return;
+  const visible = mobileAimPointerId !== null || isLaserFiring || isRocketFiring || performance.now() < mobileAimGuideUntil;
+  if (!visible) return;
+  const origin = getHoseSprayOriginPoint() || getTruckNozzlePoint();
+  const dx = mouseX - origin.x;
+  const dy = mouseY - origin.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 8) return;
+  const dirX = dx / len;
+  const dirY = dy / len;
+  const endX = clamp(origin.x + dirX * Math.min(len, 420), 0, canvas.width);
+  const endY = clamp(origin.y + dirY * Math.min(len, 420), 0, canvas.height);
+  const pulse = 0.55 + (Math.sin(performance.now() / 90) * 0.5 + 0.5) * 0.35;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.setLineDash([13, 10]);
+  ctx.lineDashOffset = -performance.now() / 45;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = `rgba(116, 226, 255, ${0.30 + pulse * 0.28})`;
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(origin.x, origin.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = `rgba(235, 253, 255, ${0.56 + pulse * 0.24})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(origin.x, origin.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.strokeStyle = `rgba(120, 235, 255, ${0.62 + pulse * 0.24})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(endX, endY, 12 + pulse * 3, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function createWaterParticles() {
   if (particles.length >= PARTICLE_BUDGET - 24) return;
   const levelData = baseLevels[currentLevel - 1] || {};
@@ -29201,6 +29275,11 @@ function dockHudControlsToCanvasEdge() {
   const stick = document.getElementById('thumbStick');
   if (stick) stick.style.bottom = `${baseBottom}px`;
 
+  const mobileAimStick = document.getElementById('mobileAimStick');
+  if (mobileAimStick) mobileAimStick.style.bottom = `${baseBottom}px`;
+  const mobileFireRow = document.querySelector('#mobileSciFiActions .fire-row');
+  if (mobileFireRow) mobileFireRow.style.bottom = `${baseBottom}px`;
+
   positionFirefighterMountButtonByTruckSide();
 }
 
@@ -29408,6 +29487,7 @@ let thumbPointerId = null;
 let mobileAimPointerId = null;
 let mobileAimX = 1;
 let mobileAimY = 0;
+let mobileAimGuideUntil = 0;
 const thumbStick = document.getElementById('thumbStick');
 thumbStick.addEventListener('pointerdown', (e) => {
   thumbPointerId = e.pointerId;
@@ -29479,6 +29559,7 @@ function applyMobileAim(dx, dy) {
   const aimLength = Math.min(getTruckHoseLengthLimit(), 300);
   mouseX = clamp(origin.x + x * aimLength, 0, 1200);
   mouseY = clamp(origin.y + y * aimLength, 0, 600);
+  mobileAimGuideUntil = performance.now() + 900;
   updateMobileAimKnob(x, y);
 }
 
@@ -30096,6 +30177,7 @@ if (false && currentLevel === 11) drawPlacementGrid();
     if (p.life <= 0) particles.splice(i, 1);
   }
   updateAndDrawPointPopups(dt);
+  drawMobileAimGuideLine();
 
   // Keep the support tanker on top of fire particles (lane 11) while it's present.
   drawTankerSupport();
