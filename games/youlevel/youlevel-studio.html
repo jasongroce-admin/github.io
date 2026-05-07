@@ -17472,6 +17472,43 @@ function studioInitCommands() {
   const hasSelection = () => !!studioGetSelectedEntity();
   const selectedIsPrimary = () => studioGetSelectedEntity()?.type === 'requiredFireTruck';
   const canEditSelection = () => hasSelection() && !selectedIsPrimary();
+  const canUseSelectedLayerOptions = () => canEditSelection();
+
+  const setControlValue = (control, value, eventName = 'change', status = '') => {
+    if (!control) return;
+    control.value = String(value);
+    control.dispatchEvent(new Event(eventName, { bubbles: true }));
+    builderReadUiIntoState();
+    builderApplyStateToUi();
+    builderSaveLastDraft();
+    if (status) builderSetStatus(status);
+  };
+  const toggleSelectControl = (control, onStatus, offStatus) => {
+    if (!control) return;
+    const next = control.value === '1' ? '0' : '1';
+    setControlValue(control, next, 'change', next === '1' ? onStatus : offStatus);
+  };
+  const focusControl = (section, control, status = '') => {
+    studioFocusSection(section);
+    setTimeout(() => {
+      try {
+        control?.focus?.();
+        control?.select?.();
+      } catch {}
+    }, 180);
+    if (status) builderSetStatus(status);
+  };
+  const setControlPreset = (entries, status = '') => {
+    entries.forEach(([control, value, eventName]) => {
+      if (!control) return;
+      control.value = String(value);
+      control.dispatchEvent(new Event(eventName || 'change', { bubbles: true }));
+    });
+    builderReadUiIntoState();
+    builderApplyStateToUi();
+    builderSaveLastDraft();
+    if (status) builderSetStatus(status);
+  };
 
   studioRegisterCommand({ id: 'view.scene', title: 'Go to Scene', menu: 'view', keys: 'Alt+1', run: () => studioFocusSection('scene') });
   studioRegisterCommand({ id: 'view.layers', title: 'Go to Layers', menu: 'view', keys: 'Alt+2', run: () => studioFocusSection('layers') });
@@ -17518,6 +17555,37 @@ function studioInitCommands() {
   studioRegisterCommand({ id: 'edit.paste_layer', title: 'Paste Layer', menu: 'edit', keys: 'Ctrl+V', enabled: () => !!builderClipboardEntity, disabledReason: 'Copy a layer first (Ctrl+C).', run: () => builderPasteCopiedLayer() });
   studioRegisterCommand({ id: 'edit.delete_layer', title: 'Delete Selected Layer', menu: 'edit', keys: 'Del', enabled: () => canEditSelection(), disabledReason: 'Select a non-primary layer to delete.', run: () => builderDeleteSelectedLayer() });
 
+  studioRegisterCommand({ id: 'scene.edit_title', title: 'Edit Scene Title', menu: 'scene', keys: '', run: () => focusControl('scene', BUILDER_UI.sceneTitleText, 'Editing scene title.') });
+  studioRegisterCommand({ id: 'scene.edit_subtitle', title: 'Edit Scene Subtitle', menu: 'scene', keys: '', run: () => focusControl('scene', BUILDER_UI.sceneSubtitle, 'Editing scene subtitle.') });
+  studioRegisterCommand({ id: 'scene.background_day', title: 'Set Background: Day', menu: 'scene', keys: '', run: () => setControlValue(BUILDER_UI.timeOfDay, 0, 'change', 'Background set to Day.') });
+  studioRegisterCommand({ id: 'scene.background_night', title: 'Set Background: Night', menu: 'scene', keys: '', run: () => setControlValue(BUILDER_UI.timeOfDay, 2, 'change', 'Background set to Night.') });
+  studioRegisterCommand({ id: 'scene.background_alien', title: 'Set Background: Alien Storm', menu: 'scene', keys: '', run: () => setControlValue(BUILDER_UI.timeOfDay, 7, 'change', 'Background set to Alien Storm.') });
+  studioRegisterCommand({ id: 'scene.toggle_starfield', title: 'Toggle Starfield Overlay', menu: 'scene', keys: '', run: () => toggleSelectControl(BUILDER_UI.starfieldEnabled, 'Starfield overlay enabled.', 'Starfield overlay disabled.') });
+
+  studioRegisterCommand({ id: 'movement.select_tool', title: 'Use Select Tool', menu: 'movement', keys: '', run: () => document.getElementById('builderToolSelectBtn')?.click() });
+  studioRegisterCommand({ id: 'movement.move_tool', title: 'Use Move Tool', menu: 'movement', keys: '', run: () => document.getElementById('builderToolMoveBtn')?.click() });
+  studioRegisterCommand({ id: 'movement.primary_flight', title: 'Toggle Primary Hero Flight', menu: 'movement', keys: '', run: () => toggleSelectControl(BUILDER_UI.primaryVehicleFlight, 'Primary hero flight enabled.', 'Primary hero flight disabled.') });
+  studioRegisterCommand({ id: 'movement.primary_left', title: 'Primary Hero Starts Left', menu: 'movement', keys: '', run: () => setControlValue(BUILDER_UI.truckSide, 'left', 'change', 'Primary hero starts from the left.') });
+  studioRegisterCommand({ id: 'movement.primary_right', title: 'Primary Hero Starts Right', menu: 'movement', keys: '', run: () => setControlValue(BUILDER_UI.truckSide, 'right', 'change', 'Primary hero starts from the right.') });
+  studioRegisterCommand({ id: 'movement.toggle_layer_path', title: 'Toggle Selected Layer Path', menu: 'movement', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerPathEnabled, 'Selected layer path enabled.', 'Selected layer path disabled.') });
+  studioRegisterCommand({ id: 'movement.toggle_tornado', title: 'Toggle Tornado', menu: 'movement', keys: '', run: () => toggleSelectControl(BUILDER_UI.tornadoEnabled, 'Tornado enabled.', 'Tornado disabled.') });
+
+  studioRegisterCommand({ id: 'combat.primary_laser', title: 'Primary Attack: Laser', menu: 'combat', keys: '', run: () => setControlValue(BUILDER_UI.primaryAttackMode, 'laser', 'change', 'Primary attack set to laser.') });
+  studioRegisterCommand({ id: 'combat.primary_water', title: 'Primary Attack: Water', menu: 'combat', keys: '', run: () => setControlValue(BUILDER_UI.primaryAttackMode, 'water', 'change', 'Primary attack set to water.') });
+  studioRegisterCommand({ id: 'combat.toggle_enemy', title: 'Toggle Selected Layer Enemy', menu: 'combat', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerEnemyEnabled, 'Selected layer enemy enabled.', 'Selected layer enemy disabled.') });
+  studioRegisterCommand({ id: 'combat.toggle_laser', title: 'Toggle Selected Enemy Laser', menu: 'combat', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerLaserEnabled, 'Selected enemy laser enabled.', 'Selected enemy laser disabled.') });
+  studioRegisterCommand({ id: 'combat.toggle_bombs', title: 'Toggle Selected Enemy Bombs', menu: 'combat', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerBombEnabled, 'Selected enemy bombs enabled.', 'Selected enemy bombs disabled.') });
+  studioRegisterCommand({ id: 'combat.arcade_preset', title: 'Arcade Combat Preset', menu: 'combat', keys: '', run: () => setControlPreset([[BUILDER_UI.scoreMultiplier, 1.5, 'input'], [BUILDER_UI.heroProjectileSpeed, 1.25, 'input'], [BUILDER_UI.enemyProjectileSpeed, 1.05, 'input'], [BUILDER_UI.rocketBlastRadius, 96, 'input']], 'Arcade combat preset applied.') });
+
+  studioRegisterCommand({ id: 'ai.difficulty_easy', title: 'Difficulty: Easy', menu: 'ai', keys: '', run: () => setControlPreset([[BUILDER_UI.playDifficulty, 'easy', 'change'], [BUILDER_UI.globalTimeScale, 0.9, 'input']], 'Player difficulty set to Easy.') });
+  studioRegisterCommand({ id: 'ai.difficulty_normal', title: 'Difficulty: Normal', menu: 'ai', keys: '', run: () => setControlPreset([[BUILDER_UI.playDifficulty, 'normal', 'change'], [BUILDER_UI.globalTimeScale, 1, 'input']], 'Player difficulty set to Normal.') });
+  studioRegisterCommand({ id: 'ai.difficulty_hard', title: 'Difficulty: Hard', menu: 'ai', keys: '', run: () => setControlPreset([[BUILDER_UI.playDifficulty, 'hard', 'change'], [BUILDER_UI.globalTimeScale, 1.08, 'input']], 'Player difficulty set to Hard.') });
+  studioRegisterCommand({ id: 'ai.difficulty_nightmare', title: 'Difficulty: Nightmare', menu: 'ai', keys: '', run: () => setControlPreset([[BUILDER_UI.playDifficulty, 'nightmare', 'change'], [BUILDER_UI.globalTimeScale, 1.18, 'input']], 'Player difficulty set to Nightmare.') });
+  studioRegisterCommand({ id: 'ai.toggle_civilian_spawn', title: 'Toggle Civilian Spawn', menu: 'ai', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a building or supported layer first.', run: () => toggleSelectControl(BUILDER_UI.civilianSpawnEnabled, 'Civilian spawn enabled for selected layer.', 'Civilian spawn disabled for selected layer.') });
+  studioRegisterCommand({ id: 'ai.toggle_fight_back', title: 'Toggle Fight Back If Attacked', menu: 'ai', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerFightBackEnabled, 'Selected layer fights back if attacked.', 'Selected layer fight-back disabled.') });
+  studioRegisterCommand({ id: 'ai.toggle_aggressive', title: 'Toggle Aggressive AI', menu: 'ai', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerAggressiveEnabled, 'Aggressive AI enabled for selected layer.', 'Aggressive AI disabled for selected layer.') });
+  studioRegisterCommand({ id: 'ai.toggle_formation', title: 'Toggle Formation Wave Attack', menu: 'ai', keys: '', enabled: () => canUseSelectedLayerOptions(), disabledReason: 'Select a non-primary layer first.', run: () => toggleSelectControl(BUILDER_UI.layerRaidFormationEnabled, 'Formation wave attack enabled.', 'Formation wave attack disabled.') });
+
   studioRegisterCommand({ id: 'test.validate', title: 'Validate Scene', menu: 'scene', keys: '', run: () => BUILDER_UI.validateBtn?.click() });
   studioRegisterCommand({ id: 'test.performance', title: 'Performance Check', menu: 'scene', keys: '', run: () => BUILDER_UI.perfBtn?.click() });
   studioRegisterCommand({ id: 'test.quick_play', title: 'Quick Play / Test Level', menu: 'scene', keys: 'Space', run: () => document.getElementById('builderTestBtn')?.click() });
@@ -17542,6 +17610,32 @@ function studioGetMenuSections(action) {
   if (key === 'view') {
     return [
       { title: 'Sections', commands: ['view.scene', 'view.layers', 'view.movement', 'view.combat', 'view.ai', 'view.export'] }
+    ];
+  }
+  if (key === 'scene') {
+    return [
+      { title: 'Edit', commands: ['view.scene', 'scene.edit_title', 'scene.edit_subtitle'] },
+      { title: 'Background', commands: ['scene.background_day', 'scene.background_night', 'scene.background_alien', 'scene.toggle_starfield'] },
+      { title: 'Test', commands: ['test.validate', 'test.performance', 'test.quick_play'] }
+    ];
+  }
+  if (key === 'movement') {
+    return [
+      { title: 'Tools', commands: ['view.movement', 'movement.select_tool', 'movement.move_tool'] },
+      { title: 'Primary Hero', commands: ['movement.primary_left', 'movement.primary_right', 'movement.primary_flight'] },
+      { title: 'Layer Motion', commands: ['movement.toggle_layer_path', 'movement.toggle_tornado'] }
+    ];
+  }
+  if (key === 'combat') {
+    return [
+      { title: 'Primary Weapon', commands: ['view.combat', 'combat.primary_laser', 'combat.primary_water', 'combat.arcade_preset'] },
+      { title: 'Selected Enemy', commands: ['combat.toggle_enemy', 'combat.toggle_laser', 'combat.toggle_bombs'] }
+    ];
+  }
+  if (key === 'ai') {
+    return [
+      { title: 'Player Difficulty', commands: ['view.ai', 'ai.difficulty_easy', 'ai.difficulty_normal', 'ai.difficulty_hard', 'ai.difficulty_nightmare'] },
+      { title: 'Selected Layer AI', commands: ['ai.toggle_civilian_spawn', 'ai.toggle_fight_back', 'ai.toggle_aggressive', 'ai.toggle_formation'] }
     ];
   }
   if (key === 'publish') {
@@ -18325,21 +18419,21 @@ document.querySelectorAll('#youlevelStudioMenu .studio-menu-btn[data-menu-action
       studioToggleMenuPopover('view', btn);
       builderSetStatus('View: jump to major sections, show/hide panels, track selected layer.');
     } else if (action === 'scene') {
-      studioCloseMenuPopover();
+      studioToggleMenuPopover('scene', btn);
       studioFocusSection('scene');
-      builderSetStatus('Scene: title dashboard, lighting/background, events and timeline timings.');
+      builderSetStatus('Scene: title, background, validation, performance, and quick play.');
     } else if (action === 'movement') {
-      studioCloseMenuPopover();
+      studioToggleMenuPopover('movement', btn);
       studioFocusSection('movement');
-      builderSetStatus('Movement: path controls, flight controls, speed and directional setup.');
+      builderSetStatus('Movement: tools, primary hero start/flight, paths, and tornado.');
     } else if (action === 'combat') {
-      studioCloseMenuPopover();
+      studioToggleMenuPopover('combat', btn);
       studioFocusSection('combat');
-      builderSetStatus('Combat: hero/enemy projectile tuning, blast radius, hitbox health, score.');
+      builderSetStatus('Combat: primary weapon, enemy layers, lasers, bombs, and presets.');
     } else if (action === 'ai') {
-      studioCloseMenuPopover();
+      studioToggleMenuPopover('ai', btn);
       studioFocusSection('ai');
-      builderSetStatus('AI: global pacing/difficulty, enemy behaviors, formations, fight-back, target selection.');
+      builderSetStatus('AI: difficulty presets, civilian spawns, fight-back, aggression, and formations.');
     } else if (action === 'publish') {
       studioToggleMenuPopover('publish', btn);
       builderSetStatus('Publish: save package, offline export, import into target game tool.');
