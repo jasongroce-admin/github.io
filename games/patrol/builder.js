@@ -11,6 +11,7 @@
   const roadWidthValueEl = document.getElementById('roadWidthValue');
   const STORAGE_KEY = 'patrol.customMissions.v1';
   const LEGACY_STORAGE_KEY = 'sovereignCitizen.customMissions.v1';
+  const PRACTICE_MAP_KEY = 'patrol.practiceRoads.v1';
 
   let map = { width: 3000, height: 2200, roads: [] };
   let currentTool = 'checkpoint';
@@ -51,6 +52,19 @@
     renderMissionList();
   }
 
+  function loadPracticeRoads() {
+    try {
+      return normalizeRoads(JSON.parse(localStorage.getItem(PRACTICE_MAP_KEY) || '[]'));
+    } catch {
+      return [];
+    }
+  }
+
+  function savePracticeRoads() {
+    localStorage.setItem(PRACTICE_MAP_KEY, JSON.stringify(cloneRoads(map.roads)));
+    setStatus('Practice roads saved. Patrol will use this road layout.');
+  }
+
   function readForm() {
     mission.title = titleEl.value.trim() || 'Untitled Mission';
     mission.dispatch = dispatchEl.value.trim() || 'Proceed to the marked location.';
@@ -86,7 +100,7 @@
     return roads.map((road, idx) => ({
       name: String(road?.name || (road?.builderRoad ? `Custom Road ${idx + 1}` : '')),
       kind: String(road?.kind || 'residential'),
-      w: clamp(Number(road?.w || 82), 36, 180),
+      w: clamp(Number(road?.w || 190), 80, 320),
       builderRoad: Boolean(road?.builderRoad),
       pts: Array.isArray(road?.pts) ? road.pts.map((p) => [Math.round(Number(p?.[0] || 0)), Math.round(Number(p?.[1] || 0))]) : []
     })).filter((road) => road.pts.length > 1);
@@ -131,18 +145,19 @@
   function normalizeMapGeometry() {
     map.width = 6200;
     map.height = 4600;
-    map.roads = buildTownCoreRoads();
+    map.roads = loadPracticeRoads();
+    if (!map.roads.length) map.roads = buildTownCoreRoads();
     syncMissionRoads();
   }
 
   function buildTownCoreRoads() {
-    const main = 138;
-    const county = 132;
-    const local = 82;
-    const alley = 58;
+    const main = 270;
+    const county = 260;
+    const local = 190;
+    const alley = 150;
     return [
       { name: 'W County Road 200 S', kind: 'tertiary', w: county, pts: [[0, 1720], [1560, 1718], [2620, 1708], [3600, 1698], [6200, 1700]] },
-      { name: 'W 234', kind: 'tertiary', w: 118, pts: [[0, 1660], [1040, 1600], [2060, 1460], [2620, 1260], [3600, 980], [4820, 780]] },
+      { name: 'W 234', kind: 'tertiary', w: 230, pts: [[0, 1660], [1040, 1600], [2060, 1460], [2620, 1260], [3600, 980], [4820, 780]] },
       { name: 'S Main Street', kind: 'secondary', w: main, pts: [[3600, 300], [3600, 980], [3600, 1700], [3600, 2520], [3610, 4500]] },
       { name: 'East Street', kind: 'residential', w: local, pts: [[4540, 320], [4540, 1180], [4540, 1700], [4540, 3000], [4500, 3300]] },
       { name: 'N Vine Street', kind: 'residential', w: local, pts: [[2620, 340], [2620, 1260], [2620, 1700]] },
@@ -305,7 +320,7 @@
   }
 
   function beginRoad(p) {
-    const w = clamp(Number(roadWidthEl.value || 82), 36, 180);
+    const w = clamp(Number(roadWidthEl.value || 190), 80, 320);
     activeRoad = { name: `Custom Road ${map.roads.length + 1}`, kind: 'residential', w, builderRoad: true, pts: [[p.x, p.y]] };
     map.roads.push(activeRoad);
     selectedRoad = map.roads.length - 1;
@@ -429,7 +444,7 @@
     const blob = new Blob([JSON.stringify(mission, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${mission.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'mission'}.sovereign-mission.json`;
+    a.download = `${mission.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'mission'}.patrol-mission.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   });
@@ -455,7 +470,7 @@
   });
 
   roadWidthEl.addEventListener('input', () => {
-    const width = clamp(Number(roadWidthEl.value || 82), 36, 180);
+    const width = clamp(Number(roadWidthEl.value || 190), 80, 320);
     roadWidthValueEl.textContent = String(width);
     if (selectedRoad >= 0 && map.roads[selectedRoad]) {
       map.roads[selectedRoad].w = width;
@@ -471,6 +486,11 @@
     syncMissionRoads();
     draw();
     setStatus('Roads reset to the town layout.');
+  });
+
+  document.getElementById('savePracticeRoadsBtn').addEventListener('click', () => {
+    syncMissionRoads();
+    savePracticeRoads();
   });
 
   canvas.addEventListener('pointerdown', (event) => {

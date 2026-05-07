@@ -85,6 +85,7 @@
   ];
   const CUSTOM_MISSION_KEY = 'patrol.customMissions.v1';
   const LEGACY_CUSTOM_MISSION_KEY = 'sovereignCitizen.customMissions.v1';
+  const PRACTICE_MAP_KEY = 'patrol.practiceRoads.v1';
 
   const keys = new Set();
   const touchDrive = new Set();
@@ -95,6 +96,7 @@
   let pendingCall = null;
   let activeCall = null;
   let callsCleared = 0;
+  let policeLights = false;
 
   const player = {
     x: 1092,
@@ -106,25 +108,19 @@
     damageCooldown: 0
   };
 
-  const traffic = [
-    car('sedan', 1095, 1424, -Math.PI / 2, 125),
-    car('hatchbackYellow', 1044, 1781, Math.PI / 2, 110),
-    car('pickup', 1266, 1779, 0, 96),
-    car('suv', 936, 1783, Math.PI / 2, 82),
-    car('hatchback', 1096, 586, Math.PI, 105),
-    car('pickupDown', 816, 1734, 0, 88)
-  ];
+  const traffic = [];
 
   normalizeTownGeometry();
 
   function car(sprite, x, y, angle, speed) {
-    return { sprite, x, y, angle, speed, turnTimer: 0, health: 100, damageCooldown: 0 };
+    return { sprite, x, y, angle, speed, baseSpeed: speed, turnTimer: 0, health: 100, damageCooldown: 0, enemy: false, pulledOver: false };
   }
 
   function normalizeTownGeometry() {
     town.width = 6200;
     town.height = 4600;
-    town.roads = buildTownCoreRoads();
+    town.roads = loadPracticeRoads();
+    if (!town.roads.length) town.roads = buildTownCoreRoads();
 
     addresses.splice(0, addresses.length,
       { label: '100 S Main Street', x: 3600, y: 1870, kind: 'post' },
@@ -138,22 +134,22 @@
     );
 
     buildings.splice(0, buildings.length,
-      { sprite: 'houseA', x: 2600, y: 1160, w: 150, h: 96, health: 100 },
-      { sprite: 'houseB', x: 3040, y: 1780, w: 150, h: 88, health: 100 },
-      { sprite: 'school', x: 4240, y: 1160, w: 190, h: 118, health: 100 },
-      { sprite: 'garage', x: 2340, y: 3260, w: 142, h: 86, health: 100 },
-      { sprite: 'houseC', x: 4560, y: 1860, w: 165, h: 98, health: 100 },
-      { sprite: 'houseA', x: 1560, y: 2380, w: 152, h: 96, health: 100 },
-      { sprite: 'barn', x: 4380, y: 3940, w: 180, h: 108, health: 100 },
-      { sprite: 'houseB', x: 3940, y: 2440, w: 150, h: 92, health: 100 },
-      { sprite: 'houseC', x: 3300, y: 3780, w: 155, h: 92, health: 100 },
-      { sprite: 'garage', x: 4880, y: 2960, w: 136, h: 84, health: 100 }
+      { sprite: 'houseA', x: 3060, y: 620, w: 210, h: 134, health: 100 },
+      { sprite: 'houseB', x: 4160, y: 600, w: 210, h: 124, health: 100 },
+      { sprite: 'school', x: 5000, y: 1240, w: 270, h: 168, health: 100 },
+      { sprite: 'garage', x: 2360, y: 2360, w: 210, h: 128, health: 100 },
+      { sprite: 'houseC', x: 5020, y: 2360, w: 230, h: 138, health: 100 },
+      { sprite: 'houseA', x: 1200, y: 2360, w: 218, h: 138, health: 100 },
+      { sprite: 'barn', x: 4200, y: 3820, w: 280, h: 168, health: 100 },
+      { sprite: 'houseB', x: 4100, y: 3120, w: 215, h: 132, health: 100 },
+      { sprite: 'houseC', x: 3160, y: 3740, w: 230, h: 138, health: 100 },
+      { sprite: 'garage', x: 5060, y: 3340, w: 210, h: 130, health: 100 }
     );
 
     trees.splice(0, trees.length,
-      [760, 960, 'oak'], [1360, 780, 'pine'], [1960, 1500, 'oak'], [4860, 1120, 'oak'],
-      [5100, 2440, 'pine'], [4800, 3700, 'oak'], [1080, 3560, 'pine'], [5460, 3380, 'oak'],
-      [2540, 3540, 'oak'], [3860, 3180, 'pine']
+      [520, 980, 'oak'], [1360, 760, 'pine'], [2060, 1160, 'oak'], [5180, 980, 'oak'],
+      [5200, 2440, 'pine'], [4760, 3820, 'oak'], [1120, 3540, 'pine'], [5660, 3360, 'oak'],
+      [2380, 3640, 'oak'], [3960, 3160, 'pine']
     );
     pedestrians.splice(0, pedestrians.length,
       { x: 2860, y: 1880, color: '#ffdd55' },
@@ -162,27 +158,28 @@
       { x: 3960, y: 2760, color: '#b7f2a2' },
       { x: 1980, y: 2640, color: '#f5f5f5' }
     );
-    traffic.splice(0, traffic.length,
-      car('sedan', 3600, 1340, 0, 125),
-      car('hatchbackYellow', 3040, 1640, Math.PI / 2, 110),
-      car('pickup', 4260, 3080, Math.PI / 2, 96),
-      car('suv', 1900, 2220, -Math.PI / 2, 82),
-      car('hatchback', 4540, 1640, Math.PI, 105),
-      car('pickupDown', 1380, 2700, Math.PI, 88)
-    );
+    resetTraffic();
     player.x = 3600;
     player.y = 3560;
     player.angle = 0;
   }
 
+  function loadPracticeRoads() {
+    try {
+      return normalizeRoads(JSON.parse(localStorage.getItem(PRACTICE_MAP_KEY) || '[]'));
+    } catch {
+      return [];
+    }
+  }
+
   function buildTownCoreRoads() {
-    const main = 138;
-    const county = 132;
-    const local = 82;
-    const alley = 58;
+    const main = 270;
+    const county = 260;
+    const local = 190;
+    const alley = 150;
     return [
       { name: 'W County Road 200 S', kind: 'tertiary', w: county, pts: [[0, 1720], [1560, 1718], [2620, 1708], [3600, 1698], [6200, 1700]] },
-      { name: 'W 234', kind: 'tertiary', w: 118, pts: [[0, 1660], [1040, 1600], [2060, 1460], [2620, 1260], [3600, 980], [4820, 780]] },
+      { name: 'W 234', kind: 'tertiary', w: 230, pts: [[0, 1660], [1040, 1600], [2060, 1460], [2620, 1260], [3600, 980], [4820, 780]] },
       { name: 'S Main Street', kind: 'secondary', w: main, pts: [[3600, 300], [3600, 980], [3600, 1700], [3600, 2520], [3610, 4500]] },
       { name: 'East Street', kind: 'residential', w: local, pts: [[4540, 320], [4540, 1180], [4540, 1700], [4540, 3000], [4500, 3300]] },
       { name: 'N Vine Street', kind: 'residential', w: local, pts: [[2620, 340], [2620, 1260], [2620, 1700]] },
@@ -222,7 +219,7 @@
     return roads.map((road) => ({
       name: String(road?.name || ''),
       kind: String(road?.kind || 'residential'),
-      w: clamp(Number(road?.w || 82), 36, 180),
+      w: clamp(Number(road?.w || 190), 80, 320),
       builderRoad: Boolean(road?.builderRoad),
       pts: Array.isArray(road?.pts) ? road.pts.map((p) => [Math.round(Number(p?.[0] || 0)), Math.round(Number(p?.[1] || 0))]) : []
     })).filter((road) => road.pts.length > 1);
@@ -230,6 +227,79 @@
 
   function cloneRoads(roads) {
     return normalizeRoads(roads).map((road) => ({ ...road, pts: road.pts.map(([x, y]) => [x, y]) }));
+  }
+
+  function resetTraffic() {
+    traffic.splice(0, traffic.length,
+      trafficCar('sedan', 2, 1, 1, 0.22, 154),
+      trafficCar('hatchbackYellow', 0, 1, 1, 0.58, 142),
+      trafficCar('pickup', 3, 2, 1, 0.42, 128),
+      trafficCar('suv', 9, 0, 1, 0.68, 118),
+      trafficCar('hatchback', 1, 3, -1, 0.36, 146),
+      trafficCar('pickupDown', 10, 2, -1, 0.52, 122),
+      trafficCar('sedanDown', 7, 1, 1, 0.2, 164, true)
+    );
+  }
+
+  function trafficCar(sprite, roadIndex, segmentIndex, direction, t, speed, enemy = false) {
+    const c = car(sprite, 0, 0, 0, speed);
+    const safeRoadIndex = town.roads.length ? roadIndex % town.roads.length : 0;
+    const road = town.roads[safeRoadIndex] || { pts: [[0, 0], [1, 0]] };
+    c.route = {
+      roadIndex: safeRoadIndex,
+      segmentIndex: clamp(segmentIndex, 0, Math.max(0, road.pts.length - 2)),
+      direction,
+      t
+    };
+    c.enemy = enemy;
+    c.baseSpeed = speed;
+    placeTrafficOnLane(c);
+    return c;
+  }
+
+  function placeTrafficOnLane(c) {
+    const road = town.roads[c.route?.roadIndex];
+    if (!road || !road.pts[c.route.segmentIndex + 1]) return;
+    const laneFraction = c.pulledOver ? 0.39 : (c.enemy ? 0.18 : 0.24);
+    const lane = lanePoint(road, c.route.segmentIndex, c.route.direction, c.route.t, laneFraction);
+    c.x = lane.x;
+    c.y = lane.y;
+    c.angle = lane.angle;
+  }
+
+  function lanePoint(road, segmentIndex, direction, t, laneFraction = 0.24) {
+    const p1 = road.pts[segmentIndex];
+    const p2 = road.pts[segmentIndex + 1];
+    const start = direction >= 0 ? p1 : p2;
+    const end = direction >= 0 ? p2 : p1;
+    const dx = end[0] - start[0];
+    const dy = end[1] - start[1];
+    const len = Math.max(1, Math.hypot(dx, dy));
+    const ux = dx / len;
+    const uy = dy / len;
+    const laneShift = Math.min(70, road.w * laneFraction);
+    return {
+      x: start[0] + dx * t - uy * laneShift,
+      y: start[1] + dy * t + ux * laneShift,
+      angle: Math.atan2(dx, -dy),
+      len
+    };
+  }
+
+  function advanceTrafficRoute(c, dt) {
+    const road = town.roads[c.route?.roadIndex];
+    if (!road || road.pts.length < 2) return false;
+    const current = lanePoint(road, c.route.segmentIndex, c.route.direction, c.route.t);
+    c.route.t += (Math.max(0, c.speed) * dt) / current.len;
+    while (c.route.t >= 1) {
+      c.route.t -= 1;
+      c.route.segmentIndex += c.route.direction;
+      if (c.route.segmentIndex < 0 || c.route.segmentIndex >= road.pts.length - 1) {
+        c.route.direction *= -1;
+        c.route.segmentIndex = clamp(c.route.segmentIndex, 0, road.pts.length - 2);
+      }
+    }
+    return true;
   }
 
   function dist(a, b, c, d) {
@@ -310,6 +380,21 @@
     ctx.restore();
   }
 
+  function drawWorldSprite(sprite, x, y, w, h, angle = 0, alpha = 1) {
+    const img = images[sprite];
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    if (img && img.complete && img.naturalWidth) {
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    } else {
+      ctx.fillStyle = '#84959f';
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+    }
+    ctx.restore();
+  }
+
   function drawVehicle(sprite, x, y, w, h, angle = 0, alpha = 1) {
     const spec = sprites[sprite] || {};
     const sourceOffset = spec.facing === 'down' ? Math.PI : 0;
@@ -320,6 +405,7 @@
     const img = images.policeInterceptor;
     if (img?.complete && img.naturalWidth) {
       drawVehicle('policeInterceptor', player.x, player.y, 46, 70, player.angle);
+      drawLightbar(worldToScreenX(player.x), worldToScreenY(player.y), player.angle);
       return;
     }
     const x = worldToScreenX(player.x);
@@ -341,6 +427,26 @@
     ctx.font = '800 10px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('POLICE', 0, 2);
+    ctx.restore();
+    drawLightbar(x, y, player.angle);
+  }
+
+  function drawLightbar(x, y, angle) {
+    if (!policeLights) return;
+    const pulse = Math.floor(performance.now() / 120) % 2;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.globalAlpha = 0.72;
+    ctx.fillStyle = pulse ? '#2d8dff' : '#ff3333';
+    ctx.beginPath();
+    ctx.arc(pulse ? -16 : 16, -6, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#2d8dff';
+    ctx.fillRect(-12, -8, 10, 6);
+    ctx.fillStyle = '#ff3333';
+    ctx.fillRect(2, -8, 10, 6);
     ctx.restore();
   }
 
@@ -431,13 +537,13 @@
 
     buildings.forEach((b) => {
       const health = Number.isFinite(b.health) ? b.health : 100;
-      drawSprite(b.sprite, b.x, b.y, b.w, b.h, 0, 0.62 + (health / 100) * 0.32);
+      drawWorldSprite(b.sprite, b.x, b.y, b.w, b.h, 0, 0.72 + (health / 100) * 0.28);
       if (health < 70) {
         ctx.fillStyle = `rgba(45, 20, 16, ${clamp((100 - health) / 120, 0, 0.55)})`;
         ctx.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
       }
     });
-    trees.forEach(([x, y, sprite]) => drawSprite(sprite, x, y, 76, 94, 0, 0.82));
+    trees.forEach(([x, y, sprite]) => drawWorldSprite(sprite, x, y, 102, 128, 0, 0.9));
     pedestrians.forEach(drawStickman);
 
     addresses.forEach((a) => {
@@ -536,9 +642,9 @@
   }
 
   function updatePlayer(dt) {
-    const accel = 680;
-    const brake = 840;
-    const turnRate = 2.9;
+    const accel = 760;
+    const brake = 920;
+    const turnRate = 3.25;
     const forward = keys.has('arrowup') || keys.has('w') || touchDrive.has('up');
     const reverse = keys.has('arrowdown') || keys.has('s') || touchDrive.has('down');
     const left = keys.has('arrowleft') || keys.has('a') || touchDrive.has('left');
@@ -547,13 +653,14 @@
 
     if (forward) player.speed += accel * dt;
     if (reverse) player.speed -= brake * dt;
-    if (!forward && !reverse) player.speed *= handbrake ? 0.86 : 0.982;
-    if (handbrake) player.speed *= 0.94;
-    player.speed = clamp(player.speed, -180, player.maxSpeed);
+    if (!forward && !reverse) player.speed *= handbrake ? 0.9 : 0.986;
+    if (handbrake) player.speed *= 0.965;
+    player.speed = clamp(player.speed, -210, player.maxSpeed);
 
     const steer = (right ? 1 : 0) - (left ? 1 : 0);
-    const steerScale = clamp(Math.abs(player.speed) / 220, 0.25, 1);
-    player.angle += steer * turnRate * steerScale * dt * (player.speed < 0 ? -1 : 1);
+    const steerScale = clamp(Math.abs(player.speed) / 260, 0.32, 1);
+    const slideBoost = handbrake ? 1.45 : 1;
+    player.angle += steer * turnRate * steerScale * slideBoost * dt * (player.speed < 0 ? -1 : 1);
 
     const oldX = player.x;
     const oldY = player.y;
@@ -582,17 +689,22 @@
 
   function updateTraffic(dt) {
     traffic.forEach((c) => {
-      c.turnTimer -= dt;
-      c.x += Math.sin(c.angle) * c.speed * dt;
-      c.y -= Math.cos(c.angle) * c.speed * dt;
       c.damageCooldown = Math.max(0, c.damageCooldown - dt);
-      if (!roadAt(c.x, c.y, 40) || c.turnTimer <= 0) {
-        const n = nearestRoadPoint(c.x, c.y);
-        c.x = n.x;
-        c.y = n.y;
-        const options = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-        c.angle = options[Math.floor(Math.random() * options.length)];
-        c.turnTimer = 1.4 + Math.random() * 2.8;
+      if (c.spinTimer > 0) {
+        c.spinTimer -= dt;
+        c.angle += c.spinDir * 8.5 * dt;
+        c.x += Math.sin(c.angle) * c.speed * dt;
+        c.y -= Math.cos(c.angle) * c.speed * dt;
+        c.speed *= 0.985;
+        return;
+      }
+      if (!c.route) return;
+      const sirenDistance = dist(player.x, player.y, c.x, c.y);
+      c.pulledOver = policeLights && !c.enemy && sirenDistance < 620;
+      const targetSpeed = c.pulledOver ? 0 : c.baseSpeed;
+      c.speed += (targetSpeed - c.speed) * (c.pulledOver ? 0.08 : 0.025);
+      if (advanceTrafficRoute(c, dt)) {
+        placeTrafficOnLane(c);
       }
     });
   }
@@ -607,8 +719,9 @@
       const d = dist(player.x, player.y, c.x, c.y);
       if (d > pr + cr) return;
       const impact = clamp((Math.abs(player.speed) + Math.abs(c.speed)) / 34, 3, 28);
-      damagePlayer(impact, 'Vehicle collision.');
-      damageTraffic(c, impact * 0.85);
+      const pit = policeLights && c.enemy && Math.abs(player.speed) > 170 && impact > 9;
+      damagePlayer(pit ? impact * 0.35 : impact, pit ? 'PIT contact.' : 'Vehicle collision.');
+      damageTraffic(c, impact * (pit ? 2.4 : 0.85));
       const nx = d ? (player.x - c.x) / d : Math.sin(player.angle);
       const ny = d ? (player.y - c.y) / d : -Math.cos(player.angle);
       player.x += nx * 18;
@@ -617,6 +730,12 @@
       c.y -= ny * 10;
       player.speed *= -0.34;
       c.speed *= 0.42;
+      if (pit) {
+        c.route = null;
+        c.spinTimer = 1.15;
+        c.spinDir = Math.random() < 0.5 ? -1 : 1;
+        statusLine.textContent = c.health <= 0 ? 'Suspect vehicle disabled.' : 'Good PIT. Stay with them.';
+      }
     });
 
     buildings.forEach((b) => {
@@ -820,9 +939,14 @@
 
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('keydown', (event) => {
-    keys.add(event.key.toLowerCase());
-    if (event.key.toLowerCase() === 'e') acceptCall();
-    if (event.key.toLowerCase() === 'q') declineCall();
+    const key = event.key.toLowerCase();
+    keys.add(key);
+    if (key === 'e') acceptCall();
+    if (key === 'q') declineCall();
+    if (key === 'l' && !event.repeat) {
+      policeLights = !policeLights;
+      statusLine.textContent = policeLights ? 'Lights and siren active. Civilian traffic is yielding.' : 'Lights and siren off.';
+    }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) event.preventDefault();
   });
   window.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
