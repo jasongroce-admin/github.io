@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patrol Mission Builder</title>
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="builder.css" />
+  </head>
+  <body>
+    <main id="builderShell">
+      <aside id="builderPanel">
+        <header>
+          <a href="index.html">Play</a>
+          <h1>Mission Builder</h1>
+        </header>
+
+        <label for="missionTitle">Mission Title</label>
+        <input id="missionTitle" type="text" value="Traffic Stop Assist" maxlength="80" />
+
+        <label for="dispatchText">Dispatch Text</label>
+        <textarea id="dispatchText" rows="4">Caller reports a driver refusing instructions near the marked address.</textarea>
+
+        <label for="missionType">Completion Type</label>
+        <select id="missionType">
+          <option value="checkpoint">Reach Checkpoints</option>
+          <option value="collect">Collect Evidence</option>
+          <option value="chase">Vehicle Chase</option>
+          <option value="mixed">Mixed Mission</option>
+        </select>
+
+        <div class="tool-grid" aria-label="Placement tools">
+          <button type="button" data-tool="checkpoint" class="active">Checkpoint</button>
+          <button type="button" data-tool="collectible">Collectible</button>
+          <button type="button" data-tool="chase">Chase Route</button>
+          <button type="button" data-tool="erase">Erase Marker</button>
+          <button type="button" data-tool="roadDraw">Draw Road</button>
+          <button type="button" data-tool="roadResize">Resize Road</button>
+          <button type="button" data-tool="roadErase">Erase Road</button>
+        </div>
+
+        <div class="road-tools" aria-label="Road controls">
+          <label for="roadWidth">Road Width <span id="roadWidthValue">82</span></label>
+          <input id="roadWidth" type="range" min="36" max="180" step="2" value="82" />
+          <div class="button-grid">
+            <button id="resetRoadsBtn" type="button" class="secondary">Reset Roads</button>
+          </div>
+        </div>
+
+        <div class="button-grid">
+          <button id="saveMissionBtn" type="button">Save Mission</button>
+          <button id="newMissionBtn" type="button">New</button>
+          <button id="exportMissionBtn" type="button">Export JSON</button>
+          <button id="copyMissionBtn" type="button">Copy JSON</button>
+        </div>
+
+        <label for="missionImport">Import JSON</label>
+        <textarea id="missionImport" rows="5" placeholder="Paste mission JSON here"></textarea>
+        <button id="importMissionBtn" type="button">Import Mission</button>
+
+        <section>
+          <h2>Saved Missions</h2>
+          <div id="missionList"></div>
+        </section>
+
+        <p id="builderStatus">Click the map to add checkpoints.</p>
+      </aside>
+
+      <section id="mapWrap">
+        <canvas id="builderCanvas" width="1200" height="760"></canvas>
+      </section>
+    </main>
+
+    <script src="builder.js"></script>
+  </body>
+</html>

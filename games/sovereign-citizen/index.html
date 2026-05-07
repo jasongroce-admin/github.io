@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Patrol</title>
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="gameShell" aria-label="Patrol game">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+      <section id="hud" aria-live="polite">
+        <div class="hud-row">
+          <div>
+            <strong>Patrol</strong>
+            <span id="statusLine">Patrol shift active</span>
+          </div>
+          <div id="scoreBox">
+            <span>Calls</span>
+            <strong id="callsCleared">0</strong>
+          </div>
+        </div>
+        <div id="vehicleHealth">
+          <span>Vehicle</span>
+          <div><i id="healthFill"></i></div>
+          <strong id="healthText">100%</strong>
+        </div>
+        <div id="dispatchPanel">
+          <div class="dispatch-top">
+            <span>RADIO</span>
+            <span id="dispatchTimer">--</span>
+          </div>
+          <h2 id="dispatchTitle">No active call</h2>
+          <p id="dispatchBody">Free roam until dispatch sends the next call.</p>
+          <div class="dispatch-actions">
+            <button id="acceptCallBtn" type="button">Accept</button>
+            <button id="declineCallBtn" type="button">Decline</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="controlsHint">
+        <span>Move: WASD / Arrows</span>
+        <span>Handbrake: Space</span>
+        <span>Accept: E</span>
+        <span>Decline: Q</span>
+      </section>
+
+      <section id="mobileControls" aria-label="Touch driving controls">
+        <button type="button" data-drive="left" aria-label="Steer left">LEFT</button>
+        <button type="button" data-drive="up" aria-label="Accelerate">GO</button>
+        <button type="button" data-drive="down" aria-label="Brake or reverse">BRAKE</button>
+        <button type="button" data-drive="right" aria-label="Steer right">RIGHT</button>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>

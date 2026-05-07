@@ -1,0 +1,190 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #07100d;
+  color: #f4fbff;
+  font-family: Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font: inherit;
+}
+
+button {
+  min-height: 40px;
+  border: 0;
+  background: #1967d2;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 10px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+#builderShell {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  height: 100vh;
+}
+
+#builderPanel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow: auto;
+  padding: 14px;
+  background: #0c1714;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#builderPanel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#builderPanel header a {
+  color: #9ed6ff;
+}
+
+#builderPanel h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+#builderPanel h2 {
+  margin: 8px 0 0;
+  font-size: 16px;
+}
+
+#builderPanel label {
+  color: #acc1cc;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tool-grid,
+.button-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tool-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tool-grid button {
+  background: #2e3b44;
+}
+
+.tool-grid button.active {
+  background: #1b8a5d;
+}
+
+.road-tools {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.road-tools label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.road-tools input[type="range"] {
+  padding: 0;
+}
+
+button.secondary {
+  background: #45515a;
+}
+
+#missionList {
+  display: grid;
+  gap: 8px;
+}
+
+.mission-row {
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mission-row strong {
+  color: #fff0a6;
+}
+
+.mission-row span {
+  color: #c5d5dd;
+  font-size: 12px;
+}
+
+.mission-row button {
+  min-height: 34px;
+}
+
+#builderStatus {
+  margin: 4px 0 0;
+  color: #ffe071;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+#mapWrap {
+  min-width: 0;
+  overflow: hidden;
+  background: #18351f;
+}
+
+#builderCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+@media (max-width: 860px) {
+  body {
+    overflow: auto;
+  }
+
+  #builderShell {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  #mapWrap {
+    height: 70vh;
+  }
+}
