@@ -239,19 +239,25 @@ button:hover { filter: brightness(1.2); }
   padding: 18px 18px 16px;
 }
 #missionStoryCard h2 {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: #99d0ff;
-  font-size: 30px;
+  font-size: clamp(24px, 3.2vw, 30px);
 }
 #missionStoryCard p {
-  margin: 8px 0;
-  line-height: 1.45;
-  font-size: 16px;
+  margin: 6px 0;
+  line-height: 1.36;
+  font-size: clamp(13.5px, 1.75vw, 15.5px);
   color: #d7e8fa;
 }
+#missionStoryCard h3,
+#finalThanksCard h3 {
+  margin: 10px 0 6px;
+  color: #ffe08b;
+  font-size: clamp(17px, 2vw, 20px);
+}
 #missionStoryDonate {
-  margin-top: 10px;
-  padding: 10px 12px;
+  margin-top: 8px;
+  padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(124, 185, 242, 0.5);
   background: rgba(9, 32, 58, 0.55);
@@ -298,26 +304,25 @@ button:hover { filter: brightness(1.2); }
   padding: 18px 18px 16px;
 }
 #finalThanksCard h2 {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: #9fd4ff;
-  font-size: 30px;
+  font-size: clamp(24px, 3.2vw, 30px);
 }
 #finalThanksCard p {
-  margin: 8px 0;
-  line-height: 1.45;
-  font-size: 16px;
+  margin: 6px 0;
+  line-height: 1.36;
+  font-size: clamp(13.5px, 1.75vw, 15.5px);
   color: #d6e9fb;
 }
 #finalThanksDonate {
-  margin-top: 10px;
-  padding: 10px 12px;
+  margin-top: 8px;
+  padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(124, 185, 242, 0.5);
   background: rgba(9, 32, 58, 0.55);
 }
 #finalThanksSummary {
-  color: #ffe08b !important;
-  font-weight: 700;
+  display: none;
 }
 #finalThanksActions {
   margin-top: 14px;
@@ -3024,13 +3029,17 @@ button:hover { filter: brightness(1.2); }
 <div id="missionStoryScreen" aria-hidden="true">
   <div id="missionStoryCard">
     <h2>Why This Game Exists</h2>
-    <p>This game was created to bring fun and entertainment to our community while sharing important fire-safety reminders between levels. It was also made with the intent of raising funds for new tools, equipment upgrades, and ultimately building a modern fire station that will better serve our growing community for the next 100 years. The Kennard Volunteer Fire Department was founded in 1924, and after a powerful tornado devastated much of our town in 1974, destroying the school and requiring the town hall and fire station to be rebuilt, we have continued to grow. Over the decades our needs have grown too, and today's significantly larger and longer fire trucks no longer fit inside our current station.</p>
+    <p>Welcome to the game! I created it to bring fun, excitement, and important fire-safety reminders to the Kennard community. Every level is designed to entertain while gently reinforcing the knowledge that helps keep our families safe.</p>
+    <p>Since 1924, the Kennard Volunteer Fire Department has been a proud and integral part of our town. For over a century, our volunteers have answered the call in good times and bad, most notably after the devastating 1974 tornado that destroyed much of Kennard, including the school, and forced our community to rebuild with courage and determination. Through every challenge, our firefighters have been there when neighbors needed them most.</p>
+    <p>Today, as our town continues to grow, so do the needs of our fire department. Our modern fire trucks are now too large for the current station, and we urgently need new tools, equipment upgrades, and a modern fire station that will serve Kennard for the next 100 years.</p>
+    <p>This game is my way of saying thank you to the community while raising funds to keep our volunteers well-equipped and ready. Every play helps us protect what matters most: our homes, our families, and our future.</p>
+    <h3>How You Can Help</h3>
     <div id="missionStoryDonate">
-      <p style="margin-top:0;"><strong>If you would like to support the Kennard Volunteer Fire Department:</strong></p>
+      <p style="margin-top:0;"><strong>If you'd like to support the Kennard Volunteer Fire Department:</strong></p>
       <p>Email: <strong>vfd@kennardin.com</strong></p>
-      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>"For Volunteer Fire Department"</strong> in the memo.</p>
+      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please note in the memo: <strong>"For Volunteer Fire Department"</strong></p>
     </div>
-    <p style="margin-bottom:0;">Thank you for playing and helping keep our volunteers strong.<br>Enjoy the game! - Jason Groce - Kennard, Indiana</p>
+    <p style="margin-bottom:0;">Thank you for playing, for caring, and for helping keep our volunteers strong!<br>Enjoy the game!<br>Jason Groce - Kennard, Indiana</p>
     <div id="missionStoryActions">
       <button id="missionStoryBackBtn" type="button">Back</button>
       <button id="missionStoryStartBtn" type="button">Continue To Game</button>
@@ -3068,14 +3077,15 @@ button:hover { filter: brightness(1.2); }
   <div id="finalThanksCard">
     <h2 id="finalThanksHeading">Thank You for Playing</h2>
     <p id="finalThanksSummary"></p>
-    <p>This game was created to bring fun and entertainment to our community while sharing fire-safety reminders between levels. It was also built to help raise funds for new tools, equipment upgrades, and the long-term goal of building a modern fire station that can serve our growing community for the next 100 years.</p>
-    <p>The Kennard Volunteer Fire Department was founded in 1924. In 1974, a powerful tornado devastated much of our town, destroyed the school, and required major rebuilding of the town hall and fire station. Our community kept moving forward, and today our needs have grown again. Modern fire apparatus are larger and longer, and our current station no longer fits the equipment we rely on to protect the town.</p>
+    <p>Thank you for playing my game!</p>
+    <p>I created it to bring some fun and fire-safety reminders to our community while raising money to support the Kennard Volunteer Fire Department. Your support truly means a lot.</p>
+    <p>If you enjoyed the game, please share it with your friends and family. Every share helps spread the word and brings us closer to new equipment and a modern fire station for our growing town.</p>
+    <h3>How You Can Help</h3>
     <div id="finalThanksDonate">
-      <p style="margin-top:0;"><strong>If you would like to support the Kennard Volunteer Fire Department:</strong></p>
-      <p>Email: <strong>vfd@kennardin.com</strong></p>
-      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Please include: <strong>For Volunteer Fire Department</strong> in the memo.</p>
+      <p style="margin-top:0;">Email: <strong>vfd@kennardin.com</strong></p>
+      <p style="margin-bottom:0;">Checks payable to: <strong>Town of Kennard</strong><br>Mail to: <strong>100 N Main St, P.O. Box 167, Kennard, IN 47351</strong><br>Memo: <strong>"For Volunteer Fire Department"</strong></p>
     </div>
-    <p style="margin-bottom:0;">Thank you for playing and helping keep our volunteers strong.<br>I hope you enjoyed the game.<br>Jason Groce - Kennard, Indiana</p>
+    <p style="margin-bottom:0;">Thank you again for playing and for helping keep our volunteers strong!<br>Jason Groce - Kennard Indiana</p>
     <div id="finalThanksActions">
       <button id="finalThanksDonateBtn" type="button" onclick="returnToFirePage()">Fire Department Page</button>
       <button id="finalThanksTitleBtn" type="button" onclick="closeFinalThanksToTitle()">Back To Title</button>
