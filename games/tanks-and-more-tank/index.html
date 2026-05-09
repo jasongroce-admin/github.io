@@ -838,18 +838,6 @@
                 <select id="weaponSelect"></select>
               </div>
               <div class="gauge-cell">
-                <label for="shotKindProfileSelect">Shot Kind Profile</label>
-                <select id="shotKindProfileSelect">
-                  <option value="shell">Shell</option>
-                  <option value="heavy">Heavy</option>
-                  <option value="cluster">Cluster</option>
-                  <option value="napalm">Napalm</option>
-                  <option value="rail">Rail</option>
-                  <option value="quantum">Quantum</option>
-                  <option value="bomber">Bomber</option>
-                </select>
-              </div>
-              <div class="gauge-cell">
                 <label>Tuning</label>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                   <button type="button" id="damage100Btn">Damage 100%</button>
@@ -1012,6 +1000,12 @@
           { key: "heavy", name: "Heavy Buster", unlock: 3, speed: 8.8, radius: 62, damage: 58, color: "#ff9f43", trail: "#ffd2a1" },
           { key: "cluster", name: "Cluster Storm", unlock: 5, speed: 9.2, radius: 28, damage: 16, cluster: 10, color: "#c6c2ff", trail: "#e4e1ff" },
           { key: "napalm", name: "Napalm Bloom", unlock: 8, speed: 8.4, radius: 54, damage: 36, burn: true, color: "#ff5f3e", trail: "#ffb29f" },
+          { key: "ice", name: "Freeze Bomb", unlock: 1, speed: 9.4, radius: 58, damage: 28, freeze: true, color: "#8be8ff", trail: "#d8fbff" },
+          { key: "emp", name: "EMP Bomb", unlock: 1, speed: 9.7, radius: 54, damage: 24, emp: true, color: "#9ee6ff", trail: "#ffffff" },
+          { key: "lava", name: "Lava Spill", unlock: 1, speed: 8.2, radius: 62, damage: 30, lava: true, color: "#ff4a1f", trail: "#ffc04d" },
+          { key: "acid", name: "Acid Splash", unlock: 1, speed: 8.8, radius: 56, damage: 26, acid: true, color: "#90ff37", trail: "#d9ff6f" },
+          { key: "plasma", name: "Plasma Flash", unlock: 1, speed: 10.5, radius: 64, damage: 62, plasma: true, color: "#b855ff", trail: "#62ffd9" },
+          { key: "lightning", name: "Lightning Shot", unlock: 1, speed: 12.2, radius: 58, damage: 54, lightning: true, color: "#73d7ff", trail: "#f2fbff" },
           { key: "rail", name: "Rail Lance", unlock: 11, speed: 14, radius: 34, damage: 78, piercing: true, color: "#76ddff", trail: "#c7f1ff" },
           { key: "quantum", name: "Quantum Obliterator", unlock: 14, speed: 10.2, radius: 86, damage: 105, color: "#ff4fc9", trail: "#ffd1f3" }
         ];
@@ -1020,6 +1014,12 @@
           heavy: { file: "tank_weapon_shell_11oclock_256x256.webp", size: 27, baseAngle: -Math.PI * 0.75 },
           cluster: { file: "tank_weapon_Cluster_1oclock_256x256.webp", size: 26, baseAngle: -Math.PI / 3 },
           napalm: { file: "tank_weapon_napalm_6oclock_256x256.webp", size: 30, baseAngle: Math.PI / 2 },
+          ice: { file: "tank_weapon_ICE_frontnoon_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
+          emp: { file: "tank_weapon_EMP_frontnoon_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
+          lava: { file: "tank_weapon_LAVA_frontnoon_256x256.webp", size: 32, baseAngle: -Math.PI / 2 },
+          acid: { file: "tank_weapon_ACID_frontnoon_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
+          plasma: { file: "tank_weapon_PLASMA_frontnoon_256x256.webp", size: 33, baseAngle: -Math.PI / 2 },
+          lightning: { file: "tank_weapon_LIGHTNING_frontnoon_256x256.webp", size: 33, baseAngle: -Math.PI / 2 },
           rail: { file: "tank_weapon_rail_2oclock_256x256.webp", size: 24, baseAngle: -Math.PI / 4 },
           quantum: { file: "tank_weapon_quantum_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
           bomber: { file: "tank_weapon_bomber_air_bomber_6oclock_256x256.webp", size: 32, baseAngle: Math.PI / 2 },
@@ -1034,6 +1034,12 @@
           if (key === "heavy") return ["#ffd2a1", "#ff9f43", "#ff6d2a", "#fff1d6"];
           if (key === "cluster") return ["#e4e1ff", "#c6c2ff", "#ffffff", "#d6f6ff"];
           if (key === "napalm") return ["#ffb29f", "#ff5f3e", "#ff2f1a", "#ffe8c9"];
+          if (key === "ice") return ["#ecfdff", "#baf6ff", "#6bdcff", "#ffffff"];
+          if (key === "emp") return ["#ffffff", "#9ee6ff", "#66b8ff", "#d8f6ff"];
+          if (key === "lava") return ["#fff1a8", "#ffb02e", "#ff4a1f", "#6e1208"];
+          if (key === "acid") return ["#eaff7a", "#90ff37", "#28d56b", "#d9ff6f"];
+          if (key === "plasma") return ["#b855ff", "#62ffd9", "#7c7cff", "#ffffff"];
+          if (key === "lightning") return ["#ffffff", "#73d7ff", "#9b7cff", "#e9fbff"];
           if (key === "rail") return ["#c7f1ff", "#76ddff", "#ffffff", "#7ffcff"];
           if (key === "quantum") return ["#ffd1f3", "#ff4fc9", "#a34bff", "#76ddff"];
           return ["#ffe7ba", "#ffc66d", "#ff9f43", "#ffffff"];
@@ -1045,6 +1051,12 @@
           if (key === "cluster") return { particleLife: 9, particleSize: 2.8, lightLife: 7, lightIntensityMult: 1.05, radiusMult: 0.95 };
           if (key === "heavy") return { particleLife: 12, particleSize: 3.2, lightLife: 10, lightIntensityMult: 1.08, radiusMult: 1.0 };
           if (key === "napalm") return { particleLife: 16, particleSize: 3.6, lightLife: 14, lightIntensityMult: 1.18, radiusMult: 1.05 };
+          if (key === "ice") return { particleLife: 16, particleSize: 3.2, lightLife: 13, lightIntensityMult: 1.12, radiusMult: 1.08 };
+          if (key === "emp") return { particleLife: 12, particleSize: 3.2, lightLife: 14, lightIntensityMult: 1.22, radiusMult: 1.12 };
+          if (key === "lava") return { particleLife: 18, particleSize: 4.2, lightLife: 16, lightIntensityMult: 1.24, radiusMult: 1.14 };
+          if (key === "acid") return { particleLife: 16, particleSize: 3.8, lightLife: 12, lightIntensityMult: 1.14, radiusMult: 1.08 };
+          if (key === "plasma") return { particleLife: 18, particleSize: 3.8, lightLife: 18, lightIntensityMult: 1.28, radiusMult: 1.18 };
+          if (key === "lightning") return { particleLife: 11, particleSize: 3.2, lightLife: 16, lightIntensityMult: 1.32, radiusMult: 1.2 };
           if (key === "quantum") return { particleLife: 18, particleSize: 3.4, lightLife: 16, lightIntensityMult: 1.22, radiusMult: 1.12 };
           return { particleLife: 10, particleSize: 3, lightLife: 9, lightIntensityMult: 1.0, radiusMult: 1.0 };
         }
@@ -1054,6 +1066,12 @@
           if (key === "heavy") return { sparks: 56, smokes: 22, smokeLife: [40, 78], smokeSize: [10, 22], smokeColors: ["rgba(24,18,10,0.55)", "rgba(70,42,20,0.45)", "rgba(30,24,20,0.55)"] };
           if (key === "cluster") return { sparks: 30, smokes: 34, smokeLife: [44, 92], smokeSize: [10, 24], smokeColors: ["rgba(18,22,42,0.45)", "rgba(120,120,170,0.35)", "rgba(25,25,35,0.55)"] };
           if (key === "napalm") return { sparks: 38, smokes: 34, smokeLife: [52, 110], smokeSize: [12, 28], smokeColors: ["rgba(30,10,6,0.6)", "rgba(88,34,16,0.5)", "rgba(24,16,12,0.6)"] };
+          if (key === "ice") return { sparks: 46, smokes: 22, smokeLife: [46, 96], smokeSize: [8, 22], smokeColors: ["rgba(210,250,255,0.42)", "rgba(120,220,255,0.34)", "rgba(240,255,255,0.38)"] };
+          if (key === "emp") return { sparks: 62, smokes: 12, smokeLife: [24, 52], smokeSize: [7, 16], smokeColors: ["rgba(150,220,255,0.28)", "rgba(230,245,255,0.24)"] };
+          if (key === "lava") return { sparks: 70, smokes: 38, smokeLife: [56, 118], smokeSize: [12, 30], smokeColors: ["rgba(42,9,4,0.62)", "rgba(102,28,10,0.48)", "rgba(24,14,10,0.58)"] };
+          if (key === "acid") return { sparks: 48, smokes: 40, smokeLife: [54, 112], smokeSize: [10, 28], smokeColors: ["rgba(92,170,40,0.34)", "rgba(168,255,86,0.28)", "rgba(30,70,36,0.42)"] };
+          if (key === "plasma") return { sparks: 78, smokes: 18, smokeLife: [34, 82], smokeSize: [10, 25], smokeColors: ["rgba(90,24,140,0.34)", "rgba(42,160,150,0.28)", "rgba(28,28,92,0.34)"] };
+          if (key === "lightning") return { sparks: 84, smokes: 8, smokeLife: [22, 48], smokeSize: [6, 14], smokeColors: ["rgba(130,210,255,0.22)", "rgba(230,245,255,0.18)"] };
           if (key === "rail") return { sparks: 24, smokes: 12, smokeLife: [26, 56], smokeSize: [8, 18], smokeColors: ["rgba(30,60,70,0.32)", "rgba(10,24,28,0.45)"] };
           if (key === "quantum") return { sparks: 50, smokes: 22, smokeLife: [50, 96], smokeSize: [10, 26], smokeColors: ["rgba(45,10,60,0.45)", "rgba(20,40,70,0.35)", "rgba(8,8,18,0.55)"] };
           return { sparks: 42, smokes: 18, smokeLife: [36, 70], smokeSize: [9, 20], smokeColors: ["rgba(20,18,14,0.5)", "rgba(38,32,26,0.45)"] };
@@ -1086,6 +1104,7 @@
           particles: [],
           craters: [],
           fires: [],
+          groundHazards: [],
           airBombs: [],
           laserBeams: [],
           satellites: [],
@@ -1122,8 +1141,9 @@
         };
         const shotHistory = [];
         let hudCollapseTimer = 0;
+        let lastEmpDriftMs = 0;
         const weaponTuning = {};
-        ["shell","heavy","cluster","napalm","rail","quantum","bomber"].forEach((k) => {
+        [...weapons.map((w) => w.key), "bomber", "laser", "rod"].forEach((k) => {
           weaponTuning[k] = { damageScale: 100, radiusScale: 100 };
         });
 
@@ -1192,7 +1212,7 @@
           } else if (!weaponSelect.value && weapons.length) {
             weaponSelect.value = weapons[0].key;
           }
-          if (shotKindProfileSelect) shotKindProfileSelect.value = weaponSelect.value || "shell";
+          loadSelectedShotProfile(weaponSelect.value || "shell");
         }
 
         function clamp(n, min, max) {
@@ -1412,7 +1432,7 @@
         }
 
         function loadSelectedShotProfile(sourceKey) {
-          const key = sourceKey || shotKindProfileSelect.value || weaponSelect.value || "shell";
+          const key = sourceKey || weaponSelect.value || shotKindProfileSelect?.value || "shell";
           if (shotKindProfileSelect && shotKindProfileSelect.value !== key) shotKindProfileSelect.value = key;
           if (weaponSelect && weaponSelect.value !== key && [...weaponSelect.options].some((opt) => opt.value === key)) {
             weaponSelect.value = key;
@@ -1588,6 +1608,8 @@
             moveTargetX: x,
             moveDir: 0,
             moving: false,
+            freezeTurns: 0,
+            empShots: 0,
             renderFacing: 1,
             worldFacingDir: side === "left" ? 1 : -1
           };
@@ -1605,6 +1627,7 @@
           state.particles = [];
           state.craters = [];
           state.fires = [];
+          state.groundHazards = [];
           state.airBombs = [];
           state.bomberActive = null;
           state.bomberTurnPendingEnd = false;
@@ -1708,6 +1731,16 @@
 
         function updateStatus(text) {
           statusLine.textContent = text;
+        }
+
+        function tankName(tank) {
+          if (!tank) return "Tank";
+          if (tank.side === "left") return playerNameInput.value || "Player";
+          return tankTitles[tank.imageKey] || "Enemy";
+        }
+
+        function effectStatusFor(tank, playerText, enemyText) {
+          updateStatus(tank?.side === "left" ? playerText : enemyText);
         }
 
         function showTopHud(ms = 2600) {
@@ -1955,6 +1988,21 @@
           ctx.restore();
         }
 
+        function updatePlayerEmpDrift() {
+          if (state.turn !== "player" || Number(state.player?.empShots || 0) <= 0 || state.activeProjectile || state.lockInput) return;
+          const now = performance.now();
+          if (now - lastEmpDriftMs < 420) return;
+          lastEmpDriftMs = now;
+          const nextAngle = clamp(Number(angleInput.value || 45) + randomNormalish() * 2.2, 5, 89);
+          const nextPower = clamp(Number(powerInput.value || 63) + randomNormalish() * 3.3, 20, 100);
+          angleInput.value = String(Math.round(nextAngle));
+          powerInput.value = String(Math.round(nextPower));
+          angleValue.textContent = String(angleInput.value);
+          powerValue.textContent = String(powerInput.value);
+          state.player.angle = Number(angleInput.value);
+          state.player.power = Number(powerInput.value);
+        }
+
         function getMuzzle(tank) {
           const offsetX = tank.width * 0.41 * tank.worldFacingDir;
           const offsetY = -tank.height * 0.12;
@@ -1967,12 +2015,24 @@
           setAirSupportOpen(false);
           const baseWeapon = weapons.find((w) => w.key === weaponKey) || weapons[0];
           const weapon = getTunedWeapon(baseWeapon);
-          const clampedArc = Math.max(5, Math.min(89, angleDeg));
+          let finalAngleDeg = Number(angleDeg);
+          let finalPowerPct = Number(powerPct);
+          if (Number(fromTank.empShots || 0) > 0) {
+            finalAngleDeg = clamp(finalAngleDeg + randomNormalish() * 8, 5, 89);
+            finalPowerPct = clamp(finalPowerPct + randomNormalish() * 12, 20, 100);
+            fromTank.empShots = Math.max(0, Number(fromTank.empShots || 0) - 1);
+            effectStatusFor(
+              fromTank,
+              "EMP interference scrambled that shot. Systems are back to normal.",
+              `${tankName(fromTank)} fired through EMP interference.`
+            );
+          }
+          const clampedArc = Math.max(5, Math.min(89, finalAngleDeg));
           const angle = clampedArc * Math.PI / 180;
-          const speed = weapon.speed * (powerPct / 60);
+          const speed = weapon.speed * (finalPowerPct / 60);
           const muzzle = getMuzzle(fromTank);
           const shotDir = forcedDir || fromTank.worldFacingDir || 1;
-          recordShot(angleDeg, powerPct);
+          recordShot(finalAngleDeg, finalPowerPct);
           state.activeProjectile = {
             x: muzzle.x,
             y: muzzle.y,
@@ -2015,6 +2075,7 @@
           const centerY = Math.min(world.height - 1, Math.max(0, y));
           const directHit = !!directHitTank;
           state.craters.push({ x, y: centerY, radius, life: 26, color: weapon.color });
+          const damagedTanks = [];
 
           for (let ix = Math.max(0, Math.floor(x - radius)); ix < Math.min(world.width, Math.ceil(x + radius)); ix += 1) {
             const dx = ix - x;
@@ -2040,6 +2101,7 @@
               let dmg = weapon.damage * falloff;
               if (weapon.piercing && (tank === directHitTank || dist < radius * 0.65)) dmg *= 1.28;
               tank.hp -= dmg;
+              damagedTanks.push({ tank, falloff, direct: tank === directHitTank });
               if (tank.side !== source) state.score += Math.round(dmg * 1.8);
               if (tank.side === source) state.score -= Math.round(dmg * 0.8);
             }
@@ -2119,6 +2181,8 @@
             });
           }
 
+          applyWeaponImpactEffects(x, centerY, weapon, source, damagedTanks, directHitTank);
+
           if (weapon.cluster && !weapon.mini) {
             for (let i = 0; i < weapon.cluster; i += 1) {
               const ox = x + (Math.random() - 0.5) * radius * 1.8;
@@ -2126,6 +2190,134 @@
               explodeMini(ox, oy, weapon);
             }
           }
+        }
+
+        function addGroundHazard(type, x, y, radius, source) {
+          const isLava = type === "lava";
+          const isAcid = type === "acid";
+          state.groundHazards.push({
+            type,
+            x,
+            y,
+            radius,
+            source,
+            life: type === "ice" ? 620 : 1400,
+            playerShotsRemaining: isLava || isAcid ? 2 : 0,
+            dps: isLava ? 0.075 : isAcid ? 0.062 : 0,
+            color: isLava ? "#ff4a1f" : isAcid ? "#90ff37" : "#8be8ff"
+          });
+        }
+
+        function applyWeaponImpactEffects(x, y, weapon, source, damagedTanks, directHitTank) {
+          const key = weapon?.key || "";
+          if (key === "ice") {
+            addGroundHazard("ice", x, y, Math.max(52, weapon.radius * 1.35), source);
+            damagedTanks.forEach(({ tank }) => {
+              tank.freezeTurns = Math.max(Number(tank.freezeTurns || 0), 2);
+              effectStatusFor(
+                tank,
+                "Movement is frozen due to the successful hit of the Freeze Bomb.",
+                `${tankName(tank)} is frozen in place for two moves.`
+              );
+            });
+            scatterGroundSplats("ice", x, y, weapon.radius, 12);
+          } else if (key === "emp") {
+            damagedTanks.forEach(({ tank }) => {
+              tank.empShots = Math.max(Number(tank.empShots || 0), 1);
+              effectStatusFor(
+                tank,
+                "EMP was successfully deployed against you. Angle and power will drift on your next shot.",
+                `${tankName(tank)} systems are scrambled by EMP for the next shot.`
+              );
+            });
+            scatterElectricArcs(x, y, weapon.radius * (directHitTank ? 1.35 : 1), 18);
+          } else if (key === "lava" || key === "acid") {
+            addGroundHazard(key, x, y, Math.max(58, weapon.radius * 1.25), source);
+            scatterGroundSplats(key, x, y, weapon.radius, key === "lava" ? 18 : 20);
+            damagedTanks.forEach(({ tank }) => {
+              effectStatusFor(
+                tank,
+                key === "lava" ? "Lava is burning through your armor. Move clear if you can." : "Acid is eating into your armor. Move clear if you can.",
+                `${tankName(tank)} is caught in ${key === "lava" ? "lava" : "acid"} and taking ongoing damage.`
+              );
+            });
+          } else if (key === "plasma") {
+            scatterPlasmaFlashes(x, y, weapon.radius * (directHitTank ? 1.5 : 1.15));
+          } else if (key === "lightning") {
+            scatterElectricArcs(x, y, weapon.radius * (directHitTank ? 1.8 : 1.35), directHitTank ? 42 : 28);
+            damagedTanks.forEach(({ tank, direct }) => {
+              if (direct || Math.hypot(tank.x - x, tank.y - y) < weapon.radius * 1.05) {
+                tank.hp -= direct ? 12 : 6;
+                effectStatusFor(
+                  tank,
+                  "Lightning surged through your tank.",
+                  `${tankName(tank)} was shocked by the lightning blast.`
+                );
+              }
+            });
+          }
+        }
+
+        function scatterGroundSplats(type, x, y, radius, count) {
+          const palette = type === "lava"
+            ? ["#fff1a8", "#ffb02e", "#ff4a1f", "#8c1508"]
+            : type === "acid"
+              ? ["#eaff7a", "#90ff37", "#28d56b", "#d9ff6f"]
+              : ["#ecfdff", "#baf6ff", "#6bdcff", "#ffffff"];
+          for (let i = 0; i < count; i += 1) {
+            const ox = x + (Math.random() - 0.5) * radius * 1.7;
+            const oy = y - Math.random() * radius * 0.35;
+            state.particles.push({
+              x: ox,
+              y: oy,
+              vx: (Math.random() - 0.5) * 3.2,
+              vy: -Math.random() * 2.8,
+              life: 36 + Math.random() * 46,
+              color: palette[i % palette.length],
+              size: 4 + Math.random() * 5,
+              kind: "splat"
+            });
+          }
+        }
+
+        function scatterPlasmaFlashes(x, y, radius) {
+          const palette = ["#b855ff", "#62ffd9", "#7c7cff", "#95ff5e", "#ffffff"];
+          for (let i = 0; i < 70; i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            state.particles.push({
+              x: x + Math.cos(a) * dist * 0.45,
+              y: y + Math.sin(a) * dist * 0.32,
+              vx: Math.cos(a) * (1.4 + Math.random() * 5.2),
+              vy: Math.sin(a) * (1.2 + Math.random() * 4.5) - 1.8,
+              life: 22 + Math.random() * 44,
+              color: palette[i % palette.length],
+              size: 3 + Math.random() * 6,
+              kind: "plasma"
+            });
+          }
+          if (state.night.enabled) state.lights.push({ x, y, radius: radius * 2.2, intensity: 1, feather: 0.58, life: 46, warmth: 0.25 });
+        }
+
+        function scatterElectricArcs(x, y, radius, count) {
+          const palette = ["#ffffff", "#73d7ff", "#9b7cff", "#e9fbff"];
+          for (let i = 0; i < count; i += 1) {
+            const a = Math.random() * Math.PI * 2;
+            const dist = radius * (0.25 + Math.random() * 0.9);
+            state.particles.push({
+              x,
+              y,
+              vx: Math.cos(a) * (2.8 + Math.random() * 5.4),
+              vy: Math.sin(a) * (1.1 + Math.random() * 3.1) - 1.2,
+              life: 12 + Math.random() * 24,
+              color: palette[i % palette.length],
+              size: 2 + Math.random() * 4,
+              kind: "electric",
+              x2: x + Math.cos(a) * dist,
+              y2: y + Math.sin(a) * dist * 0.5
+            });
+          }
+          if (state.night.enabled) state.lights.push({ x, y, radius: radius * 2, intensity: 1, feather: 0.54, life: 34, warmth: 0.15 });
         }
 
         function explodeMini(x, y, weapon) {
@@ -2294,6 +2486,16 @@
               p.vx *= 0.96;
               p.vy *= 0.96;
               p.vy -= 0.03;
+            } else if (p.kind === "electric") {
+              p.vx *= 0.82;
+              p.vy *= 0.82;
+              if (p.x2 !== undefined) {
+                p.x2 += (Math.random() - 0.5) * 10;
+                p.y2 += (Math.random() - 0.5) * 7;
+              }
+            } else if (p.kind === "splat" || p.kind === "plasma") {
+              p.vx *= 0.94;
+              p.vy += 0.045;
             } else {
               p.vy += 0.08;
             }
@@ -2301,6 +2503,7 @@
             p.y += p.vy;
             if (p.life <= 0) state.particles.splice(i, 1);
           }
+          updateGroundHazards();
           for (let i = state.craters.length - 1; i >= 0; i -= 1) {
             const c = state.craters[i];
             c.life -= 1;
@@ -2338,6 +2541,68 @@
               }
             }
           }
+        }
+
+        function updateGroundHazards() {
+          for (let i = state.groundHazards.length - 1; i >= 0; i -= 1) {
+            const h = state.groundHazards[i];
+            h.life -= 1;
+            if (h.life <= 0 || (h.playerShotsRemaining !== undefined && h.playerShotsRemaining <= 0)) {
+              state.groundHazards.splice(i, 1);
+              continue;
+            }
+            const isLava = h.type === "lava";
+            const isAcid = h.type === "acid";
+            const isIce = h.type === "ice";
+            const palette = isLava
+              ? ["#fff1a8", "#ffb02e", "#ff4a1f"]
+              : isAcid
+                ? ["#eaff7a", "#90ff37", "#28d56b"]
+                : ["#ecfdff", "#baf6ff", "#6bdcff"];
+            if (Math.random() < (isIce ? 0.18 : 0.5)) {
+              const ox = h.x + (Math.random() - 0.5) * h.radius * 1.6;
+              const ty = terrainHeightAt(ox);
+              state.particles.push({
+                x: ox,
+                y: ty - 2,
+                vx: (Math.random() - 0.5) * 0.8,
+                vy: isIce ? -0.35 - Math.random() * 0.6 : -0.8 - Math.random() * 1.4,
+                life: 18 + Math.random() * 30,
+                color: palette[Math.floor(Math.random() * palette.length)],
+                size: 2 + Math.random() * 4,
+                kind: isAcid ? "smoke" : "spark"
+              });
+            }
+            if (!isLava && !isAcid) continue;
+            [state.player, state.enemy].forEach((tank) => {
+              if (!tank || tank.hp <= 0) return;
+              const footY = terrainHeightAt(tank.x);
+              const dx = tank.x - h.x;
+              const dy = footY - h.y;
+              const inHazard = Math.hypot(dx, dy * 0.72) <= h.radius * 1.02;
+              if (!inHazard) return;
+              tank.hp -= Number(h.dps || 0);
+              if (tank.side !== h.source) state.score += 0.06;
+              if (Math.random() < 0.18) {
+                state.particles.push({
+                  x: tank.x + (Math.random() - 0.5) * tank.width * 0.55,
+                  y: tank.y - tank.height * 0.22,
+                  vx: (Math.random() - 0.5) * 1.2,
+                  vy: -1.2 - Math.random(),
+                  life: 18 + Math.random() * 24,
+                  color: isLava ? "#ffb02e" : "#90ff37",
+                  size: 2 + Math.random() * 3,
+                  kind: "spark"
+                });
+              }
+            });
+            if ((isLava || isAcid) && Math.random() < 0.18) {
+              const ix = Math.max(0, Math.min(world.width - 1, Math.round(h.x + (Math.random() - 0.5) * h.radius)));
+              state.terrain[ix] = Math.min(world.height, state.terrain[ix] + (isAcid ? 0.7 : 0.25));
+            }
+          }
+          updateHud();
+          checkWinLose();
         }
 
         function resolveWeaponSpriteProfile(projectile) {
@@ -2384,21 +2649,46 @@
             }
           }
           state.particles.forEach((p) => {
-            ctx.fillStyle = p.color;
             const sz = Math.max(1.5, Number(p.size || 3));
-            if (p.kind === "smoke") {
+            if (p.kind === "electric" && p.x2 !== undefined) {
+              ctx.save();
+              ctx.globalAlpha = Math.max(0.18, Number(p.life || 0) / 28);
+              ctx.strokeStyle = p.color;
+              ctx.lineWidth = Math.max(1, sz * 0.55);
+              ctx.shadowBlur = 14;
+              ctx.shadowColor = p.color;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo((p.x + p.x2) / 2 + (Math.random() - 0.5) * 16, (p.y + p.y2) / 2 + (Math.random() - 0.5) * 12);
+              ctx.lineTo(p.x2, p.y2);
+              ctx.stroke();
+              ctx.restore();
+            } else if (p.kind === "smoke") {
               ctx.save();
               ctx.globalAlpha = clamp(Number(p.life || 0) / 90, 0.06, 0.65);
+              ctx.fillStyle = p.color;
               ctx.beginPath();
               ctx.arc(p.x, p.y, sz * 0.5, 0, Math.PI * 2);
               ctx.fill();
               ctx.restore();
+            } else if (p.kind === "splat" || p.kind === "plasma") {
+              ctx.save();
+              ctx.globalAlpha = Math.max(0.18, Number(p.life || 0) / 54);
+              ctx.shadowBlur = p.kind === "plasma" ? 18 : 8;
+              ctx.shadowColor = p.color;
+              ctx.fillStyle = p.color;
+              ctx.beginPath();
+              ctx.ellipse(p.x, p.y, sz * 0.75, sz * 0.42, Math.random() * Math.PI, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
             } else {
+              ctx.fillStyle = p.color;
               ctx.globalAlpha = Math.max(0.2, Number(p.life || 0) / 35);
               ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
               ctx.globalAlpha = 1;
             }
           });
+          drawGroundHazards();
           state.fires.forEach((f) => {
             const t = clamp(Number(f.life || 0) / 220, 0, 1);
             const r = Math.max(18, Number(f.radius || 56));
@@ -2429,6 +2719,35 @@
               ctx.strokeStyle = "#8f5c0d";
               ctx.stroke();
             }
+          });
+        }
+
+        function drawGroundHazards() {
+          state.groundHazards.forEach((h) => {
+            const t = clamp(Number(h.life || 0) / (h.type === "ice" ? 620 : 1400), 0, 1);
+            const r = Math.max(20, Number(h.radius || 56));
+            const isLava = h.type === "lava";
+            const isAcid = h.type === "acid";
+            const g = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, r);
+            if (isLava) {
+              g.addColorStop(0, `rgba(255,220,80,${0.28 + t * 0.18})`);
+              g.addColorStop(0.55, `rgba(255,74,31,${0.2 + t * 0.2})`);
+              g.addColorStop(1, "rgba(70,8,0,0)");
+            } else if (isAcid) {
+              g.addColorStop(0, `rgba(218,255,100,${0.24 + t * 0.2})`);
+              g.addColorStop(0.58, `rgba(80,240,80,${0.16 + t * 0.18})`);
+              g.addColorStop(1, "rgba(0,80,30,0)");
+            } else {
+              g.addColorStop(0, `rgba(232,253,255,${0.2 + t * 0.18})`);
+              g.addColorStop(0.62, `rgba(107,220,255,${0.13 + t * 0.14})`);
+              g.addColorStop(1, "rgba(80,210,255,0)");
+            }
+            ctx.save();
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.ellipse(h.x, h.y, r, r * 0.33, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
           });
         }
 
@@ -2727,6 +3046,12 @@
 
         function moveTankShortStep(direction) {
           if (state.turn !== "player" || state.preMoveAllowance <= 0 || state.activeProjectile) return;
+          if (Number(state.player.freezeTurns || 0) > 0) {
+            state.player.freezeTurns = Math.max(0, Number(state.player.freezeTurns || 0) - 1);
+            updateStatus("Movement is frozen due to the successful hit of the Freeze Bomb.");
+            updateHud();
+            return;
+          }
           const shift = direction === "left" ? state.player.moveLeft : state.player.moveRight;
           state.player.moveTargetX = Math.max(50, Math.min(world.width - 50, state.player.x + shift));
           state.player.moving = true;
@@ -2740,6 +3065,9 @@
           if (state.lockInput) return;
           if (state.turn === "player") {
             if (state.bomberTurnPendingEnd) return;
+            state.groundHazards.forEach((h) => {
+              if ((h.type === "lava" || h.type === "acid") && h.playerShotsRemaining > 0) h.playerShotsRemaining -= 1;
+            });
             state.turn = "enemy";
             updateHud();
             showTopHud(2400);
@@ -2753,7 +3081,13 @@
               state.airBomberCharges = Math.min(3, state.airBomberCharges + 1);
             }
             updateHud();
-            updateStatus("Your turn. You may reposition one short step before firing.");
+            if (Number(state.player.empShots || 0) > 0) {
+              updateStatus("EMP was successfully deployed against you. Angle and power will drift on your next shot.");
+            } else if (Number(state.player.freezeTurns || 0) > 0) {
+              updateStatus("Movement is frozen due to the successful hit of the Freeze Bomb.");
+            } else {
+              updateStatus("Your turn. You may reposition one short step before firing.");
+            }
             showTopHud(3200);
           }
         }
@@ -2967,6 +3301,7 @@
           ensureGrounded(state.enemy);
           updateTankFacing(state.player, state.enemy);
           updateTankFacing(state.enemy, state.player);
+          updatePlayerEmpDrift();
           drawTank(state.player);
           drawTank(state.enemy);
           drawAimGuide();
@@ -3033,6 +3368,11 @@
           state.fires.forEach((f) => {
             const t = clamp(Number(f.life || 0) / 220, 0, 1);
             lights.push({ x: f.x, y: f.y, radius: Math.max(95, Number(f.radius || 56) * 1.6), intensity: clamp((Number(f.intensity || 0.9) * (0.56 + t * 0.72)), 0.45, 1), feather: 0.68, warmth: 1, life: 2 });
+          });
+          state.groundHazards.forEach((h) => {
+            if (h.type === "ice") lights.push({ x: h.x, y: h.y, radius: h.radius * 1.35, intensity: 0.34, feather: 0.76, warmth: 0.05, life: 2 });
+            if (h.type === "lava") lights.push({ x: h.x, y: h.y, radius: h.radius * 1.7, intensity: 0.78, feather: 0.64, warmth: 1, life: 2 });
+            if (h.type === "acid") lights.push({ x: h.x, y: h.y, radius: h.radius * 1.45, intensity: 0.46, feather: 0.7, warmth: 0.35, life: 2 });
           });
           if (state.activeProjectile) {
             lights.push({ x: state.activeProjectile.x, y: state.activeProjectile.y, radius: Math.max(260, state.night.shotLightRadius * 1.45), intensity: clamp(Number(state.night.shotLightIntensity ?? 0.85) + 0.34, 0.72, 1), feather: 0.58, warmth: state.activeProjectile.weapon?.key === "rail" ? 0.25 : 0.85, life: 2 });
@@ -3337,25 +3677,27 @@
           document.getElementById("moveLeftBtn").addEventListener("click", () => moveTankShortStep("left"));
           document.getElementById("moveRightBtn").addEventListener("click", () => moveTankShortStep("right"));
           weaponSelect.addEventListener("change", () => {
-            shotKindProfileSelect.value = weaponSelect.value;
+            if (shotKindProfileSelect) shotKindProfileSelect.value = weaponSelect.value;
             loadSelectedShotProfile(weaponSelect.value);
           });
-          shotKindProfileSelect.addEventListener("change", () => {
-            if ([...weaponSelect.options].some((opt) => opt.value === shotKindProfileSelect.value)) {
-              weaponSelect.value = shotKindProfileSelect.value;
-            }
-            loadSelectedShotProfile(shotKindProfileSelect.value);
-          });
+          if (shotKindProfileSelect) {
+            shotKindProfileSelect.addEventListener("change", () => {
+              if ([...weaponSelect.options].some((opt) => opt.value === shotKindProfileSelect.value)) {
+                weaponSelect.value = shotKindProfileSelect.value;
+              }
+              loadSelectedShotProfile(shotKindProfileSelect.value);
+            });
+          }
           damage100Btn.addEventListener("click", () => {
-            const key = shotKindProfileSelect.value;
+            const key = weaponSelect.value || "shell";
             weaponTuning[key].damageScale = 100;
-            loadSelectedShotProfile();
+            loadSelectedShotProfile(key);
             updateStatus("Damage set to 100%.");
           });
           blast100Btn.addEventListener("click", () => {
-            const key = shotKindProfileSelect.value;
+            const key = weaponSelect.value || "shell";
             weaponTuning[key].radiusScale = 100;
-            loadSelectedShotProfile();
+            loadSelectedShotProfile(key);
             updateStatus("Blast set to 100%.");
           });
 
