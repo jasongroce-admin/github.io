@@ -56,6 +56,15 @@
         filter: saturate(0.78) contrast(1.08);
       }
 
+      .showcase a.launcher-art img {
+        object-fit: contain;
+        padding: 10px;
+        box-sizing: border-box;
+        background:
+          radial-gradient(circle at 50% 38%, rgba(126, 172, 207, 0.28), transparent 58%),
+          #191816;
+      }
+
       .showcase strong {
         position: absolute;
         left: 12px;
@@ -143,8 +152,8 @@
             <img src="Images%20for%20Page/police_patrol_vehicle_512x256.webp" alt="Patrol police vehicle" />
             <strong>Patrol: Kennard training map</strong>
           </a>
-          <a href="games/vfddefender/index.html">
-            <img src="games/tanks-and-more-tank/images/misc_human_firefighter_front_standing_459x200.webp" alt="Firefighter game art" />
+          <a class="launcher-art" href="games/vfddefender/index.html">
+            <img src="Images%20for%20Page/vfd_defender_kid_launcher_alt_512x512.webp" alt="VFDDefender kid launcher alternate art" />
             <strong>VFDDefender: new release</strong>
           </a>
           <a href="games/tibertrons-space-buggy/index.html">
@@ -182,6 +191,7 @@
         </div>
         <div class="projects-grid">
           <a class="card" href="games/vfddefender/index.html">
+            <span class="asset-strip launcher-art"><img src="games/vfddefender/images/vfd_defender_kid_launcher_512x512.webp" alt="VFDDefender kid launcher art" /></span>
             <span class="badge release">New Release</span>
             <h3>VFDDefender</h3>
             <p>Standalone fire-response campaign build.</p>

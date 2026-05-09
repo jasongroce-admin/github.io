@@ -290,6 +290,20 @@ button.menu-link {
   filter: saturate(0.82) contrast(1.06);
 }
 
+.asset-strip.launcher-art {
+  min-height: 148px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(126, 172, 207, 0.2), transparent 58%),
+    linear-gradient(135deg, rgba(25,24,22,0.12), transparent),
+    var(--surface-2);
+}
+
+.asset-strip.launcher-art img {
+  box-sizing: border-box;
+  object-fit: contain;
+  padding: 8px;
+}
+
 .utility-mark {
   min-height: 118px;
   border: 1px solid var(--line-dark);
