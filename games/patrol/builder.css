@@ -88,10 +88,15 @@ textarea {
 }
 
 .tool-grid,
-.button-grid {
+.button-grid,
+.view-tools {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.button-grid button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .tool-grid {
@@ -104,6 +109,18 @@ textarea {
 
 .tool-grid button.active {
   background: #1b8a5d;
+}
+
+.view-tools {
+  grid-template-columns: 1fr 1fr 1fr auto;
+  align-items: center;
+}
+
+.view-tools span {
+  color: #ffe071;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
 }
 
 .road-tools {
@@ -122,6 +139,13 @@ textarea {
 
 .road-tools input[type="range"] {
   padding: 0;
+}
+
+.tool-help {
+  margin: 0;
+  color: #c5d5dd;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 button.secondary {

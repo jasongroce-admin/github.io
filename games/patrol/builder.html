@@ -34,15 +34,63 @@
           <button type="button" data-tool="collectible">Collectible</button>
           <button type="button" data-tool="chase">Chase Route</button>
           <button type="button" data-tool="erase">Erase Marker</button>
+          <button type="button" data-tool="pan">Pan Map</button>
+          <button type="button" data-tool="roadSelect">Select Roads</button>
           <button type="button" data-tool="roadDraw">Draw Road</button>
+          <button type="button" data-tool="roadEdit">Edit Road</button>
           <button type="button" data-tool="roadResize">Resize Road</button>
           <button type="button" data-tool="roadErase">Erase Road</button>
         </div>
 
+        <div class="view-tools" aria-label="Map view controls">
+          <button id="zoomOutBtn" type="button" class="secondary">Zoom Out</button>
+          <button id="zoomInBtn" type="button">Zoom In</button>
+          <button id="fitMapBtn" type="button" class="secondary">Fit Map</button>
+          <span id="zoomValue">100%</span>
+        </div>
+
+        <div class="road-tools" aria-label="Reference overlay controls">
+          <label for="overlayOpacity">USGS Reference <span id="overlayOpacityValue">55%</span></label>
+          <input id="overlayOpacity" type="range" min="0" max="1" step="0.05" value="0.55" />
+          <label for="overlayScale">Overlay Scale <span id="overlayScaleValue">100%</span></label>
+          <input id="overlayScale" type="range" min="0.75" max="1.35" step="0.005" value="1" />
+          <label for="overlayPadding">Coverage Padding <span id="overlayPaddingValue">8%</span></label>
+          <input id="overlayPadding" type="range" min="0" max="0.25" step="0.01" value="0.08" />
+          <div class="button-grid">
+            <button id="loadTopoOverlayBtn" type="button" class="secondary">Load USGS Topo</button>
+            <button id="loadImageOverlayBtn" type="button" class="secondary">Load USGS Image</button>
+            <button id="toggleOverlayBtn" type="button">Hide Overlay</button>
+            <button id="resetOverlayBtn" type="button" class="secondary">Reset Overlay</button>
+            <button id="lockOverlayBtn" type="button">Lock USGS Into Game</button>
+          </div>
+          <div class="view-tools">
+            <button id="overlayLeftBtn" type="button" class="secondary">Left</button>
+            <button id="overlayRightBtn" type="button" class="secondary">Right</button>
+            <button id="overlayUpBtn" type="button" class="secondary">Up</button>
+            <button id="overlayDownBtn" type="button" class="secondary">Down</button>
+          </div>
+        </div>
+
         <div class="road-tools" aria-label="Road controls">
+          <label for="roadName">Selected Road Name</label>
+          <input id="roadName" type="text" placeholder="Click a road, then name it" maxlength="80" />
+          <label for="roadKind">Selected Road Type</label>
+          <select id="roadKind">
+            <option value="secondary">SR / Main Route</option>
+            <option value="tertiary">County Road</option>
+            <option value="residential">Town Street</option>
+            <option value="alley">Alley / narrow road</option>
+            <option value="service">Service road</option>
+          </select>
           <label for="roadWidth">Road Width <span id="roadWidthValue">190</span></label>
           <input id="roadWidth" type="range" min="80" max="320" step="4" value="190" />
+          <p class="tool-help">Mouse wheel zooms. Pan Map drags the view. Select Roads can drag groups. Ctrl+A selects all, Delete removes, Ctrl+Z undoes, Ctrl+V pastes.</p>
           <div class="button-grid">
+            <button id="loadGameMapBtn" type="button" class="secondary">Load Game Map</button>
+            <button id="saveGameMapBtn" type="button">Save Back To Game</button>
+            <button id="selectAllRoadsBtn" type="button" class="secondary">Select All</button>
+            <button id="deleteSelectedRoadsBtn" type="button" class="secondary">Delete Selected</button>
+            <button id="smoothRoadsBtn" type="button" class="secondary">Smooth Curves</button>
             <button id="resetRoadsBtn" type="button" class="secondary">Reset Roads</button>
             <button id="savePracticeRoadsBtn" type="button">Save Practice Roads</button>
           </div>
@@ -51,6 +99,8 @@
         <div class="button-grid">
           <button id="saveMissionBtn" type="button">Save Mission</button>
           <button id="newMissionBtn" type="button">New</button>
+          <button id="undoBtn" type="button" class="secondary">Undo</button>
+          <button id="pasteBtn" type="button" class="secondary">Paste</button>
           <button id="exportMissionBtn" type="button">Export JSON</button>
           <button id="copyMissionBtn" type="button">Copy JSON</button>
         </div>
@@ -72,6 +122,7 @@
       </section>
     </main>
 
+    <script src="map.js"></script>
     <script src="builder.js"></script>
   </body>
 </html>

@@ -11,6 +11,16 @@
     <main id="gameShell" aria-label="Patrol game">
       <canvas id="gameCanvas" width="1280" height="720"></canvas>
 
+      <section id="mapModePanel" aria-label="Choose map style">
+        <h1>Patrol</h1>
+        <p>Choose the map background for this shift.</p>
+        <div>
+          <button type="button" data-map-mode="imagery">USGS</button>
+          <button type="button" data-map-mode="topo">USGS Topo</button>
+          <button type="button" data-map-mode="game">Game</button>
+        </div>
+      </section>
+
       <section id="hud" aria-live="polite">
         <div class="hud-row">
           <div>
@@ -45,8 +55,9 @@
         <span>Move: WASD / Arrows</span>
         <span>Handbrake: Space</span>
         <span>Lights/Siren: L</span>
-        <span>Accept: E</span>
+        <span>Interact: E</span>
         <span>Decline: Q</span>
+        <span>Zoom: Z</span>
       </section>
 
       <section id="mobileControls" aria-label="Touch driving controls">
@@ -55,8 +66,22 @@
         <button type="button" data-drive="down" aria-label="Brake or reverse">BRAKE</button>
         <button type="button" data-drive="right" aria-label="Steer right">RIGHT</button>
       </section>
+
+      <section id="trainingPanel" class="hidden" aria-label="Training interaction">
+        <div class="training-card">
+          <div class="training-top">
+            <span id="trainingTag">TRAFFIC STOP</span>
+            <button id="closeTrainingBtn" type="button" aria-label="Close interaction">Close</button>
+          </div>
+          <h2 id="trainingTitle">Traffic Stop</h2>
+          <p id="trainingNarrative"></p>
+          <div id="trainingFacts"></div>
+          <div id="trainingOptions"></div>
+        </div>
+      </section>
     </main>
 
+    <script src="map.js"></script>
     <script src="game.js"></script>
   </body>
 </html>
