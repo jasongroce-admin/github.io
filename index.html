@@ -3,375 +3,204 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jason Groce | Work In Progress, Games, and Experiments</title>
-    <link rel="stylesheet" href="assets/css/site.css?v=20260416" />
+    <title>Jason Groce | Games, Apps, and Utilities</title>
+    <link rel="stylesheet" href="assets/css/site.css?v=20260509" />
     <style>
-      .home-shell {
+      .home-hero {
         display: grid;
-        gap: 1.2rem;
-      }
-
-      .hero {
-        min-height: 78vh;
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
-        gap: 1.2rem;
+        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+        gap: 18px;
         align-items: stretch;
+        min-height: 560px;
       }
 
       .hero-copy {
         display: grid;
-        gap: 1rem;
-        align-content: start;
+        align-content: space-between;
+        gap: 22px;
       }
 
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        width: fit-content;
-        padding: 0.4rem 0.8rem;
-        border-radius: 999px;
-        border: 1px solid rgba(140, 240, 255, 0.24);
-        color: #ddf8ff;
-        background: rgba(255, 255, 255, 0.04);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 0.78rem;
-      }
-
-      .hero h1 span {
-        display: block;
-        color: var(--accent);
-      }
+      .hero-copy h1 { max-width: 820px; }
 
       .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.8rem;
+        gap: 10px;
       }
 
-        .hero-note {
-          max-width: 48rem;
-          font-size: 1.02rem;
-        }
-
-        .update-card {
-          display: grid;
-          gap: 0.45rem;
-          padding: 1rem 1.05rem;
-          border-radius: 18px;
-          border: 1px solid rgba(255, 204, 102, 0.45);
-          background: linear-gradient(180deg, rgba(84, 28, 0, 0.95), rgba(34, 16, 3, 0.98));
-          box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 14px 34px rgba(0,0,0,0.22);
-        }
-
-        .update-card strong {
-          font-size: 0.98rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #ffd66b;
-        }
-
-        .update-card span {
-          color: #fff7e7;
-          line-height: 1.5;
-          font-weight: 700;
-        }
-
-        .update-card a {
-          color: #ffd66b;
-          text-decoration: underline;
-        }
-
-        .menu-group {
-          position: relative;
-          padding-bottom: 0.5rem;
-          margin-bottom: -0.5rem;
-        }
-
-        .menu-group > a {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-        }
-
-        .submenu {
-          position: absolute;
-          top: calc(100% + 0.1rem);
-          left: 0;
-          min-width: 15rem;
-          display: grid;
-          gap: 0.35rem;
-          padding: 0.65rem;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: rgba(8, 16, 28, 0.98);
-          box-shadow: 0 18px 40px rgba(0,0,0,0.3);
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(-4px);
-          transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
-          z-index: 20;
-          pointer-events: auto;
-        }
-
-        .menu-group:hover .submenu,
-        .menu-group:focus-within .submenu {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-
-        .submenu a {
-          padding: 0.5rem 0.65rem;
-          border-radius: 10px;
-          color: var(--text);
-          text-decoration: none;
-          background: rgba(255,255,255,0.04);
-        }
-
-        .submenu a:hover {
-          background: rgba(134,213,255,0.12);
-        }
-
-      .signal-map {
-        position: relative;
-        min-height: 100%;
-        border-radius: 28px;
-        background:
-          radial-gradient(circle at 50% 48%, rgba(125, 185, 232, 0.12), transparent 0 10rem),
-          linear-gradient(160deg, rgba(12, 31, 41, 0.95), rgba(6, 18, 24, 0.96));
-        border: 1px solid rgba(125, 185, 232, 0.18);
-        overflow: hidden;
-      }
-
-      .signal-map::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-        background-size: 40px 40px;
-        mask-image: radial-gradient(circle at center, #000 35%, transparent 88%);
-      }
-
-      .core-node {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 11rem;
-        height: 11rem;
-        transform: translate(-50%, -50%);
-        border-radius: 50%;
+      .showcase {
         display: grid;
-        place-items: center;
-        text-align: center;
-        padding: 1rem;
-        color: #061016;
-        font-weight: 700;
-        background:
-          radial-gradient(circle at 30% 30%, #f6fbff, #7db9e8 55%, #234b68 100%);
-        box-shadow: 0 0 0 14px rgba(125, 185, 232, 0.08), 0 0 80px rgba(125, 185, 232, 0.26);
-        z-index: 2;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 12px;
       }
 
-      .orbit {
-        position: absolute;
-        inset: 50% auto auto 50%;
-        width: 22rem;
-        height: 22rem;
-        transform: translate(-50%, -50%);
-        border: 1px dashed rgba(125, 185, 232, 0.14);
-        border-radius: 50%;
-        animation: spin 18s linear infinite;
-      }
-
-      .orbit.two {
-        width: 31rem;
-        height: 31rem;
-        animation-direction: reverse;
-        animation-duration: 24s;
-        border-color: rgba(153, 0, 0, 0.18);
-      }
-
-      .nav-pod {
-        position: absolute;
-        width: 11rem;
-        padding: 0.9rem;
-        border-radius: 22px;
+      .showcase a {
+        position: relative;
+        min-height: 210px;
+        overflow: hidden;
+        border: 1px solid var(--line-dark);
+        color: #fffaf0;
+        background: var(--charcoal);
         text-decoration: none;
-        color: var(--text);
-        background: rgba(10, 25, 33, 0.9);
-        border: 1px solid rgba(125, 185, 232, 0.2);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-        z-index: 3;
-        backdrop-filter: blur(6px);
-        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
       }
 
-      .nav-pod:hover {
-        transform: scale(1.04);
-        border-color: rgba(125, 185, 232, 0.5);
-        background: rgba(17, 39, 50, 0.96);
-      }
+      .showcase a:first-child { grid-row: span 2; }
 
-      .nav-pod strong {
+      .showcase img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
         display: block;
-        margin-bottom: 0.25rem;
+        opacity: 0.78;
+        filter: saturate(0.78) contrast(1.08);
+      }
+
+      .showcase strong {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        padding: 10px;
+        background: rgba(25, 24, 22, 0.86);
+        border: 1px solid rgba(255,255,255,0.22);
         font-size: 1rem;
       }
 
-      .nav-pod span {
-        display: block;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .pod-1 { top: 8%; left: 9%; }
-      .pod-2 { top: 10%; right: 7%; }
-      .pod-3 { bottom: 11%; left: 8%; }
-      .pod-4 { bottom: 8%; right: 10%; }
-      .pod-5 { top: 37%; left: 2.5%; }
-      .pod-6 { top: 35%; right: 2.5%; }
-
-      .stack {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .mini-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 0.9rem;
-      }
-
-      .stat-bar {
+      .directory {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.8rem;
+        gap: 14px;
       }
 
-      .stat {
-        padding: 1rem;
-        border-radius: 22px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(125, 185, 232, 0.16);
-      }
+      .directory .catalog-card { min-height: 230px; }
 
-      .stat strong {
-        display: block;
-        font-size: 1.8rem;
-        margin-bottom: 0.2rem;
-      }
-
-      .pulse {
-        animation: pulse 2.8s ease-in-out infinite;
-      }
-
-      @keyframes spin {
-        from { transform: translate(-50%, -50%) rotate(0deg); }
-        to { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-
-      @keyframes pulse {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-4px); }
+      .release-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
       }
 
       @media (max-width: 920px) {
-        .hero {
+        .home-hero,
+        .directory {
           grid-template-columns: 1fr;
         }
 
-        .signal-map {
-          min-height: 42rem;
-        }
-
-        .stat-bar {
-          grid-template-columns: 1fr;
+        .showcase {
+          min-height: 520px;
         }
       }
 
-      @media (max-width: 640px) {
-        .signal-map {
-          min-height: 48rem;
+      @media (max-width: 560px) {
+        .showcase {
+          grid-template-columns: 1fr;
+          grid-template-rows: none;
         }
 
-        .nav-pod {
-          width: 9.2rem;
-          padding: 0.8rem;
-        }
-
-        .pod-1 { top: 6%; left: 4%; }
-        .pod-2 { top: 6%; right: 4%; }
-        .pod-3 { bottom: 18%; left: 4%; }
-        .pod-4 { bottom: 18%; right: 4%; }
-        .pod-5 { top: 68%; left: 9%; }
-        .pod-6 { top: 68%; right: 9%; }
+        .showcase a:first-child { grid-row: auto; }
       }
     </style>
   </head>
   <body>
-<main class="content home-shell">
+    <main class="content home-shell">
       <header class="site-header">
         <a class="brand-lockup" href="index.html">
           <strong>Jason Groce</strong>
-          <span>Games, Tools & Projects</span>
+          <span>Games, Apps, Utilities</span>
         </a>
-          <nav class="site-menu" aria-label="Primary">
+        <nav class="site-menu" aria-label="Primary">
           <a class="menu-link active" href="index.html">Home</a>
-          <a class="menu-link" href="utilities/index.html">Utilities</a>
           <a class="menu-link" href="games/index.html">Games</a>
-          </nav>
+          <a class="menu-link" href="utilities/index.html">Utilities</a>
+        </nav>
       </header>
-      <section class="panel hero">
-        <div class="hero-copy">
-          <a class="eyebrow pulse" href="mailto:jason@jasongroce.com">Jason Groce</a>
-          <h1>Interactive projects, games, and tools <span>built to be explored.</span></h1>
-          <p class="subtitle">Browse games, tools, and current projects from one place.</p>
-          <p class="hero-note">Use the menu or jump into the projects below to explore the site.</p>
-          <div class="update-card" aria-label="Latest update">
-            <strong>Important Update</strong>
-            <span><a href="games/pd-witness-recall/index.html">PD: Witness Recall</a> is the current work-in-progress title — a police procedural memory game with replayable cases, stars, and a new age gate. The Games menu is organized into <strong>Board</strong>, <strong>Web</strong>, and <strong>Work In Progress</strong>.</span>
+
+      <section class="home-hero">
+        <div class="panel hero-copy">
+          <div class="stack">
+            <span class="kicker">Project Directory</span>
+            <h1>Games, apps, and practical web tools.</h1>
+            <p class="subtitle">A cleaner front door for playable builds, training tools, utilities, and experiments that are still being shaped.</p>
           </div>
-          <div class="hero-actions">
-            <a class="btn" href="#launch-grid">View Projects</a>
-            <a class="btn alt" href="utilities/index.html">Open Utilities</a>
-          </div>
-          <div class="stat-bar">
-            <div class="stat"><strong>3</strong><span>main sections</span></div>
-            <div class="stat"><strong>2</strong><span>game groups</span></div>
-            <div class="stat"><strong>1</strong><span>home page</span></div>
+          <div class="stack">
+            <div class="release-line">
+              <span class="badge release">VFDDefender New Release</span>
+              <span class="badge new">Patrol New</span>
+              <span class="badge progress">Moon Buggy New + In Progress</span>
+            </div>
+            <div class="hero-actions">
+              <a class="btn" href="games/index.html">Open Games</a>
+              <a class="btn alt" href="utilities/index.html">Open Utilities</a>
+              <a class="btn alt" href="games/work-in-progress/index.html">Work In Progress</a>
+            </div>
           </div>
         </div>
-        <div class="signal-map" aria-label="Animated site navigation map">
-          <div class="orbit"></div>
-          <div class="orbit two"></div>
-          <div class="core-node">Explore</div>
-      <a class="nav-pod pod-1" href="games/vfddefender/index.html"><strong>VFDDefender</strong><span>Fire rescue campaign</span></a>
-          <a class="nav-pod pod-2" href="games/game-01/index.html"><strong>JR's #2 Rescue</strong><span>Repair and response</span></a>
-          <a class="nav-pod pod-3" href="Game2/index.html"><strong>KPD Driving</strong><span>Driving challenge</span></a>
-          <a class="nav-pod pod-4" href="utilities/index.html"><strong>Utilities</strong><span>Creative tools</span></a>
-          <a class="nav-pod pod-5" href="games/old-school-board-games/index.html"><strong>Board</strong><span>Classic strategy set</span></a>
-          <a class="nav-pod pod-6" href="games/tibertrons-space-buggy/index.html"><strong>Space Buggy</strong><span>Moon mission campaign</span></a>
-</div>
+
+        <div class="showcase" aria-label="Featured project images">
+          <a href="games/patrol/index.html">
+            <img src="games/patrol/images/police_ford_interceptor_topdown_facing_up_512x512.webp" alt="Patrol police vehicle" />
+            <strong>Patrol: Kennard training map</strong>
+          </a>
+          <a href="games/vfddefender/index.html">
+            <img src="games/tanks-and-more-tank/images/misc_human_firefighter_front_standing_459x200.webp" alt="Firefighter game art" />
+            <strong>VFDDefender: new release</strong>
+          </a>
+          <a href="games/tibertrons-space-buggy/index.html">
+            <img src="games/tanks-and-more-tank/images/scifi_vehicle_hovercar_compact_459x145.webp" alt="Moon buggy style vehicle" />
+            <strong>Moon Buggy: new + in progress</strong>
+          </a>
+        </div>
       </section>
 
-      <section class="panel stack" id="launch-grid">
-        <h2>Projects</h2>
-        <p>Open a game, tool, or project area below.</p>
+      <section class="directory" id="directory">
+        <a class="catalog-card" href="games/index.html">
+          <span class="badge">Games</span>
+          <h2>Playable Builds</h2>
+          <p>Arcade games, board games, training concepts, and active prototypes.</p>
+        </a>
+        <a class="catalog-card" href="utilities/index.html">
+          <span class="badge">Apps</span>
+          <h2>Apps & Utilities</h2>
+          <p>Drawing tools, converters, planning helpers, and browser-based utilities.</p>
+        </a>
+        <a class="catalog-card" href="games/work-in-progress/index.html">
+          <span class="badge progress">WIP</span>
+          <h2>In Progress</h2>
+          <p>Projects still being tuned, including JR's #2 Rescue and Moon Buggy.</p>
+        </a>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Fast Launch</span>
+            <h2>Featured Work</h2>
+          </div>
+          <a class="menu-link" href="games/index.html">All Games</a>
+        </div>
         <div class="projects-grid">
-      <a class="card" href="games/vfddefender/index.html"><h3>VFDDefender</h3><p>Standalone fire-response game with passcode gate.</p></a>
-          <a class="card" href="games/game-01/index.html"><h3>JR's #2 Rescue</h3><p>Repair-route action with a tighter arcade feel.</p></a>
-          <a class="card" href="games/pd-witness-recall/index.html"><h3>PD: Witness Recall</h3><p>Timed crime-scene memory cases with witness questioning and comparisons.</p></a>
-          <a class="card" href="games/tibertrons-space-buggy/index.html"><h3>Tibertron's Space Buggy</h3><p>Moon buggy missions with checkpoints, branching objectives, and extraction runs.</p></a>
-          <a class="card" href="games/smugglerscoat/index.html"><h3>Smugglerscoat</h3><p>New game folder from main branch, now linked into the site.</p></a>
-          <a class="card" href="Game2/index.html"><h3>KPD Driving Response</h3><p>Test reflexes and route control behind the wheel.</p></a>
-          <a class="card" href="utilities/index.html"><h3>Creative Utilities</h3><p>Drawing tools, visual helpers, and quick experiments.</p></a>
-          <a class="card" href="utilities/yard-prep.html"><h3>Yard Prep</h3><p>Sketch your yard outline, auto-straighten lines, then place deck and landscaping ideas.</p></a>
-          <a class="card" href="games/work-in-progress/index.html"><h3>Work In Progress</h3><p>Half-built ideas, tuning passes, and active experiments.</p></a>
+          <a class="card" href="games/vfddefender/index.html">
+            <span class="badge release">New Release</span>
+            <h3>VFDDefender</h3>
+            <p>Standalone fire-response campaign build.</p>
+          </a>
+          <a class="card" href="games/patrol/index.html">
+            <span class="badge new">New</span>
+            <h3>Patrol</h3>
+            <p>Kennard police patrol and first responder training map.</p>
+          </a>
+          <a class="card" href="games/tibertrons-space-buggy/index.html">
+            <span class="badge progress">New + In Progress</span>
+            <h3>Tibertron's Space Buggy</h3>
+            <p>Moon buggy mission campaign with extraction goals.</p>
+          </a>
+          <a class="card" href="games/work-in-progress/index.html">
+            <span class="badge archive">WIP / Archive</span>
+            <h3>JR's #2 Rescue</h3>
+            <p>Moved out of the main launch list while it is being reworked.</p>
+          </a>
         </div>
       </section>
 
