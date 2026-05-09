@@ -615,46 +615,6 @@ button:hover { filter: brightness(1.2); }
   to { transform: translateX(-106px); }
 }
 
-#codeGate {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.9);
-  z-index: 70;
-}
-#codeGate > div {
-  width: min(560px, calc(100vw - 28px));
-  background: linear-gradient(180deg, rgba(24, 34, 50, 0.98), rgba(9, 14, 20, 0.98));
-  border: 2px solid #4c80bf;
-  border-radius: 18px;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.65);
-  padding: 22px 22px 18px;
-  text-align: center;
-  color: #eaf4ff;
-}
-#codeGate h2 { margin: 0 0 8px 0; font-size: 28px; color: #ffdd66; }
-#codeGate p { margin: 8px 0; line-height: 1.45; font-size: 17px; color: #d8e4f3; }
-#codeGate input {
-  width: min(240px, 100%);
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #4c80bf;
-  background: rgba(255,255,255,0.08);
-  color: #fff;
-  font-size: 18px;
-  text-align: center;
-}
-#codeGate .code-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-}
-
 #thumbStick {
   position: fixed;
   left: 12px;
@@ -1002,12 +962,15 @@ button:hover { filter: brightness(1.2); }
 }
 #titleStartLevelWrap {
   margin-top: 14px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 10px;
   color: #fff;
   font-weight: 800;
+}
+#titleStartLevelWrap.special-unlocked {
+  display: flex;
 }
 #titleStartLevelWrap label {
   letter-spacing: 0.3px;
@@ -3042,19 +3005,6 @@ button:hover { filter: brightness(1.2); }
   <select id="levelSkipSelect"></select>
 </div>
 
-<div id="codeGate">
-  <div>
-    <h2>Building in progress</h2>
-    <p>More coming soon.</p>
-    <p>Enter the code to test.</p>
-    <input id="codeInput" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="5" aria-label="Passcode">
-    <div class="code-actions">
-      <button class="difficulty-btn" id="codeSubmitBtn" type="button">Submit Code</button>
-      <button class="secondary-btn" id="codeCancelBtn" type="button">Back to Homepage</button>
-    </div>
-  </div>
-</div>
-  
 <div id="overlay">
   <div id="titleScreen" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.85);">
     <h1 style="font-size:58px; margin:0 0 20px 0; color:#FF0; text-shadow: 0 0 20px #FF0, 0 0 40px #FF8800, 4px 4px 0 #000, -3px -3px 0 #000;">KENNARD FIRE DEFENDER DELUXE</h1>
@@ -3065,7 +3015,7 @@ button:hover { filter: brightness(1.2); }
       <button id="titleCaptainBtn" class="difficulty-btn" onclick="startGame(3)">CAPTAIN</button>
     </div>
     <div id="titleStartLevelWrap">
-      <label for="titleStartLevelSelect">Start Level</label>
+      <label for="titleStartLevelSelect">Special Start Level</label>
       <select id="titleStartLevelSelect" aria-label="Choose start level"></select>
     </div>
   </div>
@@ -8548,12 +8498,7 @@ function getMaxLevel() {
 
 function updateLevelSkipHud() {
   const hud = document.getElementById('levelSelectHud');
-  if (!hud) return;
-  if (gameState === 'builder') {
-    hud.style.display = 'none';
-    return;
-  }
-  hud.style.display = 'flex';
+  if (hud) hud.style.display = 'none';
   const label = document.getElementById('levelSkipLabel');
   const shownLevel = gameState === 'title' ? requestedStartLevel : currentLevel;
   if (label) label.textContent = (gameState === 'title') ? 'Start Level' : 'Current Level';
@@ -22713,38 +22658,61 @@ function showDispatchScreen(lvl, phase) {
   dispatchAutoTimer = setTimeout(() => dismissDispatchScreen(true), 5000);
 }
 
-let codeGateUnlocked = false;
-
-function showCodeGate() {
-  document.getElementById('codeGate').style.display = 'flex';
-  document.getElementById('overlay').style.display = 'none';
-  const input = document.getElementById('codeInput');
-  if (input) {
-    input.value = '';
-    setTimeout(() => input.focus(), 40);
-  }
-}
-
-function hideCodeGate() {
-  document.getElementById('codeGate').style.display = 'none';
-  document.getElementById('overlay').style.display = 'block';
-}
-
-function submitCodeGate() {
-  const entered = (document.getElementById('codeInput').value || '').trim();
-  if (entered === '47351') {
-    codeGateUnlocked = true;
-    hideCodeGate();
-    showTitleScreen();
-    return;
-  }
-  alert('Incorrect code. Please try again.');
-}
+let specialLevelSelectUnlocked = false;
+let specialCodeIndex = 0;
+const SPECIAL_LEVEL_SELECT_CODE = [
+  'ArrowUp',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowLeft',
+  'ArrowRight',
+  'b',
+  'a'
+];
 
 function showTitleScreen() {
   document.getElementById('overlay').style.display = 'block';
   document.getElementById('titleScreen').style.display = 'flex';
   updateLevelSkipHud();
+}
+
+function setSpecialLevelSelectUnlocked() {
+  specialLevelSelectUnlocked = true;
+  const wrap = document.getElementById('titleStartLevelWrap');
+  if (wrap) wrap.classList.add('special-unlocked');
+  updateLevelSkipHud();
+}
+
+function getSpecialCodeKey(event) {
+  if (!event) return '';
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    return event.key;
+  }
+  const key = String(event.key || '').toLowerCase();
+  return key === 'b' || key === 'a' ? key : '';
+}
+
+function handleSpecialLevelSelectCode(event) {
+  if (specialLevelSelectUnlocked || gameState !== 'title') return;
+  const titleScreen = document.getElementById('titleScreen');
+  const missionStory = document.getElementById('missionStoryScreen');
+  const isChoosingDifficulty = titleScreen?.style.display !== 'none' && missionStory?.style.display !== 'flex';
+  if (!isChoosingDifficulty) return;
+  const key = getSpecialCodeKey(event);
+  if (!key) return;
+  if (key.startsWith('Arrow')) event.preventDefault();
+  if (key === SPECIAL_LEVEL_SELECT_CODE[specialCodeIndex]) {
+    specialCodeIndex += 1;
+    if (specialCodeIndex >= SPECIAL_LEVEL_SELECT_CODE.length) {
+      specialCodeIndex = 0;
+      setSpecialLevelSelectUnlocked();
+    }
+    return;
+  }
+  specialCodeIndex = key === SPECIAL_LEVEL_SELECT_CODE[0] ? 1 : 0;
 }
 
 const LEVEL1_GUIDE_STEPS = [
@@ -22944,10 +22912,6 @@ function hideMissionStoryScreen() {
 }
 
 function beginGameFromMissionStory() {
-  if (!codeGateUnlocked) {
-    showCodeGate();
-    return;
-  }
   const cfg = pendingStartConfig || { diff: 1, startLevel: null };
   const diff = clamp(Number(cfg.diff || 1), 1, 3);
   const startLevel = cfg.startLevel == null ? null : Number(cfg.startLevel);
@@ -22973,10 +22937,6 @@ function beginGameFromMissionStory() {
 }
 
 function startGame(diff, startLevel = null) {
-  if (!codeGateUnlocked) {
-    showCodeGate();
-    return;
-  }
   showMissionStoryScreen(diff, startLevel);
 }
 
@@ -23976,15 +23936,9 @@ function applyStartLevelFromUrl() {
   } catch (err) {}
 }
 
-document.getElementById('codeSubmitBtn').addEventListener('click', submitCodeGate);
-document.getElementById('codeCancelBtn').addEventListener('click', () => {
-  window.location.href = '../../index.html';
-});
-document.getElementById('codeInput').addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') submitCodeGate();
-});
+document.addEventListener('keydown', handleSpecialLevelSelectCode);
 applyStartLevelFromUrl();
-showCodeGate();
+showTitleScreen();
 updateLevelSkipHud();
 builderApplyStateToUi();
 builderInitCollapsibleSections();
