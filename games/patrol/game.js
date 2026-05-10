@@ -20,6 +20,10 @@
   const trainingFacts = document.getElementById('trainingFacts');
   const trainingOptions = document.getElementById('trainingOptions');
   const closeTrainingBtn = document.getElementById('closeTrainingBtn');
+  const mobileJoystick = document.getElementById('mobileJoystick');
+  const joystickStick = document.getElementById('joystickStick');
+  const mobileLightsBtn = document.getElementById('mobileLightsBtn');
+  const mobileEngageBtn = document.getElementById('mobileEngageBtn');
 
   const YOULEVEL_ASSET_ROOT = '../youlevel/images/';
   const LOCAL_ASSET_ROOT = 'images/';
@@ -126,7 +130,7 @@
   const CAMERA_ZOOMS = [0.52, 0.64, 0.78];
 
   const keys = new Set();
-  const touchDrive = new Set();
+  const touchDrive = { active: false, pointerId: null, x: 0, y: 0 };
   let camera = { x: 0, y: 0, focusX: 0, focusY: 0 };
   let mapMode = ['imagery', 'topo', 'game'].includes(localStorage.getItem(MAP_MODE_KEY)) ? localStorage.getItem(MAP_MODE_KEY) : 'game';
   let gameWorldDecor = null;
@@ -411,6 +415,26 @@
   function setStatus(text, hold = 1.8) {
     statusLine.textContent = text;
     statusHold = Math.max(statusHold, hold);
+  }
+
+  function touchSteer() {
+    return Math.abs(touchDrive.x) > 0.12 ? touchDrive.x : 0;
+  }
+
+  function touchThrottle() {
+    return Math.abs(touchDrive.y) > 0.12 ? -touchDrive.y : 0;
+  }
+
+  function togglePoliceLights() {
+    policeLights = !policeLights;
+    updateMobileLightsButton();
+    setStatus(policeLights ? 'Lights and siren active. Civilian traffic is yielding.' : 'Lights and siren off.', 2.5);
+  }
+
+  function updateMobileLightsButton() {
+    if (!mobileLightsBtn) return;
+    mobileLightsBtn.classList.toggle('active', policeLights);
+    mobileLightsBtn.setAttribute('aria-pressed', policeLights ? 'true' : 'false');
   }
 
   function normalizeRoads(roads) {
@@ -1841,20 +1865,29 @@
     const accel = 760;
     const brake = 920;
     const turnRate = 3.25;
-    const forward = keys.has('arrowup') || keys.has('w') || touchDrive.has('up');
-    const reverse = keys.has('arrowdown') || keys.has('s') || touchDrive.has('down');
-    const left = keys.has('arrowleft') || keys.has('a') || touchDrive.has('left');
-    const right = keys.has('arrowright') || keys.has('d') || touchDrive.has('right');
+    const throttle = clamp(
+      (keys.has('arrowup') || keys.has('w') ? 1 : 0) -
+      (keys.has('arrowdown') || keys.has('s') ? 1 : 0) +
+      touchThrottle(),
+      -1,
+      1
+    );
+    const steer = clamp(
+      (keys.has('arrowright') || keys.has('d') ? 1 : 0) -
+      (keys.has('arrowleft') || keys.has('a') ? 1 : 0) +
+      touchSteer(),
+      -1,
+      1
+    );
     const handbrake = keys.has(' ');
 
-    if (forward) player.speed += accel * dt;
-    if (reverse) player.speed -= brake * dt;
-    if (!forward && !reverse) player.speed *= handbrake ? 0.9 : 0.986;
+    if (throttle > 0) player.speed += accel * throttle * dt;
+    if (throttle < 0) player.speed += brake * throttle * dt;
+    if (Math.abs(throttle) <= 0.02) player.speed *= handbrake ? 0.9 : 0.986;
     if (handbrake) player.speed *= 0.965;
     const maxForward = policeLights ? player.maxSpeed * 1.28 : player.maxSpeed;
     player.speed = clamp(player.speed, -210, maxForward);
 
-    const steer = (right ? 1 : 0) - (left ? 1 : 0);
     const steerScale = clamp(Math.abs(player.speed) / 260, 0.32, 1);
     const slideBoost = handbrake ? 1.45 : 1;
     player.angle += steer * turnRate * steerScale * slideBoost * dt * (player.speed < 0 ? -1 : 1);
@@ -2470,7 +2503,13 @@
     const viewW = window.innerWidth / zoom;
     const viewH = window.innerHeight / zoom;
     const speedLook = clamp(Math.abs(player.speed) * 0.4, 0, 220);
-    const steer = (keys.has('arrowright') || keys.has('d') || touchDrive.has('right') ? 1 : 0) - (keys.has('arrowleft') || keys.has('a') || touchDrive.has('left') ? 1 : 0);
+    const steer = clamp(
+      (keys.has('arrowright') || keys.has('d') ? 1 : 0) -
+      (keys.has('arrowleft') || keys.has('a') ? 1 : 0) +
+      touchSteer(),
+      -1,
+      1
+    );
     const forwardX = Math.sin(player.angle);
     const forwardY = -Math.cos(player.angle);
     const sideX = Math.cos(player.angle);
@@ -2522,16 +2561,66 @@
     requestAnimationFrame(loop);
   }
 
+  function resetMobileJoystick() {
+    touchDrive.active = false;
+    touchDrive.pointerId = null;
+    touchDrive.x = 0;
+    touchDrive.y = 0;
+    if (joystickStick) joystickStick.style.transform = 'translate(-50%, -50%)';
+  }
+
+  function updateMobileJoystick(event) {
+    if (!mobileJoystick || !joystickStick) return;
+    const rect = mobileJoystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const radius = Math.max(44, Math.min(rect.width, rect.height) * 0.34);
+    const rawX = event.clientX - centerX;
+    const rawY = event.clientY - centerY;
+    const length = Math.hypot(rawX, rawY) || 1;
+    const capped = Math.min(radius, length);
+    const x = (rawX / length) * capped;
+    const y = (rawY / length) * capped;
+    touchDrive.x = x / radius;
+    touchDrive.y = y / radius;
+    joystickStick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  }
+
+  function setupMobileControls() {
+    if (mobileJoystick) {
+      mobileJoystick.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        mobileJoystick.setPointerCapture?.(event.pointerId);
+        touchDrive.active = true;
+        touchDrive.pointerId = event.pointerId;
+        updateMobileJoystick(event);
+      });
+      mobileJoystick.addEventListener('pointermove', (event) => {
+        if (!touchDrive.active || touchDrive.pointerId !== event.pointerId) return;
+        event.preventDefault();
+        updateMobileJoystick(event);
+      });
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => {
+        mobileJoystick.addEventListener(type, (event) => {
+          if (touchDrive.pointerId !== null && event.pointerId !== undefined && touchDrive.pointerId !== event.pointerId) return;
+          event.preventDefault();
+          resetMobileJoystick();
+        });
+      });
+    }
+
+    mobileLightsBtn?.addEventListener('click', togglePoliceLights);
+    mobileEngageBtn?.addEventListener('click', interact);
+    updateMobileLightsButton();
+  }
+
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
     keys.add(key);
     if (key === 'e') interact();
     if (key === 'q') declineCall();
-    if (key === 'l' && !event.repeat) {
-      policeLights = !policeLights;
-      setStatus(policeLights ? 'Lights and siren active. Civilian traffic is yielding.' : 'Lights and siren off.', 2.5);
-    }
+    if (key === 'l' && !event.repeat) togglePoliceLights();
     if (key === 'z' && !event.repeat) {
       cameraZoomIndex = (cameraZoomIndex + 1) % CAMERA_ZOOMS.length;
       setStatus(`Camera zoom ${cameraZoomIndex + 1}/${CAMERA_ZOOMS.length}.`, 2);
@@ -2540,21 +2629,7 @@
   });
   window.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
 
-  document.querySelectorAll('#mobileControls button[data-drive]').forEach((btn) => {
-    const key = btn.getAttribute('data-drive');
-    const down = (event) => {
-      event.preventDefault();
-      touchDrive.add(key);
-    };
-    const up = (event) => {
-      event.preventDefault();
-      touchDrive.delete(key);
-    };
-    btn.addEventListener('pointerdown', down);
-    btn.addEventListener('pointerup', up);
-    btn.addEventListener('pointercancel', up);
-    btn.addEventListener('pointerleave', up);
-  });
+  setupMobileControls();
 
   acceptCallBtn.addEventListener('click', acceptCall);
   declineCallBtn.addEventListener('click', declineCall);

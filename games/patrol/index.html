@@ -61,10 +61,15 @@
       </section>
 
       <section id="mobileControls" aria-label="Touch driving controls">
-        <button type="button" data-drive="left" aria-label="Steer left">LEFT</button>
-        <button type="button" data-drive="up" aria-label="Accelerate">GO</button>
-        <button type="button" data-drive="down" aria-label="Brake or reverse">BRAKE</button>
-        <button type="button" data-drive="right" aria-label="Steer right">RIGHT</button>
+        <div id="mobileJoystick" aria-label="Virtual joystick" role="application">
+          <div id="joystickBase">
+            <div id="joystickStick"></div>
+          </div>
+        </div>
+        <div id="mobileActionButtons" aria-label="Touch action controls">
+          <button id="mobileLightsBtn" type="button" aria-label="Toggle lights and siren" aria-pressed="false">Lights</button>
+          <button id="mobileEngageBtn" type="button" aria-label="Engage with a stopped vehicle">Engage</button>
+        </div>
       </section>
 
       <section id="trainingPanel" class="hidden" aria-label="Training interaction">
