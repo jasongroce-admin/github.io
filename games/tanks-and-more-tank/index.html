@@ -266,6 +266,15 @@
       .gauge-cell button.alt {
         background: linear-gradient(180deg, #c77010, #8a4d08);
       }
+      .auto-rebuild-cell {
+        display: none;
+      }
+      .auto-rebuild-cell.show {
+        display: grid;
+      }
+      .auto-rebuild-cell button {
+        background: linear-gradient(180deg, #d0a03a, #8c6120);
+      }
       .gauge-cell button.active {
         border-color: #9dffc1;
         background: linear-gradient(180deg, #1c8b4e, #0f5e35);
@@ -352,6 +361,28 @@
         cursor: pointer;
       }
       .air-popover button.alt { background: linear-gradient(180deg, #c77010, #8a4d08); }
+      .support-action-button {
+        position: absolute;
+        left: 50%;
+        top: 46%;
+        z-index: 48;
+        min-width: 190px;
+        min-height: 48px;
+        transform: translate(-50%, -50%);
+        display: none;
+        border: 4px solid #10170f;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #f0b33f, #b56b13);
+        color: #fff;
+        font-weight: 950;
+        font-size: 0.98rem;
+        text-shadow: 1px 1px 0 rgba(0,0,0,0.42);
+        box-shadow: 5px 5px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255, 205, 83, 0.28);
+        cursor: pointer;
+      }
+      .support-action-button.show { display: block; }
+      .support-action-button.health { background: linear-gradient(180deg, #42c77b, #16834e); }
+      .support-action-button.space { background: linear-gradient(180deg, #58bfff, #2165a8); }
       #gameCanvas {
         width: 100%;
         max-width: 1400px;
@@ -433,8 +464,7 @@
       .welcome-card[data-step="1"] .welcome-grid { display: grid; grid-template-columns: 1fr; }
       .welcome-card[data-step="1"] #welcomeTankGallery,
       .welcome-card[data-step="1"] #welcomeWeatherDetails,
-      .welcome-card[data-step="1"] #welcomeNightDetails,
-      .welcome-card[data-step="1"] .welcome-grid > div:nth-child(2) { display: none; }
+      .welcome-card[data-step="1"] #welcomeNightDetails { display: none; }
       .welcome-card[data-step="1"] .welcome-actions { display: none; }
       .welcome-card[data-step="2"] #welcomeTankGallery { display: none; }
       .welcome-card[data-step="2"] #welcomeWeatherDetails { display: none; }
@@ -535,6 +565,74 @@
         min-height: 38px;
         padding: 6px 8px;
         font-weight: 900;
+      }
+      .auto-setup-choice {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .auto-setup-choice label {
+        display: grid;
+        gap: 4px;
+        border: 3px solid #10170f;
+        border-radius: 8px;
+        background: rgba(13, 34, 27, 0.9);
+        padding: 10px;
+        cursor: pointer;
+      }
+      .auto-setup-choice strong {
+        color: #ffe08a;
+      }
+      .auto-setup-choice span {
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.25;
+      }
+      .auto-custom-panel {
+        display: none;
+        gap: 10px;
+      }
+      .auto-custom-panel.open {
+        display: grid;
+      }
+      .custom-section {
+        border: 3px solid #10170f;
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(102, 130, 62, 0.28) 0 22%, transparent 22% 44%, rgba(62, 91, 50, 0.26) 44% 66%, rgba(128, 95, 48, 0.2) 66%),
+          rgba(8, 25, 22, 0.86);
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+      .custom-section h3 {
+        margin: 0;
+        color: #ffe08a;
+        font-size: 0.94rem;
+      }
+      .toggle-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .toggle-list.weapons {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .toggle-list label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        border: 2px solid rgba(16, 23, 15, 0.9);
+        border-radius: 6px;
+        background: rgba(7, 18, 22, 0.72);
+        padding: 6px;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+      .toggle-list input {
+        width: auto;
       }
       .welcome-actions {
         display: grid;
@@ -767,8 +865,20 @@
                     <input type="radio" name="gameMode" value="auto">
                     <div>
                       <div class="title">Auto Generated Levels <span class="pill">endless</span></div>
-                      <div class="desc">Customize wind, rain, night, and air support, then play endless generated levels.</div>
+                      <div class="desc">Play fast defaults or open a simple custom rule kit for endless generated levels.</div>
                     </div>
+                  </label>
+                </div>
+                <div class="auto-setup-choice" id="autoSetupChoice" role="radiogroup" aria-label="Auto generated setup">
+                  <label>
+                    <input type="radio" name="autoSetup" value="default" checked>
+                    <strong>Default Auto</strong>
+                    <span>Balanced endless maps with all shots and support ready.</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="autoSetup" value="custom">
+                    <strong>Custom Auto</strong>
+                    <span>Choose weapons, weather, night vision, and support rules.</span>
                   </label>
                 </div>
                 <div class="quick-player-mode" role="radiogroup" aria-label="Player mode">
@@ -821,6 +931,93 @@
             </div>
 
             <div>
+              <div class="auto-custom-panel" id="autoCustomPanel" aria-label="Custom auto generated settings">
+                <div class="custom-section">
+                  <h3>World</h3>
+                  <div class="welcome-form">
+                    <div class="row">
+                      <label for="customWindToggle">Wind</label>
+                      <select id="customWindToggle">
+                        <option value="off" selected>Off</option>
+                        <option value="on">On</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customWindStrength">Wind Strength (<span id="customWindStrengthValue">0</span>)</label>
+                      <input id="customWindStrength" type="range" min="-100" max="100" step="1" value="0">
+                    </div>
+                    <div class="row">
+                      <label for="customRainToggle">Rain</label>
+                      <select id="customRainToggle">
+                        <option value="off" selected>Off</option>
+                        <option value="on">On</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customRainIntensity">Rain (<span id="customRainIntensityValue">0</span>%)</label>
+                      <input id="customRainIntensity" type="range" min="0" max="100" step="1" value="0">
+                    </div>
+                    <div class="row">
+                      <label for="customNightToggle">Night Tanks</label>
+                      <select id="customNightToggle">
+                        <option value="off" selected>Off</option>
+                        <option value="on">On</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customNightVisionToggle">Night Vision</label>
+                      <select id="customNightVisionToggle">
+                        <option value="off" selected>Off</option>
+                        <option value="on">On</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customBrightness">Shot Light (<span id="customBrightnessValue">85</span>%)</label>
+                      <input id="customBrightness" type="range" min="30" max="100" step="1" value="85">
+                    </div>
+                  </div>
+                </div>
+                <div class="custom-section">
+                  <h3>Weapons</h3>
+                  <div class="toggle-list">
+                    <label><input type="checkbox" id="customWeaponsAll" checked> All Weapons</label>
+                  </div>
+                  <div class="toggle-list weapons" id="customWeaponList"></div>
+                </div>
+                <div class="custom-section">
+                  <h3>Space Support</h3>
+                  <div class="welcome-form">
+                    <div class="row">
+                      <label for="customSupportToggle">Support</label>
+                      <select id="customSupportToggle">
+                        <option value="on" selected>On</option>
+                        <option value="off">Off</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customSupportMode">Availability</label>
+                      <select id="customSupportMode">
+                        <option value="once">Once per match</option>
+                        <option value="every3" selected>Once every 3 rounds</option>
+                        <option value="every5">Once every 5 rounds</option>
+                        <option value="afterHit">After first hit</option>
+                      </select>
+                    </div>
+                    <div class="row">
+                      <label for="customSupportBombs">Bombs Per Bomber (<span id="customSupportBombsValue">3</span>)</label>
+                      <input id="customSupportBombs" type="range" min="1" max="6" step="1" value="3">
+                    </div>
+                  </div>
+                  <div class="toggle-list">
+                    <label><input type="checkbox" id="customSupportAll" checked> All Support</label>
+                    <label><input type="checkbox" name="customSupportType" value="bomber" checked> Bomber</label>
+                    <label><input type="checkbox" name="customSupportType" value="health" checked> Health Drop</label>
+                    <label><input type="checkbox" name="customSupportType" value="laser" checked> Satellite Laser</label>
+                    <label><input type="checkbox" name="customSupportType" value="rod" checked> Rod of God</label>
+                  </div>
+                </div>
+              </div>
+
               <details class="welcome-details" id="welcomeWeatherDetails" open>
                 <summary>Weather & Air Support</summary>
                 <div class="welcome-form">
@@ -1000,11 +1197,13 @@
                 </select>
               </div>
               <div class="row"><button type="button" class="alt" id="callBomberBtn">Call Air Bomber</button></div>
+              <div class="row"><button type="button" id="callHealthBtn">Air Drop Health</button></div>
               <div class="row"><button type="button" id="callLaserBtn">Reflect Laser</button></div>
               <div class="row"><button type="button" id="callRodBtn">Rod of God</button></div>
               <div class="row"><button type="button" id="callFlareBtn">Drop Flare</button></div>
               <div class="row"><button type="button" id="airSupportCloseBtn">Close</button></div>
             </div>
+            <button class="support-action-button" id="supportActionBtn" type="button">Drop Bomb</button>
             <canvas id="gameCanvas" width="1400" height="788" aria-label="Tanks battle arena"></canvas>
             <div class="overlay-help" id="tutorialOverlay">
               <h3>Tutorial</h3>
@@ -1048,6 +1247,7 @@
               <div class="gauge-cell"><label>Movement</label><button id="moveLeftBtn">Move Left</button></div>
               <div class="gauge-cell"><label>Movement</label><button id="moveRightBtn">Move Right</button></div>
               <div class="gauge-cell"><label>Help</label><button id="hintBtn">Show Help</button></div>
+              <div class="gauge-cell auto-rebuild-cell" id="autoRebuildCell"><label>Auto</label><button type="button" id="rebuildLevelBtn">Rebuild Level</button></div>
             </div>
             <div class="shot-history" id="shotHistory">Last shots: --</div>
           </div>
@@ -1096,6 +1296,8 @@
         const shotKindProfileSelect = document.getElementById("shotKindProfileSelect");
         const damage100Btn = document.getElementById("damage100Btn");
         const blast100Btn = document.getElementById("blast100Btn");
+        const autoRebuildCell = document.getElementById("autoRebuildCell");
+        const rebuildLevelBtn = document.getElementById("rebuildLevelBtn");
         const shotHistoryEl = document.getElementById("shotHistory");
         const saveGameButton = document.getElementById("saveGameButton");
         const loadGameButton = document.getElementById("loadGameButton");
@@ -1133,6 +1335,7 @@
         const airSupportBtn = document.getElementById("airSupportBtn");
         const airSupportPopover = document.getElementById("airSupportPopover");
         const airSupportCloseBtn = document.getElementById("airSupportCloseBtn");
+        const supportActionBtn = document.getElementById("supportActionBtn");
 
         const welcomeOverlay = document.getElementById("welcomeOverlay");
         const welcomeCard = document.getElementById("welcomeCard");
@@ -1150,6 +1353,25 @@
         const welcomeDifficultySelect = document.getElementById("welcomeDifficultySelect");
         const welcomeTankGallery = document.getElementById("welcomeTankGallery");
         const welcomeWeatherDetails = document.getElementById("welcomeWeatherDetails");
+        const autoSetupChoice = document.getElementById("autoSetupChoice");
+        const autoCustomPanel = document.getElementById("autoCustomPanel");
+        const customWindToggle = document.getElementById("customWindToggle");
+        const customWindStrength = document.getElementById("customWindStrength");
+        const customWindStrengthValue = document.getElementById("customWindStrengthValue");
+        const customRainToggle = document.getElementById("customRainToggle");
+        const customRainIntensity = document.getElementById("customRainIntensity");
+        const customRainIntensityValue = document.getElementById("customRainIntensityValue");
+        const customNightToggle = document.getElementById("customNightToggle");
+        const customNightVisionToggle = document.getElementById("customNightVisionToggle");
+        const customBrightness = document.getElementById("customBrightness");
+        const customBrightnessValue = document.getElementById("customBrightnessValue");
+        const customWeaponList = document.getElementById("customWeaponList");
+        const customWeaponsAll = document.getElementById("customWeaponsAll");
+        const customSupportToggle = document.getElementById("customSupportToggle");
+        const customSupportMode = document.getElementById("customSupportMode");
+        const customSupportBombs = document.getElementById("customSupportBombs");
+        const customSupportBombsValue = document.getElementById("customSupportBombsValue");
+        const customSupportAll = document.getElementById("customSupportAll");
 
         const heroPrevBtn = document.getElementById("heroPrevBtn");
         const heroNextBtn = document.getElementById("heroNextBtn");
@@ -1267,11 +1489,51 @@
           rail: { file: "tank_weapon_rail_2oclock_256x256.webp", size: 24, baseAngle: -Math.PI / 4 },
           quantum: { file: "tank_weapon_quantum_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
           bomber: { file: "tank_weapon_bomber_air_bomber_6oclock_256x256.webp", size: 32, baseAngle: Math.PI / 2 },
+          health: { file: "tank_weapon_HEALTHBOMB_frontnoon_256x256.webp", size: 34, baseAngle: -Math.PI / 2 },
           laser: { file: "satellite_laser_reflection_256x256.webp", size: 34, baseAngle: 0 },
           rod: { file: "satellite_weapons_rod_shot_facing 11oclock_1024x280.webp", size: 70, baseAngle: -Math.PI * 0.75 }
         };
         const bomberPayloadSpriteKeys = ["bomber", "heavy", "cluster", "napalm", "quantum", "shell"];
         const weaponSpriteFiles = Object.values(weaponSpriteProfiles).map((profile) => profile.file);
+
+        function buildCustomWeaponList() {
+          if (!customWeaponList) return;
+          customWeaponList.innerHTML = "";
+          weapons.forEach((weapon) => {
+            const label = document.createElement("label");
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.name = "customWeapon";
+            input.value = weapon.key;
+            input.checked = true;
+            label.appendChild(input);
+            label.appendChild(document.createTextNode(weapon.name));
+            customWeaponList.appendChild(label);
+          });
+        }
+
+        function selectedCustomWeapons() {
+          const chosen = [...document.querySelectorAll('input[name="customWeapon"]:checked')].map((el) => el.value);
+          return chosen.length ? chosen : ["shell"];
+        }
+
+        function syncCustomWeaponsAll() {
+          const boxes = [...document.querySelectorAll('input[name="customWeapon"]')];
+          if (!boxes.length || !customWeaponsAll) return;
+          customWeaponsAll.checked = boxes.every((box) => box.checked);
+        }
+
+        function selectedCustomSupportTypes() {
+          if (customSupportToggle?.value === "off") return [];
+          const chosen = [...document.querySelectorAll('input[name="customSupportType"]:checked')].map((el) => el.value);
+          return chosen.length ? chosen : ["bomber"];
+        }
+
+        function syncCustomSupportAll() {
+          const boxes = [...document.querySelectorAll('input[name="customSupportType"]')];
+          if (!boxes.length || !customSupportAll) return;
+          customSupportAll.checked = boxes.every((box) => box.checked);
+        }
 
         function weaponExplosionPalette(weapon) {
           const key = weapon?.key || "shell";
@@ -1345,6 +1607,7 @@
           pendingNextLevel: null,
           campaignSideSwap: false,
           score: 0,
+          levelStartScore: 0,
           difficulty: "easy",
           turn: "player",
           activeProjectile: null,
@@ -1352,6 +1615,7 @@
           craters: [],
           fires: [],
           groundHazards: [],
+          healthPickups: [],
           airBombs: [],
           laserBeams: [],
           satellites: [],
@@ -1385,6 +1649,10 @@
           flareCharges: 0,
           flaresUsed: 0,
           enemySpotted: false,
+          healthCharges: 0,
+          healthBaseGranted: false,
+          allowedWeapons: [],
+          supportTypes: ["bomber", "health", "laser", "rod"],
           airSupport: { mode: "off", bombsPerCall: 3, used: 0, lastRound: -999 }
         };
         const shotHistory = [];
@@ -1465,8 +1733,17 @@
         }
 
         function unlockedWeaponsForPlayer() {
-          if (state.endlessAutoLevels) return weapons;
+          if (state.endlessAutoLevels) {
+            const allowed = Array.isArray(state.allowedWeapons) && state.allowedWeapons.length ? state.allowedWeapons : weapons.map((w) => w.key);
+            const filtered = weapons.filter((w) => allowed.includes(w.key));
+            return filtered.length ? filtered : [weapons[0]];
+          }
           return weapons.filter((w) => state.level >= w.unlock);
+        }
+
+        function isSupportTypeAllowed(type) {
+          const allowed = Array.isArray(state.supportTypes) && state.supportTypes.length ? state.supportTypes : ["bomber", "health", "laser", "rod"];
+          return allowed.includes(type);
         }
 
         function newlyUnlockedWeapons(level) {
@@ -1503,6 +1780,11 @@
           return node ? node.value : "auto";
         }
 
+        function selectedAutoSetup() {
+          const node = document.querySelector('input[name="autoSetup"]:checked');
+          return node ? node.value : "default";
+        }
+
         function selectedPlayerMode() {
           const node = document.querySelector('input[name="playerMode"]:checked');
           return node ? node.value : "ai";
@@ -1510,15 +1792,19 @@
 
         function syncWelcomeDetailsToMode() {
           const mode = selectedWelcomeMode();
-          welcomeWeatherDetails.style.display = mode === "auto" ? "block" : "none";
-          welcomeNightDetails.style.display = mode === "night" || mode === "auto" ? "block" : "none";
+          const customAuto = mode === "auto" && selectedAutoSetup() === "custom";
+          if (autoSetupChoice) autoSetupChoice.style.display = mode === "auto" ? "grid" : "none";
+          if (autoCustomPanel) autoCustomPanel.classList.toggle("open", customAuto);
+          welcomeWeatherDetails.style.display = "none";
+          welcomeNightDetails.style.display = mode === "night" ? "block" : "none";
           document.getElementById("callFlareBtn").style.display = mode === "night" ? "inline-block" : "none";
           updateNightVisionToggle();
         }
 
         function updateNightVisionToggle() {
           const selectedMode = selectedWelcomeMode();
-          const nightModeSelected = selectedMode === "night" || (selectedMode === "auto" && welcomeNightVision?.value === "on");
+          const customAutoNight = selectedMode === "auto" && selectedAutoSetup() === "custom" && customNightToggle?.value === "on";
+          const nightModeSelected = selectedMode === "night" || customAutoNight;
           const available = state.night.enabled || nightModeSelected;
           if (nightVisionMenuRow) nightVisionMenuRow.style.display = available ? "grid" : "none";
           if (nightVisionToggleBtn) {
@@ -1584,32 +1870,39 @@
         function loadMatchConfigFromWelcome() {
           const mode = selectedWelcomeMode();
           const isCampaign = mode === "leveled" || mode === "night";
-          const windOn = !isCampaign && welcomeWindEnabled.value === "on";
-          const windStrengthRaw = Number(welcomeWindStrength.value) || 0;
+          const customAuto = mode === "auto" && selectedAutoSetup() === "custom";
+          const windOn = customAuto ? customWindToggle?.value === "on" : (!isCampaign && welcomeWindEnabled.value === "on");
+          const windStrengthRaw = customAuto ? Number(customWindStrength?.value || 0) : Number(welcomeWindStrength.value) || 0;
           const wind = windOn ? (windStrengthRaw / 100) * 0.12 : 0;
 
-          const rainOn = !isCampaign && welcomeRainEnabled.value === "on";
-          const rainIntensity = rainOn ? clamp(Number(welcomeRainIntensity.value) || 0, 0, 100) / 100 : 0;
+          const rainOn = customAuto ? customRainToggle?.value === "on" : (!isCampaign && welcomeRainEnabled.value === "on");
+          const rainRaw = customAuto ? Number(customRainIntensity?.value || 0) : Number(welcomeRainIntensity.value) || 0;
+          const rainIntensity = rainOn ? clamp(rainRaw, 0, 100) / 100 : 0;
 
-          let bomberMode = welcomeBomberMode.value || "off";
+          let bomberMode = customAuto ? (customSupportToggle?.value === "off" ? "off" : customSupportMode?.value || "every3") : welcomeBomberMode.value || "off";
           if (isCampaign) bomberMode = mode === "night" ? "every3" : "once";
-          if (mode === "auto" && welcomeNightVision.value === "on" && bomberMode === "off") bomberMode = "every3";
-          const bombsPerCall = clamp(Number(welcomeBomberBombs.value) || 3, 1, 6);
+          if (mode === "auto" && !customAuto) bomberMode = "every3";
+          const bombsRaw = customAuto ? Number(customSupportBombs?.value || 3) : Number(welcomeBomberBombs.value) || 3;
+          const bombsPerCall = clamp(bombsRaw, 1, 6);
 
-          const darkness = mode === "night" ? 0.72 : clamp(Number(welcomeDarkness.value) || 70, 0, 100) / 100;
-          const nightVision = welcomeNightVision.value === "on";
-          const shotLightRadius = mode === "night" ? 220 : clamp(Number(welcomeShotLightRadius.value) || 170, 60, 360);
-          const shotLightIntensity = mode === "night" ? 0.92 : clamp(Number(welcomeShotLightIntensity.value) || 85, 20, 100) / 100;
+          const customNightOn = customAuto && customNightToggle?.value === "on";
+          const darkness = mode === "night" ? 0.72 : (customNightOn ? 0.7 : clamp(Number(welcomeDarkness.value) || 70, 0, 100) / 100);
+          const nightVision = customAuto ? customNightVisionToggle?.value === "on" : welcomeNightVision.value === "on";
+          const shotLightRadius = mode === "night" ? 220 : (customAuto ? 220 : clamp(Number(welcomeShotLightRadius.value) || 170, 60, 360));
+          const customBrightnessRaw = Number(customBrightness?.value || 85);
+          const shotLightIntensity = mode === "night" ? 0.92 : (customAuto ? clamp(customBrightnessRaw, 30, 100) / 100 : clamp(Number(welcomeShotLightIntensity.value) || 85, 20, 100) / 100);
           const flareAfterMisses = clamp(Number(welcomeFlareAfterMisses.value) || 3, 1, 7);
           const flareRadius = mode === "night" ? 320 : clamp(Number(welcomeFlareRadius.value) || 260, 120, 520);
           const flareIntensity = mode === "night" ? 0.96 : clamp(Number(welcomeFlareIntensity.value) || 95, 20, 100) / 100;
           const flareMax = mode === "night" ? 3 : clamp(Number(welcomeFlareMax.value) || 2, 0, 5);
-          const autoNight = mode === "auto" && nightVision;
+          const autoNight = mode === "auto" && (customAuto ? customNightOn : false);
 
           return {
             mode,
             playerMode: selectedPlayerMode(),
             difficulty: welcomeDifficultySelect?.value || "easy",
+            allowedWeapons: mode === "auto" ? (customAuto ? selectedCustomWeapons() : weapons.map((w) => w.key)) : [],
+            supportTypes: mode === "auto" ? (customAuto ? selectedCustomSupportTypes() : ["bomber", "health", "laser", "rod"]) : ["bomber", "health", "laser", "rod"],
             wind,
             rain: { enabled: rainOn, intensity: rainIntensity },
             bomber: { mode: bomberMode, bombsPerCall },
@@ -1642,6 +1935,8 @@
           state.airSupport.bombsPerCall = Number(cfg.bomber?.bombsPerCall || 3);
           state.airSupport.used = 0;
           state.airSupport.lastRound = -999;
+          state.allowedWeapons = Array.isArray(cfg.allowedWeapons) && cfg.allowedWeapons.length ? cfg.allowedWeapons : weapons.map((w) => w.key);
+          state.supportTypes = Array.isArray(cfg.supportTypes) && cfg.supportTypes.length ? cfg.supportTypes : ["bomber", "health", "laser", "rod"];
 
           state.enemySpotted = false;
           state.missStreak = 0;
@@ -1649,6 +1944,9 @@
           state.flaresUsed = 0;
           state.flares = [];
           state.lights = [];
+          state.healthPickups = [];
+          state.healthCharges = 0;
+          state.healthBaseGranted = false;
 
           state.endlessAutoLevels = state.mode === "auto";
           state.totalLevels = state.endlessAutoLevels ? 0 : 30;
@@ -1764,7 +2062,11 @@
             night: state.night,
             wind: state.wind,
             rain: state.rain,
-            airSupport: state.airSupport
+            airSupport: state.airSupport,
+            healthCharges: state.healthCharges,
+            healthBaseGranted: state.healthBaseGranted,
+            allowedWeapons: state.allowedWeapons,
+            supportTypes: state.supportTypes
           };
           localStorage.setItem(SAVE_KEY, JSON.stringify(data));
           updateStatus("Game saved.");
@@ -1793,8 +2095,12 @@
             wind: data.wind || 0,
             rain: data.rain || { enabled: false, intensity: 0 },
             bomber: data.airSupport || { mode: "once", bombsPerCall: 3 },
-            night: data.night || { enabled: data.mode === "night", vision: false }
+            night: data.night || { enabled: data.mode === "night", vision: false },
+            allowedWeapons: data.allowedWeapons || weapons.map((w) => w.key),
+            supportTypes: data.supportTypes || ["bomber", "health", "laser", "rod"]
           });
+          state.healthCharges = Math.max(0, Number(data.healthCharges || 0));
+          state.healthBaseGranted = !!data.healthBaseGranted;
           state.level = clamp(Number(data.level || 1), 1, state.endlessAutoLevels ? 9999 : 30);
           state.rounds = Math.max(1, Number(data.rounds || 1));
           state.score = Math.max(0, Number(data.score || 0));
@@ -2088,6 +2394,7 @@
           state.craters = [];
           state.fires = [];
           state.groundHazards = [];
+          state.healthPickups = [];
           state.airBombs = [];
           state.bomberActive = null;
           state.supportStrike = null;
@@ -2140,6 +2447,7 @@
           syncControlsToTurn();
           refreshWeaponMenu();
           updateHud();
+          state.levelStartScore = state.score;
           updateStatus(`${levelTitle()} ready. ${turnLabel()} may reposition one short step before firing.`);
           showTopHud(3200);
 
@@ -2149,6 +2457,23 @@
           } else {
             hideTutorial();
           }
+        }
+
+        function rebuildAutoLevel() {
+          if (!state.endlessAutoLevels) {
+            updateStatus("Rebuild Level is only available in Auto Generated mode.");
+            return;
+          }
+          if (state.activeProjectile || state.bomberActive || state.supportStrike) {
+            updateStatus("Wait for the current shot or support action to finish before rebuilding.");
+            return;
+          }
+          const forfeited = Math.max(0, Math.round(state.score - Number(state.levelStartScore || 0)));
+          state.score = Number(state.levelStartScore || 0);
+          resetLevel(false);
+          updateStatus(forfeited > 0
+            ? `Level rebuilt. ${forfeited} points from this map were forfeited.`
+            : "Level rebuilt with a new generated map.");
         }
 
         function updateHud() {
@@ -2163,6 +2488,38 @@
           angleValue.textContent = String(angleInput.value);
           powerValue.textContent = String(powerInput.value);
           updateSupportButtonState();
+          updateAutoRebuildButton();
+        }
+
+        function updateAutoRebuildButton() {
+          const show = !!state.endlessAutoLevels;
+          autoRebuildCell?.classList.toggle("show", show);
+          if (rebuildLevelBtn) rebuildLevelBtn.disabled = !show || !!state.activeProjectile || !!state.lockInput;
+        }
+
+        function updateSupportActionButton() {
+          let label = "";
+          let kind = "";
+          if (state.bomberActive?.type === "health" && Number(state.bomberActive.dropsLeft || 0) > 0) {
+            label = "Drop Health";
+            kind = "health";
+          } else if (state.bomberActive && Number(state.bomberActive.dropsLeft || 0) > 0) {
+            label = `Drop Bomb (${Math.max(0, Number(state.bomberActive.dropsLeft || 0))})`;
+            kind = "air";
+          } else if (state.supportStrike?.type === "laser") {
+            label = "Shoot Laser";
+            kind = "space";
+          } else if (state.supportStrike?.type === "rod") {
+            label = "Drop Rod of God";
+            kind = "space";
+          } else if (state.flarePlane) {
+            label = "Drop Flare";
+            kind = "air";
+          }
+          supportActionBtn?.classList.toggle("show", !!label);
+          supportActionBtn?.classList.toggle("health", kind === "health");
+          supportActionBtn?.classList.toggle("space", kind === "space");
+          if (supportActionBtn) supportActionBtn.textContent = label || "Drop Bomb";
         }
 
         function turnTank() {
@@ -2222,16 +2579,66 @@
 
         function updateSupportButtonState() {
           const enabled = supportAvailable() && state.turn === "player" && !state.activeProjectile && !state.lockInput;
-          airSupportBtn.disabled = !enabled;
+          const healthEnabled = healthDropAvailable();
+          airSupportBtn.disabled = !enabled && !healthEnabled;
           airSupportBtn.textContent = state.airSupport.mode === "off" ? "Air / Space Off" : "Air / Space Support";
-          ["callBomberBtn", "callLaserBtn", "callRodBtn"].forEach((id) => {
+          const supportMap = { callBomberBtn: "bomber", callLaserBtn: "laser", callRodBtn: "rod" };
+          Object.entries(supportMap).forEach(([id, type]) => {
             const btn = document.getElementById(id);
-            if (btn) btn.disabled = !enabled;
+            if (btn) btn.disabled = !enabled || !isSupportTypeAllowed(type);
           });
+          const healthBtn = document.getElementById("callHealthBtn");
+          if (healthBtn) {
+            healthBtn.disabled = !healthEnabled;
+            healthBtn.textContent = `Air Drop Health (${Math.max(0, Number(state.healthCharges || 0))})`;
+          }
+          if (state.airSupport.mode === "off" && healthEnabled) airSupportBtn.textContent = "Health Support Ready";
+        }
+
+        function healthDropAvailable() {
+          return state.turn === "player"
+            && !state.activeProjectile
+            && !state.lockInput
+            && !state.bomberActive
+            && Number(state.healthCharges || 0) > 0
+            && isSupportTypeAllowed("health");
         }
 
         function updateStatus(text) {
           statusLine.textContent = text;
+        }
+
+        function healTank(tank, amount, label = "Health Drop") {
+          const before = Number(tank.hp || 0);
+          const cap = Math.round(Number(tank.maxHp || 100) * 1.75);
+          tank.hp = Math.min(cap, before + Number(amount || 0));
+          const gained = Math.max(0, Math.round(tank.hp - before));
+          if (gained > 0) updateStatus(`${label} repaired ${tankName(tank)} for ${gained} armor.`);
+          updateHud();
+        }
+
+        function collectHealthPickups(tank) {
+          for (let i = state.healthPickups.length - 1; i >= 0; i -= 1) {
+            const p = state.healthPickups[i];
+            const dx = tank.x - p.x;
+            const dy = tank.y - p.y;
+            if (Math.hypot(dx, dy) > Math.max(36, tank.width * 0.58)) continue;
+            healTank(tank, p.amount || 46, "Health pickup");
+            state.healthPickups.splice(i, 1);
+          }
+        }
+
+        function grantHealthDrop(reason) {
+          state.healthCharges = Math.min(5, Number(state.healthCharges || 0) + 1);
+          updateSupportButtonState();
+          if (reason) updateStatus(reason);
+        }
+
+        function ensureHealthDropGrant() {
+          if (!state.healthBaseGranted && state.rounds >= 2) {
+            state.healthBaseGranted = true;
+            grantHealthDrop("Health Drop ready. Use Air Drop Health from Air / Space Support.");
+          }
         }
 
         function tankName(tank) {
@@ -2611,6 +3018,9 @@
               damagedTanks.push({ tank, falloff, direct: tank === directHitTank });
               if (tank.side !== source) state.score += Math.round(dmg * 1.8);
               if (tank.side === source) state.score -= Math.round(dmg * 0.8);
+              if ((tank === state.player || state.playerMode === "two") && source !== tank.side && hpBefore - tank.hp > 0.5) {
+                grantHealthDrop("Health Drop earned after taking a hit.");
+              }
             }
             if (tank === state.enemy && source === state.player.side && tank.hp < hpBefore - 0.5) hitEnemy = true;
           });
@@ -3227,6 +3637,19 @@
               ctx.stroke();
             }
           });
+          state.healthPickups.forEach((p) => {
+            const bob = Math.sin(performance.now() / 220 + p.x * 0.02) * 3;
+            if (!drawWeaponSprite({ x: p.x, y: p.y - 13 + bob, vx: 0, vy: -1, spriteKey: "health", weapon: { key: "health", color: "#5dff9a", trail: "#d8ffe7" } }, 30)) {
+              ctx.save();
+              ctx.shadowBlur = 14;
+              ctx.shadowColor = "#5dff9a";
+              ctx.fillStyle = "#38d979";
+              ctx.beginPath();
+              ctx.arc(p.x, p.y - 14 + bob, 11, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          });
         }
 
         function drawGroundHazards() {
@@ -3270,6 +3693,10 @@
             updateStatus("Air bomber disabled for this match.");
             return;
           }
+          if (!isSupportTypeAllowed("bomber")) {
+            updateStatus("Air bomber is not enabled in this custom match.");
+            return;
+          }
           const dir = bomberDirectionSelect.value === "rtl" ? -1 : 1;
           const startX = dir === 1 ? -90 : world.width + 90;
           state.bomberActive = {
@@ -3288,8 +3715,38 @@
           updateStatus("Air bomber inbound. Click as it flies to drop bombs.");
         }
 
+        function callHealthDrop() {
+          if (!healthDropAvailable()) {
+            updateStatus("No Health Drop is ready yet. One arrives after round two, and hits taken earn more.");
+            return;
+          }
+          hideTopHud();
+          hideTutorial();
+          const tank = turnTank();
+          const dir = tank.x < world.width * 0.5 ? -1 : 1;
+          state.bomberActive = {
+            type: "health",
+            x: dir === 1 ? -220 : world.width + 220,
+            y: 112,
+            dir,
+            speed: 3.8,
+            dropsLeft: 1,
+            margin: 240,
+            trace: []
+          };
+          state.healthCharges = Math.max(0, Number(state.healthCharges || 0) - 1);
+          state.bomberTurnPendingEnd = true;
+          setAirSupportOpen(false);
+          updateSupportButtonState();
+          updateStatus("Health drop inbound. Tap Drop Health when it is above your tank.");
+        }
+
         function callLaserSupport() {
           if (!supportAvailable() || state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (!isSupportTypeAllowed("laser")) {
+            updateStatus("Satellite laser is not enabled in this custom match.");
+            return;
+          }
           if (state.supportStrike) {
             updateStatus("Support satellite already in orbit. Click the battlefield to fire.");
             return;
@@ -3310,6 +3767,10 @@
 
         function callRodSupport() {
           if (!supportAvailable() || state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (!isSupportTypeAllowed("rod")) {
+            updateStatus("Rod of God is not enabled in this custom match.");
+            return;
+          }
           if (state.supportStrike) {
             updateStatus("Support satellite already in orbit. Click the battlefield to fire.");
             return;
@@ -3336,7 +3797,8 @@
           const timingError = sat.x - idealX;
           const targetX = clamp(state.enemy.x + timingError * 1.18, 40, world.width - 40);
           const targetY = terrainHeightAt(targetX);
-          state.laserBeams.push({ sx: sat.x, sy: sat.y, mx: idealX, my: 54, tx: targetX, ty: targetY, life: 32 });
+          const muzzle = getMuzzle(state.player);
+          state.laserBeams.push({ sx: muzzle.x, sy: muzzle.y, mx: sat.x, my: sat.y, tx: targetX, ty: targetY, life: 30, maxLife: 30 });
           const hitT = segmentHitsAabb(sat.x, sat.y, targetX, targetY, tankAabb(state.enemy));
           const directDamage = Math.max(34, state.enemy.maxHp * 0.5 / 1.28);
           explode(targetX, hitT !== null ? state.enemy.y : targetY, { key: "rail", radius: 26, damage: directDamage, color: "#76ddff", trail: "#c7f1ff", piercing: true, burn: true }, state.player.side, hitT !== null ? state.enemy : null);
@@ -3372,6 +3834,24 @@
           hideTutorial();
           const b = state.bomberActive;
           if (!b || b.dropsLeft <= 0) return;
+          if (b.type === "health") {
+            state.airBombs.push({
+              x: b.x,
+              y: b.y + 12,
+              vx: b.dir * 0.18,
+              vy: 0.65,
+              accel: 0.22,
+              weapon: { key: "health", radius: 34, damage: 0, color: "#5dff9a", trail: "#d8ffe7" },
+              spriteKey: "health",
+              source: state.player.side,
+              targetSide: turnTank().side,
+              healAmount: 52,
+              isHealth: true
+            });
+            b.dropsLeft -= 1;
+            updateStatus("Health drop released.");
+            return;
+          }
           const bombBase = { key: "bomber", radius: 74, damage: 78, color: "#ff7643", trail: "#ffd8bf", sprite: "tank_weapon_bomber_air_bomber_6oclock_256x256.webp" };
           const bombWeapon = getTunedWeapon(bombBase);
           state.airBombs.push({
@@ -3421,13 +3901,26 @@
           updateStatus("Flare plane inbound. Click to drop a flare.");
         }
 
+        function dropFlareAt(x) {
+          if (!state.flarePlane) return;
+          state.flares.push({ x: clamp(x, 0, world.width), y: state.flarePlane.y + 18, vy: 0.8, radius: state.night.flareRadius, intensity: state.night.flareIntensity, life: 900 });
+          state.flarePlane = null;
+          updateStatus("Flare dropped.");
+        }
+
         function updateBomberAndBombs() {
+          for (let i = state.healthPickups.length - 1; i >= 0; i -= 1) {
+            const p = state.healthPickups[i];
+            p.life = Number(p.life || 0) - 1;
+            if (p.life <= 0) state.healthPickups.splice(i, 1);
+          }
           if (state.bomberActive) {
             const b = state.bomberActive;
             b.trace.push({ x: b.x, y: b.y });
             if (b.trace.length > 80) b.trace.shift();
             b.x += b.dir * b.speed;
-            if ((b.dir === 1 && b.x > world.width + 100) || (b.dir === -1 && b.x < -100)) {
+            const margin = Number(b.margin || 100);
+            if ((b.dir === 1 && b.x > world.width + margin) || (b.dir === -1 && b.x < -margin)) {
               state.bomberActive = null;
             }
           }
@@ -3443,6 +3936,20 @@
             }
             const ty = terrainHeightAt(bomb.x);
             if (bomb.y >= ty) {
+              if (bomb.isHealth) {
+                const candidates = [state.player, state.enemy].filter((tank) => tank.side === bomb.targetSide);
+                const targetTank = candidates[0] || state.player;
+                const directHit = segmentHitsAabb(bomb.x, bomb.y - Math.max(80, bomb.vy * 4), bomb.x, bomb.y, tankAabb(targetTank)) !== null;
+                if (directHit) {
+                  healTank(targetTank, bomb.healAmount || 52, "Health Drop");
+                } else {
+                  state.healthPickups.push({ x: bomb.x, y: ty - 8, amount: bomb.healAmount || 52, life: 2200 });
+                  updateStatus("Health Drop landed. Drive into it to recover armor.");
+                }
+                state.airBombs.splice(i, 1);
+                showTopHud(2200);
+                continue;
+              }
               const targetTank = bomb.source === state.player.side ? state.enemy : state.player;
               const directHit = segmentHitsAabb(bomb.x, bomb.y - Math.max(80, bomb.vy * 4), bomb.x, bomb.y, tankAabb(targetTank)) !== null;
               explode(bomb.x, directHit ? targetTank.y : ty, bomb.weapon, bomb.source || "left", directHit ? targetTank : null);
@@ -3532,6 +4039,35 @@
         }
 
         function drawSpaceSupport() {
+          function drawLaserPulse(x1, y1, x2, y2, progress, tail, alpha) {
+            const p2 = clamp(progress, 0, 1);
+            const p1 = clamp(p2 - tail, 0, 1);
+            if (p2 <= 0 || p1 >= 1) return;
+            const sx = x1 + (x2 - x1) * p1;
+            const sy = y1 + (y2 - y1) * p1;
+            const ex = x1 + (x2 - x1) * p2;
+            const ey = y1 + (y2 - y1) * p2;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.lineCap = "round";
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "rgba(118,221,255,0.82)";
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = "#76ddff";
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#ffffff";
+            ctx.shadowBlur = 7;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+            ctx.restore();
+          }
+
           state.satellites.forEach((s) => {
             const img = ensureImageLoaded(s.type === "rod" ? "satellite_rod_of_god_256x256.webp" : "satellite_laser_reflection_256x256.webp");
             ctx.save();
@@ -3547,22 +4083,11 @@
             ctx.restore();
           });
           state.laserBeams.forEach((b) => {
-            const a = clamp(b.life / 28, 0, 1);
-            ctx.save();
-            ctx.globalAlpha = a;
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#76ddff";
-            ctx.shadowBlur = 22;
-            ctx.shadowColor = "#76ddff";
-            ctx.beginPath();
-            ctx.moveTo(b.sx, b.sy);
-            ctx.lineTo(b.mx, b.my);
-            ctx.lineTo(b.tx, b.ty);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "#ffffff";
-            ctx.stroke();
-            ctx.restore();
+            const maxLife = Number(b.maxLife || 30);
+            const age = maxLife - Number(b.life || 0);
+            const fade = clamp(Number(b.life || 0) / 8, 0, 1);
+            drawLaserPulse(b.sx, b.sy, b.mx, b.my, age / 9, 0.22, fade);
+            drawLaserPulse(b.mx, b.my, b.tx, b.ty, (age - 7) / 11, 0.28, fade);
           });
         }
 
@@ -3671,6 +4196,7 @@
           } else {
             state.turn = "player";
             state.rounds += 1;
+            ensureHealthDropGrant();
             state.preMoveUsed = false;
             state.preMoveAllowance = 1;
             if (state.rounds % 4 === 0) {
@@ -3904,6 +4430,8 @@
           updateTankFacing(state.player, state.enemy);
           updateTankFacing(state.enemy, state.player);
           updatePlayerEmpDrift();
+          collectHealthPickups(state.player);
+          collectHealthPickups(state.enemy);
           drawTank(state.player);
           drawTank(state.enemy);
           drawAimGuide();
@@ -3921,6 +4449,7 @@
           drawNightVision();
           drawDaylightLightReveal();
           drawNightProjectileMarker();
+          updateSupportActionButton();
           requestAnimationFrame(render);
         }
 
@@ -4262,6 +4791,9 @@
               syncWelcomeDetailsToMode();
             });
           });
+          document.querySelectorAll('input[name="autoSetup"]').forEach((el) => {
+            el.addEventListener("change", syncWelcomeDetailsToMode);
+          });
           welcomeCloseBtn.addEventListener("click", () => setWelcomeOpen(false));
           welcomeContinueBtn.addEventListener("click", () => {
             syncWelcomeDetailsToMode();
@@ -4318,6 +4850,37 @@
           });
           welcomeBomberBombs.addEventListener("input", () => {
             welcomeBomberBombsValue.textContent = String(welcomeBomberBombs.value);
+          });
+          customWindStrength?.addEventListener("input", () => {
+            customWindStrengthValue.textContent = String(customWindStrength.value);
+          });
+          customRainIntensity?.addEventListener("input", () => {
+            customRainIntensityValue.textContent = String(customRainIntensity.value);
+          });
+          customBrightness?.addEventListener("input", () => {
+            customBrightnessValue.textContent = String(customBrightness.value);
+          });
+          customSupportBombs?.addEventListener("input", () => {
+            customSupportBombsValue.textContent = String(customSupportBombs.value);
+          });
+          [customNightToggle, customNightVisionToggle].forEach((el) => {
+            el?.addEventListener("change", updateNightVisionToggle);
+          });
+          customWeaponsAll?.addEventListener("change", () => {
+            document.querySelectorAll('input[name="customWeapon"]').forEach((box) => {
+              box.checked = customWeaponsAll.checked;
+            });
+          });
+          customWeaponList?.addEventListener("change", (ev) => {
+            if (ev.target?.name === "customWeapon") syncCustomWeaponsAll();
+          });
+          customSupportAll?.addEventListener("change", () => {
+            document.querySelectorAll('input[name="customSupportType"]').forEach((box) => {
+              box.checked = customSupportAll.checked;
+            });
+          });
+          document.querySelectorAll('input[name="customSupportType"]').forEach((box) => {
+            box.addEventListener("change", syncCustomSupportAll);
           });
           welcomeNightVision.addEventListener("change", () => {
             setNightVision(welcomeNightVision.value === "on");
@@ -4387,9 +4950,25 @@
           showNightVisionBtn.addEventListener("click", showNightVisionToggle);
           document.getElementById("fireButton").addEventListener("click", firePlayer);
           document.getElementById("callBomberBtn").addEventListener("click", callAirBomber);
+          document.getElementById("callHealthBtn").addEventListener("click", callHealthDrop);
           document.getElementById("callLaserBtn").addEventListener("click", callLaserSupport);
           document.getElementById("callRodBtn").addEventListener("click", callRodSupport);
           document.getElementById("callFlareBtn").addEventListener("click", callFlare);
+          supportActionBtn?.addEventListener("click", () => {
+            if (state.bomberActive) {
+              dropBomberPayload();
+              return;
+            }
+            if (state.supportStrike?.type === "laser") {
+              fireTimedLaser();
+              return;
+            }
+            if (state.supportStrike?.type === "rod") {
+              dropTimedRod();
+              return;
+            }
+            if (state.flarePlane) dropFlareAt(state.flarePlane.x);
+          });
           document.getElementById("nextTurnButton").addEventListener("click", () => {
             if (!state.activeProjectile) endTurn();
           });
@@ -4411,6 +4990,7 @@
             if (tutorialOverlay.classList.contains("active")) hideTutorial();
             else showTutorialStep();
           });
+          rebuildLevelBtn?.addEventListener("click", rebuildAutoLevel);
           document.getElementById("moveLeftBtn").addEventListener("click", () => moveTankShortStep("left"));
           document.getElementById("moveRightBtn").addEventListener("click", () => moveTankShortStep("right"));
           weaponSelect.addEventListener("change", () => {
@@ -4508,9 +5088,7 @@
             if (state.flarePlane && state.turn === "player") {
               const r = canvas.getBoundingClientRect();
               const x = clamp(((ev.clientX - r.left) / r.width) * world.width, 0, world.width);
-              state.flares.push({ x, y: state.flarePlane.y + 18, vy: 0.8, radius: state.night.flareRadius, intensity: state.night.flareIntensity, life: 900 });
-              state.flarePlane = null;
-              updateStatus("Flare dropped.");
+              dropFlareAt(x);
             }
           });
           tutorialNext.addEventListener("click", () => {
@@ -4561,6 +5139,7 @@
         loadImages().then(async () => {
           await loadCustomLevels();
           buildSelects();
+          buildCustomWeaponList();
           bindUi();
           loadSelectedShotProfile();
           resetLevel(true);
@@ -4579,6 +5158,10 @@
           welcomeFlareRadiusValue.textContent = String(welcomeFlareRadius.value);
           welcomeFlareIntensityValue.textContent = String(welcomeFlareIntensity.value);
           welcomeFlareMaxValue.textContent = String(welcomeFlareMax.value);
+          if (customWindStrengthValue) customWindStrengthValue.textContent = String(customWindStrength.value);
+          if (customRainIntensityValue) customRainIntensityValue.textContent = String(customRainIntensity.value);
+          if (customBrightnessValue) customBrightnessValue.textContent = String(customBrightness.value);
+          if (customSupportBombsValue) customSupportBombsValue.textContent = String(customSupportBombs.value);
           document.getElementById("callFlareBtn").style.display = "none";
           setWelcomeOpen(true);
         });
