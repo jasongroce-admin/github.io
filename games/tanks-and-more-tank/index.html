@@ -482,6 +482,29 @@
       .welcome-card[data-step="1"] #welcomeNav1 { grid-template-columns: 1fr; }
       .welcome-card[data-step="2"] #welcomeNav2 { display: grid; }
       .welcome-card[data-step="3"] #welcomeNav3 { display: grid; }
+      .welcome-nav button {
+        border: 1px solid #375e86;
+        background: linear-gradient(180deg, #236db4, #184c7d);
+        color: #fff;
+        min-height: 40px;
+        padding: 8px 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .welcome-nav button.alt,
+      #welcomeContinueBtn,
+      #welcomeStartBtn2 {
+        min-height: 58px;
+        border: 5px solid #10170f;
+        background: linear-gradient(180deg, #ffd35f, #c87512);
+        color: #151812;
+        font-size: 1.08rem;
+        font-weight: 950;
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35), 0 0 24px rgba(255, 211, 95, 0.28);
+      }
+      .welcome-nav button.ghost {
+        background: rgba(9, 25, 42, 0.65);
+      }
       .welcome-head {
         display: flex;
         align-items: start;
@@ -744,6 +767,14 @@
         min-height: 38px;
         font-weight: 800;
         cursor: pointer;
+      }
+      .victory-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .victory-actions.two {
+        grid-template-columns: 1fr 1fr;
       }
       .night-briefing {
         position: fixed;
@@ -1014,6 +1045,8 @@
                     <label><input type="checkbox" name="customSupportType" value="health" checked> Health Drop</label>
                     <label><input type="checkbox" name="customSupportType" value="laser" checked> Satellite Laser</label>
                     <label><input type="checkbox" name="customSupportType" value="rod" checked> Rod of God</label>
+                    <label><input type="checkbox" name="customSupportType" value="meteor" checked> Meteor</label>
+                    <label><input type="checkbox" name="customSupportType" value="scanner" checked> Scan Satellite</label>
                   </div>
                 </div>
               </div>
@@ -1200,6 +1233,8 @@
               <div class="row"><button type="button" id="callHealthBtn">Air Drop Health</button></div>
               <div class="row"><button type="button" id="callLaserBtn">Reflect Laser</button></div>
               <div class="row"><button type="button" id="callRodBtn">Rod of God</button></div>
+              <div class="row"><button type="button" id="callMeteorBtn">Meteor Strike</button></div>
+              <div class="row"><button type="button" id="callScannerBtn">Scan Satellite</button></div>
               <div class="row"><button type="button" id="callFlareBtn">Drop Flare</button></div>
               <div class="row"><button type="button" id="airSupportCloseBtn">Close</button></div>
             </div>
@@ -1260,7 +1295,10 @@
         <h2 id="victoryTitle">Victory</h2>
         <p id="victoryBody">The battlefield is clear.</p>
         <div class="unlock" id="victoryUnlock"></div>
-        <button id="victoryNextBtn" type="button">Next Level</button>
+        <div class="victory-actions" id="victoryActions">
+          <button id="victoryNextBtn" type="button">Next Level</button>
+          <button id="victorySettingsBtn" type="button">Change Settings</button>
+        </div>
       </div>
       <div class="night-briefing" id="nightBriefing" role="dialog" aria-live="polite" aria-label="Night Missions briefing">
         <h2>Night Missions</h2>
@@ -1306,6 +1344,8 @@
         const victoryBody = document.getElementById("victoryBody");
         const victoryUnlock = document.getElementById("victoryUnlock");
         const victoryNextBtn = document.getElementById("victoryNextBtn");
+        const victorySettingsBtn = document.getElementById("victorySettingsBtn");
+        const victoryActions = document.getElementById("victoryActions");
         const nightBriefing = document.getElementById("nightBriefing");
         const showNightVisionBtn = document.getElementById("showNightVisionBtn");
         const closeNightBriefingBtn = document.getElementById("closeNightBriefingBtn");
@@ -1490,6 +1530,8 @@
           quantum: { file: "tank_weapon_quantum_256x256.webp", size: 31, baseAngle: -Math.PI / 2 },
           bomber: { file: "tank_weapon_bomber_air_bomber_6oclock_256x256.webp", size: 32, baseAngle: Math.PI / 2 },
           health: { file: "tank_weapon_HEALTHBOMB_frontnoon_256x256.webp", size: 34, baseAngle: -Math.PI / 2 },
+          meteor: { file: "satellight_weapon_METEOR_frontnoon_256x256.webp", size: 38, baseAngle: -Math.PI / 2 },
+          scanner: { file: "tank_weapon_SATELLITE_frontnoon_256x256.webp", size: 34, baseAngle: -Math.PI / 2 },
           laser: { file: "satellite_laser_reflection_256x256.webp", size: 34, baseAngle: 0 },
           rod: { file: "satellite_weapons_rod_shot_facing 11oclock_1024x280.webp", size: 70, baseAngle: -Math.PI * 0.75 }
         };
@@ -1624,6 +1666,7 @@
           bomberTurnPendingEnd: false,
           supportTurnPendingEnd: false,
           clusterTurnPendingEnd: false,
+          scanAssistShots: 0,
           airBomberCharges: 1,
           terrain: [],
           mountainsFar: [],
@@ -1652,14 +1695,14 @@
           healthCharges: 0,
           healthBaseGranted: false,
           allowedWeapons: [],
-          supportTypes: ["bomber", "health", "laser", "rod"],
+          supportTypes: ["bomber", "health", "laser", "rod", "meteor", "scanner"],
           airSupport: { mode: "off", bombsPerCall: 3, used: 0, lastRound: -999 }
         };
         const shotHistory = [];
         let hudCollapseTimer = 0;
         let lastEmpDriftMs = 0;
         const weaponTuning = {};
-        [...weapons.map((w) => w.key), "bomber", "laser", "rod"].forEach((k) => {
+        [...weapons.map((w) => w.key), "bomber", "laser", "rod", "meteor", "scanner", "health"].forEach((k) => {
           weaponTuning[k] = { damageScale: 100, radiusScale: 100 };
         });
 
@@ -1742,7 +1785,7 @@
         }
 
         function isSupportTypeAllowed(type) {
-          const allowed = Array.isArray(state.supportTypes) && state.supportTypes.length ? state.supportTypes : ["bomber", "health", "laser", "rod"];
+          const allowed = Array.isArray(state.supportTypes) && state.supportTypes.length ? state.supportTypes : ["bomber", "health", "laser", "rod", "meteor", "scanner"];
           return allowed.includes(type);
         }
 
@@ -1902,7 +1945,7 @@
             playerMode: selectedPlayerMode(),
             difficulty: welcomeDifficultySelect?.value || "easy",
             allowedWeapons: mode === "auto" ? (customAuto ? selectedCustomWeapons() : weapons.map((w) => w.key)) : [],
-            supportTypes: mode === "auto" ? (customAuto ? selectedCustomSupportTypes() : ["bomber", "health", "laser", "rod"]) : ["bomber", "health", "laser", "rod"],
+            supportTypes: mode === "auto" ? (customAuto ? selectedCustomSupportTypes() : ["bomber", "health", "laser", "rod", "meteor", "scanner"]) : ["bomber", "health", "laser", "rod", "meteor", "scanner"],
             wind,
             rain: { enabled: rainOn, intensity: rainIntensity },
             bomber: { mode: bomberMode, bombsPerCall },
@@ -1936,7 +1979,7 @@
           state.airSupport.used = 0;
           state.airSupport.lastRound = -999;
           state.allowedWeapons = Array.isArray(cfg.allowedWeapons) && cfg.allowedWeapons.length ? cfg.allowedWeapons : weapons.map((w) => w.key);
-          state.supportTypes = Array.isArray(cfg.supportTypes) && cfg.supportTypes.length ? cfg.supportTypes : ["bomber", "health", "laser", "rod"];
+          state.supportTypes = Array.isArray(cfg.supportTypes) && cfg.supportTypes.length ? cfg.supportTypes : ["bomber", "health", "laser", "rod", "meteor", "scanner"];
 
           state.enemySpotted = false;
           state.missStreak = 0;
@@ -2020,6 +2063,7 @@
           state.bomberTurnPendingEnd = false;
           state.supportTurnPendingEnd = false;
           state.clusterTurnPendingEnd = false;
+          state.scanAssistShots = 0;
 
           state.firstMatchStarted = true;
           state.lockInput = false;
@@ -2097,7 +2141,7 @@
             bomber: data.airSupport || { mode: "once", bombsPerCall: 3 },
             night: data.night || { enabled: data.mode === "night", vision: false },
             allowedWeapons: data.allowedWeapons || weapons.map((w) => w.key),
-            supportTypes: data.supportTypes || ["bomber", "health", "laser", "rod"]
+            supportTypes: data.supportTypes || ["bomber", "health", "laser", "rod", "meteor", "scanner"]
           });
           state.healthCharges = Math.max(0, Number(data.healthCharges || 0));
           state.healthBaseGranted = !!data.healthBaseGranted;
@@ -2132,8 +2176,8 @@
           const tune = weaponTuning[base.key] || { damageScale: 100, radiusScale: 100 };
           return {
             ...base,
-            damage: Number(base.damage) * (Number(tune.damageScale) / 100),
-            radius: Number(base.radius) * (Number(tune.radiusScale) / 100)
+            damage: Number(base.damage || 0) * (Number(tune.damageScale) / 100),
+            radius: Number(base.radius || 0) * (Number(tune.radiusScale) / 100)
           };
         }
 
@@ -2512,6 +2556,9 @@
           } else if (state.supportStrike?.type === "rod") {
             label = "Drop Rod of God";
             kind = "space";
+          } else if (state.supportStrike?.type === "meteor") {
+            label = "Drop Meteor";
+            kind = "space";
           } else if (state.flarePlane) {
             label = "Drop Flare";
             kind = "air";
@@ -2582,7 +2629,7 @@
           const healthEnabled = healthDropAvailable();
           airSupportBtn.disabled = !enabled && !healthEnabled;
           airSupportBtn.textContent = state.airSupport.mode === "off" ? "Air / Space Off" : "Air / Space Support";
-          const supportMap = { callBomberBtn: "bomber", callLaserBtn: "laser", callRodBtn: "rod" };
+          const supportMap = { callBomberBtn: "bomber", callLaserBtn: "laser", callRodBtn: "rod", callMeteorBtn: "meteor", callScannerBtn: "scanner" };
           Object.entries(supportMap).forEach(([id, type]) => {
             const btn = document.getElementById(id);
             if (btn) btn.disabled = !enabled || !isSupportTypeAllowed(type);
@@ -2923,6 +2970,9 @@
         function launchShot(fromTank, weaponKey, angleDeg, powerPct, forcedDir) {
           hideTopHud();
           hideTutorial();
+          if (Number(state.scanAssistShots || 0) > 0 && (fromTank === state.player || state.playerMode === "two")) {
+            state.scanAssistShots = Math.max(0, Number(state.scanAssistShots || 0) - 1);
+          }
           setAirSupportOpen(false);
           const allowed = fromTank === state.player || state.playerMode === "two" ? unlockedWeaponsForPlayer() : weapons;
           const baseWeapon = allowed.find((w) => w.key === weaponKey) || allowed[0] || weapons[0];
@@ -3789,6 +3839,47 @@
           updateStatus("Rod satellite crossing. Click when it is over the enemy tank.");
         }
 
+        function callMeteorSupport() {
+          if (!supportAvailable() || state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (!isSupportTypeAllowed("meteor")) {
+            updateStatus("Meteor Strike is not enabled in this custom match.");
+            return;
+          }
+          if (state.supportStrike) {
+            updateStatus("Support satellite already in orbit. Click the battlefield to fire.");
+            return;
+          }
+          hideTopHud();
+          hideTutorial();
+          const dir = bomberDirectionSelect.value === "rtl" ? -1 : 1;
+          const sat = { type: "meteor", x: dir === 1 ? -120 : world.width + 120, y: 72, dir, speed: 4.0, life: 390, armed: true };
+          state.satellites.push(sat);
+          state.supportStrike = { type: "meteor", satellite: sat };
+          state.supportTurnPendingEnd = true;
+          state.airSupport.used += 1;
+          state.airSupport.lastRound = state.rounds;
+          setAirSupportOpen(false);
+          updateSupportButtonState();
+          updateStatus("Meteor satellite crossing. Click when it is over the enemy tank.");
+        }
+
+        function callScannerSupport() {
+          if (!supportAvailable() || state.turn !== "player" || state.activeProjectile || state.lockInput) return;
+          if (!isSupportTypeAllowed("scanner")) {
+            updateStatus("Scan Satellite is not enabled in this custom match.");
+            return;
+          }
+          hideTopHud();
+          hideTutorial();
+          state.scanAssistShots = 2;
+          state.airSupport.used += 1;
+          state.airSupport.lastRound = state.rounds;
+          setAirSupportOpen(false);
+          updateSupportButtonState();
+          updateStatus("Scan Satellite active for your next two shots. Aim line will show green, yellow, or red.");
+          endTurn();
+        }
+
         function fireTimedLaser() {
           const support = state.supportStrike;
           if (!support || support.type !== "laser" || !support.satellite) return;
@@ -3827,6 +3918,26 @@
           state.supportStrike = null;
           sat.life = 26;
           updateStatus("Rod released.");
+        }
+
+        function dropTimedMeteor() {
+          const support = state.supportStrike;
+          if (!support || support.type !== "meteor" || !support.satellite) return;
+          const sat = support.satellite;
+          state.airBombs.push({
+            x: clamp(sat.x, 30, world.width - 30),
+            y: sat.y + 4,
+            vx: 0,
+            vy: 1.4,
+            accel: 0.34,
+            weapon: getTunedWeapon({ key: "meteor", radius: 108, damage: 62, color: "#ff6b36", trail: "#ffe0b8", burn: true }),
+            spriteKey: "meteor",
+            source: state.player.side,
+            isMeteor: true
+          });
+          state.supportStrike = null;
+          sat.life = 26;
+          updateStatus("Meteor released.");
         }
 
         function dropBomberPayload() {
@@ -3990,7 +4101,7 @@
             state.clusterTurnPendingEnd = false;
             endTurn();
           }
-          if (state.supportTurnPendingEnd && !state.supportStrike && !state.airBombs.some((b) => b.isRod) && !state.laserBeams.length) {
+          if (state.supportTurnPendingEnd && !state.supportStrike && !state.airBombs.some((b) => b.isRod || b.isMeteor) && !state.laserBeams.length) {
             state.supportTurnPendingEnd = false;
             endTurn();
           }
@@ -4069,19 +4180,38 @@
           }
 
           state.satellites.forEach((s) => {
-            const img = ensureImageLoaded(s.type === "rod" ? "satellite_rod_of_god_256x256.webp" : "satellite_laser_reflection_256x256.webp");
+            const img = ensureImageLoaded(s.type === "rod" || s.type === "meteor" ? "satellite_rod_of_god_256x256.webp" : "satellite_laser_reflection_256x256.webp");
             ctx.save();
             ctx.translate(s.x, s.y);
             if (s.dir < 0) ctx.scale(-1, 1);
             ctx.shadowBlur = 18;
-            ctx.shadowColor = s.type === "rod" ? "#fff4b0" : "#76ddff";
+            ctx.shadowColor = s.type === "rod" || s.type === "meteor" ? "#fff4b0" : "#76ddff";
             if (img && img.complete && img.naturalWidth > 0) ctx.drawImage(img, -28, -28, 56, 56);
             else {
-              ctx.fillStyle = s.type === "rod" ? "#fff4b0" : "#76ddff";
+              ctx.fillStyle = s.type === "rod" || s.type === "meteor" ? "#fff4b0" : "#76ddff";
               ctx.fillRect(-22, -8, 44, 16);
             }
             ctx.restore();
           });
+          if (Number(state.scanAssistShots || 0) > 0) {
+            const img = ensureImageLoaded("tank_weapon_SATELLITE_frontnoon_256x256.webp");
+            ctx.save();
+            const x = turnTank().x;
+            const y = 82;
+            ctx.translate(x, y);
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = "#54ff72";
+            if (img && img.complete && img.naturalWidth > 0) ctx.drawImage(img, -20, -20, 40, 40);
+            else {
+              ctx.fillStyle = "#54ff72";
+              ctx.fillRect(-18, -8, 36, 16);
+            }
+            ctx.fillStyle = "#d8ffe7";
+            ctx.font = "700 13px system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`${state.scanAssistShots} scan`, 0, 34);
+            ctx.restore();
+          }
           state.laserBeams.forEach((b) => {
             const maxLife = Number(b.maxLife || 30);
             const age = maxLife - Number(b.life || 0);
@@ -4096,7 +4226,10 @@
             state.score += 300 + state.level * 45;
             const completed = state.level;
             const next = state.level + 1;
-            if (!state.endlessAutoLevels && completed >= state.totalLevels) {
+            if (state.endlessAutoLevels) {
+              state.pendingNextLevel = next;
+              showAutoLevelCard(completed, "Victory");
+            } else if (completed >= state.totalLevels) {
               updateStatus("Campaign complete. You cleared every battlefield.");
               state.lockInput = true;
               showVictoryCard(completed, null, true);
@@ -4110,7 +4243,10 @@
             if (state.playerMode === "two") {
               const completed = state.level;
               const next = state.level + 1;
-              if (!state.endlessAutoLevels && completed >= state.totalLevels) {
+              if (state.endlessAutoLevels) {
+                state.pendingNextLevel = next;
+                showAutoLevelCard(completed, "2nd Players Win");
+              } else if (completed >= state.totalLevels) {
                 showVictoryCard(completed, null, true);
                 victoryTitle.textContent = "2nd Players Win";
               } else {
@@ -4119,6 +4255,11 @@
                 victoryTitle.textContent = "2nd Players Win";
                 victoryBody.textContent = `Level ${completed} goes to the second player. The next battlefield swaps sides and elevation again.`;
               }
+              return true;
+            }
+            if (state.endlessAutoLevels) {
+              state.lockInput = true;
+              showAutoLevelCard(state.level, "Destroyed");
               return true;
             }
             updateStatus(state.playerMode === "two" ? "1st Player was destroyed. Retry the level for a rematch." : "You were destroyed. Retry level and adjust angle/power.");
@@ -4140,17 +4281,50 @@
             victoryUnlock.textContent = campaignDone ? "All shots are active. Start again or jump into Auto Generated Levels for endless battles." : "No new weapon this level. Keep climbing to unlock the next system.";
           }
           victoryNextBtn.textContent = campaignDone ? "Close" : "Next Level";
+          victorySettingsBtn.style.display = "none";
+          victoryActions.classList.remove("two");
           victoryCard.classList.add("open");
           updateStatus(campaignDone ? "Campaign complete." : `Congratulations. Level ${completedLevel} cleared.`);
         }
 
+        function showAutoLevelCard(completedLevel, title) {
+          state.lockInput = true;
+          victoryTitle.textContent = `${title}: Auto Level ${completedLevel}`;
+          victoryBody.textContent = title === "Destroyed"
+            ? "Your tank was knocked out on this generated map. Restart with the same settings or change the Auto setup."
+            : "Auto map complete. Continue with the same setup or adjust your custom rules before the next generated level.";
+          victoryUnlock.textContent = "Auto Generated mode uses your current settings, so there are no campaign unlock cards here.";
+          victoryNextBtn.textContent = title === "Destroyed" ? "Retry Auto Level" : "Continue";
+          victorySettingsBtn.style.display = "block";
+          victoryActions.classList.add("two");
+          victoryCard.classList.add("open");
+          updateStatus(title === "Destroyed" ? "Auto level lost. Choose retry or change settings." : "Auto level cleared.");
+        }
+
         function advanceVictoryCard() {
           victoryCard.classList.remove("open");
+          if (!state.pendingNextLevel && state.endlessAutoLevels && state.player.hp <= 0) {
+            state.lockInput = false;
+            resetLevel(false);
+            return;
+          }
           if (!state.pendingNextLevel) return;
           state.level = state.pendingNextLevel;
           state.pendingNextLevel = null;
           state.rounds = 1;
           resetLevel(false);
+        }
+
+        function changeAutoSettingsFromVictory() {
+          victoryCard.classList.remove("open");
+          state.lockInput = false;
+          const auto = document.querySelector('input[name="gameMode"][value="auto"]');
+          const custom = document.querySelector('input[name="autoSetup"][value="custom"]');
+          if (auto) auto.checked = true;
+          if (custom) custom.checked = true;
+          syncWelcomeDetailsToMode();
+          setWelcomeOpen(true);
+          updateStatus("Adjust Auto Generated settings, then start again.");
         }
 
         function applyPreRoundMove() {
@@ -4678,6 +4852,27 @@
           ctx.arc(p.x, p.y, p.weapon.piercing ? 5 : 6, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
+          if (Number(state.scanAssistShots || 0) > 0) drawScanAssistLine(tank);
+        }
+
+        function drawScanAssistLine(tank) {
+          const weapon = weapons.find((w) => w.key === weaponSelect.value) || weapons[0];
+          const sim = simulateAiShot(tank, tank === state.player ? state.enemy : state.player, weapon, Number(angleInput.value), Number(powerInput.value), tank.worldFacingDir);
+          const color = sim.hitTank || sim.splashClose ? "#54ff72" : sim.score > -90000 ? "#ffd44d" : "#ff4c4c";
+          const start = getMuzzle(tank);
+          const angle = Number(angleInput.value) * Math.PI / 180;
+          const len = 64;
+          ctx.save();
+          ctx.lineCap = "round";
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = color;
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = color;
+          ctx.beginPath();
+          ctx.moveTo(start.x, start.y);
+          ctx.lineTo(start.x + Math.cos(angle) * len * tank.worldFacingDir, start.y - Math.sin(angle) * len);
+          ctx.stroke();
+          ctx.restore();
         }
 
         function updateFlarePlaneAndFlares() {
@@ -4946,6 +5141,7 @@
           saveGameButton.addEventListener("click", saveGame);
           loadGameButton.addEventListener("click", loadGame);
           victoryNextBtn.addEventListener("click", advanceVictoryCard);
+          victorySettingsBtn.addEventListener("click", changeAutoSettingsFromVictory);
           closeNightBriefingBtn.addEventListener("click", closeNightBriefing);
           showNightVisionBtn.addEventListener("click", showNightVisionToggle);
           document.getElementById("fireButton").addEventListener("click", firePlayer);
@@ -4953,6 +5149,8 @@
           document.getElementById("callHealthBtn").addEventListener("click", callHealthDrop);
           document.getElementById("callLaserBtn").addEventListener("click", callLaserSupport);
           document.getElementById("callRodBtn").addEventListener("click", callRodSupport);
+          document.getElementById("callMeteorBtn").addEventListener("click", callMeteorSupport);
+          document.getElementById("callScannerBtn").addEventListener("click", callScannerSupport);
           document.getElementById("callFlareBtn").addEventListener("click", callFlare);
           supportActionBtn?.addEventListener("click", () => {
             if (state.bomberActive) {
@@ -4965,6 +5163,10 @@
             }
             if (state.supportStrike?.type === "rod") {
               dropTimedRod();
+              return;
+            }
+            if (state.supportStrike?.type === "meteor") {
+              dropTimedMeteor();
               return;
             }
             if (state.flarePlane) dropFlareAt(state.flarePlane.x);
@@ -5079,6 +5281,10 @@
             }
             if (state.supportStrike?.type === "rod") {
               dropTimedRod();
+              return;
+            }
+            if (state.supportStrike?.type === "meteor") {
+              dropTimedMeteor();
               return;
             }
             if (state.bomberActive && state.turn === "player") {
