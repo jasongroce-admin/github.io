@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>250th Founding Records Calendar</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Roboto:wght@300;400&display=swap');
+        body { margin:0; font-family:'Roboto',sans-serif; background:#f7f8fc; color:#12264a; height:100vh; overflow:hidden; }
+        body::before { content:''; position:fixed; inset:0; pointer-events:none; background:linear-gradient(120deg,rgba(191,10,48,0.12),transparent 34%,rgba(0,40,104,0.14)); }
+        .site-nav { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 20px; background:#002868; color:#fff; border-bottom:4px solid #bf0a30; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
+        .site-nav a { color:#fff; text-decoration:none; font-weight:700; }
+        .site-brand { display:grid; gap:2px; }
+        .site-brand strong { font-family:'Libre Baskerville',serif; font-size:1.05rem; }
+        .site-brand span { font-size:0.82rem; opacity:0.82; }
+        .site-links { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+        .site-links a { border:1px solid rgba(255,255,255,0.45); padding:7px 10px; border-radius:4px; }
+        .site-links a:hover { background:#bf0a30; }
+        .container { position:relative; z-index:1; display:flex; width:100%; height:calc(100vh - 68px); }
+        .calendar-panel { width:33%; background:#ffffff; padding:20px; border-right:4px solid #bf0a30; overflow-y:auto; box-shadow:8px 0 22px rgba(0,40,104,0.12); }
+        h1 { font-family:'Libre Baskerville',serif; text-align:center; color:#002868; border-bottom:2px solid #bf0a30; padding-bottom:10px; }
+        .calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:15px; }
+        .day-header { text-align:center; font-weight:bold; color:#bf0a30; padding:8px 0; }
+        .day { background:#e8eef8; color:#12264a; height:60px; display:flex; align-items:flex-start; justify-content:center; cursor:pointer; border-radius:4px; transition:all .2s; font-size:0.9em; position:relative; padding-top:10px; box-sizing:border-box; border:1px solid #c5d1e5; }
+        .day:hover { background:#bf0a30; color:#fff; }
+        .day.today { background:#bf0a30; color:#fff; font-weight:bold; box-shadow:0 0 0 3px rgba(0,40,104,0.22); }
+        .day.has-event { background:#d9e6fa; font-weight:bold; box-shadow:0 0 0 2px rgba(0,40,104,0.2); }
+        .archive-dots { position:absolute; left:5px; right:5px; bottom:6px; display:flex; justify-content:center; gap:3px; flex-wrap:wrap; }
+        .archive-dot { width:7px; height:7px; border-radius:50%; border:1px solid rgba(255,255,255,0.85); box-sizing:border-box; }
+        .day.other-month { opacity:0.4; }
+        .events-panel { width:67%; padding:30px; overflow-y:auto; background:linear-gradient(to bottom,#fff,#eef3fb); }
+        .search-box { width:100%; padding:12px; margin-bottom:15px; background:#fff; border:2px solid #002868; color:#12264a; font-size:1em; }
+        .event { margin-bottom:18px; padding:15px; border-left:5px solid #bf0a30; border-bottom:1px solid #c5d1e5; cursor:pointer; border-radius:6px; background:#fff; box-shadow:0 4px 14px rgba(0,40,104,0.08); }
+        .event:hover { background:#f4f7fc; }
+        .event-title { display:block; font-weight:bold; color:#002868; text-decoration:none; }
+        .event-title:hover { text-decoration:underline; }
+        .event-meta { font-size:0.9em; margin-top:6px; }
+        .official-link { display:inline-block; margin-top:10px; color:#fff; background:#bf0a30; border:1px solid #bf0a30; padding:6px 10px; border-radius:4px; text-decoration:none; }
+        .summary { font-style:italic; color:#405a7a; }
+        .source-links { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+        .source-links a { color:#002868; border:1px solid #002868; border-radius:4px; padding:7px 10px; text-decoration:none; font-size:0.9em; background:#fff; }
+        .source-links a:hover { background:#002868; color:#fff; }
+        .legend { margin-top:18px; display:grid; gap:8px; font-size:0.9em; }
+        .legend-item { display:flex; align-items:center; gap:8px; color:#12264a; }
+        .loader { display:none; text-align:center; padding:40px; font-size:1.3em; color:#002868; }
+        .drum { font-size:4em; animation: drumbeat 0.8s infinite alternate; }
+        @keyframes drumbeat { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,40,104,0.92); z-index:1000; align-items:center; justify-content:center; }
+        .modal-content { background:#fff; border:3px solid #bf0a30; border-radius:15px; max-width:620px; width:90%; padding:30px; color:#12264a; box-shadow:0 0 30px rgba(0,40,104,0.35); }
+        .modal-close { position:absolute; top:15px; right:20px; font-size:2.2em; cursor:pointer; color:#bf0a30; }
+        footer { text-align:center; padding:15px; font-size:0.8em; opacity:0.7; }
+        @media (max-width: 800px) {
+            body { overflow:auto; height:auto; }
+            .site-nav { align-items:flex-start; flex-direction:column; }
+            .container { height:auto; flex-direction:column; }
+            .calendar-panel, .events-panel { width:100%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="site-nav" aria-label="Site">
+        <a class="site-brand" href="../../index.html">
+            <strong>Jason Groce</strong>
+            <span>Games, Apps, Utilities</span>
+        </a>
+        <div class="site-links">
+            <a href="../../index.html">Home</a>
+            <a href="../index.html">Utilities</a>
+            <a href="../../games/index.html">Games</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="calendar-panel">
+            <h1>250th Founding Records Calendar</h1>
+            <div style="text-align:center;margin:15px 0;font-size:1.1em;">
+                <button onclick="prevMonth()" style="background:none;border:none;color:#b38b4d;font-size:1.5em;cursor:pointer;">←</button>
+                <span id="monthYear" style="font-weight:bold;margin:0 20px;"></span>
+                <button onclick="nextMonth()" style="background:none;border:none;color:#b38b4d;font-size:1.5em;cursor:pointer;">→</button>
+            </div>
+            <div class="calendar" id="calendar"></div>
+            <div class="legend" id="archive-legend"></div>
+        </div>
+
+        <div class="events-panel">
+            <div class="source-links">
+                <a href="https://founders.archives.gov/" target="_blank" rel="noopener">Founders Online</a>
+                <a href="https://www.archives.gov/founding-docs" target="_blank" rel="noopener">Founding Documents</a>
+                <a href="https://founders.archives.gov/help/how_to_use" target="_blank" rel="noopener">How to Cite</a>
+            </div>
+            <input type="text" id="search-box" class="search-box" placeholder="Search Washington, supplies, independence, Congress...">
+            <div id="loader" class="loader"><div class="drum">🥁</div><p>Loading month from the Archives...</p></div>
+            <div id="event-card" class="event-card" style="display:none;">
+                <div id="selected-date" class="date-header"></div>
+                <div id="events-list"></div>
+            </div>
+            <footer>Metadata calendar • Official records remain on Founders Online and National Archives pages • Link out for full text and citation</footer>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">×</span>
+            <h2 id="modal-title"></h2>
+            <div id="modal-desc"></div>
+            <div id="modal-links" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const ANNIVERSARY_YEAR = 2026;
+        const ORIGINAL_YEAR = ANNIVERSARY_YEAR - 250;
+        const MAX_EVENTS_PER_DAY = 25;
+        const PROJECT_COLORS = {
+            'Washington Papers': '#4da3ff',
+            'Adams Papers': '#ffcf5a',
+            'Franklin Papers': '#66d17a',
+            'Jefferson Papers': '#ff7a7a',
+            'Jay Papers': '#b38cff',
+            'Hamilton Papers': '#ff9f43',
+            'Madison Papers': '#62d6d6'
+        };
+        let events1776 = {};
+        let loadError = '';
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            })[char]);
+        }
+
+        function anniversaryDate(originalDate) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(originalDate || '')) return null;
+            return `${ANNIVERSARY_YEAR}${originalDate.slice(4)}`;
+        }
+
+        function formatPeople(label, people) {
+            return Array.isArray(people) && people.length
+                ? `<div style="font-size:0.9em;margin-top:6px;"><strong>${label}:</strong> ${escapeHtml(people.join(', '))}</div>`
+                : '';
+        }
+
+        function projectColor(project) {
+            return PROJECT_COLORS[project] || '#f0d9a8';
+        }
+
+        function uniqueProjects(dayEvents) {
+            return [...new Set(dayEvents.map(ev => ev.project || 'Founders Online'))];
+        }
+
+        function renderArchiveDots(dayEl, dayEvents) {
+            if (!dayEvents.length) return;
+
+            const dots = document.createElement('div');
+            dots.className = 'archive-dots';
+
+            uniqueProjects(dayEvents).slice(0, 5).forEach(project => {
+                const dot = document.createElement('span');
+                dot.className = 'archive-dot';
+                dot.title = project;
+                dot.style.background = projectColor(project);
+                dots.appendChild(dot);
+            });
+
+            dayEl.appendChild(dots);
+        }
+
+        function renderLegend() {
+            const legend = document.getElementById('archive-legend');
+            legend.innerHTML = '';
+
+            Object.entries(PROJECT_COLORS).forEach(([project, color]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `<span class="archive-dot" style="background:${color}"></span><span>${escapeHtml(project)}</span>`;
+                legend.appendChild(item);
+            });
+        }
+
+        function normalizeEvent(record) {
+            return {
+                title: record.title || 'Untitled Founders Online document',
+                project: record.project || '',
+                authors: record.authors || [],
+                recipients: record.recipients || [],
+                originalDate: record['date-from'],
+                originalDateTo: record['date-to'],
+                url: record.permalink
+            };
+        }
+
+        async function loadEvents() {
+            try {
+                const resp = await fetch('founders-online-metadata.json');
+                if (!resp.ok) throw new Error(`Could not load metadata: ${resp.status}`);
+
+                const metadata = await resp.json();
+                events1776 = metadata.reduce((dates, record) => {
+                    const sourceDate = record['date-from'];
+                    if (!sourceDate || !sourceDate.startsWith(`${ORIGINAL_YEAR}-`)) return dates;
+
+                    const dateKey = anniversaryDate(sourceDate);
+                    if (!dateKey) return dates;
+
+                    dates[dateKey] ||= [];
+                    dates[dateKey].push(normalizeEvent(record));
+                    return dates;
+                }, {});
+
+                Object.values(events1776).forEach(dayEvents => {
+                    dayEvents.sort((a, b) => a.title.localeCompare(b.title));
+                });
+
+                console.log('Loaded', Object.keys(events1776).length, '1776 anniversary dates');
+            } catch(e) {
+                console.error(e);
+                loadError = 'Could not load founders-online-metadata.json. If you opened index.html directly from your computer, the browser will usually block the JSON file. Run this folder through a local web server or publish it to GitHub Pages so the calendar can pull the archive links.';
+            }
+        }
+
+        let currentDate = new Date(ANNIVERSARY_YEAR, new Date().getMonth(), new Date().getDate());
+
+        async function renderCalendar() {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('event-card').style.display = 'none';
+
+            await new Promise(r => setTimeout(r, 600)); // Nice drum animation time
+
+            const cal = document.getElementById('calendar'); cal.innerHTML = '';
+            const calendarMonth = new Date(ANNIVERSARY_YEAR, currentDate.getMonth(), 1);
+            document.getElementById('monthYear').textContent = calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            days.forEach(d => { const h=document.createElement('div'); h.className='day-header'; h.textContent=d; cal.appendChild(h); });
+
+            const firstDay = calendarMonth.getDay();
+            const daysInMonth = new Date(ANNIVERSARY_YEAR, currentDate.getMonth()+1, 0).getDate();
+
+            for (let i=0; i<firstDay; i++) { const e=document.createElement('div'); e.className='day other-month'; cal.appendChild(e); }
+
+            for (let day=1; day<=daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'day';
+                dayEl.textContent = day;
+                const dateStr = `${ANNIVERSARY_YEAR}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const dayEvents = events1776[dateStr] || [];
+                if (dayEvents.length) {
+                    dayEl.classList.add('has-event');
+                    renderArchiveDots(dayEl, dayEvents);
+                }
+                if (dateStr === todayKey()) dayEl.classList.add('today');
+                dayEl.onclick = () => showDay(dateStr);
+                cal.appendChild(dayEl);
+            }
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('event-card').style.display = 'block';
+
+            if (loadError) {
+                document.getElementById('selected-date').textContent = 'Archive metadata not loaded';
+                document.getElementById('events-list').innerHTML = `<p class="summary">${escapeHtml(loadError)}</p>`;
+                return;
+            }
+
+            showDay(defaultDateForCurrentMonth());
+        }
+
+        function showDay(dateStr) {
+            const dispDate = new Date(`${dateStr}T12:00:00`);
+            const originalDateStr = `${ORIGINAL_YEAR}${dateStr.slice(4)}`;
+            const originalDate = new Date(`${originalDateStr}T12:00:00`);
+            document.getElementById('selected-date').innerHTML = `${dispDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'})} <span style="font-size:0.6em;opacity:0.8;">${originalDate.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}</span>`;
+
+            const list = document.getElementById('events-list');
+            list.innerHTML = '';
+
+            const dayEvents = events1776[dateStr] || [];
+            if (dayEvents.length === 0) {
+                list.innerHTML = `<p class="summary">No Founders Online metadata is dated exactly ${originalDate.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}.</p>`;
+                return;
+            }
+
+            const shownEvents = dayEvents.slice(0, MAX_EVENTS_PER_DAY);
+            shownEvents.forEach(ev => {
+                const div = document.createElement('div');
+                div.className = 'event';
+                div.innerHTML = `
+                    <a class="event-title" href="${escapeHtml(ev.url || '#')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${escapeHtml(ev.title)}</a>
+                    <div class="summary"><span class="archive-dot" style="display:inline-block;background:${projectColor(ev.project)}"></span> Official source: ${escapeHtml(ev.project || 'Founders Online')}</div>
+                    ${formatPeople('Author', ev.authors)}
+                    ${formatPeople('Recipient', ev.recipients)}
+                    <div class="event-meta">Original date: ${escapeHtml(ev.originalDate)}</div>
+                    ${ev.url ? `<a class="official-link" href="${escapeHtml(ev.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open official record</a>` : ''}
+                `;
+                if (ev.url) div.onclick = () => window.open(ev.url, '_blank');
+                list.appendChild(div);
+            });
+
+            if (dayEvents.length > shownEvents.length) {
+                const more = document.createElement('p');
+                more.className = 'summary';
+                more.textContent = `Showing ${shownEvents.length} of ${dayEvents.length} records for this date. Use search terms to narrow the visible list.`;
+                list.appendChild(more);
+            }
+
+            renderNearbyDates(dateStr);
+        }
+
+        function todayKey() {
+            const today = new Date();
+            return `${ANNIVERSARY_YEAR}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        }
+
+        function defaultDateForCurrentMonth() {
+            const monthPrefix = `${ANNIVERSARY_YEAR}-${String(currentDate.getMonth()+1).padStart(2,'0')}-`;
+            const today = todayKey();
+            if (today.startsWith(monthPrefix)) return today;
+
+            return Object.keys(events1776)
+                .filter(dateKey => dateKey.startsWith(monthPrefix))
+                .sort()[0] || `${monthPrefix}01`;
+        }
+
+        function addDays(dateStr, offset) {
+            const date = new Date(`${dateStr}T12:00:00`);
+            date.setDate(date.getDate() + offset);
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+        }
+
+        function renderNearbyDates(selectedDate) {
+            const nearby = document.createElement('div');
+            nearby.style.marginTop = '24px';
+            nearby.innerHTML = '<h3 style="color:#f0d9a8;">Nearby anniversary dates</h3>';
+
+            for (let offset = -3; offset <= 5; offset++) {
+                if (offset === 0) continue;
+                const dateKey = addDays(selectedDate, offset);
+                const events = events1776[dateKey] || [];
+                const date = new Date(`${dateKey}T12:00:00`);
+                const row = document.createElement('div');
+                row.className = 'event';
+                row.innerHTML = `
+                    <div class="event-title">${date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}</div>
+                    <div class="summary">${events.length ? `${events.length} Founders Online record${events.length === 1 ? '' : 's'}` : 'No exact-date records'}</div>
+                    ${events[0] ? `<div style="font-size:0.9em;margin-top:6px;">${escapeHtml(events[0].title)}</div>` : ''}
+                `;
+                row.onclick = () => showDay(dateKey);
+                nearby.appendChild(row);
+            }
+
+            document.getElementById('events-list').appendChild(nearby);
+        }
+
+        function prevMonth() { currentDate = new Date(ANNIVERSARY_YEAR, currentDate.getMonth()-1, 1); renderCalendar(); }
+        function nextMonth() { currentDate = new Date(ANNIVERSARY_YEAR, currentDate.getMonth()+1, 1); renderCalendar(); }
+
+        // Search across loaded month
+        document.getElementById('search-box').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.event').forEach(el => {
+                el.style.display = el.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        window.onload = async () => {
+            await loadEvents();
+            renderLegend();
+            renderCalendar();
+        };
+    </script>
+</body>
+</html>
