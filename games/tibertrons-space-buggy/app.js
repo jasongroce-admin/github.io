@@ -1,11 +1,11 @@
 (() => {
   const RESOURCE_LINES = [
-    { id: "ferrite", name: "Ferrite Ore", category: "mineral", requirement: 380, chipColor: "#d99a63", goalLabel: "Refinery Tower", accent: "#f7bc84" },
-    { id: "lithium", name: "Lithium Crystal", category: "mineral", requirement: 290, chipColor: "#8ec7ff", goalLabel: "Crystal Well", accent: "#9dd5ff" },
-    { id: "titanium", name: "Titanium Vein", category: "mineral", requirement: 340, chipColor: "#b2b7ce", goalLabel: "Mountain Drill", accent: "#d1d5e9" },
-    { id: "spore", name: "Spore Genome", category: "genetic", requirement: 260, chipColor: "#8bf28b", goalLabel: "Bio Dome", accent: "#afffae" },
-    { id: "algae", name: "Algae DNA", category: "genetic", requirement: 300, chipColor: "#68d6af", goalLabel: "Gen Lab", accent: "#9deecf" },
-    { id: "xeno", name: "Xeno Seed Core", category: "genetic", requirement: 320, chipColor: "#ddb5ff", goalLabel: "Gene Spire", accent: "#ebd0ff" }
+    { id: "ferrite", name: "Ferrite Ore", category: "mineral", requirement: 380, chipColor: "#d99a63", goalLabel: "Refinery Tower", accent: "#f7bc84", description: "Heavy ship-repair ore for hull plates, landing gear, and cargo bay armor." },
+    { id: "lithium", name: "Lithium Crystal", category: "mineral", requirement: 290, chipColor: "#8ec7ff", goalLabel: "Crystal Well", accent: "#9dd5ff", description: "Blue power crystals that recharge batteries, boosters, and cockpit systems." },
+    { id: "titanium", name: "Titanium Vein", category: "mineral", requirement: 340, chipColor: "#b2b7ce", goalLabel: "Mountain Drill", accent: "#d1d5e9", description: "Strong metal used for buggy frames, ship struts, and weapon mounts." },
+    { id: "spore", name: "Spore Genome", category: "genetic", requirement: 260, chipColor: "#8bf28b", goalLabel: "Bio Dome", accent: "#afffae", description: "Living spores for air filters, medicine cultures, and survival research." },
+    { id: "algae", name: "Algae DNA", category: "genetic", requirement: 300, chipColor: "#68d6af", goalLabel: "Gen Lab", accent: "#9deecf", description: "Green DNA samples that help grow oxygen, food gel, and water scrubbers." },
+    { id: "xeno", name: "Xeno Seed Core", category: "genetic", requirement: 320, chipColor: "#ddb5ff", goalLabel: "Gene Spire", accent: "#ebd0ff", description: "Rare alien seed cores needed for advanced life-support upgrades." }
   ];
 
   const STORAGE_KEY = "tibertron2000-save-v1";
@@ -157,6 +157,7 @@
   const cockpitBgB = document.getElementById("cockpitBgB");
   const cockpitFireTransition = document.getElementById("cockpitFireTransition");
   const cockpitWrap = document.getElementById("cockpitWrap");
+  const cockpitDashboardPopup = document.getElementById("cockpitDashboardPopup");
   const cockpitMainViewport = document.getElementById("cockpitMainViewport");
   const cockpitBottomMidPanel = document.getElementById("cockpitBottomMidPanel");
   const cockpitAdjustBtn = document.getElementById("cockpitAdjustBtn");
@@ -348,6 +349,15 @@
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function normalizePanelRect(rect) {
@@ -882,14 +892,14 @@
     return [
       tutorialCard(
         "Command Deck",
-        "Pick a planet panel to choose where you want to go. The view stays on your current planet until you press Fly To and complete the space route.",
-        ["Planet panels select a destination", "Fly To starts space travel", "Land after arrival"],
+        "Use the Dashboard steps: choose a planet, confirm the material on that planet, then compare it to your current ship material gauges.",
+        ["Step 1 chooses the planet", "Step 2 confirms the material", "Step 3 shows current supplies"],
         { hero: "images/dashboard/dashboard.webp", pickup: ASSET_LIBRARY.pickups.fuel }
       ),
       tutorialCard(
         "Plan The Run",
-        "Each planet needs a resource. Pick your hero ship and buggy before launching; chosen models are reserved for you and will not spawn as enemies.",
-        ["Choose difficulty before launching", "Save or upload progress", "Land to open the buggy bay"],
+        "After the planet and material are selected, press Fly To Destination. When you arrive, the landed dashboard highlights that same material so you know what to collect.",
+        ["Highlighted gauges match the planet material", "Choose difficulty before launching", "Land to open the buggy bay"],
         { hero: heroBuggy, pickup: ASSET_LIBRARY.pickups.health, enemy: getEnemySpriteList("drone")[1] || ASSET_LIBRARY.enemySprites.drone[0] }
       )
     ];
@@ -2303,6 +2313,108 @@
     launchMission(selected.line, selected.stats.nextLevel);
   }
 
+  function getResourcePercent(line) {
+    if (!line) return 0;
+    const stored = Math.max(0, safeNumber(saveState?.stored?.[line.id], 0));
+    return clamp(Math.round((stored / Math.max(1, line.requirement || 1)) * 100), 0, 100);
+  }
+
+  function renderDashboardPopup(cards, selected, currentPlanet, options = {}) {
+    if (!cockpitDashboardPopup || !selected) return;
+    const useLanded = !!options.useLanded;
+    const hasPendingForSelected = !!options.hasPendingForSelected;
+    const sorted = getDashboardSortedLines();
+    const selectedLineId = String(selected.line?.id || dashboardUi.selectedLineId || "");
+    const currentName = currentPlanet?.planetName || selected.planetName;
+    const mainActionLabel = useLanded
+      ? "Launch Buggy"
+      : (hasPendingForSelected ? `Land On ${selected.planetName}` : "Fly To Destination");
+    const mainActionType = useLanded ? "buggy" : (hasPendingForSelected ? "land" : "fly");
+    const stateText = useLanded
+      ? `Landed on ${selected.planetName}. Highlighted gauge: ${selected.line.name}.`
+      : (hasPendingForSelected
+          ? `Orbit reached: ${selected.planetName}. Land or choose another planet.`
+          : `Orbit: ${currentName}. Choose, confirm, fly.`);
+
+    const resourceRows = sorted.map((line) => {
+      const stats = getLineMissionStats(line);
+      const pct = getResourcePercent(line);
+      const rowSelected = line.id === selectedLineId;
+      return `
+        <div class="dashboard-resource-row${rowSelected ? " selected highlight-gauge" : ""}">
+          <div class="dashboard-resource-name">
+            <span style="color:${escapeHtml(line.accent || "#9fd0ff")}">${escapeHtml(line.category)}</span>
+            <strong>${escapeHtml(line.name)}</strong>
+          </div>
+          <div class="dashboard-resource-detail">
+            <p>${escapeHtml(line.description || "Collect this material to keep the ship mission moving.")}</p>
+            <div class="dashboard-meter-line${rowSelected ? " highlight" : ""}">
+              <input type="range" min="0" max="100" value="${pct}" disabled aria-label="${escapeHtml(line.name)} stored percentage">
+              <span>${pct}% full</span>
+            </div>
+            <p>${rowSelected ? "Highlighted: matches selected planet. " : ""}Stored ${Math.floor(stats.stored)} of ${line.requirement}. Need ${Math.floor(stats.shortage)} more.</p>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const destinationRows = cards.map((card) => {
+      const pct = getResourcePercent(card.line);
+      const isSelected = card.id === selected.id;
+      return `
+        <button class="dashboard-destination${isSelected ? " selected" : ""}" type="button" data-dashboard-action="select-destination" data-screen-id="${escapeHtml(card.id)}">
+          <strong>${escapeHtml(card.planetName)}${isSelected ? " - Selected" : ""}</strong>
+          <span>${escapeHtml(card.line.name)} | ${pct}% stocked | Need ${Math.floor(card.stats.shortage)}</span>
+        </button>
+      `;
+    }).join("");
+    const selectedPct = getResourcePercent(selected.line);
+    const selectedStats = selected.stats || getLineMissionStats(selected.line);
+    const materialActionLabel = useLanded ? "Selected For This Landing" : "Select This Material";
+
+    cockpitDashboardPopup.innerHTML = `
+      <div class="dashboard-popup-header">
+        <div class="dashboard-popup-title">
+          <h2>Dashboard</h2>
+          <p>${escapeHtml(stateText)}</p>
+        </div>
+        <div class="dashboard-popup-actions">
+          ${useLanded ? `<button class="btn ghost" type="button" data-dashboard-action="orbit">Back To Orbit</button>` : ""}
+          <button class="btn" type="button" data-dashboard-action="${mainActionType}">${escapeHtml(mainActionLabel)}</button>
+        </div>
+      </div>
+      <div class="dashboard-popup-body">
+        <section class="dashboard-popup-section">
+          <span class="dashboard-step-label">Step 1</span>
+          <h3>Choose Planet</h3>
+          <p class="dashboard-state-note">Planet first. Material updates next.</p>
+          <div class="dashboard-destination-list">${destinationRows}</div>
+        </section>
+        <section class="dashboard-popup-section">
+          <span class="dashboard-step-label">Step 2</span>
+          <h3>${useLanded ? "Available On This Planet" : "Material On Selected Planet"}</h3>
+          <div class="dashboard-planet-material">
+            <strong>${escapeHtml(selected.line.name)}</strong>
+            <p>${escapeHtml(selected.line.description || "Collect this material to keep the ship mission moving.")}</p>
+            <div class="dashboard-meter-line highlight">
+              <input type="range" min="0" max="100" value="${selectedPct}" disabled aria-label="${escapeHtml(selected.line.name)} selected material percentage">
+              <span>${selectedPct}% full</span>
+            </div>
+            <p>Planet: ${escapeHtml(selected.planetName)}. Stored ${Math.floor(selectedStats.stored)} of ${selected.line.requirement}. Need ${Math.floor(selectedStats.shortage)} more.</p>
+            <button class="btn ${useLanded ? "ghost" : ""}" type="button" data-dashboard-action="select-line" data-line-id="${escapeHtml(selected.line.id)}">${escapeHtml(materialActionLabel)}</button>
+          </div>
+          <p class="dashboard-state-note">${useLanded ? `Buggy run collects this material.` : `Confirm, then fly.`}</p>
+        </section>
+        <section class="dashboard-popup-section">
+          <span class="dashboard-step-label">Step 3</span>
+          <h3>Current Ship Materials</h3>
+          <p class="dashboard-state-note">Highlight matches Step 2.</p>
+          <div class="dashboard-resource-list">${resourceRows}</div>
+        </section>
+      </div>
+    `;
+  }
+
   function updateCockpitDashboard(sorted) {
     const cards = getPlanetDashboardCards(sorted);
     const selected = getSelectedPlanetCard(cards);
@@ -2314,6 +2426,7 @@
     const sceneCard = useLanded ? selected : currentPlanet;
     const nextImage = useLanded ? sceneCard.landedPath : sceneCard.spacePath;
     setCockpitUnderlay(nextImage, `${sceneCard.planetName} ${useLanded ? "landed" : "orbit"} cockpit view`);
+    renderDashboardPopup(cards, selected, currentPlanet, { useLanded, hasPendingForSelected });
     if (cockpitMainViewport) {
       const previewLevel = Math.floor((pending?.level || selected.stats.nextLevel));
       const weaponPreview = getWeaponProfile(selected.line, previewLevel);
@@ -3928,6 +4041,60 @@
         writeLoadout(createDefaultLoadout());
         persistSave();
         renderDashboard();
+      });
+    }
+    if (cockpitDashboardPopup) {
+      cockpitDashboardPopup.addEventListener("click", (event) => {
+        const btn = event.target?.closest?.("[data-dashboard-action]");
+        if (!btn || !cockpitDashboardPopup.contains(btn)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const action = String(btn.getAttribute("data-dashboard-action") || "");
+        const cards = getPlanetDashboardCards(getDashboardSortedLines());
+        const selected = getSelectedPlanetCard(cards);
+        if (action === "select-destination") {
+          const screenId = String(btn.getAttribute("data-screen-id") || "");
+          const card = cards.find((entry) => entry.id === screenId);
+          if (!card) return;
+          dashboardUi.selectedPlanetScreenId = card.id;
+          dashboardUi.selectedLineId = card.line.id;
+          renderDashboard();
+          return;
+        }
+        if (action === "select-line") {
+          const lineId = String(btn.getAttribute("data-line-id") || "");
+          const line = RESOURCE_LINES.find((entry) => entry.id === lineId);
+          if (!line) return;
+          dashboardUi.selectedLineId = line.id;
+          const card = cards.find((entry) => entry?.line?.id === line.id);
+          if (card) dashboardUi.selectedPlanetScreenId = card.id;
+          renderDashboard();
+          return;
+        }
+        if (action === "fly") {
+          launchSelectedPlanetMission();
+          return;
+        }
+        if (action === "land") {
+          dashboardUi.viewMode = "landed";
+          renderDashboard();
+          return;
+        }
+        if (action === "orbit") {
+          dashboardUi.viewMode = "orbit";
+          dashboardUi.highlightOrbitUntilMs = 0;
+          renderDashboard();
+          return;
+        }
+        if (action === "buggy" && selected) {
+          dashboardUi.highlightLaunchUntilMs = 0;
+          if (dashboardUi.pendingLanding && dashboardUi.pendingLanding.lineId === selected.line.id && dashboardUi.pendingLanding.mission) {
+            startBuggyMissionWithPrepared(selected.line, dashboardUi.pendingLanding.mission, false, "");
+            return;
+          }
+          dashboardUi.viewMode = "orbit";
+          renderDashboard();
+        }
       });
     }
     cockpitPlanetPanels.forEach((panel) => {

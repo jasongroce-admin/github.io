@@ -175,6 +175,17 @@
         color: #bcd9f5;
         font-size: 0.92rem;
       }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       #dashboardScreen {
         display: grid;
         gap: 0.8rem;
@@ -209,6 +220,199 @@
         object-fit: cover;
         pointer-events: none;
         z-index: 4;
+      }
+      .dashboard-popup {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(91%, 980px);
+        max-height: 88%;
+        transform: translate(-50%, -50%);
+        z-index: 30;
+        border: 1px solid rgba(180, 222, 255, 0.78);
+        border-radius: 8px;
+        background: rgba(4, 13, 25, 0.92);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.64), 0 0 24px rgba(90, 202, 255, 0.22);
+        padding: clamp(0.55rem, 1.2vw, 0.82rem);
+        overflow: auto;
+        color: #eef8ff;
+      }
+      .dashboard-popup h2,
+      .dashboard-popup h3,
+      .dashboard-popup p {
+        margin: 0;
+      }
+      .dashboard-popup-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.55rem;
+        align-items: center;
+        margin-bottom: 0.48rem;
+      }
+      .dashboard-popup-title {
+        display: grid;
+        gap: 0.08rem;
+      }
+      .dashboard-popup-title h2 {
+        font-size: clamp(1.35rem, 2.35vw, 1.9rem);
+        line-height: 1.05;
+        color: #ffffff;
+      }
+      .dashboard-popup-title p {
+        color: #b7d5f0;
+        font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        line-height: 1.22;
+      }
+      .dashboard-popup-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.42rem;
+      }
+      .dashboard-popup-body {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.72fr) minmax(260px, 1fr) minmax(270px, 1.05fr);
+        gap: 0.5rem;
+      }
+      .dashboard-step-label {
+        color: #7be0ff;
+        font-size: 0.68rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+      .dashboard-popup-section {
+        border: 1px solid rgba(132, 188, 255, 0.28);
+        border-radius: 8px;
+        background: rgba(7, 22, 40, 0.74);
+        padding: 0.48rem;
+        display: grid;
+        gap: 0.34rem;
+        align-content: start;
+      }
+      .dashboard-popup-section h3 {
+        font-size: 0.9rem;
+        color: #d8edff;
+        line-height: 1.05;
+      }
+      .dashboard-resource-list {
+        display: grid;
+        gap: 0.34rem;
+      }
+      .dashboard-resource-row {
+        border: 1px solid rgba(141, 190, 252, 0.24);
+        border-radius: 8px;
+        background: rgba(9, 26, 47, 0.84);
+        padding: 0.4rem;
+        display: grid;
+        grid-template-columns: minmax(116px, 0.8fr) minmax(170px, 1fr);
+        gap: 0.4rem;
+      }
+      .dashboard-resource-row.selected {
+        border-color: rgba(255, 230, 138, 0.9);
+        box-shadow: inset 0 0 0 1px rgba(255, 230, 138, 0.28);
+      }
+      .dashboard-resource-row.highlight-gauge {
+        border-color: rgba(123, 224, 255, 0.95);
+        box-shadow: inset 0 0 0 1px rgba(123, 224, 255, 0.34), 0 0 16px rgba(123, 224, 255, 0.18);
+      }
+      .dashboard-resource-name {
+        display: grid;
+        gap: 0.14rem;
+        align-content: start;
+      }
+      .dashboard-resource-name strong {
+        font-size: 0.88rem;
+      }
+      .dashboard-resource-name span {
+        color: #9ec4e8;
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+      .dashboard-resource-detail {
+        display: grid;
+        gap: 0.24rem;
+      }
+      .dashboard-resource-detail p {
+        color: #c5def4;
+        font-size: 0.75rem;
+        line-height: 1.18;
+      }
+      .dashboard-meter-line {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.34rem;
+        align-items: center;
+      }
+      .dashboard-meter-line input[type="range"] {
+        width: 100%;
+        accent-color: #7be0ff;
+        pointer-events: none;
+      }
+      .dashboard-meter-line input[type="range"]:disabled {
+        opacity: 1;
+      }
+      .dashboard-meter-line.highlight input[type="range"] {
+        accent-color: #ffe174;
+      }
+      .dashboard-meter-line.highlight span {
+        color: #ffe174;
+      }
+      .dashboard-meter-line span {
+        color: #ffffff;
+        font-size: 0.76rem;
+        font-weight: 800;
+        min-width: 4.2rem;
+        text-align: right;
+      }
+      .dashboard-destination-list {
+        display: grid;
+        gap: 0.32rem;
+      }
+      .dashboard-destination {
+        width: 100%;
+        min-height: 0;
+        text-align: left;
+        border-radius: 8px;
+        padding: 0.42rem;
+        display: grid;
+        gap: 0.08rem;
+        background: rgba(20, 47, 80, 0.78);
+      }
+      .dashboard-destination.selected {
+        border-color: rgba(255, 230, 138, 0.95);
+        background: linear-gradient(180deg, rgba(58, 99, 123, 0.9), rgba(33, 70, 99, 0.9));
+      }
+      .dashboard-destination strong {
+        font-size: 0.84rem;
+      }
+      .dashboard-destination span {
+        color: #c5def4;
+        font-size: 0.72rem;
+      }
+      .dashboard-state-note {
+        border-left: 3px solid #7be0ff;
+        padding-left: 0.42rem;
+        color: #cde7ff;
+        font-size: 0.74rem;
+        line-height: 1.18;
+      }
+      .dashboard-planet-material {
+        border: 1px solid rgba(255, 230, 138, 0.58);
+        border-radius: 8px;
+        padding: 0.46rem;
+        background: rgba(35, 36, 42, 0.78);
+        display: grid;
+        gap: 0.3rem;
+      }
+      .dashboard-planet-material strong {
+        font-size: 0.96rem;
+      }
+      .dashboard-planet-material p {
+        color: #cde7ff;
+        font-size: 0.76rem;
+        line-height: 1.2;
       }
       .cockpit-fire-transition {
         position: absolute;
@@ -727,6 +931,21 @@
         .stats-row {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+        .dashboard-popup {
+          width: 92%;
+          max-height: 88%;
+        }
+        .dashboard-popup-header,
+        .dashboard-popup-body,
+        .dashboard-resource-row {
+          grid-template-columns: 1fr;
+        }
+        .dashboard-popup-actions {
+          justify-content: stretch;
+        }
+        .dashboard-popup-actions .btn {
+          flex: 1 1 132px;
+        }
         .tutorial-card {
           grid-template-columns: 1fr;
         }
@@ -755,8 +974,7 @@
       </header>
 
       <section id="dashboardScreen" class="panel">
-        <h1 style="margin-top:0">Rocket Resource Dashboard</h1>
-        <p class="notice">Deep beyond charted space, you pilot the last scouting buggy from world to world to keep your ship alive. Each orbit reveals new planets rich with mineral veins and genetic traces, but every landing is a risk. Gather what you can, survive hostile zones, and return to orbit with enough resources to continue the long search across the universe.</p>
+        <h1 class="sr-only">Rocket Resource Dashboard</h1>
         <div id="cockpitWrap" class="cockpit-wrap">
           <img id="cockpitBgA" class="cockpit-underlay active" src="images/planets/orbit/planet_orbit_AETHERIS.webp" alt="Planet cockpit background A">
           <img id="cockpitBgB" class="cockpit-underlay" src="images/planets/orbit/planet_orbit_DUSKARA.webp" alt="Planet cockpit background B">
@@ -769,6 +987,7 @@
           <div id="cockpitTopRightPanel" class="overlay-screen planet-panel"></div>
           <div id="cockpitBottomMidPanel" class="overlay-screen"></div>
           <div id="cockpitRightPanel" class="overlay-screen planet-panel"></div>
+          <div id="cockpitDashboardPopup" class="dashboard-popup" role="dialog" aria-label="Ship dashboard menu"></div>
         </div>
         <div class="row-actions" style="margin-top:0.45rem">
           <button id="saveProgressBtn" class="btn" type="button">Save Progress</button>
