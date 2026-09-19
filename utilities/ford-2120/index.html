@@ -53,6 +53,9 @@
         text-transform: uppercase;
       }
       .back { color: #fffdf7; font-size: .78rem; font-weight: 800; text-decoration: none; }
+      .site-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      .site-links a { color: rgba(255,253,247,.78); font-size: .72rem; font-weight: 800; text-decoration: none; }
+      .site-links a:hover, .site-links a[aria-current="page"] { color: #fffdf7; text-decoration: underline; text-underline-offset: 3px; }
       .hero p { max-width: 650px; margin-top: 10px; color: rgba(255,255,255,.79); font-size: .96rem; }
       .setup {
         display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px;
@@ -158,7 +161,7 @@
       <header class="hero">
         <div class="topline">
           <span class="eyebrow">Field Utility</span>
-          <a class="back" href="../index.html">Utilities</a>
+          <nav class="site-links" aria-label="Site navigation"><a href="../../index.html">Home</a><a href="../../games/index.html">Games</a><a href="../index.html" aria-current="page">Utilities</a></nav>
         </div>
         <h1>Ford 2120 maintenance.</h1>
         <p>A phone-first companion for routine service. Built from the operator's manual, with newer source links clearly labeled.</p>
