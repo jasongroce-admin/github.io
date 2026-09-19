@@ -1,235 +1,40 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jason Groce | Games, Apps, and Utilities</title>
-    <link rel="stylesheet" href="assets/css/site.css?v=20260509" />
-    <style>
-      .home-hero {
-        display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
-        gap: 18px;
-        align-items: stretch;
-        min-height: 560px;
-      }
-
-      .hero-copy {
-        display: grid;
-        align-content: space-between;
-        gap: 22px;
-      }
-
-      .hero-copy h1 { max-width: 820px; }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .showcase {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .showcase a {
-        position: relative;
-        min-height: 210px;
-        overflow: hidden;
-        border: 1px solid var(--line-dark);
-        color: #fffaf0;
-        background: var(--charcoal);
-        text-decoration: none;
-      }
-
-      .showcase a:first-child { grid-row: span 2; }
-
-      .showcase img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        opacity: 0.78;
-        filter: saturate(0.78) contrast(1.08);
-      }
-
-      .showcase a.launcher-art img {
-        object-fit: contain;
-        padding: 10px;
-        box-sizing: border-box;
-        background:
-          radial-gradient(circle at 50% 38%, rgba(126, 172, 207, 0.28), transparent 58%),
-          #191816;
-      }
-
-      .showcase strong {
-        position: absolute;
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        padding: 10px;
-        background: rgba(25, 24, 22, 0.86);
-        border: 1px solid rgba(255,255,255,0.22);
-        font-size: 1rem;
-      }
-
-      .directory {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-      }
-
-      .directory .catalog-card { min-height: 230px; }
-
-      .release-line {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-      }
-
-      @media (max-width: 920px) {
-        .home-hero,
-        .directory {
-          grid-template-columns: 1fr;
-        }
-
-        .showcase {
-          min-height: 520px;
-        }
-      }
-
-      @media (max-width: 560px) {
-        .showcase {
-          grid-template-columns: 1fr;
-          grid-template-rows: none;
-        }
-
-        .showcase a:first-child { grid-row: auto; }
-      }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Jason Groce's creative browser games and useful web tools.">
+    <title>Jason Groce | Creative Games & Tools</title>
+    <link rel="stylesheet" href="assets/css/directory.css?v=20260919">
   </head>
-  <body>
-    <main class="content home-shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="index.html">
-          <strong>Jason Groce</strong>
-          <span>Games, Apps, Utilities</span>
-        </a>
-        <nav class="site-menu" aria-label="Primary">
-          <a class="menu-link active" href="index.html">Home</a>
-          <a class="menu-link" href="games/index.html">Games</a>
-          <a class="menu-link" href="utilities/index.html">Utilities</a>
-        </nav>
+  <body class="directory-page">
+    <main class="directory-shell">
+      <header class="directory-header">
+        <a class="directory-brand" href="index.html">Jason Groce<span>Creative games & tools</span></a>
+        <nav class="directory-nav" aria-label="Primary navigation"><a href="index.html" aria-current="page">Home</a><a href="games/index.html">Games</a><a href="utilities/index.html">Utilities</a></nav>
       </header>
-
-      <section class="home-hero">
-        <div class="panel hero-copy">
-          <div class="stack">
-            <span class="kicker">Project Directory</span>
-            <h1>Games, apps, and practical web tools.</h1>
-            <p class="subtitle">A simple directory for games, training tools, utilities, and creative browser projects.</p>
-          </div>
-          <div class="stack">
-            <div class="release-line">
-              <span class="badge release">VFDDefender New Release</span>
-              <span class="badge progress">Tanks V3: In Progress</span>
-            </div>
-            <div class="hero-actions">
-              <a class="btn" href="games/index.html">Open Games</a>
-              <a class="btn alt" href="utilities/index.html">Open Utilities</a>
-              <a class="btn alt" href="games/work-in-progress/index.html">Preview Games</a>
-            </div>
-          </div>
+      <section class="directory-hero cinematic" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <span class="directory-kicker">Featured build</span>
+          <h1 id="hero-title">Crater Basin<br>— Tanks V3</h1>
+          <p class="directory-copy">A wide-open 3D tank sandbox in an otherworldly basin. Drive, aim, collect pickups, and test the battlefield.</p>
+          <div class="hero-actions"><a class="directory-button" href="games/tanks-v3-crater-basin/index.html">Explore the build</a><a class="directory-button ghost" href="games/index.html">Browse games</a></div>
         </div>
-
-        <div class="showcase" aria-label="Featured project images">
-          <a href="games/tanks-v3-crater-basin/index.html">
-            <img src="games/tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Tanks and More Tanks 2 Crater Basin game cover" />
-            <strong>Tanks and More Tanks 2: in progress</strong>
-          </a>
-          <a class="launcher-art" href="games/vfddefender/index.html">
-            <img src="Images%20for%20Page/vfd_defender_kid_launcher_alt_512x512.webp" alt="VFDDefender kid launcher alternate art" />
-            <strong>VFDDefender: new release</strong>
-          </a>
-          <a href="games/tibertrons-space-buggy/index.html">
-            <img src="games/tibertrons-space-buggy/images/vehicles/moonbuggy1.webp" alt="Tibertron space buggy game art" />
-            <strong>Tibertron's Space Buggy: preview</strong>
-          </a>
+        <div class="hero-art"><img src="games/tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Feature image of a tank game environment"></div>
+      </section>
+      <section class="directory-section" aria-labelledby="featured-title">
+        <div class="directory-section-head"><div><span class="directory-kicker">Explore</span><h2 id="featured-title">Built for a little more curiosity.</h2></div></div>
+        <div class="directory-card-grid">
+          <a class="directory-card" href="games/tibertrons-space-buggy/index.html"><span class="directory-card-art"><img src="games/tibertrons-space-buggy/images/tibertrons-space-buggy-concept.webp" alt="Concept art for Tibertron's Space Buggy on an alien planet"></span><span class="directory-card-body"><span class="directory-card-meta">Preview game · Concept art</span><h3>Tibertron's Space Buggy</h3><p>A futuristic buggy sent to alien planets to recover resources.</p></span></a>
+          <a class="directory-card" href="utilities/magic-screen-pro.html"><span class="utility-art drawing" aria-hidden="true"></span><span class="directory-card-body"><span class="directory-card-meta">Drawing tool</span><h3>Magic Screen Pro</h3><p>A larger drawing lab with layers, symmetry, and visual effects.</p></span></a>
+          <a class="directory-card" href="utilities/USA250th/index.html"><span class="utility-art records" aria-hidden="true"></span><span class="directory-card-body"><span class="directory-card-meta">Research utility</span><h3>250th Founding Records</h3><p>Browse official Founders Online records by anniversary date.</p></span></a>
         </div>
       </section>
-
-      <section class="directory" id="directory">
-        <a class="catalog-card" href="games/index.html">
-          <span class="badge">Games</span>
-          <h2>Playable Builds</h2>
-          <p>Arcade games, board games, training games, and browser play experiences.</p>
-        </a>
-        <a class="catalog-card" href="utilities/index.html">
-          <span class="badge">Apps</span>
-          <h2>Apps & Utilities</h2>
-          <p>Drawing tools, converters, planning helpers, and browser-based utilities.</p>
-        </a>
-        <a class="catalog-card" href="games/work-in-progress/index.html">
-          <span class="badge progress">Preview</span>
-          <h2>Preview Games</h2>
-          <p>Early-access games and creative concepts available to try.</p>
-        </a>
+      <section class="directory-section directory-feature-grid" aria-label="Game and utility directories">
+        <a class="directory-feature" href="games/index.html"><span class="directory-feature-art"><img src="games/tanks-and-more-tank/images/vehicles_tank_heavy_792x276.webp" alt="Original Tanks and More Tanks game art"></span><span class="directory-feature-copy"><span class="directory-kicker">Games</span><h2>Play the collection.</h2><p>Current games, previews, classics, builders, and an archive kept in clear view.</p><span class="directory-button ghost">Open games</span></span></a>
+        <div class="directory-list" aria-label="Utility shortcuts"><span class="directory-kicker">Utilities</span><a href="utilities/magic-screen-pro.html">Magic Screen Pro <span>Draw and create</span></a><a href="utilities/USA250th/index.html">250th Founding Records <span>Find official records</span></a><a href="utilities/index.html">All utilities <span>Open directory</span></a></div>
       </section>
-
-      <section class="panel">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Fast Launch</span>
-            <h2>Featured Work</h2>
-          </div>
-          <a class="menu-link" href="games/index.html">All Games</a>
-        </div>
-        <div class="projects-grid">
-          <a class="card" href="utilities/USA250th/index.html">
-            <span class="calendar-preview" aria-hidden="true">
-              <span>
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-              </span>
-            </span>
-            <span class="badge progress">New Utility</span>
-            <h3>250th Founding Records</h3>
-            <p>Calendar links to official Founders Online records by anniversary date.</p>
-          </a>
-          <a class="card" href="games/vfddefender/index.html">
-            <span class="asset-strip launcher-art"><img src="games/vfddefender/images/vfd_defender_kid_launcher_512x512.webp" alt="VFDDefender kid launcher art" /></span>
-            <span class="badge release">New Release</span>
-            <h3>VFDDefender</h3>
-            <p>Standalone fire-response campaign build.</p>
-          </a>
-          <a class="card" href="games/tanks-v3-crater-basin/index.html">
-            <span class="asset-strip"><img src="games/tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Tanks and More Tanks 2 Crater Basin game cover" /></span>
-            <span class="badge progress">In Progress</span>
-            <h3>Tanks and More Tanks 2</h3>
-            <p>3D Crater Basin space-tank sandbox now in active development.</p>
-          </a>
-          <a class="card" href="games/tibertrons-space-buggy/index.html">
-            <span class="asset-strip"><img src="games/tibertrons-space-buggy/images/vehicles/moonbuggy1.webp" alt="Tibertron moon buggy" /></span>
-            <span class="badge progress">Preview Build</span>
-            <h3>Tibertron's Space Buggy</h3>
-            <p>Moon buggy mission campaign with extraction goals.</p>
-          </a>
-          <a class="card" href="games/tanks-and-more-tank/index.html">
-            <span class="asset-strip"><img src="games/tanks-and-more-tank/images/vehicles_tank_heavy_792x276.webp" alt="Original Tanks and More Tanks game art" /></span>
-            <span class="badge">Original</span>
-            <h3>Tanks and More Tanks</h3>
-            <p>The original turn-based tank game, preserved as its own playable build.</p>
-          </a>
-        </div>
-      </section>
-
-      <footer class="copyright">Copyright &copy; Jason Groce - Kennard, Indiana</footer>
+      <footer class="directory-footer">© Jason Groce · Kennard, Indiana</footer>
     </main>
   </body>
 </html>

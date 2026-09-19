@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Monsters Unlimited</title>
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20260509" />
+    <link rel="stylesheet" href="style.css?v=20260522-9" />
+  </head>
+  <body>
+    <main class="monster-shell">
+      <canvas id="game" width="1280" height="720" aria-label="Monsters Unlimited game canvas"></canvas>
+      <div class="hud" aria-live="polite">
+        <a class="home-link" href="../index.html">Games</a>
+        <div class="meter"><span id="healthFill"></span></div>
+        <strong id="scoreText">0</strong>
+        <span id="objectiveText">Destroy every building</span>
+      </div>
+      <div id="mobileStick" class="mobile-stick" aria-label="Move">
+        <span class="stick-ring"></span>
+        <span id="stickKnob" class="stick-knob"></span>
+      </div>
+      <div id="mobileActions" class="mobile-actions" aria-label="Actions">
+        <button id="jumpBtn" type="button">Jump</button>
+        <button id="punchBtn" type="button">Punch</button>
+        <button id="eatBtn" type="button">Eat</button>
+      </div>
+      <section id="startScreen" class="screen">
+        <div>
+          <span class="kicker">Monsters Unlimited</span>
+          <h1>Day 1: First Bite</h1>
+          <p>Start as a human, morph into a huge monster, climb the city, and punch the buildings down.</p>
+          <button id="startBtn" type="button">Start</button>
+          <a href="builder.html" target="_blank" rel="noreferrer">Open Builder</a>
+        </div>
+      </section>
+      <section id="endScreen" class="screen hidden">
+        <div>
+          <span id="endKicker" class="kicker">City Cleared</span>
+          <h2 id="endTitle">Level Complete</h2>
+          <p id="endText">The skyline is rubble.</p>
+          <button id="restartBtn" type="button">Play Again</button>
+        </div>
+      </section>
+    </main>
+    <script src="level-data.js?v=20260527-2"></script>
+    <script src="game.js?v=20260527-2"></script>
+  </body>
+</html>

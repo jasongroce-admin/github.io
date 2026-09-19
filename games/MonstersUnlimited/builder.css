@@ -1,0 +1,133 @@
+.builder-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  background: #171a22;
+  color: #f4ecd8;
+}
+
+.builder-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  overflow: auto;
+  background: #20242f;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.builder-panel h1 {
+  margin: 4px 0;
+  font-size: 28px;
+}
+
+.builder-panel label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #d9cfb8;
+}
+
+.builder-panel input,
+.builder-panel select,
+.builder-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #525a68;
+  border-radius: 6px;
+  background: #10131a;
+  color: #fff;
+  padding: 8px;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tool-row button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: #3b4454;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tool-row button.active,
+#saveBtn,
+#exportBtn,
+#rigSnapBtn,
+#rigSaveBtn,
+#rigExportBtn {
+  background: #f2c14e;
+  color: #17130a;
+}
+
+.rig-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(242, 193, 78, 0.35);
+  border-radius: 8px;
+  background: rgba(16, 19, 26, 0.65);
+}
+
+.rig-panel.hidden {
+  display: none;
+}
+
+.rig-panel h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+#exportBox {
+  min-height: 130px;
+  resize: vertical;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+}
+
+#status {
+  margin: 0;
+  color: #aeb7c6;
+  font-size: 13px;
+}
+
+.canvas-wrap {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  min-width: 0;
+  padding: 14px;
+}
+
+#builderCanvas {
+  width: min(100%, 1280px);
+  height: auto;
+  max-height: calc(100vh - 28px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #8fb6d9;
+}
+
+@media (max-width: 860px) {
+  .builder-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .builder-panel {
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}

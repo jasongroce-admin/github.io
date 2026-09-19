@@ -1,181 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Playable browser games, previews, classics, and builders by Jason Groce.">
     <title>Games | Jason Groce</title>
-    <link rel="stylesheet" href="../assets/css/site.css?v=20260509" />
-    <style>
-      .games-hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.55fr);
-        gap: 16px;
-      }
-
-      .games-summary {
-        display: grid;
-        gap: 10px;
-        align-content: start;
-      }
-
-      .games-section {
-        display: grid;
-        gap: 14px;
-      }
-
-      .game-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      @media (max-width: 820px) {
-        .games-hero { grid-template-columns: 1fr; }
-      }
-    </style>
+    <link rel="stylesheet" href="../assets/css/directory.css?v=20260919">
   </head>
-  <body>
-    <main class="content games-shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="../index.html">
-          <strong>Jason Groce</strong>
-          <span>Games</span>
-        </a>
-        <nav class="site-menu" aria-label="Primary">
-          <a class="menu-link" href="../index.html">Home</a>
-          <a class="menu-link active" href="index.html">Games</a>
-          <a class="menu-link" href="../utilities/index.html">Utilities</a>
-        </nav>
-      </header>
-
-      <section class="games-hero">
-        <div class="panel stack">
-          <span class="kicker">Game Directory</span>
-          <h1>Playable games without the clutter.</h1>
-          <p class="subtitle">Browse playable games, training experiences, builders, and browser tools.</p>
-        </div>
-        <div class="panel games-summary">
-          <a class="list-link" href="work-in-progress/index.html">Preview Games <span>Tanks V3, Moon Buggy, JR's #2</span></a>
-          <a class="list-link" href="archive/index.html">Additional Builds <span>Classic projects</span></a>
-          <a class="list-link" href="../utilities/index.html">Builders & Utilities <span>Tools</span></a>
+  <body class="directory-page">
+    <main class="directory-shell">
+      <header class="directory-header"><a class="directory-brand" href="../index.html">Jason Groce<span>Creative games & tools</span></a><nav class="directory-nav" aria-label="Primary navigation"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Games</a><a href="../utilities/index.html">Utilities</a></nav></header>
+      <section class="directory-hero" aria-labelledby="games-title">
+        <div class="hero-copy"><span class="directory-kicker">Game directory</span><h1 id="games-title">Big worlds. Small browser tab.</h1><p class="directory-copy">Playable games, works in progress, builders, and classics. Start with a finished favorite or try something still taking shape.</p><div class="hero-actions"><a class="directory-button" href="tanks-v3-crater-basin/index.html">Play Crater Basin</a><a class="directory-button ghost" href="#current">Browse current games</a></div></div>
+        <div class="hero-art"><img src="tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Feature image of a tank game environment"><span class="hero-caption"><strong>Feature image</strong> Crater Basin — Tanks V3</span></div>
+      </section>
+      <section class="directory-section" id="current" aria-labelledby="current-title">
+        <div class="directory-section-head"><div><span class="directory-kicker">Play now</span><h2 id="current-title">Current games.</h2></div></div>
+        <div class="directory-card-grid">
+          <a class="directory-card" href="vfddefender/index.html"><span class="directory-card-art"><img src="vfddefender/images/vfd_defender_kid_launcher_512x512.webp" alt="VFDDefender game art"></span><span class="directory-card-body"><span class="directory-card-meta">New release</span><h3>VFDDefender</h3><p>Standalone fire-response campaign build.</p></span></a>
+          <a class="directory-card" href="tanks-and-more-tank/index.html"><span class="directory-card-art"><img src="tanks-and-more-tank/images/vehicles_tank_heavy_792x276.webp" alt="Original Tanks and More Tanks game art"></span><span class="directory-card-body"><span class="directory-card-meta">Original</span><h3>Tanks and More Tanks</h3><p>The original turn-based tank game, preserved as its own playable build.</p></span></a>
+          <a class="directory-card" href="snake/index.html"><span class="directory-card-art"><img src="../Images%20for%20Page/game_snake_icon_256x256.webp" alt="Snake game art"></span><span class="directory-card-body"><span class="directory-card-meta">Classic</span><h3>Snake</h3><p>Classic snake in a simple modern browser build.</p></span></a>
+          <a class="directory-card" href="pd-witness-recall/index.html"><span class="directory-card-art"><img src="pd-witness-recall/scenes/scene_01.webp" alt="Witness Recall game scene"></span><span class="directory-card-body"><span class="directory-card-meta">Training game</span><h3>PD Witness Recall</h3><p>A training-style memory and recall game.</p></span></a>
+          <a class="directory-card" href="smugglerscoat/index.html"><span class="directory-card-art"><img src="../Images%20for%20Page/smugglers_coat_256x256.webp" alt="Smugglerscoat game art"></span><span class="directory-card-body"><span class="directory-card-meta">Strategy</span><h3>Smugglerscoat</h3><p>Trading strategy with city routes, gear, and risk.</p></span></a>
+          <a class="directory-card" href="MonstersUnlimited/index.html"><span class="directory-card-art"><img src="MonstersUnlimited/MUimages/Monsters/grokkon.webp" alt="Monsters Unlimited monster art"></span><span class="directory-card-body"><span class="directory-card-meta">New · Preview</span><h3>Monsters Unlimited</h3><p>Mobile-first giant monster city-smashing prototype with builder.</p></span></a>
+          <a class="directory-card" href="colorbynumber/index.html"><span class="directory-card-art"><img src="colorbynumber/Pages/Frog.webp" alt="Frog color by number art"></span><span class="directory-card-body"><span class="directory-card-meta">New · Touch</span><h3>Color by Number</h3><p>Mobile-first frog coloring page with touch fill and pinch zoom.</p></span></a>
         </div>
       </section>
-
-      <section class="panel games-section">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Play</span>
-            <h2>Current Games</h2>
-          </div>
-        </div>
-        <div class="games-grid">
-          <a class="games-card" href="vfddefender/index.html">
-            <span class="asset-strip launcher-art"><img src="vfddefender/images/vfd_defender_kid_launcher_512x512.webp" alt="VFDDefender kid launcher art" /></span>
-            <span class="game-meta"><span class="badge release">New Release</span></span>
-            <strong>VFDDefender</strong>
-            <span>Standalone fire-response campaign build.</span>
-          </a>
-          <a class="games-card" href="tanks-and-more-tank/index.html">
-            <span class="asset-strip"><img src="tanks-and-more-tank/images/vehicles_tank_heavy_792x276.webp" alt="Original Tanks and More Tanks game art" /></span>
-            <span class="game-meta"><span class="badge">Original</span></span>
-            <strong>Tanks and More Tanks</strong>
-            <span>The original turn-based tank game with generated maps, campaigns, and Night Tanks.</span>
-          </a>
-          <a class="games-card" href="snake/index.html">
-            <span class="asset-strip"><img src="../Images%20for%20Page/game_snake_icon_256x256.webp" alt="Snake game art" /></span>
-            <strong>Snake</strong>
-            <span>Classic snake with a simple modern browser build.</span>
-          </a>
-          <a class="games-card" href="pd-witness-recall/index.html">
-            <span class="asset-strip"><img src="pd-witness-recall/scenes/scene_01.webp" alt="Witness recall scene" /></span>
-            <strong>PD Witness Recall</strong>
-            <span>Training-style memory and recall game.</span>
-          </a>
-          <a class="games-card" href="smugglerscoat/index.html">
-            <span class="asset-strip"><img src="../Images%20for%20Page/smugglers_coat_256x256.webp" alt="Smugglerscoat game art" /></span>
-            <span class="game-meta"><span class="badge new">New</span></span>
-            <strong>Smugglerscoat</strong>
-            <span>Strategy trading game with city routes, gear, and risk.</span>
-          </a>
+      <section class="directory-section" aria-labelledby="preview-title">
+        <div class="directory-section-head"><div><span class="directory-kicker">Preview builds</span><h2 id="preview-title">Future trips.</h2></div><a class="directory-button ghost" href="work-in-progress/index.html">All previews</a></div>
+        <div class="directory-card-grid">
+          <a class="directory-card" href="tanks-v3-crater-basin/index.html"><span class="directory-card-art"><img src="tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Crater Basin — Tanks V3 game cover"></span><span class="directory-card-body"><span class="directory-card-meta">In development</span><h3>Crater Basin — Tanks V3</h3><p>3D space-tank sandbox with driving, aiming, pickups, and AI battles.</p></span></a>
+          <a class="directory-card" href="tibertrons-space-buggy/index.html"><span class="directory-card-art"><img src="tibertrons-space-buggy/images/tibertrons-space-buggy-concept.webp" alt="Concept art for Tibertron's Space Buggy"></span><span class="directory-card-body"><span class="directory-card-meta">Preview · Concept art</span><h3>Tibertron's Space Buggy</h3><p>Named after Tiberius: a futuristic buggy sent across alien planets to recover resources.</p></span></a>
+          <a class="directory-card" href="game-01/index.html"><span class="directory-card-art"><img src="../Images%20for%20Page/JR2_pipe_256x256.webp" alt="JR's #2 Rescue pipe art"></span><span class="directory-card-body"><span class="directory-card-meta">Classic build</span><h3>JR's #2 Rescue</h3><p>Pipe-repair rescue game with puzzle-style levels.</p></span></a>
         </div>
       </section>
-
-      <section class="panel games-section">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Preview</span>
-            <h2>Preview Games</h2>
-          </div>
-          <a class="menu-link" href="work-in-progress/index.html">Open Previews</a>
-        </div>
-        <div class="games-grid">
-          <a class="games-card" href="tanks-v3-crater-basin/index.html">
-            <span class="asset-strip"><img src="tanks-and-more-tank/images/tanks-and-more-tanks-2-cover.jpg" alt="Tanks and More Tanks 2 Crater Basin game cover" /></span>
-            <span class="game-meta"><span class="badge new">New</span><span class="badge progress">In Progress</span></span>
-            <strong>Tanks and More Tanks 2</strong>
-            <span>3D Crater Basin space-tank sandbox with drive, aim, pickups, and AI battles.</span>
-          </a>
-          <a class="games-card" href="tibertrons-space-buggy/index.html">
-            <span class="asset-strip"><img src="tanks-and-more-tank/images/scifi_vehicle_hovercar_compact_459x145.webp" alt="Moon buggy concept vehicle" /></span>
-            <span class="game-meta"><span class="badge new">New</span><span class="badge progress">Preview</span></span>
-            <strong>Tibertron's Space Buggy</strong>
-            <span>Moon buggy resource campaign with checkpoints and extraction goals.</span>
-          </a>
-          <a class="games-card" href="game-01/index.html">
-            <span class="asset-strip"><img src="../Images%20for%20Page/JR2_pipe_256x256.webp" alt="JR's #2 Rescue pipe art" /></span>
-            <span class="game-meta"><span class="badge archive">Classic Build</span></span>
-            <strong>JR's #2 Rescue</strong>
-            <span>Pipe-repair rescue game with puzzle-style levels.</span>
-          </a>
-        </div>
+      <section class="directory-section directory-feature-grid" aria-label="Archives and game builders">
+        <a class="directory-feature" href="archive/index.html"><span class="directory-feature-art"><img src="../Images%20for%20Page/police_patrol_vehicle_512x256.webp" alt="Patrol game vehicle art"></span><span class="directory-feature-copy"><span class="directory-kicker">Archive</span><h2>Projects kept in view.</h2><p>Patrol and other earlier builds are retained as archived work rather than presented as current development.</p><span class="directory-button ghost">Open archive</span></span></a>
+        <div class="directory-list" aria-label="Game builders"><span class="directory-kicker">Builders</span><a href="youlevel/">You Level Builder <span>Create and export scenes</span></a><a href="tanks-and-more-tank/tools/tank-level-builder.html">Tank Level Builder <span>Create maps</span></a><a href="tibertrons-space-buggy/tools/space-buggy-level-builder.html">Space Buggy Level Builder <span>Lay out missions</span></a><a href="MonstersUnlimited/builder.html">Monsters Unlimited Builder <span>Edit scenes and spawns</span></a></div>
       </section>
-
-      <section class="panel games-section">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Archived</span>
-            <h2>Archived Games</h2>
-          </div>
-          <a class="menu-link" href="archive/index.html">Open Archive</a>
-        </div>
-        <div class="games-grid">
-          <a class="games-card" href="patrol/index.html">
-            <span class="asset-strip"><img src="../Images%20for%20Page/police_patrol_vehicle_512x256.webp" alt="Patrol police vehicle" /></span>
-            <span class="game-meta"><span class="badge archive">Archived</span></span>
-            <strong>Patrol</strong>
-            <span>Kennard patrol training build retained for reference while development is paused.</span>
-          </a>
-        </div>
-      </section>
-
-      <section class="panel games-section">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Classics</span>
-            <h2>Board & Small Games</h2>
-          </div>
-        </div>
-        <div class="games-grid">
-          <a class="games-card" href="old-school-board-games/checkers.html"><span class="asset-strip"><img src="../Images%20for%20Page/game_checkers_icon_256x256.webp" alt="Checkers game art" /></span><strong>Checkers</strong><span>Old school board game.</span></a>
-          <a class="games-card" href="old-school-board-games/chess.html"><span class="asset-strip"><img src="../Images%20for%20Page/game_chess_icon_256x256.webp" alt="Chess game art" /></span><strong>Chess</strong><span>Old school board game.</span></a>
-          <a class="games-card" href="old-school-board-games/tic-tac-toe.html"><span class="asset-strip"><img src="../Images%20for%20Page/game_tictactoe_icon_256x256.webp" alt="Tic-Tac-Toe game art" /></span><strong>Tic-Tac-Toe</strong><span>Old school board game.</span></a>
-          <a class="games-card" href="old-school-board-games/four-circles.html"><span class="asset-strip"><img src="../Images%20for%20Page/game_fourcircles_icon_256x256.webp" alt="Four Circles game art" /></span><strong>Four Circles</strong><span>Old school board game.</span></a>
-        </div>
-      </section>
-
-      <section class="panel games-section">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Builders</span>
-            <h2>Game Tools</h2>
-          </div>
-        </div>
-        <div class="list-grid">
-          <a class="list-link" href="youlevel/" target="_blank" rel="noreferrer">You Level Builder <span>Create and export custom scenes</span></a>
-          <a class="list-link" href="tanks-and-more-tank/tools/tank-level-builder.html" target="_blank" rel="noreferrer">Tank Level Builder <span>Create and export maps</span></a>
-          <a class="list-link" href="tibertrons-space-buggy/tools/space-buggy-level-builder.html" target="_blank" rel="noreferrer">Space Buggy Level Builder <span>Mission layout tool</span></a>
-        </div>
-      </section>
+      <footer class="directory-footer">© Jason Groce · Kennard, Indiana</footer>
     </main>
   </body>
 </html>

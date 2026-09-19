@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#123c2d">
+    <title>Ford 2120 Maintenance Utility</title>
+    <style>
+      :root {
+        --green: #123c2d;
+        --green-2: #1d5a43;
+        --cream: #f5f0e4;
+        --paper: #fffdf7;
+        --ink: #1e2a25;
+        --muted: #65726c;
+        --line: #d7d1c4;
+        --gold: #dfad4f;
+        --red: #a13f32;
+        --blue: #3d6e80;
+        --shadow: 0 8px 24px rgba(25, 44, 36, 0.11);
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--cream);
+        font-family: "Segoe UI", Arial, sans-serif;
+        line-height: 1.45;
+      }
+      button, input, select, textarea { font: inherit; }
+      button, a { -webkit-tap-highlight-color: transparent; }
+      a { color: var(--green-2); }
+      h1, h2, h3, p { margin: 0; }
+      h1 { max-width: 660px; font-size: clamp(2rem, 10vw, 4.5rem); line-height: .96; letter-spacing: -.06em; }
+      h2 { font-size: 1.45rem; line-height: 1; letter-spacing: -.03em; }
+      h3 { font-size: 1rem; }
+      .app { width: min(920px, 100%); margin: auto; padding: 0 14px 92px; }
+      .hero {
+        margin: 0 -14px;
+        padding: calc(16px + env(safe-area-inset-top)) 18px 20px;
+        color: #fffdf7;
+        background: linear-gradient(135deg, var(--green), #0d2b21);
+      }
+      .topline, .section-head, .row, .record-head, .source-head {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      }
+      .eyebrow, .pill, .label {
+        color: var(--gold);
+        font-size: .7rem;
+        font-weight: 900;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+      }
+      .back { color: #fffdf7; font-size: .78rem; font-weight: 800; text-decoration: none; }
+      .hero p { max-width: 650px; margin-top: 10px; color: rgba(255,255,255,.79); font-size: .96rem; }
+      .setup {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px;
+      }
+      .setup label, .field { display: grid; gap: 5px; font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+      input, select, textarea {
+        min-height: 46px; width: 100%; border: 1px solid var(--line); border-radius: 11px;
+        padding: 10px 11px; color: var(--ink); background: #fff;
+      }
+      .hero input, .hero select { border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; }
+      .hero option { color: var(--ink); }
+      .tabs {
+        position: sticky; top: 0; z-index: 10; display: flex; gap: 7px;
+        margin: 0 -14px; padding: 9px 14px; overflow-x: auto;
+        background: rgba(245,240,228,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px);
+      }
+      .tabs button, .chip, .btn {
+        min-height: 42px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 13px;
+        color: var(--green); background: var(--paper); font-weight: 900; white-space: nowrap;
+      }
+      .tabs button.active, .chip.active, .btn.primary { color: #fff; background: var(--green); border-color: var(--green); }
+      main { padding-top: 14px; }
+      .view { display: none; }
+      .view.active { display: grid; gap: 14px; }
+      .card {
+        padding: 14px; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: var(--shadow);
+      }
+      .card.accent { border-left: 5px solid var(--gold); }
+      .card.danger { border-left: 5px solid var(--red); }
+      .section-head { align-items: flex-end; margin-bottom: 10px; }
+      .muted, .note, .meta { color: var(--muted); font-size: .84rem; }
+      .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .metric { min-height: 82px; padding: 11px; border-radius: 12px; color: #fff; background: var(--green-2); }
+      .metric span { display: block; color: rgba(255,255,255,.72); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 4px; font-size: 1.25rem; line-height: 1; }
+      .checklist, .schedule, .records, .sources { display: grid; gap: 8px; }
+      .check {
+        display: grid; grid-template-columns: 25px 1fr; gap: 9px; align-items: start;
+        padding: 9px 0; border-top: 1px solid var(--line);
+      }
+      .check:first-child { border-top: 0; }
+      .check input { width: 21px; min-height: 21px; accent-color: var(--green); }
+      .check strong { display: block; font-size: .94rem; }
+      .check small { display: block; color: var(--muted); font-size: .78rem; }
+      .interval {
+        display: grid; grid-template-columns: 76px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line);
+      }
+      .interval:first-child { border-top: 0; }
+      .interval-tag {
+        display: grid; place-items: center; min-height: 54px; padding: 6px; border-radius: 11px;
+        color: #fff; background: var(--green-2); font-size: .75rem; font-weight: 900; text-align: center;
+      }
+      .interval.due .interval-tag { color: var(--ink); background: var(--gold); }
+      .items { display: grid; gap: 4px; }
+      .items div { font-size: .87rem; }
+      details { border-top: 1px solid var(--line); }
+      details:first-of-type { border-top: 0; }
+      summary { padding: 13px 0; cursor: pointer; font-weight: 900; }
+      details p, details ol, details ul { color: var(--muted); font-size: .88rem; }
+      details ol, details ul { padding-left: 21px; }
+      .warning { margin-top: 9px; padding: 10px; border-radius: 10px; color: #723026; background: #fae5df; font-size: .84rem; font-weight: 700; }
+      .grid { display: grid; gap: 10px; }
+      .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .ref { padding: 10px; border-radius: 11px; background: #eef3ef; }
+      .ref span { display: block; color: var(--muted); font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+      .ref strong { display: block; margin-top: 4px; font-size: .94rem; }
+      .parts { width: 100%; border-collapse: collapse; font-size: .82rem; }
+      .parts th, .parts td { padding: 8px 5px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .parts th { color: var(--muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+      .manual-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+      .manual-table th, .manual-table td { padding: 9px 5px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .manual-table th { color: var(--muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+      .manual-table td:first-child { font-weight: 900; }
+      .form { display: grid; gap: 9px; }
+      textarea { min-height: 84px; resize: vertical; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .btn { cursor: pointer; text-decoration: none; }
+      .btn.small { min-height: 34px; padding: 5px 10px; font-size: .78rem; }
+      .record, .source { padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+      .record p, .source p { margin-top: 5px; color: var(--muted); font-size: .8rem; }
+      .source a { font-weight: 900; }
+      .bottom {
+        position: fixed; right: 0; bottom: 0; left: 0; z-index: 20;
+        display: grid; grid-template-columns: repeat(5,1fr); padding: 6px max(6px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+        border-top: 1px solid var(--line); background: rgba(255,253,247,.96); backdrop-filter: blur(14px);
+      }
+      .bottom button { border: 0; padding: 6px 2px; color: var(--muted); background: transparent; font-size: .68rem; font-weight: 900; }
+      .bottom button span { display: block; font-size: 1rem; }
+      .bottom button.active { color: var(--green); }
+      .empty { padding: 12px; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; font-size: .86rem; }
+      @media (max-width: 719px) {
+        .tabs { display: none; }
+      }
+      @media (min-width: 720px) {
+        .grid.two { grid-template-columns: 1fr 1fr; }
+        .bottom { display: none; }
+        .app { padding-bottom: 34px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div class="topline">
+          <span class="eyebrow">Field Utility</span>
+          <a class="back" href="../index.html">Utilities</a>
+        </div>
+        <h1>Ford 2120 maintenance.</h1>
+        <p>A phone-first companion for routine service. Built from the operator's manual, with newer source links clearly labeled.</p>
+        <div class="setup">
+          <label>Hour meter<input id="hours" type="number" min="0" step=".1" inputmode="decimal" placeholder="Enter hours"></label>
+          <label>Drive type<select id="drive"><option value="4wd">4-wheel drive</option><option value="2wd">2-wheel drive</option></select></label>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Sections">
+        <button data-view="today" class="active">Today</button>
+        <button data-view="schedule">Schedule</button>
+        <button data-view="jobs">Job Guides</button>
+        <button data-view="records">Records</button>
+        <button data-view="reference">Reference</button>
+      </nav>
+
+      <main>
+        <section id="today" class="view active">
+          <div class="metrics">
+            <div class="metric"><span>Hour meter</span><strong id="hoursMetric">--</strong></div>
+            <div class="metric"><span>Drive</span><strong id="driveMetric">4WD</strong></div>
+            <div class="metric"><span>Next block</span><strong id="nextMetric">10h</strong></div>
+          </div>
+          <article class="card accent">
+            <div class="section-head"><div><span class="label">Before work</span><h2>Daily check</h2></div><button class="btn small" id="resetDaily">Reset</button></div>
+            <div class="checklist" id="dailyList"></div>
+          </article>
+          <article class="card danger">
+            <span class="label">Safety first</span>
+            <h3>Never use your hand to search for a hydraulic or injection leak.</h3>
+            <p class="note">Use cardboard or paper. Fluid injected into skin needs immediate medical attention. Manual pp. 33 and 44.</p>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Due view</span><h2>Service snapshot</h2></div></div>
+            <div class="schedule" id="snapshot"></div>
+          </article>
+        </section>
+
+        <section id="schedule" class="view">
+          <article class="card">
+            <div class="section-head"><div><span class="label">Manual pp. 30-31</span><h2>Maintenance schedule</h2></div></div>
+            <p class="note">Intervals are operator-manual intervals. Work sooner after severe dust, heavy load, water exposure, or long storage.</p>
+            <div class="schedule" id="scheduleList"></div>
+          </article>
+        </section>
+
+        <section id="jobs" class="view">
+          <article class="card">
+            <div class="section-head"><div><span class="label">Tap to expand</span><h2>Common jobs</h2></div></div>
+            <details open>
+              <summary>Check engine oil level</summary>
+              <ol><li>Park level and stop the engine long enough for oil to settle.</li><li>Check the dipstick. Keep the level between the ADD and FULL marks.</li><li>Add oil through the engine filler cap only as needed. Do not overfill.</li></ol>
+              <p>Manual p. 35.</p>
+            </details>
+            <details>
+              <summary>Change engine oil and filter</summary>
+              <ol><li>Warm the engine, park level, lower implements, stop the engine, and chock safely.</li><li>Drain both engine-oil drain plugs into a suitable container.</li><li>Replace the filter when due. Lightly oil the new gasket and install per the filter maker's directions.</li><li>Refill, run briefly, stop, wait for oil to settle, then verify with the dipstick and inspect for leaks.</li></ol>
+              <p>Oil: every 100 hours. Filter: every 200 hours. Manual p. 55 prints two crankcase capacities: 7.9 U.S. qt / 7.5 L without a filter change, and 8.5 U.S. qt / 8.0 L with a filter change. Treat the capacity as a refill reference: finish by checking the dipstick and do not overfill. Manual pp. 35-36 and 55.</p>
+            </details>
+            <details>
+              <summary>Check transmission, rear axle, and hydraulics</summary>
+              <ol><li>Park level and wait for the oil to settle.</li><li>Check the transmission dipstick. The correct level is between the marks.</li><li>If low, add the specified fluid through the filler plug. Do not fill beyond the mark.</li></ol>
+              <p>Change shared transmission/rear-axle/hydraulic oil every 300 hours. Capacity: 34.9 U.S. qt / 33.0 L. Manual pp. 38-39 and 55.</p>
+            </details>
+            <details>
+              <summary>Service air cleaner</summary>
+              <ol><li>Inspect daily or every 10 hours and clean every 100 hours.</li><li>Do not remove the element while the engine is running.</li><li>Replace the element seasonally, or sooner if damaged or no longer serviceable.</li></ol>
+              <p>Manual maintenance chart and pp. 46-47.</p>
+            </details>
+            <details>
+              <summary>Drain fuel-filter water and sediment</summary>
+              <ol><li>Drain the fuel filter every 50 hours and whenever contamination is suspected.</li><li>Clean the filter every 100 hours and change its element every 200 hours.</li><li>Keep dirt and water out of diesel storage and transfer containers.</li></ol>
+              <p>Manual chart and pp. 32-33, 42-43.</p>
+            </details>
+            <details>
+              <summary>Check coolant and radiator</summary>
+              <ol><li>Check coolant daily or every 10 hours only when the engine is cool.</li><li>Keep radiator fins clear of chaff and debris.</li><li>Change coolant seasonally; inspect hoses and clamps at the same time.</li></ol>
+              <p>Total cooling-system capacity: 8.5 U.S. qt / 8.0 L. This is the system's total coolant-mixture capacity, not a direction to pour in 8.5 qt of antifreeze concentrate. Manual pp. 30-31 and 55.</p>
+            </details>
+            <details>
+              <summary>Check fan / water-pump belt</summary>
+              <ol><li>Inspect at 200-hour intervals and adjust if needed.</li><li>Apply 20-25 lb (9-11 kg) midway between pulleys.</li><li>Target deflection is 7/16 to 9/16 in (10-15 mm).</li></ol>
+              <p>Manual p. 56.</p>
+            </details>
+            <details>
+              <summary>Grease chassis points</summary>
+              <p>Every 50 hours, grease steering linkage, pivot shaft, clutch pedal, brake pedal, pedal shaft, 3-point linkage, and power-steering-cylinder fittings. On 2WD tractors also grease the front wheel spindles. Manual pp. 30-31.</p>
+            </details>
+          </article>
+        </section>
+
+        <section id="records" class="view">
+          <article class="card">
+            <div class="section-head"><div><span class="label">Stored on this device</span><h2>Add service record</h2></div></div>
+            <form id="recordForm" class="form">
+              <label class="field">Date<input id="recordDate" type="date" required></label>
+              <label class="field">Hour meter<input id="recordHours" type="number" min="0" step=".1" inputmode="decimal" required></label>
+              <label class="field">Work performed<input id="recordWork" required placeholder="Oil change, greased fittings..."></label>
+              <label class="field">Parts, fluids, notes<textarea id="recordNotes" placeholder="Filter number, quantity, observations"></textarea></label>
+              <button class="btn primary" type="submit">Save record</button>
+            </form>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Service history</span><h2>Records</h2></div><button class="btn small" id="exportRecords">Export</button></div>
+            <div class="records" id="recordsList"></div>
+          </article>
+        </section>
+
+        <section id="reference" class="view">
+          <article class="card">
+            <div class="section-head"><div><span class="label">Transcribed from manual p. 55</span><h2>Exact printed capacities</h2></div></div>
+            <p class="warning">Engine oil with a filter change and total cooling-system capacity are both printed as 8.5 U.S. qt / 8.0 L. They are separate fluids with coincidentally matching capacities. For any refill, use the tractor's dipstick or level mark as the final check and do not overfill.</p>
+            <table class="manual-table">
+              <thead><tr><th>System</th><th>U.S.</th><th>Imperial</th><th>Liters</th></tr></thead>
+              <tbody>
+                <tr><td>Fuel tank</td><td>11.1 gal</td><td>9.2 gal</td><td>42.0 L</td></tr>
+                <tr><td>Cooling system: total coolant mixture</td><td>8.5 qt</td><td>7.0 qt</td><td>8.0 L</td></tr>
+                <tr><td>Engine crankcase: less filter</td><td>7.9 qt</td><td>6.6 qt</td><td>7.5 L</td></tr>
+                <tr><td>Engine crankcase: with filter change</td><td>8.5 qt</td><td>7.0 qt</td><td>8.0 L</td></tr>
+                <tr><td>Rear axle and transmission: includes hydraulics</td><td>34.9 qt</td><td>29.0 qt</td><td>33.0 L</td></tr>
+                <tr><td>Power steering</td><td>1.9 qt</td><td>1.6 qt</td><td>1.8 L</td></tr>
+                <tr><td>Front axle differential case and final reduction</td><td>4.2 qt</td><td>3.5 qt</td><td>4.4 L</td></tr>
+              </tbody>
+            </table>
+            <p class="note">The values above are transcribed as printed, including the manual's front-axle figures. Cooling-system capacity means the complete coolant mixture, not antifreeze concentrate alone.</p>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Transcribed from manual p. 34</span><h2>Which lubricant goes where</h2></div></div>
+            <table class="manual-table">
+              <thead><tr><th>System</th><th>Manual-printed lubricant</th></tr></thead>
+              <tbody>
+                <tr><td>Transmission, rear axle, final reduction, hydraulic system, power steering</td><td>FORD 134</td></tr>
+                <tr><td>Engine crankcase</td><td>Ford Tractor Super Premium Engine Oil or API SF/CD quality oil. Select the SAE grade for outside temperature using the manual's chart.</td></tr>
+                <tr><td>Front wheel bearings and lubrication fittings</td><td>M-1C-137-B or NLGI grade 2 EP grease with lithium soap</td></tr>
+              </tbody>
+            </table>
+            <p class="note">These are the original manual terms. When buying a current product, confirm the modern equivalent with New Holland or a qualified supplier before filling.</p>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Manual and current catalog links</span><h2>Filters and parts</h2></div></div>
+            <p class="note">Confirm against the tractor serial number before ordering. Parts can supersede over time, and early/late tractors may differ.</p>
+            <table class="parts">
+              <thead><tr><th>Item</th><th>Reference</th><th>Interval</th></tr></thead>
+              <tbody>
+                <tr><td>Engine oil filter</td><td><a href="https://www.kanequip.com/buy-parts/New-Holland-Part-SBA140516230-OIL-FILTER-EARLY-2120-2677088/" target="_blank" rel="noreferrer">SBA140516230 (early 2120 listing)</a></td><td>200h</td></tr>
+                <tr><td>Outer air filter</td><td>86512889 <span class="muted">(supplemental cross-check)</span></td><td>Seasonal / as needed</td></tr>
+                <tr><td>Hydraulic filter</td><td><a href="https://www.messicks.com/parts/new-holland/sba340500930" target="_blank" rel="noreferrer">SBA340500930 current catalog fitment</a></td><td>First 50h, then 300h</td></tr>
+                <tr><td>Model diagrams</td><td><a href="https://www.messicks.com/catalogs/new-holland/2120-4-cyl-compact-tractor-20-series-01-87-12/07-hydraulic-systems/05f02b-05f02b-hydraulic-piping-2120-12-x-4-87-hss-87-11-91-nh-e" target="_blank" rel="noreferrer">2120 parts catalog</a></td><td>Use serial number</td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Newer context</span><h2>What changed since the manual</h2></div></div>
+            <p class="note">The manual discusses adjusting oil intervals for high-sulfur diesel. EPA says U.S. nonroad diesel is now ULSD, capped at 15 ppm sulfur after the phase-in completed in 2014. The manual's normal oil interval is therefore the useful baseline for ordinary U.S. fuel, while severe operating conditions can still justify earlier service.</p>
+          </article>
+          <article class="card">
+            <div class="section-head"><div><span class="label">Sources</span><h2>Manual and web references</h2></div></div>
+            <div class="sources">
+              <div class="source"><div class="source-head"><strong>Uploaded operator's manual</strong><span class="pill">Primary</span></div><p>Ford 2120 Operator's Manual, publication 42212010. The maintenance schedule, job notes, and capacities above were checked against the uploaded scan.</p></div>
+              <div class="source"><a href="https://www.epa.gov/diesel-fuel-standards/diesel-fuel-standards-and-rulemakings" target="_blank" rel="noreferrer">EPA diesel fuel standards</a><p>Current U.S. ULSD context for nonroad equipment.</p></div>
+              <div class="source"><a href="https://www.newholland.com/en-us/nar/services-and-solutions/parts" target="_blank" rel="noreferrer">New Holland genuine parts</a><p>Official model, serial-number, part-number, and lubricant lookup entry point.</p></div>
+              <div class="source"><a href="https://www.newholland.com/en-us/nar/services-and-solutions/self-repair" target="_blank" rel="noreferrer">New Holland self-repair resources</a><p>Official current technical-manual and dealer-support entry point.</p></div>
+              <div class="source"><a href="https://tractorgearbox.com/ford_2120_maintenance.html" target="_blank" rel="noreferrer">Ford 2120 maintenance cross-check</a><p>Supplemental online summary used only as a cross-check. The uploaded manual controls where details differ.</p></div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom" aria-label="Mobile sections">
+      <button data-view="today" class="active"><span>OK</span>Today</button>
+      <button data-view="schedule"><span>HR</span>Schedule</button>
+      <button data-view="jobs"><span>JOB</span>Jobs</button>
+      <button data-view="records"><span>ADD</span>Records</button>
+      <button data-view="reference"><span>i</span>Reference</button>
+    </nav>
+
+    <script>
+      const daily = [
+        ["Radiator coolant", "Check cold. Inspect radiator area for debris."],
+        ["Engine oil level", "Park level, let oil settle, read dipstick."],
+        ["Air cleaner", "Inspect. Service sooner in dust."],
+        ["Leaks and damage", "Look for fuel, coolant, oil, and hydraulic leaks. Use cardboard, never a hand, for pressurized leaks."],
+      ];
+      const baseSchedule = [
+        ["Daily / 10h", ["Check radiator coolant", "Check engine oil level", "Inspect air cleaner"]],
+        ["First 50h", ["Change hydraulic filter"]],
+        ["Every 50h", ["Check transmission oil level", "Check power-steering oil level", "Check tires", "Adjust clutch pedal if needed", "Check battery", "Drain fuel filter", "Grease chassis fittings"]],
+        ["Every 100h", ["Change engine oil", "Clean fuel-filter element", "Clean air-cleaner element"]],
+        ["Every 200h", ["Change fuel-filter element", "Change engine-oil filter", "Check and adjust fan belt", "Check and adjust brakes"]],
+        ["Every 300h", ["Change transmission / rear-axle / hydraulic oil", "Change hydraulic filter"]],
+        ["Every 600h", ["Check fuel injectors", "Change power-steering oil", "Check valve clearance"]],
+        ["Seasonal", ["Change radiator coolant", "Change air-cleaner element"]],
+      ];
+      const extra4wd = {
+        "Every 50h": ["Check front-differential oil level", "Check front-axle oil level"],
+        "Every 300h": ["Change front-differential and front-axle oil"],
+      };
+      const extra2wd = {
+        "Every 50h": ["Grease front wheel spindles"],
+        "Every 600h": ["Lubricate front wheel bearings"],
+      };
+      const $ = (id) => document.getElementById(id);
+      const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[char]);
+      const state = JSON.parse(localStorage.getItem("ford2120-state") || "{}");
+      const records = JSON.parse(localStorage.getItem("ford2120-records") || "[]");
+      $("hours").value = state.hours || "";
+      $("drive").value = state.drive || "4wd";
+      $("recordDate").value = new Date().toISOString().slice(0, 10);
+
+      function saveState() {
+        state.hours = $("hours").value;
+        state.drive = $("drive").value;
+        localStorage.setItem("ford2120-state", JSON.stringify(state));
+        render();
+      }
+      function schedule() {
+        const extras = $("drive").value === "4wd" ? extra4wd : extra2wd;
+        return baseSchedule.map(([name, items]) => [name, [...items, ...(extras[name] || [])]]);
+      }
+      function due(name, hours) {
+        const match = name.match(/Every (\d+)h/);
+        return match ? hours > 0 && hours % Number(match[1]) < 1 : false;
+      }
+      function intervalMarkup([name, items], hours) {
+        return `<div class="interval ${due(name, hours) ? "due" : ""}"><div class="interval-tag">${name}</div><div class="items">${items.map(x => `<div>${x}</div>`).join("")}</div></div>`;
+      }
+      function renderDaily() {
+        const checked = JSON.parse(localStorage.getItem("ford2120-daily") || "{}");
+        $("dailyList").innerHTML = daily.map(([name, note], i) => `<label class="check"><input type="checkbox" data-daily="${i}" ${checked[i] ? "checked" : ""}><span><strong>${name}</strong><small>${note}</small></span></label>`).join("");
+        document.querySelectorAll("[data-daily]").forEach(input => input.addEventListener("change", () => {
+          checked[input.dataset.daily] = input.checked;
+          localStorage.setItem("ford2120-daily", JSON.stringify(checked));
+        }));
+      }
+      function renderRecords() {
+        $("recordsList").innerHTML = records.length ? records.map((r, i) => `<div class="record"><div class="record-head"><strong>${escapeHtml(r.work)}</strong><button class="btn small" data-delete="${i}">Delete</button></div><p>${escapeHtml(r.date)} | ${escapeHtml(r.hours)} hours${r.notes ? ` | ${escapeHtml(r.notes)}` : ""}</p></div>`).join("") : `<div class="empty">No records yet. Your service notes will appear here.</div>`;
+        document.querySelectorAll("[data-delete]").forEach(button => button.addEventListener("click", () => {
+          records.splice(Number(button.dataset.delete), 1);
+          localStorage.setItem("ford2120-records", JSON.stringify(records));
+          renderRecords();
+        }));
+      }
+      function render() {
+        const hours = Number($("hours").value || 0);
+        const intervals = schedule();
+        $("hoursMetric").textContent = hours ? hours.toLocaleString() : "--";
+        $("driveMetric").textContent = $("drive").value.toUpperCase();
+        const next = [50,100,200,300,600].find(n => !hours || hours % n !== 0 && n > hours % 600) || 600;
+        $("nextMetric").textContent = `${next}h`;
+        $("scheduleList").innerHTML = intervals.map(x => intervalMarkup(x, hours)).join("");
+        $("snapshot").innerHTML = intervals.filter(([name]) => ["Daily / 10h","Every 50h","Every 100h","Every 200h","Every 300h"].includes(name)).map(x => intervalMarkup(x, hours)).join("");
+      }
+      document.querySelectorAll("[data-view]").forEach(button => button.addEventListener("click", () => {
+        const view = button.dataset.view;
+        document.querySelectorAll(".view").forEach(x => x.classList.toggle("active", x.id === view));
+        document.querySelectorAll("[data-view]").forEach(x => x.classList.toggle("active", x.dataset.view === view));
+        scrollTo({top: 0, behavior: "smooth"});
+      }));
+      $("hours").addEventListener("input", saveState);
+      $("drive").addEventListener("change", saveState);
+      $("resetDaily").addEventListener("click", () => { localStorage.removeItem("ford2120-daily"); renderDaily(); });
+      $("recordForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        records.unshift({date: $("recordDate").value, hours: $("recordHours").value, work: $("recordWork").value, notes: $("recordNotes").value});
+        localStorage.setItem("ford2120-records", JSON.stringify(records));
+        $("recordWork").value = "";
+        $("recordNotes").value = "";
+        renderRecords();
+      });
+      $("exportRecords").addEventListener("click", () => {
+        const lines = ["Ford 2120 service records", "", ...records.map(r => `${r.date} | ${r.hours} hours | ${r.work}${r.notes ? ` | ${r.notes}` : ""}`)];
+        const blob = new Blob([lines.join("\n")], {type: "text/plain"});
+        const a = Object.assign(document.createElement("a"), {href: URL.createObjectURL(blob), download: "ford-2120-service-records.txt"});
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      renderDaily();
+      renderRecords();
+      render();
+    </script>
+  </body>
+</html>
