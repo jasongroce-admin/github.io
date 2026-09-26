@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111719">
+  <meta name="description" content="Tanks and More Tanks II — a gritty side-view artillery game in development.">
+  <link rel="icon" href="data:,">
+  <title>Tanks and More Tanks II | Warfront</title>
+  <link rel="preload" href="assets/battlefield-dusk.jpg" as="image" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../../index.html" aria-label="Jason Groce home"><span class="brand-mark">JG</span><span>FIELD SYSTEMS <small>JASON GROCE // ARMORED DIVISION</small></span></a>
+      <div class="build-stamp"><i></i> V2 // FIELD TEST BUILD</div>
+      <nav aria-label="Game versions">
+        <a href="../tank-games/index.html" title="Browse all three separate Tank Games">TANK GAMES</a>
+        <a href="../tanks-and-more-tank/index.html" title="Original side-view game">ORIGINAL</a>
+        <a href="../tanks-v3-crater-basin/index.html" title="Separate three-dimensional game">V3 // 3D</a>
+      </nav>
+    </header>
+
+    <section class="battlefield-section" aria-label="Battlefield">
+      <div class="view-rim"><span class="rim-label">TACTICAL DISPLAY <b>LIVE</b></span><span class="rim-coords" id="mapReadout">SECTOR 07 // GRID --</span></div>
+      <div class="canvas-wrap">
+        <canvas id="battlefield" width="1400" height="760" aria-label="Side-view tank artillery battlefield"></canvas>
+        <div class="aim-hud" aria-hidden="true"><span id="reticle"></span></div>
+        <div class="mission-card">
+          <span class="eyebrow" id="modeLabel">SKIRMISH / FIELD TEST</span>
+          <strong id="missionTitle">DUSK FRONT</strong>
+          <span id="turnLabel">PLAYER 1 TURN</span>
+        </div>
+        <div class="target-card" id="targetCard"><span class="eyebrow">HOSTILE CONTACT</span><strong id="targetHealth">ARMOR 100%</strong><div class="health-track"><i id="targetHealthFill"></i></div></div>
+        <div class="canvas-toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+      <div class="readouts">
+        <span><i class="readout-dot cyan"></i> WIND <b id="windReadout">04 →</b></span>
+        <span><i class="readout-dot amber"></i> RANGE <b id="rangeReadout">-- m</b></span>
+        <span><i class="readout-dot green"></i> SURFACE <b>UNSTABLE</b></span>
+        <span class="weather-readout" id="weatherReadout">OVERCAST // DRIFTING SMOKE</span>
+      </div>
+    </section>
+
+    <section class="console" aria-label="Tank controls">
+      <div class="console-heading"><div><span class="eyebrow">GUNNER STATION <b id="activeTankName">HERO-01</b></span><h1>FIRE CONTROL</h1></div><div class="turn-pill"><span class="pulse"></span><span id="consoleTurn">YOUR TURN</span></div></div>
+      <div class="control-grid">
+        <label class="instrument angle-instrument" for="angle">
+          <span class="eyebrow">BARREL ELEVATION <b><span id="angleValue">12</span>°</b></span>
+          <input id="angle" type="range" min="0" max="85" value="12" aria-label="Barrel angle, zero degrees is horizontal">
+          <span class="range-label"><small>LEVEL</small><small>HIGH ARC</small></span>
+          <span class="lever" aria-hidden="true"></span>
+        </label>
+        <label class="instrument power-instrument" for="power">
+          <span class="eyebrow">CHARGE OUTPUT <b><span id="powerValue">63</span>%</b></span>
+          <input id="power" type="range" min="20" max="100" value="63" aria-label="Shot power">
+          <span class="range-label"><small>LOW</small><small>OVERDRIVE</small></span>
+          <span class="lever" aria-hidden="true"></span>
+        </label>
+        <div class="instrument ammo-instrument">
+          <label class="eyebrow" for="weapon">ORDNANCE SELECT</label>
+          <select id="weapon" aria-label="Select weapon"></select>
+          <div class="weapon-spec"><b id="weaponClass">KINETIC / HE</b><span id="weaponDescription">Standard high-explosive shell</span></div>
+        </div>
+        <div class="instrument quick-instrument">
+          <span class="eyebrow">COMBAT SYSTEMS</span>
+          <div class="switch-row"><span>NIGHT OPTICS</span><button class="toggle" id="nightToggle" type="button" aria-pressed="false"><i></i><span>OFF</span></button></div>
+          <div class="switch-row"><span>TRAJECTORY ASSIST</span><button class="toggle" id="assistToggle" type="button" aria-pressed="false" title="Show or hide the dotted shell trajectory preview"><i></i><span>OFF</span></button></div>
+        </div>
+      </div>
+      <div class="action-rail">
+        <div class="utility-actions">
+          <button class="control-button slim" id="moveLeft" type="button" title="Reposition tracks left">◀ <span>TRACK LEFT</span></button>
+          <button class="control-button slim" id="moveRight" type="button" title="Reposition tracks right">▶ <span>TRACK RIGHT</span></button>
+          <button class="control-button slim" id="newMap" type="button" title="Generate a new battlefield">⟳ <span>NEW MAP</span></button>
+          <button class="control-button slim" id="saveGame" type="button" title="Save this battle in this browser">▣ <span>SAVE</span></button>
+          <button class="control-button slim" id="loadGame" type="button" title="Load saved battle">↥ <span>LOAD</span></button>
+          <button class="control-button slim" id="helpButton" type="button">? <span>FIELD MANUAL</span></button>
+        </div>
+        <button class="fire-button" id="fire" type="button"><span class="fire-icon">✣</span><span><strong>FIRE MAIN GUN</strong><small>ENTER / SPACE</small></span><kbd>⏵</kbd></button>
+      </div>
+      <details class="mission-settings">
+        <summary><span>MISSION CONFIGURATION</span><small>MODE · PLAYERS · WEATHER · DIFFICULTY</small></summary>
+        <div class="settings-grid">
+          <label>MISSION<select id="mode"><option value="skirmish">Quick Skirmish</option><option value="campaign">Campaign · 30 Operations</option><option value="night">Night Campaign · 30 Operations</option><option value="endless">Endless War</option><option value="custom">Custom Battlefield</option></select></label>
+          <label>OPPONENT<select id="opponent"><option value="cpu">AI Commander</option><option value="local">Local Duel · 2 Players</option></select></label>
+          <label>FORMATION<select id="formation"><option value="2">2 tanks</option><option value="4">4 tanks · 2 per side</option></select></label>
+          <label>DIFFICULTY<select id="difficulty"><option value="recruit">Recruit</option><option value="veteran">Veteran</option><option value="elite">Elite</option></select></label>
+          <label>WEATHER<select id="weather"><option value="clear">Overcast / Dry</option><option value="wind">Crosswind</option><option value="rain">Rain squall</option></select></label>
+          <label>ATMOSPHERIC SMOKE<select id="smoke"><option value="thin">Thin · drifting smoke</option><option value="clear">None · clear air</option><option value="dense">Thick · drifting smoke</option></select></label>
+          <label>SUPPORT<select id="support"><option value="off">No support</option><option value="air">Air strike · once per side</option><option value="repair">Field repair · once per side</option><option value="laser">Laser strike</option><option value="rod">Orbital lightning rod</option><option value="meteor">Meteor drop</option><option value="scanner">Recon scan</option></select></label>
+          <button class="control-button apply-settings" id="applySettings" type="button">DEPLOY CONFIGURATION</button>
+        </div>
+      </details>
+      <div class="keyline"><span>DRIVE / REPOSITION</span><kbd>A</kbd><kbd>D</kbd><span class="key-sep">·</span><span>AIM</span><kbd>W</kbd><kbd>S</kbd><span class="key-sep">·</span><span>POWER</span><kbd>Q</kbd><kbd>E</kbd><span class="key-sep">·</span><span>FIRE</span><kbd>↵</kbd><span class="keyline-hint">Touch controls supported · barrels traverse independently of movement</span></div>
+    </section>
+
+    <footer><span>WARFRONT // INTERNAL FIELD TEST</span><span>2D SIDE-VIEW ARTILLERY · V2 IS SEPARATE FROM THE ORIGINAL AND V3</span><span id="fpsReadout">60 FPS TARGET</span></footer>
+  </main>
+
+  <dialog id="manualDialog" class="manual-dialog">
+    <form method="dialog"><button class="close-dialog" aria-label="Close field manual">×</button></form>
+    <span class="eyebrow">FIELD MANUAL // REV 02</span><h2>Range. Angle. Send it.</h2>
+    <p>Set barrel elevation and charge, choose a shell, then fire. A zero-degree elevation is a genuinely level shot; increase the angle to clear the ridge. Wind bends shells in flight. Impacts reshape the soil and can uncover new firing lanes.</p>
+    <div class="manual-grid"><div><b>CONTROL</b><span>W / S · barrel elevation</span><span>Q / E · charge output</span><span>A / D · reposition</span><span>ENTER / SPACE · fire</span></div><div><b>FIELD NOTES</b><span>Switch shell to change impact behavior.</span><span>Hold the mouse on an instrument to drag.</span><span>Campaigns unlock the full ordnance rack.</span><span>Terrain deforms and tanks track the surface.</span></div></div>
+  </dialog>
+</body>
+</html>
