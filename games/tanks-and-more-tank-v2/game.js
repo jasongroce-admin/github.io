@@ -9,30 +9,32 @@
   const TERRAIN_BOTTOM_OVERDRAW = 220;
   const SURFACE_BASE = 640;
   const STEP = 8;
-  // Authored scene anchors: each named layout uses the same two level flank
-  // benches; object type and side are deliberate, never random placements.
+  // Authored composition rules: maps keep a low near-side entry deck, a raised
+  // far-side firing shelf, and a tall center ridge. Seeded detail varies around
+  // these anchors, never through spawn pads or named object placements.
   const FIELD_LAYOUT = {
-    leftStart: -190, rightStart: 1590, moveMin: -250, moveMax: 1650,
-    leftLandmark: 80, rightLandmark: W - 80, benchFlatRadius: 104, benchFadeRadius: 68,
+    leftStart: 92, rightStart: W - 92, moveMin: -250, moveMax: 1650,
+    leftLandmark: 310, rightLandmark: W - 310, benchFlatRadius: 92, benchFadeRadius: 62,
+    nearDeckY: 622, farDeckY: 516, farScale: .74, nearScale: 1.08,
   };
   const FIELD_SCENES = [
-    { name: "DUSK FRONT", placements: [
+    { name: "DUSK FRONT", depth: { nearY: 622, farY: 516, ridgeX: .50, ridgeWidth: 320, ridgeHeight: 354 }, placements: [
       { id: 0, type: "bunker", side: "left", width: 116, height: 78, hp: 150, variant: 1 },
       { id: 1, type: "wall", side: "right", width: 148, height: 56, hp: 135, variant: 0 }
     ] },
-    { name: "ASHEN RIDGE", placements: [
+    { name: "ASHEN RIDGE", depth: { nearY: 630, farY: 526, ridgeX: .48, ridgeWidth: 304, ridgeHeight: 330 }, placements: [
       { id: 0, type: "jeep", side: "left", width: 150, height: 104, hp: 115, variant: 0 },
       { id: 1, type: "tree", side: "right", width: 142, height: 166, hp: 85, variant: 1, visualScale: 1.24 }
     ] },
-    { name: "BROKEN PASS", placements: [
+    { name: "BROKEN PASS", depth: { nearY: 614, farY: 508, ridgeX: .52, ridgeWidth: 340, ridgeHeight: 366 }, placements: [
       { id: 0, type: "wall", side: "left", width: 148, height: 56, hp: 135, variant: 0 },
       { id: 1, type: "bunker", side: "right", width: 116, height: 78, hp: 150, variant: 0 }
     ] },
-    { name: "IRON VALLEY", placements: [
+    { name: "IRON VALLEY", depth: { nearY: 626, farY: 532, ridgeX: .49, ridgeWidth: 298, ridgeHeight: 342 }, placements: [
       { id: 0, type: "tree", side: "left", width: 142, height: 166, hp: 85, variant: 0, visualScale: 1.24 },
       { id: 1, type: "jeep", side: "right", width: 150, height: 104, hp: 115, variant: 1 }
     ] },
-    { name: "CINDER LINE", placements: [
+    { name: "CINDER LINE", depth: { nearY: 618, farY: 512, ridgeX: .51, ridgeWidth: 326, ridgeHeight: 358 }, placements: [
       { id: 0, type: "bunker", side: "left", width: 116, height: 78, hp: 150, variant: 1 },
       { id: 1, type: "jeep", side: "right", width: 150, height: 104, hp: 115, variant: 1 }
     ] }
@@ -63,6 +65,13 @@
     { key: "rail", name: "Rail Lance", unlock: 20, speed: 21, radius: 24, damage: 50, color: "#69d9ff", trail: "#e9ffff", class: "KINETIC / PIERCE", desc: "Flat, fast penetrator with a narrow crater", effect: "rail" },
     { key: "quantum", name: "Quantum Obliterator", unlock: 24, speed: 8.1, radius: 78, damage: 68, color: "#f179dc", trail: "#ffd6fa", class: "EXOTIC / SINGULARITY", desc: "Slow implosion followed by a wide rupture", effect: "quantum" }
   ];
+  // CPU solutions deliberately carry range and gun-laying error. Recruit fires
+  // broad ranging shots; Elite is sharper, but none has perfect aim.
+  const CPU_SKILL = {
+    recruit: { impactError: 245, angleError: 2.4, chargeError: 8 },
+    veteran: { impactError: 165, angleError: 1.5, chargeError: 5 },
+    elite: { impactError: 105, angleError: .8, chargeError: 3 },
+  };
   const terrain = [];
   const obstacles = [];
   const terrainLayer = document.createElement("canvas");
@@ -89,6 +98,11 @@
   }
   const bunkerImage = structureAtlases.bunker; // Keep the procedural fallback safe while the atlas is still loading.
   const particles = [];
+  const MAX_PARTICLES = 560;
+  function addParticle(particle) {
+    if (particles.length >= MAX_PARTICLES) particles.shift();
+    particles.push(particle);
+  }
   const projectiles = [];
   const effects = [];
   const hazards = [];
@@ -105,6 +119,14 @@
   function rand(seed) {
     let x = seed >>> 0;
     return () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+  }
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  function smoothstep(value) { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t); }
+  // A lightweight side-view perspective cheat: the ground and tank silhouettes
+  // recede together from the near-left camera lane toward the far-right shelf.
+  function battlefieldScale(x) {
+    const depth = (x - FIELD_LAYOUT.leftStart) / (FIELD_LAYOUT.rightStart - FIELD_LAYOUT.leftStart);
+    return FIELD_LAYOUT.nearScale + (FIELD_LAYOUT.farScale - FIELD_LAYOUT.nearScale) * smoothstep(depth);
   }
   function activeTank() { return state.tanks[state.turnIndex] || state.tanks[0]; }
   function living(team) { return state.tanks.filter((tank) => tank.alive && (!team || tank.team === team)); }
@@ -132,42 +154,60 @@
   }
   function createTerrain() {
     const r = rand(state.seed);
+    const scene = FIELD_SCENES[state.sceneIndex];
+    const profile = scene.depth;
     terrain.length = 0;
     const count = Math.ceil(W / STEP) + 1;
-    const hillCenters = [0.16, 0.39, 0.60, 0.83].map((p) => p * W + (r() - 0.5) * 130);
-    const hills = hillCenters.map((x) => ({ x, width: 115 + r() * 110, height: 42 + r() * 85 }));
-    // A broad center ridge gives lobbed shots a meaningful crest to clear.
-    // Keep its peak below the upper terrain clamp so random maps remain varied.
-    hills.push({ x: W * 0.5 + (r() - 0.5) * 54, width: 205 + r() * 48, height: 302 + r() * 28 });
+    const hillCenters = [0.25, 0.38, 0.64, 0.76].map((p) => p * W + (r() - 0.5) * 70);
+    const hills = hillCenters.map((x) => ({ x, width: 80 + r() * 95, height: 34 + r() * 68 }));
+    // This authored ridge is deliberately taller than the flanks. It creates a
+    // broad, uneven mountain chain rather than a centered triangular mound.
+    const ridgeCenter = W * profile.ridgeX + (r() - 0.5) * 28;
+    const ridgeWidth = profile.ridgeWidth * (0.96 + r() * 0.08);
+    hills.push({ x: ridgeCenter - ridgeWidth * .52, width: ridgeWidth * .55, height: profile.ridgeHeight * .07 });
+    hills.push({ x: ridgeCenter, width: ridgeWidth, height: profile.ridgeHeight * .78 });
+    hills.push({ x: ridgeCenter + ridgeWidth * .48, width: ridgeWidth * .48, height: profile.ridgeHeight * .1 });
     let drift = 0;
     for (let i = 0; i < count; i++) {
       const x = i * STEP;
-      drift = drift * 0.78 + (r() - 0.5) * 12;
-      let y = SURFACE_BASE + drift + Math.sin(x * 0.007 + state.seed) * 17 + Math.sin(x * 0.018) * 7;
+      const depth = smoothstep(x / W);
+      const deck = profile.nearY + (profile.farY - profile.nearY) * depth;
+      drift = drift * 0.78 + (r() - 0.5) * 9;
+      let y = deck + drift + Math.sin(x * 0.007 + state.seed) * 11 + Math.sin(x * 0.018) * 4;
       for (const hill of hills) {
         const d = Math.abs(x - hill.x) / hill.width;
-        if (d < 1) y -= Math.cos(d * Math.PI / 2) ** 2 * hill.height;
+        if (d < 1) {
+          const shape = hill.width > 200 ? Math.pow(Math.max(0, 1 - d * d), 1.55) : Math.cos(d * Math.PI / 2) ** 2;
+          const roughness = hill.width > 200 ? Math.sin(x * .034 + state.seed * .001) * 5 : 0;
+          y -= shape * (hill.height + roughness);
+        }
       }
-      terrain.push(Math.max(275, Math.min(H - 25, y)));
+      terrain.push(clamp(y, 235, H - 25));
     }
     for (let pass = 0; pass < 2; pass++) {
       const copy = terrain.slice();
       for (let i = 1; i < terrain.length - 1; i++) terrain[i] = (copy[i - 1] + copy[i] * 2 + copy[i + 1]) / 4;
     }
-    // Authored flank pads are truly level and wide enough for the largest
-    // structure footprint. Terrain blends back into the seeded landscape only
-    // beyond the full prop footprint, preventing half-buried or tilted props.
+    // Level tank decks and prop pads are part of the map recipe, not random
+    // placement fixes. Each pad blends out beyond its footprint so props and
+    // tracks sit on the ground without an obvious cut line.
+    const pads = [
+      { x: FIELD_LAYOUT.leftStart, y: profile.nearY, flat: 124, fade: 66 },
+      { x: FIELD_LAYOUT.rightStart, y: profile.farY, flat: 106, fade: 58 },
+    ];
     for (const placement of FIELD_SCENES[state.sceneIndex].placements) {
       const center = placement.side === "left" ? FIELD_LAYOUT.leftLandmark : FIELD_LAYOUT.rightLandmark;
+      pads.push({ x: center, y: terrain[Math.round(center / STEP)], flat: FIELD_LAYOUT.benchFlatRadius, fade: FIELD_LAYOUT.benchFadeRadius });
+    }
+    for (const pad of pads) {
       const natural = terrain.slice();
       for (let i = 0; i < terrain.length; i++) {
-        const x = i * STEP, distance = Math.abs(x - center);
-        const fadeStart = FIELD_LAYOUT.benchFlatRadius, fadeEnd = fadeStart + FIELD_LAYOUT.benchFadeRadius;
+        const x = i * STEP, distance = Math.abs(x - pad.x);
+        const fadeStart = pad.flat, fadeEnd = fadeStart + pad.fade;
         if (distance >= fadeEnd) continue;
-        const t = Math.max(0, (distance - fadeStart) / FIELD_LAYOUT.benchFadeRadius);
+        const t = Math.max(0, (distance - fadeStart) / pad.fade);
         const blend = 1 - t * t * (3 - 2 * t);
-        const bench = SURFACE_BASE;
-        terrain[i] = natural[i] * (1 - blend) + bench * blend;
+        terrain[i] = natural[i] * (1 - blend) + pad.y * blend;
       }
     }
     ambientSmoke.length = 0;
@@ -190,10 +230,10 @@
   }
   function setFormation(count = 2) {
     state.formation = count;
-    // Start outside the original terrain endpoints; the overdrawn battlefield
-    // continues beneath each tank so both flanks remain grounded and visible.
-    const leftXs = count === 4 ? [FIELD_LAYOUT.leftStart, 285] : [FIELD_LAYOUT.leftStart];
-    const rightXs = count === 4 ? [1115, FIELD_LAYOUT.rightStart] : [FIELD_LAYOUT.rightStart];
+    // The hero begins on the near shelf; hostiles begin on the raised far shelf.
+    // Four-tank formations use authored shoulders between spawn pads and ridge.
+    const leftXs = count === 4 ? [FIELD_LAYOUT.leftStart, 490] : [FIELD_LAYOUT.leftStart];
+    const rightXs = count === 4 ? [910, FIELD_LAYOUT.rightStart] : [FIELD_LAYOUT.rightStart];
     const left = leftXs.map((x, i) => ({ id: `L${i + 1}`, team: "left", x, hp: 100, maxHp: 100, damageStage: 0, alive: true, dir: 1, name: `HERO-0${i + 1}`, angle: state.angle, move: 0 }));
     const right = rightXs.map((x, i) => ({ id: `R${i + 1}`, team: "right", x, hp: 100, maxHp: 100, damageStage: 0, alive: true, dir: -1, name: state.opponent === "local" ? `PLAYER-02-${i + 1}` : `HOSTILE-0${i + 1}`, angle: state.angle, move: 0 }));
     state.tanks = [];
@@ -323,7 +363,7 @@
     if (!atlas.complete || !atlas.naturalWidth) return object.type === "jeep" || object.type === "tree";
     const cellW = atlas.naturalWidth / 2, cellH = atlas.naturalHeight / 2;
     const cellX = (frame % 2) * cellW, cellY = Math.floor(frame / 2) * cellH;
-    const size = object.width * (object.visualScale || 1);
+    const size = object.width * (object.visualScale || 1) * battlefieldScale(object.x);
     const baseline = object.type === "tree" ? .95 : object.type === "jeep" ? .83 : .8;
     ctx.save(); if (terrainSkyMask) ctx.clip(terrainSkyMask);
     ctx.translate(object.x, base); ctx.rotate(terrainSlope(object.x));
@@ -559,9 +599,13 @@
         let localX = dx * Math.cos(angle) + dy * Math.sin(angle);
         const localY = -dx * Math.sin(angle) + dy * Math.cos(angle);
         if (object.variant > .5) localX = -localX;
-        const halfWidth = object.type === "bunker" ? object.width * .62 : object.width * .58;
-        if (Math.abs(localX) <= halfWidth && localY >= -object.height && localY <= 4) return object;
-      } else if (Math.abs(x - object.x) <= object.width * .5 && y >= base - object.height && y <= base + 4) return object;
+        const depthScale = battlefieldScale(object.x);
+        const halfWidth = (object.type === "bunker" ? object.width * .62 : object.width * .58) * depthScale;
+        if (Math.abs(localX) <= halfWidth && localY >= -object.height * depthScale && localY <= 4 * depthScale) return object;
+      } else {
+        const depthScale = battlefieldScale(object.x);
+        if (Math.abs(x - object.x) <= object.width * .5 * depthScale && y >= base - object.height * depthScale && y <= base + 4 * depthScale) return object;
+      }
     }
     return null;
   }
@@ -569,12 +613,13 @@
     if (!tankImage.complete || !tankImage.naturalWidth) { drawTankFallback(tank, time); return; }
     const wrecked = !tank.alive;
     const groundY = surfaceY(tank.x);
+    const depthScale = battlefieldScale(tank.x);
     const slope = terrainSlope(tank.x);
     const lightColor = tank.team === "left" ? "#75dce0" : "#ff9d69";
-    const shadow = ctx.createRadialGradient(tank.x, groundY - 2, 4, tank.x, groundY - 2, 118);
+    const shadow = ctx.createRadialGradient(tank.x, groundY - 2, 4 * depthScale, tank.x, groundY - 2, 118 * depthScale);
     shadow.addColorStop(0, "rgba(7,9,10,.72)"); shadow.addColorStop(.68, "rgba(7,9,10,.32)"); shadow.addColorStop(1, "rgba(7,9,10,0)");
-    ctx.fillStyle = shadow; ctx.beginPath(); ctx.ellipse(tank.x, groundY - 2, 118, 10, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(tank.x, groundY); ctx.rotate(slope); if (tank.dir < 0) ctx.scale(-1, 1);
+    ctx.fillStyle = shadow; ctx.beginPath(); ctx.ellipse(tank.x, groundY - 2, 118 * depthScale, 10 * depthScale, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(tank.x, groundY); ctx.rotate(slope); ctx.scale(depthScale, depthScale); if (tank.dir < 0) ctx.scale(-1, 1);
     ctx.filter = wrecked ? "grayscale(.82) brightness(.58) sepia(.24)" : "none";
     ctx.drawImage(tankImage, -127, -127, 254, 127);
     ctx.filter = "none";
@@ -595,15 +640,20 @@
       ctx.restore();
     }
     ctx.restore();
-    if (!wrecked) { ctx.fillStyle = "#141a19bb"; ctx.fillRect(tank.x - 36, groundY - 140, 72, 6); ctx.fillStyle = tank.team === "left" ? "#83d38e" : "#db7661"; ctx.fillRect(tank.x - 35, groundY - 139, 70 * tank.hp / tank.maxHp, 4); }
+    if (!wrecked) {
+      const barWidth = 72 * depthScale, barHeight = Math.max(3, 6 * depthScale), barY = groundY - 140 * depthScale;
+      ctx.fillStyle = "#141a19bb"; ctx.fillRect(tank.x - barWidth / 2, barY, barWidth, barHeight);
+      ctx.fillStyle = tank.team === "left" ? "#83d38e" : "#db7661";
+      ctx.fillRect(tank.x - barWidth / 2 + 1, barY + 1, (barWidth - 2) * tank.hp / tank.maxHp, Math.max(2, barHeight - 2));
+    }
     if (state.scanUntil > time && tank.team !== activeTank()?.team && tank.alive) {
       const pulse = (time % 1400) / 1400; ctx.save(); ctx.strokeStyle = `rgba(226,163,87,${.18 + pulse * .28})`; ctx.lineWidth = 1.2; ctx.setLineDash([2, 7]); ctx.beginPath(); ctx.arc(tank.x, groundY - 70, 28 + pulse * 30, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
   }
   function drawTankFallback(tank, time) {
     const wrecked = !tank.alive;
-    const y = surfaceY(tank.x); const palette = colors[tank.team];
-    const slope = terrainSlope(tank.x); ctx.save(); ctx.translate(tank.x, y); ctx.rotate(slope); if (tank.dir < 0) ctx.scale(-1, 1); if (wrecked) ctx.filter = "grayscale(.8) brightness(.64) sepia(.22)";
+    const y = surfaceY(tank.x); const palette = colors[tank.team]; const depthScale = battlefieldScale(tank.x);
+    const slope = terrainSlope(tank.x); ctx.save(); ctx.translate(tank.x, y); ctx.rotate(slope); ctx.scale(depthScale, depthScale); if (tank.dir < 0) ctx.scale(-1, 1); if (wrecked) ctx.filter = "grayscale(.8) brightness(.64) sepia(.22)";
     // Track assembly and alternating steel road wheels.
     const track = ctx.createLinearGradient(0, -30, 0, -3); track.addColorStop(0, "#444b4a"); track.addColorStop(.4, "#171d1d"); track.addColorStop(1, "#313738");
     ctx.beginPath(); ctx.roundRect(-72, -31, 144, 29, 12); ctx.fillStyle = track; ctx.fill(); ctx.strokeStyle = "#89908a"; ctx.lineWidth = 1.4; ctx.stroke();
@@ -724,7 +774,8 @@
   }
   function muzzle(tank, angle = tank.angle) {
     const slope = terrainSlope(tank.x); const a = Math.max(0, Math.min(85, angle)) * Math.PI / 180;
-    const localX = tank.dir * (63 + 84 * Math.cos(a - slope)); const localY = -76 - 84 * Math.sin(a - slope);
+    const scale = battlefieldScale(tank.x);
+    const localX = tank.dir * (63 + 84 * Math.cos(a - slope)) * scale; const localY = (-76 - 84 * Math.sin(a - slope)) * scale;
     return { x: tank.x + localX * Math.cos(slope) - localY * Math.sin(slope), y: surfaceY(tank.x) + localX * Math.sin(slope) + localY * Math.cos(slope) };
   }
   function drawAimGuide(time) {
@@ -752,17 +803,22 @@
     } else {
       ctx.globalAlpha = .26; ctx.fillStyle = weapon.trail; ctx.beginPath(); ctx.ellipse(-11, 0, projectile.isSub ? 10 : weapon.effect === "rail" ? 30 : 24, projectile.isSub ? 3 : weapon.effect === "rail" ? 2.4 : 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
     }
-    const trailCount = projectile.isSub ? 1 : weapon.effect === "rail" ? 7 : ["heavy", "cluster", "fire", "lava"].includes(weapon.effect) ? 4 : 3;
+    const trailCount = projectile.isSub ? 1 : weapon.effect === "rail" ? 7 : ["heavy", "cluster", "fire", "lava", "blast"].includes(weapon.effect) ? 2 : 3;
     const particleKind = ["heavy", "cluster", "fire", "lava", "blast"].includes(weapon.effect) ? "smoke"
       : weapon.effect === "ice" ? "frost" : weapon.effect === "acid" ? "bubble"
         : ["emp", "lightning"].includes(weapon.effect) ? "arc" : "streak";
-    const smokeTints = { heavy: "#494743", cluster: "#655a4c", fire: "#55443a", lava: "#514035", blast: "#5b5751" };
+    const smokeTints = { heavy: "#393735", cluster: "#484039", fire: "#47392f", lava: "#49352c", blast: "#424441" };
     for (let i = 0; i < trailCount; i++) {
-      const p = particles.pop() || {}; p.x = projectile.x - projectile.vx * Math.random() * .42; p.y = projectile.y - projectile.vy * Math.random() * .42;
-      p.vx = -projectile.vx * .018 + (Math.random() - .5) * .45; p.vy = -projectile.vy * .018 - (particleKind === "smoke" ? .08 : 0) + (Math.random() - .5) * .38;
-      p.life = (particleKind === "smoke" ? 28 : 16) + Math.random() * 16; p.maxLife = p.life;
-      p.size = (particleKind === "smoke" ? 3.5 : 1) + Math.random() * (particleKind === "smoke" ? 5 : weapon.effect === "rail" ? 2 : 3);
-      p.kind = particleKind; p.color = smokeTints[weapon.effect] || (Math.random() > .4 ? weapon.trail : weapon.color); p.angle = angle; particles.push(p);
+      const p = {};
+      const trailBack = particleKind === "smoke" ? .2 + Math.random() * .5 : Math.random() * .42;
+      const crosswind = state.weather === "wind" ? .11 : state.weather === "rain" ? -.035 : .012;
+      p.x = projectile.x - projectile.vx * trailBack; p.y = projectile.y - projectile.vy * trailBack;
+      p.vx = -projectile.vx * (particleKind === "smoke" ? .025 : .018) + crosswind + (Math.random() - .5) * .42;
+      p.vy = -projectile.vy * .018 - (particleKind === "smoke" ? .12 : 0) + (Math.random() - .5) * .3;
+      p.life = particleKind === "smoke" ? 64 + Math.random() * 36 : 16 + Math.random() * 16; p.maxLife = p.life;
+      p.size = particleKind === "smoke" ? 5.5 + Math.random() * 6 : 1 + Math.random() * (weapon.effect === "rail" ? 2 : 3);
+      p.kind = particleKind; p.color = smokeTints[weapon.effect] || (Math.random() > .4 ? weapon.trail : weapon.color);
+      p.angle = angle; p.age = 0; p.phase = Math.random() * Math.PI * 2; addParticle(p);
     }
     ctx.shadowBlur = weapon.effect === "rail" ? 16 : 9; ctx.shadowColor = weapon.color; ctx.fillStyle = weapon.color;
     ctx.beginPath(); ctx.ellipse(0, 0, projectile.isSub ? 4 : weapon.effect === "rail" ? 10 : 6, projectile.isSub ? 3 : 4, 0, 0, Math.PI * 2); ctx.fill();
@@ -820,15 +876,21 @@
   }
   function drawParticles(dt) {
     for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .018 * dt; p.life -= dt;
+      const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.kind === "smoke") {
+        p.age = (p.age || 0) + dt; p.vx += Math.sin(p.phase + p.age * .075) * .009 * dt;
+        p.vx += (state.weather === "wind" ? .0016 : state.weather === "rain" ? -.0006 : .00025) * dt;
+        p.vy -= .028 * dt;
+      } else p.vy += .018 * dt;
+      p.life -= dt;
       if (p.life <= 0) { particles.splice(i, 1); continue; }
       const remain = Math.min(1, p.life / p.maxLife); const size = Math.max(.3, p.size * remain);
       ctx.save(); ctx.globalAlpha = remain;
       if (p.kind === "smoke") {
-        p.vy -= .008 * dt; p.size += .012 * dt; ctx.globalAlpha *= .55;
-        const haze = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 1.8);
+        p.size += .025 * dt; ctx.globalAlpha *= .66;
+        const haze = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.25);
         haze.addColorStop(0, p.color || "#5a5550"); haze.addColorStop(1, "#36343200");
-        ctx.fillStyle = haze; ctx.beginPath(); ctx.ellipse(p.x, p.y, size * 1.35, size, (p.angle || 0) * .16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = haze; ctx.beginPath(); ctx.ellipse(p.x, p.y, size * 1.65, size * 1.12, (p.angle || 0) * .16 + Math.sin(p.phase + p.age * .06) * .08, 0, Math.PI * 2); ctx.fill();
       } else if (p.kind === "frost") {
         ctx.translate(p.x, p.y); ctx.rotate((p.angle || 0) + (1 - remain) * .7); ctx.strokeStyle = p.color || "#c7fbff"; ctx.lineWidth = Math.max(.6, size * .36);
         ctx.beginPath(); ctx.moveTo(-size * 1.4, 0); ctx.lineTo(size * 1.4, 0); ctx.moveTo(0, -size * 1.4); ctx.lineTo(0, size * 1.4); ctx.stroke();
@@ -887,7 +949,7 @@
       move.tank.x = move.startX + (move.targetX - move.startX) * eased;
       if (progress >= 1) {
         move.tank.x = move.targetX; state.aiMove = null; state.moving = false; refreshHud();
-        setTimeout(() => cpuTakeShot(move.tank, move.target), 280);
+        setTimeout(() => cpuTakeShot(move.tank, move.target, move.aimPoint), 280);
       }
     } else if (state.moving) {
       const tank = activeTank(); if (tank) { tank.x += tank.move * 2.2 * dt; tank.x = Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, tank.x)); }
@@ -904,7 +966,11 @@
         }
         projectiles.splice(i, 1); continue;
       }
-      const hit = state.tanks.find((tank) => tank.alive && tank.team !== p.team && Math.abs(tank.x - p.x) < 37 && Math.abs((surfaceY(tank.x) - 44) - p.y) < 29);
+      const hit = state.tanks.find((tank) => {
+        if (!tank.alive || tank.team === p.team) return false;
+        const scale = battlefieldScale(tank.x);
+        return Math.abs(tank.x - p.x) < 37 * scale && Math.abs((surfaceY(tank.x) - 44 * scale) - p.y) < 29 * scale;
+      });
       const groundHit = p.x < -TERRAIN_OVERDRAW + 4 || p.x > W + TERRAIN_OVERDRAW - 4 || p.y > surfaceY(Math.max(-TERRAIN_OVERDRAW, Math.min(W + TERRAIN_OVERDRAW, p.x))) || p.y > H - 8;
       const coverHit = obstacleAt(p.x, p.y);
       if (hit || coverHit || groundHit || p.age > 180) { impact(p.x, p.y, w, p.team, hit, p.isSub); projectiles.splice(i, 1); if (projectiles.length === 0) setTimeout(nextTurn, 850); }
@@ -942,13 +1008,13 @@
     for (const object of obstacles) {
       if (!object.active) continue;
       const distance = Math.hypot(object.x - x, surfaceY(object.x) - object.height * .48 - y);
-      const reach = radius + object.width * .48;
+      const reach = radius + object.width * .48 * battlefieldScale(object.x);
       if (distance < reach) {
         object.hp = Math.max(0, object.hp - damage * Math.max(.22, 1 - distance / reach));
         if (object.hp === 0) {
           object.active = false;
           object.destroyed = true;
-          for (let i = 0; i < (object.type === "bunker" ? 34 : 24); i++) { const a = Math.random() * Math.PI * 2; const speed = 1 + Math.random() * 6; const concreteChip = object.type === "bunker" && Math.random() > .45; particles.push({ x: object.x + (Math.random() - .5) * object.width, y: surfaceY(object.x) - object.height * .45, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 1.5, life: 28 + Math.random() * 25, maxLife: 55, size: 2 + Math.random() * (object.type === "bunker" ? 7 : 5), color: object.type === "wreck" ? "#766653" : concreteChip ? "#625f58" : object.type === "bunker" ? "#b4a78d" : "#9b9077" }); }
+          for (let i = 0; i < (object.type === "bunker" ? 34 : 24); i++) { const a = Math.random() * Math.PI * 2; const speed = 1 + Math.random() * 6; const concreteChip = object.type === "bunker" && Math.random() > .45; addParticle({ x: object.x + (Math.random() - .5) * object.width, y: surfaceY(object.x) - object.height * .45, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 1.5, life: 28 + Math.random() * 25, maxLife: 55, size: 2 + Math.random() * (object.type === "bunker" ? 7 : 5), color: object.type === "wreck" ? "#766653" : concreteChip ? "#625f58" : object.type === "bunker" ? "#b4a78d" : "#9b9077" }); }
           announce("OBSTACLE BREACHED // FIRING LANE OPEN");
         }
       }
@@ -956,7 +1022,7 @@
     if (w.effect === "fire" || w.effect === "lava" || w.effect === "acid") hazards.push({ x, y: surfaceY(x) - 5, radius: radius * .85, kind: w.effect, life: w.effect === "lava" ? 260 : 200 });
     const count = isSub ? 22 : w.effect === "rail" ? 25 : w.effect === "heavy" ? 115 : 80;
     for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2; const v = 1 + Math.random() * (w.effect === "heavy" ? 8 : 5); const p = { x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, life: 18 + Math.random() * 35, maxLife: 50, size: 1 + Math.random() * 3, color: Math.random() > .45 ? w.color : w.trail }; particles.push(p);
+      const a = Math.random() * Math.PI * 2; const v = 1 + Math.random() * (w.effect === "heavy" ? 8 : 5); const p = { x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, life: 18 + Math.random() * 35, maxLife: 50, size: 1 + Math.random() * 3, color: Math.random() > .45 ? w.color : w.trail }; addParticle(p);
     }
     state.shake = Math.max(state.shake, Math.min(9, radius / 10));
     const current = state.tanks.find((tank) => tank.team === team && tank.alive); if (current) current.smokeUntil = performance.now() + 1200;
@@ -988,7 +1054,8 @@
         if (sy > surfaceY(sx) - 4 || obstacleAt(sx, sy)) { blocked = true; break; }
       }
       const landingY = start.y + vy * flight + .5 * gravity * flight * flight;
-      const miss = Math.abs(landingY - (surfaceY(target.x) - 42));
+      const targetHeight = 42 * battlefieldScale(target.x);
+      const miss = Math.abs(landingY - (surfaceY(target.x) - targetHeight));
       const score = miss + (blocked ? 390 : 0) + angle * .025 + power * .01;
       if (score < best.score) best = { score, angle, power, blocked };
     }
@@ -999,11 +1066,12 @@
     const protectiveCover = obstacles.some((item) => item.active && ["bunker", "wall", "ruin", "jeep", "tree"].includes(item.type)
       && item.x > Math.min(target.x, x) && item.x < Math.max(target.x, x) && Math.abs(x - item.x) < 210);
     if (protectiveCover) return true;
-    const fromY = surfaceY(target.x) - 42, toY = surfaceY(x) - 42;
+    const fromY = surfaceY(target.x) - 44 * battlefieldScale(target.x), toY = surfaceY(x) - 44 * battlefieldScale(x);
     for (let sample = 1; sample < 12; sample++) {
       const t = sample / 12, sx = target.x + (x - target.x) * t, lineY = fromY + (toY - fromY) * t;
       if (surfaceY(sx) < lineY - 14) return true;
-      const object = obstacles.find((item) => item.active && Math.abs(item.x - sx) < 20 && lineY >= surfaceY(item.x) - item.height && lineY <= surfaceY(item.x));
+      const object = obstacles.find((item) => item.active && Math.abs(item.x - sx) < 20 * battlefieldScale(item.x)
+        && lineY >= surfaceY(item.x) - item.height * battlefieldScale(item.x) && lineY <= surfaceY(item.x));
       if (object) return true;
     }
     return false;
@@ -1015,11 +1083,14 @@
     }
     return true;
   }
-  function cpuTakeShot(tank, target) {
+  function cpuTakeShot(tank, target, aimPoint = target) {
     if (!tank?.alive || state.winner || state.opponent !== "cpu" || !target?.alive) return;
-    const best = cpuShotSolution(tank, target);
-    const wobble = state.difficulty === "recruit" ? (Math.random() - .5) * 14 : state.difficulty === "veteran" ? (Math.random() - .5) * 7 : (Math.random() - .5) * 3;
-    state.angle = Math.max(0, Math.min(85, Math.round(best.angle + wobble))); state.power = best.power; tank.angle = state.angle;
+    const best = cpuShotSolution(tank, aimPoint);
+    const skill = CPU_SKILL[state.difficulty] || CPU_SKILL.recruit;
+    const angleError = (Math.random() - .5) * skill.angleError;
+    const chargeError = (Math.random() - .5) * skill.chargeError;
+    state.angle = clamp(Math.round(best.angle + angleError), 0, 85);
+    state.power = clamp(Math.round(best.power + chargeError), 35, 100); tank.angle = state.angle;
     angleInput.value = state.angle; powerInput.value = state.power; $("angleValue").textContent = state.angle; $("powerValue").textContent = state.power;
     fireButton.disabled = false; fire(true);
   }
@@ -1027,7 +1098,11 @@
     const tank = activeTank(); if (!tank?.alive || state.winner || state.opponent !== "cpu" || tank.team !== "right") return;
     const targets = living("left"); if (!targets.length) return;
     const target = targets.sort((a, b) => Math.abs(a.x - tank.x) - Math.abs(b.x - tank.x))[0];
-    const currentX = tank.x, currentShot = cpuShotSolution(tank, target);
+    const skill = CPU_SKILL[state.difficulty] || CPU_SKILL.recruit;
+    const range = Math.abs(tank.x - target.x);
+    const scatter = skill.impactError * (.7 + .3 * Math.min(1, range / 1000));
+    const aimPoint = { ...target, x: clamp(target.x + (Math.random() - .5) * scatter * 2, 35, W - 35) };
+    const currentX = tank.x, currentShot = cpuShotSolution(tank, aimPoint);
     const currentCover = cpuHasCover(currentX, target);
     const allies = state.tanks.filter((other) => other.alive && other.team === tank.team && other !== tank);
     const candidates = [-180, 180].map((offset) => Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, currentX + offset)))
@@ -1037,7 +1112,7 @@
       .filter((x) => !obstacleAt(x, surfaceY(x) - 35));
     let moveChoice = null;
     for (const x of candidates) {
-      tank.x = x; const shot = cpuShotSolution(tank, target); tank.x = currentX;
+      tank.x = x; const shot = cpuShotSolution(tank, aimPoint); tank.x = currentX;
       const covered = cpuHasCover(x, target);
       const defensiveCredit = covered && tank.hp <= 62 ? 210 : covered && tank.hp <= 82 ? 85 : 0;
       const utility = shot.score - defensiveCredit;
@@ -1048,12 +1123,12 @@
     }
     if (moveChoice) {
       state.moving = true; fireButton.disabled = true;
-      state.aiMove = { tank, target, startX: currentX, targetX: moveChoice.x, elapsed: 0, duration: Math.max(32, Math.abs(moveChoice.x - currentX) / 2.2) };
+      state.aiMove = { tank, target, aimPoint, startX: currentX, targetX: moveChoice.x, elapsed: 0, duration: Math.max(32, Math.abs(moveChoice.x - currentX) / 2.2) };
       refreshHud();
       announce(moveChoice.covered && tank.hp <= 62 ? "HOSTILE REPOSITIONING // SEEKING COVER" : "HOSTILE REPOSITIONING // CLEARING FIRING LANE");
       return;
     }
-    cpuTakeShot(tank, target);
+    cpuTakeShot(tank, target, aimPoint);
   }
   function moveTank(delta) {
     const tank = activeTank(); if (!tank?.alive || projectiles.length || state.winner || (state.opponent === "cpu" && tank.team === "right")) return;
