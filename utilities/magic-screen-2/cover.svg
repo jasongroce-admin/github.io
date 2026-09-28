@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Cream paper, an ink spiral, and an orange brushstroke on a dark desk">
+  <rect width="800" height="450" fill="#171412"/>
+  <rect x="48" y="28" width="704" height="394" rx="18" fill="#241f1b"/>
+  <rect x="92" y="52" width="500" height="346" rx="4" fill="#f3eee6"/>
+  <path d="M230 230c28-78 108-86 132-18 18 52-22 98-78 92-62-6-78-62-48-96 28-32 86-8 104 28 16 32-6 62-40 58" fill="none" stroke="#1b1714" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M250 168c18 6 22 22 8 30" fill="none" stroke="#1b1714" stroke-width="2" stroke-linecap="round"/>
+  <path d="M392 292c36 8 78-6 132-48 28-22 62-36 96-34" fill="none" stroke="#e4572e" stroke-width="16" stroke-linecap="round"/>
+  <g transform="translate(612 118) rotate(28)">
+    <rect x="0" y="18" width="118" height="14" rx="3" fill="#c4552a"/>
+    <rect x="108" y="14" width="28" height="22" rx="3" fill="#d7d1c8"/>
+    <path d="M136 14c18 4 28 11 28 11s-6 16-24 16c-8 0-16-6-20-12z" fill="#2a2420"/>
+  </g>
+  <g transform="translate(640 250) rotate(-18)">
+    <rect x="0" y="0" width="10" height="92" rx="2" fill="#d7d1c8"/>
+    <path d="M5 92l-7 18h14z" fill="#1b1714"/>
+  </g>
+</svg>
