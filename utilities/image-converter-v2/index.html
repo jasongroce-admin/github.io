@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Convert images privately in your browser. No image files are uploaded.">
+  <title>Image Converter V2 | Jason Groce</title>
+  <link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+  <style>
+    :root{--ic-bg:#f4f7fb;--ic-card:#fff;--ic-ink:#182230;--ic-muted:#5a6879;--ic-line:#dce4ed;--ic-blue:#1769d2;--ic-green:#16794a}
+    body{background:var(--ic-bg);color:var(--ic-ink);padding:1rem;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    .app{width:min(920px,100%);margin:auto;display:grid;gap:1rem}.app .site-header{margin-bottom:.3rem}
+    .intro,.step,.privacy,.result{background:var(--ic-card);border:1px solid var(--ic-line);border-radius:16px;padding:clamp(1rem,3vw,1.5rem);box-shadow:0 3px 14px #172b4410}
+    .intro h1{font-size:clamp(1.7rem,4vw,2.3rem);margin:.2rem 0}.intro p{margin:.5rem 0;color:var(--ic-muted)}
+    .eyebrow{color:var(--ic-blue);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+    .step-head{display:flex;gap:.8rem;align-items:center;margin-bottom:1rem}.step-num{width:2rem;height:2rem;display:grid;place-items:center;border-radius:50%;background:#e9f2ff;color:var(--ic-blue);font-weight:800}.step h2{font-size:1.12rem;margin:0}.hint{color:var(--ic-muted);font-size:.9rem;margin:.3rem 0 0}
+    .drop{border:2px dashed #aab9ca;border-radius:13px;padding:1.35rem;text-align:center;background:#f9fbfe;transition:.15s}.drop.drag{border-color:var(--ic-blue);background:#edf5ff}.drop strong{display:block;margin-bottom:.35rem}.drop input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.pick{display:inline-flex;margin:.6rem auto 0;padding:.62rem 1rem;border-radius:9px;background:var(--ic-blue);color:white;font-weight:700;cursor:pointer}.pick:focus-within{outline:3px solid #9cc6ff}.drop-note{font-size:.83rem;color:var(--ic-muted);margin:.6rem 0 0}
+    .file-summary{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin:.9rem 0 .4rem;font-size:.9rem}.text-button{border:0;background:none;color:var(--ic-blue);font:inherit;text-decoration:underline;cursor:pointer;padding:.35rem}.file-list{display:grid;gap:.4rem;max-height:225px;overflow:auto}.file-row{display:flex;justify-content:space-between;gap:1rem;padding:.65rem .75rem;background:#f7f9fc;border:1px solid var(--ic-line);border-radius:9px;font-size:.88rem}.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-size{color:var(--ic-muted);white-space:nowrap}
+    .format-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:.6rem}.format-option{position:relative}.format-option input{position:absolute;opacity:0;inset:0}.format-option span{height:100%;min-height:52px;display:flex;align-items:center;padding:.7rem;border:1px solid var(--ic-line);border-radius:10px;background:white;cursor:pointer;font-weight:650}.format-option input:checked+span{border:2px solid var(--ic-blue);background:#eff6ff;color:#124f9b}.format-option input:focus-visible+span{outline:3px solid #9cc6ff}
+    details{border-top:1px solid var(--ic-line);margin-top:1rem;padding-top:.8rem}summary{font-weight:650;cursor:pointer}.advanced{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.8rem;margin-top:.9rem}.field{display:grid;gap:.35rem}.field label{font-size:.86rem;color:var(--ic-muted)}.field input,.field select{width:100%;padding:.65rem .7rem;border:1px solid #bac7d5;border-radius:8px;background:white;color:var(--ic-ink);font:inherit}.checkline{display:flex;gap:.5rem;align-items:center;grid-column:1/-1}
+    .primary{display:block;width:100%;padding:.85rem 1rem;border:0;border-radius:10px;background:var(--ic-blue);color:#fff;font:inherit;font-weight:750;font-size:1rem;cursor:pointer}.primary:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:.6rem;margin-top:1rem}.actions .primary{flex:1}.secondary{padding:.75rem 1rem;border:1px solid var(--ic-line);border-radius:10px;background:white;color:var(--ic-ink);font:inherit;cursor:pointer}.status{min-height:1.5rem;margin:.7rem 0 0;color:var(--ic-muted);font-size:.9rem}.progress{height:8px;background:#e9eef4;border-radius:8px;overflow:hidden;margin-top:.7rem}.progress>i{display:block;height:100%;width:0;background:var(--ic-blue);transition:width .15s}.privacy{display:flex;gap:.8rem;align-items:flex-start;background:#f0faf5;border-color:#cae8d8}.privacy b{color:var(--ic-green)}.privacy p{margin:.2rem 0;color:#345d48;font-size:.9rem}.results{display:grid;gap:.4rem;margin-top:.75rem}.result{padding:.75rem 1rem;box-shadow:none;font-size:.9rem}.result.ok{border-color:#b9dfca}.result.fail{border-color:#efc1bb;background:#fff9f8}.result a{color:var(--ic-blue);font-weight:650}.small{font-size:.82rem;color:var(--ic-muted)}
+    @media(max-width:560px){body{padding:.65rem}.file-row{font-size:.82rem}.actions{flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="app site-shell">
+  <header class="site-header">
+    <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools &amp; Projects</span></a>
+    <nav class="site-menu" aria-label="Primary"><a class="menu-link" href="../../index.html">Home</a><a class="menu-link active" href="../index.html">Utilities</a><a class="menu-link" href="../image-converter.html">Original converter</a></nav>
+  </header>
+  <section class="intro"><span class="eyebrow">Image Converter · Version 2</span><h1>Convert your images</h1><p>Choose images, pick a format, then download converted copies. Your originals stay as they are.</p></section>
+  <section class="step" aria-labelledby="choose-title">
+    <div class="step-head"><span class="step-num">1</span><div><h2 id="choose-title">Choose images</h2><p class="hint">Select one or more images, or drop them here.</p></div></div>
+    <div class="drop" id="drop"><strong>Drag images here</strong><span class="small">or</span><br><label class="pick">Choose images<input id="files" type="file" accept="image/*,.heic,.heif,.tif,.tiff" multiple></label><p class="drop-note">Common formats: JPG, PNG, WebP, GIF, BMP and SVG. HEIC/TIFF reading depends on your browser.</p></div>
+    <div id="fileArea" hidden><div class="file-summary"><span id="count">0 images selected</span><button class="text-button" id="removeAll" type="button">Remove all</button></div><div class="file-list" id="fileList"></div></div>
+  </section>
+  <section class="step" aria-labelledby="format-title">
+    <div class="step-head"><span class="step-num">2</span><div><h2 id="format-title">Choose a format</h2><p class="hint">Select what the new files should be.</p></div></div>
+    <div class="format-grid" role="radiogroup" aria-label="Output format">
+      <label class="format-option"><input type="radio" name="format" value="image/jpeg" checked><span>JPG</span></label>
+      <label class="format-option"><input type="radio" name="format" value="image/png"><span>PNG</span></label>
+      <label class="format-option"><input type="radio" name="format" value="image/webp"><span>WebP</span></label>
+    </div>
+    <details><summary>More options</summary><div class="advanced">
+      <div class="field" id="qualityField"><label for="quality">Image quality <span id="qualityValue">90%</span></label><input id="quality" type="range" min="40" max="100" value="90"></div>
+      <div class="field"><label for="maxSide">Resize (optional)</label><select id="maxSide"><option value="0">Keep original size</option><option value="2560">Max side: 2560 px</option><option value="1920">Max side: 1920 px</option><option value="1280">Max side: 1280 px</option><option value="800">Max side: 800 px</option></select></div>
+      <div class="field" id="backgroundField" hidden><label for="background">Background for JPG</label><select id="background"><option value="#ffffff">White</option><option value="#000000">Black</option></select></div>
+      <label class="checkline"><input id="keepNames" type="checkbox" checked> Keep the original name and add “-converted”</label>
+    </div></details>
+  </section>
+  <section class="step" aria-labelledby="convert-title">
+    <div class="step-head"><span class="step-num">3</span><div><h2 id="convert-title">Convert and download</h2><p class="hint">Converted copies will be downloaded to your device.</p></div></div>
+    <button class="primary" id="convert" type="button" disabled>Convert images</button><div class="progress" aria-hidden="true"><i id="bar"></i></div><p class="status" id="status" role="status" aria-live="polite">Choose images to get started.</p><div class="results" id="results"></div>
+  </section>
+  <aside class="privacy"><span aria-hidden="true">🔒</span><div><b>Private by design</b><p>This page does not upload your images. Files are opened and converted locally in your browser; the page has no image-upload service. The website still receives ordinary visit data from its hosting provider.</p></div></aside>
+  <p class="small">If a file cannot be opened or a format is not supported by your browser, you’ll see it listed below. Animated images are converted as a still image of the first frame.</p>
+</main>
+<script>
+(() => {
+  const $=id=>document.getElementById(id), input=$('files'), drop=$('drop'), list=$('fileList'), fileArea=$('fileArea'), button=$('convert'), status=$('status'), results=$('results');
+  let files=[];
+  const extFor={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  const safeName=s=>s.replace(/[\\/:*?"<>|]/g,'_');
+  const sizeText=n=>n<1024*1024?`${Math.max(1,Math.round(n/1024))} KB`:`${(n/1024/1024).toFixed(1)} MB`;
+  function render(){list.replaceChildren();for(const f of files){const row=document.createElement('div');row.className='file-row';const name=document.createElement('span');name.className='file-name';name.textContent=f.name;const size=document.createElement('span');size.className='file-size';size.textContent=sizeText(f.size);row.append(name,size);list.append(row)}fileArea.hidden=!files.length;$('count').textContent=`${files.length} image${files.length===1?'':'s'} selected`;button.disabled=!files.length;status.textContent=files.length?'Ready to convert.':'Choose images to get started.';results.replaceChildren()}
+  function addFiles(incoming){const valid=Array.from(incoming||[]).filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|gif|bmp|svg|avif|tif|tiff|heic|heif)$/i.test(f.name));const seen=new Set(files.map(f=>`${f.name}:${f.size}:${f.lastModified}`));for(const f of valid){const key=`${f.name}:${f.size}:${f.lastModified}`;if(!seen.has(key)){files.push(f);seen.add(key)}}render()}
+  input.addEventListener('change',()=>{addFiles(input.files);input.value=''});
+  $('removeAll').addEventListener('click',()=>{files=[];render()});
+  for(const ev of ['dragenter','dragover'])drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')});
+  for(const ev of ['dragleave','drop'])drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')});
+  drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  $('quality').addEventListener('input',e=>$('qualityValue').textContent=`${e.target.value}%`);
+  function updateFormatOptions(){const selected=document.querySelector('[name=format]:checked').value;$('qualityField').hidden=selected==='image/png';$('backgroundField').hidden=selected!=='image/jpeg'}
+  document.querySelectorAll('[name=format]').forEach(r=>r.addEventListener('change',updateFormatOptions));updateFormatOptions();
+  function decode(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>resolve({img,url});img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('This browser could not open the image.'))};img.src=url})}
+  function blobFrom(canvas,type,quality){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('This browser cannot create that format.')),type,quality))}
+  function save(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+  button.addEventListener('click',async()=>{
+    if(!files.length)return;button.disabled=true;results.replaceChildren();const format=document.querySelector('[name=format]:checked').value,ext=extFor[format],quality=Number($('quality').value)/100,maxSide=Number($('maxSide').value),bg=$('background').value;let done=0,ok=0;
+    for(const file of files){status.textContent=`Converting ${done+1} of ${files.length}: ${file.name}`;try{const {img,url}=await decode(file);try{let w=img.naturalWidth,h=img.naturalHeight;if(!w||!h)throw Error('Image has no usable dimensions.');if(maxSide&&Math.max(w,h)>maxSide){const scale=maxSide/Math.max(w,h);w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale))}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(format==='image/jpeg'){ctx.fillStyle=bg;ctx.fillRect(0,0,w,h)}ctx.drawImage(img,0,0,w,h);const blob=await blobFrom(canvas,format,quality);const original=file.name.replace(/\.[^.]+$/,'')||'image';const name=safeName(original)+($('keepNames').checked?'-converted':'')+'.'+ext;save(blob,name);const row=document.createElement('div');row.className='result ok';row.textContent=`✓ ${file.name} → ${name}`;results.append(row);ok++}finally{URL.revokeObjectURL(url)}}catch(err){const row=document.createElement('div');row.className='result fail';row.textContent=`Could not convert ${file.name}: ${err.message||err}`;results.append(row)}done++;$('bar').style.width=`${Math.round(done/files.length*100)}%`}
+    status.textContent=`Finished: ${ok} of ${files.length} converted.`;button.disabled=false;
+  });
+})();
+</script>
+</body>
+</html>
