@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magic Screen 2</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    html,body{margin:0;height:100%;background:#161311;color:#f4efe6;font-family:Outfit,system-ui,sans-serif}
+    body{display:grid;place-items:center}
+    p{letter-spacing:.04em}
+  </style>
+</head>
+<body>
+  <p id="msg">Opening Magic Screen 2…</p>
+  <script>
+    const shell = "/utilities/magic-screen-2/app.html";
+    if (!("serviceWorker" in navigator)) {
+      document.getElementById("msg").textContent = "This drawing tool needs a browser that supports service workers.";
+    } else {
+      navigator.serviceWorker.register("/utilities/magic-screen-2/sw.js").then(() => {
+        if (navigator.serviceWorker.controller) location.replace(shell);
+        else navigator.serviceWorker.addEventListener("controllerchange", () => location.replace(shell));
+      }).catch(() => {
+        document.getElementById("msg").textContent = "Magic Screen 2 could not start. Refresh the page.";
+      });
+    }
+  </script>
+</body>
+</html>
