@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>Magic Screen</title>
-    <link rel="stylesheet" href="../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="../assets/css/site.css?v=20261003" />
     <style>
       body { background: radial-gradient(circle at top, rgba(102, 204, 255, 0.15), transparent 45%), #050814; }
       .draw-shell { display: grid; gap: 10px; }
@@ -54,9 +54,28 @@
       .panel { background: linear-gradient(180deg, #101b36, #0a1023); }
       .btn { display: inline-flex; align-items: center; gap: 6px; }
     </style>
-  </head>
-  <body>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+.sunshine-magic{background:#fffaf0;color:#342724}
+.sunshine-magic .panel{background:#fffdf8}
+.sunshine-magic .toolPanel{background:#fffaf0f5;border-color:#ecd7bf;backdrop-filter:blur(8px)}
+.sunshine-magic .tools label,.sunshine-magic .hint{color:#725748}
+.sunshine-magic .tools select,.sunshine-magic .tools input{color:#342724;background:#fffdf8;border-color:#d3aa8d;min-width:0}
+.sunshine-magic .canvasWrap{border-color:#d3aa8d}
+.sunshine-magic .toggleBtn{background:#a33b21;border-color:#96311b;color:#fff;box-shadow:3px 3px 0 #ffd08d}
+.sunshine-magic h1{font-family:Georgia,serif;letter-spacing:-.04em;line-height:1.1}
+.sunshine-magic input[type="range"]{accent-color:#a33b21}
+@media(max-width:400px){.sunshine-magic .tools{grid-template-columns:repeat(2,minmax(0,1fr))}.sunshine-magic .panel{padding:12px}.sunshine-magic .btn{font-size:.75rem;padding:8px}.sunshine-magic .row h3{flex:1}.sunshine-magic .toggleBtn{margin-left:0}.sunshine-magic .top{gap:6px;flex-wrap:wrap}}
+
+</style>
+<link rel="stylesheet" href="../assets/css/site-chrome.css?v=20261003">
+</head>
+  <body class="sunshine-utility sunshine-magic">
     <main class="content">
+<header class="jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
       <section class="panel">
         <div class="top">
           <a class="btn" href="index.html">← Utilities</a>

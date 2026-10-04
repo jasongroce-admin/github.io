@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="theme-color" content="#123c2d">
+    <meta name="theme-color" content="#fffaf0">
     <title>Ford 2120 Maintenance Utility</title>
     <style>
       :root {
@@ -155,13 +155,35 @@
         .app { padding-bottom: 34px; }
       }
     </style>
-  </head>
-  <body>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+:root{--green:#a33b21;--green-2:#96311b;--cream:#fffaf0;--paper:#fffdf8;--ink:#342724;--muted:#725748;--line:#ecd7bf;--gold:#ffd762;--shadow:0 5px 18px #3427240d}
+.sunshine-ford .app{padding-top:0}
+.sunshine-ford .jg-site-header{margin:0 -14px;width:calc(100% + 28px)}
+.sunshine-ford .hero{background:var(--green);padding-top:22px;border-radius:0 0 18px 18px}
+.sunshine-ford .hero .eyebrow{color:var(--gold)}
+.sunshine-ford .hero input::placeholder{color:#fff0e4;opacity:1}
+.sunshine-ford .label{color:var(--green)}
+.sunshine-ford .tabs{background:#fffaf0f5}
+.sunshine-ford .tabs button,.sunshine-ford .btn{cursor:pointer}
+.sunshine-ford .ref{background:#ffead1}
+.sunshine-ford .bottom{background:#fffaf0f5}
+.sunshine-ford :focus-visible{outline:3px solid #67341e;outline-offset:3px}
+@media(max-width:400px){.sunshine-ford h1{font-size:2.35rem}.sunshine-ford .setup{grid-template-columns:1fr}.sunshine-ford .metrics{gap:5px}.sunshine-ford .metric{padding:8px}.sunshine-ford .metric strong{font-size:1.05rem}.sunshine-ford .ref-grid{grid-template-columns:1fr}.sunshine-ford .parts,.sunshine-ford .manual-table{font-size:.75rem}.sunshine-ford .parts a{overflow-wrap:anywhere}.sunshine-ford .bottom button{font-size:.64rem}}
+
+</style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
+</head>
+  <body class="sunshine-utility sunshine-ford">
     <div class="app">
+<header class="jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
       <header class="hero">
         <div class="topline">
           <span class="eyebrow">Field Utility</span>
-          <nav class="site-links" aria-label="Site navigation"><a href="../../index.html">Home</a><a href="../../games/index.html">Games</a><a href="../index.html" aria-current="page">Utilities</a></nav>
+
         </div>
         <h1>Ford 2120 maintenance.</h1>
         <p>A phone-first companion for routine service. Built from the operator's manual, with newer source links clearly labeled.</p>

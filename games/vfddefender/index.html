@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>VFDDefender</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+<link rel="stylesheet" href="../../assets/css/site.css?v=20261003">
 <style>
 html, body { width: 100%; height: 100%; }
 :root {
@@ -2036,6 +2036,7 @@ button:hover { filter: brightness(1.2); }
   }
 }
 </style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
 <body>
 
@@ -2044,20 +2045,23 @@ button:hover { filter: brightness(1.2); }
 </div>
 
 <div id="landscapeMessage">Please rotate your device to <strong>Landscape</strong> mode<br>for the best experience</div>
-<header class="site-header">
-  <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools & Projects</span></a>
-  <nav class="site-menu" aria-label="Primary">
+<header class="site-header jg-site-header">
+  <a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a>
+  <nav class="site-menu jg-site-links" aria-label="Primary">
     <a class="menu-link" href="../../index.html">Home</a>
-    <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+    <a class="menu-link" href="/#about">About me</a>
+    <a class="menu-link" href="../../utilities/index.html">Apps &amp; tools</a>
     <a class="menu-link" href="../vfddefender/index.html">VFDDefender</a>
     <div class="menu-group">
-      <a class="menu-link active" href="../index.html">Games</a>
+      <a class="menu-link active" href="../index.html" aria-current="location">Games</a>
       <div class="submenu" aria-label="Games submenu">
         <a href="../old-school-board-games/index.html">Board</a>
         <a href="../work-in-progress/index.html">Web</a>
         <a href="../work-in-progress/index.html">Preview Games</a>
       </div>
     </div>
+
+    <a class="menu-link" href="mailto:jason@jasongroce.com">Say hello <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
 
@@ -7916,7 +7920,7 @@ async function builderSaveOfflineFolder(mode = 'withLevel') {
 
   let cssText = '';
   try {
-    const cssUrl = new URL('../../assets/css/site.css?v=20260416', location.href).href;
+    const cssUrl = new URL('../../assets/css/site.css?v=20261003', location.href).href;
     cssText = await fetch(cssUrl).then((r) => r.text());
   } catch (err) {
     cssText = 'body{margin:0;font-family:Arial,sans-serif;}';

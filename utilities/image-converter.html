@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <title>Image Converter</title>
-    <link rel="stylesheet" href="../assets/css/site.css?v=20260416">
+    <link rel="stylesheet" href="../assets/css/site.css?v=20261003">
     <style>
       body { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
       .tool { width: min(1180px, 100%); margin: 0 auto; display: grid; gap: 1.25rem; }
@@ -39,27 +39,27 @@
       .capabilities strong { color: var(--text); }
       @media (min-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr) 420px; align-items: start; } }
     </style>
-  </head>
-  <body>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+.sunshine-converter{--text:#342724;--accent-3:#ec6a2f}
+.sunshine-converter input[type="text"],.sunshine-converter input[type="number"],.sunshine-converter select{background:#fffdf8;color:#342724;border-color:#d3aa8d}
+.sunshine-converter .pill,.sunshine-converter .check{background:#fffaf0;border-color:#ecd7bf}
+.sunshine-converter .btn.ghost{background:#ffead1;color:#342724}
+.sunshine-converter .log{background:#fffdf8;color:#603c2e;border-color:#ecd7bf}
+.sunshine-converter .bar{background:#ffead1;border-color:#ecd7bf}
+.sunshine-converter .grid>*{min-width:0}
+.sunshine-converter h1{font-family:Georgia,serif;letter-spacing:-.04em;line-height:1.05}
+@media(max-width:400px){.sunshine-converter .panel{padding:15px}.sunshine-converter input[type="file"]{width:100%;min-width:0}.sunshine-converter .row{gap:.45rem}.sunshine-converter .pill{max-width:100%;overflow-wrap:anywhere}}
+
+</style>
+<link rel="stylesheet" href="../assets/css/site-chrome.css?v=20261003">
+</head>
+  <body class="sunshine-utility sunshine-converter">
     <main class="tool site-shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="../index.html">
-          <strong>Jason Groce</strong>
-          <span>Games, Tools & Projects</span>
-        </a>
-        <nav class="site-menu" aria-label="Primary">
-          <a class="menu-link" href="../index.html">Home</a>
-          <a class="menu-link active" href="index.html">Utilities</a>
-          <div class="menu-group">
-            <a class="menu-link" href="../games/index.html">Games</a>
-            <div class="submenu" aria-label="Games submenu">
-              <a href="../games/old-school-board-games/index.html">Board</a>
-              <a href="../games/index.html">Web</a>
-              <a href="../games/work-in-progress/index.html">Preview Games</a>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <header class="site-header jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
 
       <section class="panel">
         <h1>Image Converter</h1>

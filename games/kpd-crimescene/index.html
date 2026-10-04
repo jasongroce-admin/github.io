@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KPD Crime Scene Library | Games</title>
-    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20261003" />
     <style>
       .shell{display:grid;gap:1rem}
       .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:.75rem}
@@ -13,22 +13,26 @@
       .card span{color:var(--muted)}
       .thumb{width:100%;height:140px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25)}
     </style>
-  </head>
+  <link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
+</head>
   <body>
     <main class="content shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="../index.html"><strong>Jason Groce</strong><span>Games</span></a>
-        <nav class="site-menu" aria-label="Primary">
+      <header class="site-header jg-site-header">
+        <a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a>
+        <nav class="site-menu jg-site-links" aria-label="Primary">
           <a class="menu-link" href="../../index.html">Home</a>
-          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
-          <a class="menu-link active" href="../index.html">Games</a>
-        </nav>
+    <a class="menu-link" href="/#about">About me</a>
+          <a class="menu-link" href="../../utilities/index.html">Apps &amp; tools</a>
+          <a class="menu-link active" href="../index.html" aria-current="location">Games</a>
+
+    <a class="menu-link" href="mailto:jason@jasongroce.com">Say hello <span aria-hidden="true">↗</span></a>
+  </nav>
       </header>
       <section class="panel stack">
         <h1>KPD Crime Scene Library</h1>
         <p>Scene gallery (work in progress).</p>
         <div class="grid">
-          <a class="card" href="./crimescenes/Kennard_CrimeScene_01_Backyard_BreakIn.webp">
+          <a class="card" href="./crimescenes/kennard_crimescene_01_backyard_breakIn.webp">
             <img class="thumb" src="./crimescenes/kennard_crimescene_01_backyard_breakIn.webp" alt="Crime Scene 01">
             <strong>Crime Scene 01</strong>
             <span>Backyard break-in.</span>

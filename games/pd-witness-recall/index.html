@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>PD: Witness Recall</title>
-  <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+  <link rel="stylesheet" href="../../assets/css/site.css?v=20261003" />
   <style>
     :root{--bg:#07121d;--panel:#0b1826;--panel2:#0f2234;--line:#24445e;--accent:#86d5ff;--police-blue:#1e64d6;--police-red:#c62828;--text:#eff8ff;--muted:#a9bfd1;--warn:#ffcc66;--good:#7ef0a8;--bad:#ff7d8a}
     body{background:radial-gradient(circle at top, rgba(134,213,255,.14), transparent 32%), linear-gradient(180deg,#07121d,#04080d);color:var(--text)}
@@ -221,6 +221,7 @@
       @media (max-width: 640px){.scene-thumb{width:96px;height:62px;right:.75rem;bottom:.75rem}.scene-note{font-size:.82rem}.scene-frame{width:100%;height:min(58vh,520px);min-height:260px;max-height:min(58vh,520px)}.menu-buttons{grid-template-columns:1fr}.menu-buttons .begin-btn{grid-column:auto}.summary-actions{grid-template-columns:1fr}.choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.choice{min-height:4.5rem;font-size:1rem;padding:1rem .75rem}#questionText{font-size:clamp(1.15rem,4.7vw,1.6rem)}.report-actions{grid-template-columns:1fr;gap:.5rem}.report-decision-actions{grid-template-columns:1fr}.level-review-actions{grid-template-columns:1fr}}
       @media (min-width: 821px){.desktop-quick-actions .btn{padding:.65rem .5rem;font-size:.85rem}}
   </style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
   <body>
     <div class="age-gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
@@ -235,20 +236,23 @@
       </div>
     </div>
     <main class="content recall-shell">
-    <header class="site-header">
-      <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools & Projects</span></a>
-      <nav class="site-menu" id="primaryNav" aria-label="Primary">
+    <header class="site-header jg-site-header">
+      <a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a>
+      <nav class="site-menu jg-site-links" id="primaryNav" aria-label="Primary">
         <a class="menu-link" href="../../index.html">Home</a>
-        <a class="menu-link" href="../../utilities/index.html">Utilities</a>
+    <a class="menu-link" href="/#about">About me</a>
+        <a class="menu-link" href="../../utilities/index.html">Apps &amp; tools</a>
         <div class="menu-group">
-          <a class="menu-link active" href="../index.html">Games</a>
+          <a class="menu-link active" href="../index.html" aria-current="location">Games</a>
           <div class="submenu" aria-label="Games submenu">
             <a href="../old-school-board-games/index.html">Board</a>
             <a href="../work-in-progress/index.html">Web</a>
             <a href="../work-in-progress/index.html">Preview Games</a>
           </div>
         </div>
-      </nav>
+
+    <a class="menu-link" href="mailto:jason@jasongroce.com">Say hello <span aria-hidden="true">↗</span></a>
+  </nav>
     </header>
     <button class="nav-peek" id="navPeekIndicator" type="button" aria-label="Show hidden menu">Show Menu</button>
     <section class="mission-layout">

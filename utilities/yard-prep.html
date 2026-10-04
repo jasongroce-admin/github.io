@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>Yard Prep | Utilities</title>
-    <link rel="stylesheet" href="../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="../assets/css/site.css?v=20261003" />
     <style>
       :root {
         --panel: rgba(255, 255, 255, 0.94);
@@ -118,20 +118,26 @@
         }
       }
     </style>
-  </head>
-  <body>
+  <style>
+/* Sunshine & Mischief application shell. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+.sunshine-yard{--panel:#fffdf8}
+.sunshine-yard .group{border-color:#ecd7bf}
+.sunshine-yard .mode-switch{background:#ffead1;display:flex;flex-wrap:wrap}
+.sunshine-yard .mode-switch button,.sunshine-yard .row button,.sunshine-yard .row select,.sunshine-yard .row input[type="number"],.sunshine-yard .row input[type="text"]{color:#342724;background:#fffdf8;border-color:#d3aa8d;max-width:100%}
+.sunshine-yard .mode-switch button.active,.sunshine-yard .row button.active{background:#a33b21;border-color:#96311b;color:#fff}
+.sunshine-yard .label,.sunshine-yard .tiny{color:#725748}
+.sunshine-yard h1{font-family:Georgia,serif;letter-spacing:-.04em;line-height:1.1}
+.sunshine-yard .layout>*,.sunshine-yard .controls,.sunshine-yard .canvas-shell{min-width:0}
+.sunshine-yard input[type="range"]{accent-color:#a33b21}
+@media(max-width:400px){.sunshine-yard .panel{padding:15px}.sunshine-yard .row{gap:.35rem}.sunshine-yard .row input[type="file"]{width:100%;min-width:0}.sunshine-yard .canvas-scroll{max-width:100%}}
+</style>
+<link rel="stylesheet" href="../assets/css/site-chrome.css?v=20261003">
+</head>
+  <body class="sunshine-utility sunshine-yard">
     <main class="content yard-shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="../index.html">
-          <strong>Jason Groce</strong>
-          <span>Games, Tools & Projects</span>
-        </a>
-        <nav class="site-menu" aria-label="Primary">
-          <a class="menu-link" href="../index.html">Home</a>
-          <a class="menu-link active" href="index.html">Utilities</a>
-          <a class="menu-link" href="../games/index.html">Games</a>
-        </nav>
-      </header>
+      <header class="site-header jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
 
       <section class="panel stack">
         <h1>Yard Prep</h1>

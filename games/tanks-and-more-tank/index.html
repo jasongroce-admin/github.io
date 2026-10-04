@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Tanks and More Tank | Jason Groce</title>
-    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20261003">
     <style>
       :root {
         --hud-bg: #06121f;
@@ -845,20 +845,21 @@
         .welcome-grid { grid-template-columns: 1fr; }
       }
     </style>
-  </head>
+  <link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
+</head>
   <body>
     <main class="content">
-      <header class="site-header">
-        <a class="brand-lockup" href="../../index.html">
-          <strong>Jason Groce</strong>
-          <span>Games, Tools & Projects</span>
-        </a>
-        <nav class="site-menu" aria-label="Primary">
+      <header class="site-header jg-site-header">
+        <a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a>
+        <nav class="site-menu jg-site-links" aria-label="Primary">
           <a class="menu-link" href="../../index.html">Home</a>
+    <a class="menu-link" href="/#about">About me</a>
           <a class="menu-link" href="../tank-games/index.html">Tank Games</a>
-          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
-          <a class="menu-link active" href="../index.html">Games</a>
-        </nav>
+          <a class="menu-link" href="../../utilities/index.html">Apps &amp; tools</a>
+          <a class="menu-link active" href="../index.html" aria-current="location">Games</a>
+
+    <a class="menu-link" href="mailto:jason@jasongroce.com">Say hello <span aria-hidden="true">↗</span></a>
+  </nav>
       </header>
 
       <div class="welcome-overlay" id="welcomeOverlay" aria-hidden="true">

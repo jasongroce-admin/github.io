@@ -10,18 +10,26 @@
     body{display:grid;place-items:center}
     p{letter-spacing:.04em}
   </style>
+<style>body{display:flex;flex-direction:column;align-items:stretch;place-items:normal;background:#fffaf0;color:#342724}#msg{flex:1;display:grid;place-items:center;text-align:center;padding:24px;font-family:Georgia,serif;font-size:1.3rem}</style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
 <body>
+<header class="jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
   <p id="msg">Opening Magic Screen 2…</p>
   <script>
-    const shell = "/utilities/magic-screen-2/app.html";
+    const shell = "/utilities/magic-screen-2/";
+    const workerVersion = "20261003-route2";
+    function openWhenReady() {
+      const controller = navigator.serviceWorker.controller;
+      if (controller && new URL(controller.scriptURL).searchParams.get("v") === workerVersion) {
+        location.replace(shell);
+      }
+    }
     if (!("serviceWorker" in navigator)) {
       document.getElementById("msg").textContent = "This drawing tool needs a browser that supports service workers.";
     } else {
-      navigator.serviceWorker.register("/utilities/magic-screen-2/sw.js").then(() => {
-        if (navigator.serviceWorker.controller) location.replace(shell);
-        else navigator.serviceWorker.addEventListener("controllerchange", () => location.replace(shell));
-      }).catch(() => {
+      navigator.serviceWorker.addEventListener("controllerchange", openWhenReady);
+      navigator.serviceWorker.register("/utilities/magic-screen-2/sw.js?v=" + workerVersion).then(openWhenReady).catch(() => {
         document.getElementById("msg").textContent = "Magic Screen 2 could not start. Refresh the page.";
       });
     }

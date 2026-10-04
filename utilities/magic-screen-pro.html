@@ -108,9 +108,54 @@
         .delete-layer, .rename-layer { margin-left:4px; color:#ff6666; cursor:pointer; font-size:1.1rem; }
         .copyright { position:fixed; bottom:12px; left:14px; font-size:0.72rem; opacity:0.65; color:#a0b0d0; z-index:1000; pointer-events:none; }
     </style>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+:root{--accent:#a33b21;--panel:#fffdf8}
+.sunshine-magic-pro{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;min-height:0;background:#fffaf0;color:#342724;overflow:hidden}
+.sunshine-magic-pro *{box-sizing:border-box}
+.sunshine-magic-pro>.jg-site-header{flex:none;touch-action:pan-x pan-y}
+.sunshine-magic-pro .header{position:static;flex:none;background:#ffead1;border-color:#ecd7bf;backdrop-filter:none;gap:6px;padding:8px 12px}
+.sunshine-magic-pro .header h1{background:none;-webkit-text-fill-color:currentColor;color:#a33b21;font:700 1.2rem Georgia,serif;white-space:nowrap}
+.sunshine-magic-pro .btn{background:#fffdf8;border-color:#d3aa8d;color:#342724;min-height:36px}
+.sunshine-magic-pro .btn:hover{background:#ffd762;border-color:#a33b21}
+.sunshine-magic-pro select,.sunshine-magic-pro input{color:#342724;accent-color:#a33b21}
+.sunshine-magic-pro select option{background:#fffdf8;color:#342724}
+.sunshine-magic-pro .main{flex:1;min-height:0;min-width:0;height:auto;position:relative}
+.sunshine-magic-pro .sidebar,.sunshine-magic-pro .inspector{background:#fffaf0;border-color:#ecd7bf;touch-action:pan-y}
+.sunshine-magic-pro .panel{border-color:#ecd7bf;color:#342724}
+.sunshine-magic-pro .control input[type="number"]{background:#fffdf8;color:#342724;border-color:#d3aa8d}
+.sunshine-magic-pro .tool-btn,.sunshine-magic-pro .layer-item{background:#ffead1;color:#342724}
+.sunshine-magic-pro .tool-btn.active{border-color:#a33b21;background:#ffd762;box-shadow:0 0 0 2px #ffd08d}
+.sunshine-magic-pro .sidebar::before,.sunshine-magic-pro .inspector::before{background:#ffead1;color:#a33b21;border-color:#d3aa8d}
+.sunshine-magic-pro .color-swatch{border-color:#d3aa8d}
+.sunshine-magic-pro .canvasWrap{border-color:#725748;box-shadow:none}
+.sunshine-magic-pro .copyright{bottom:6px;left:auto;right:10px;background:#fffaf0;color:#725748;opacity:1;padding:2px 5px;border-radius:4px}
+.sunshine-magic-pro :focus-visible{outline:3px solid #67341e;outline-offset:2px}
+.sunshine-magic-pro .mobile-panel-controls{display:none;flex:none;gap:8px;padding:6px 12px;background:#fffaf0;border-bottom:1px solid #ecd7bf}
+.sunshine-magic-pro .mobile-panel-controls .btn{min-height:44px;flex:1;font-size:.82rem}
+@media(max-width:900px){
+.sunshine-magic-pro .mobile-panel-controls{display:flex}
+.sunshine-magic-pro .header{flex-wrap:nowrap;overflow-x:auto;touch-action:pan-x}.sunshine-magic-pro .header>*{flex-shrink:0}.sunshine-magic-pro .header>div{display:none}
+.sunshine-magic-pro .sidebar,.sunshine-magic-pro .inspector{position:absolute;top:0;bottom:0;width:min(270px,calc(100% - 40px));z-index:15;box-shadow:0 0 12px #34272420}
+.sunshine-magic-pro .sidebar{left:0}.sunshine-magic-pro .inspector{right:0}
+.sunshine-magic-pro .sidebar.collapsed,.sunshine-magic-pro .inspector.collapsed{width:36px;padding:6px 2px;box-shadow:none}
+.sunshine-magic-pro .sidebar.collapsed .panel,.sunshine-magic-pro .inspector.collapsed .panel{padding:8px 5px;border-radius:6px}
+.sunshine-magic-pro .sidebar.collapsed .panel h3,.sunshine-magic-pro .inspector.collapsed .panel h3{writing-mode:vertical-rl;transform:none;height:auto;min-height:70px;font-size:.7rem;margin:0}
+.sunshine-magic-pro .sidebar::before,.sunshine-magic-pro .inspector::before{display:none}
+.sunshine-magic-pro .canvas-container{margin:0 36px;min-width:0}
+.sunshine-magic-pro .jg-site-links{flex-wrap:nowrap;overflow-x:auto;max-width:100%;white-space:nowrap}
+.sunshine-magic-pro .jg-site-links a{flex-shrink:0}
+}
+
+</style>
+<link rel="stylesheet" href="../assets/css/site-chrome.css?v=20261003">
 </head>
-<body>
-    <div class="header">
+<body class="sunshine-utility sunshine-magic-pro">
+    <header class="jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
+<div class="header">
         <h1>✨ Magic Screen PRO ✨</h1>
         <button class="btn" onclick="location.href='index.html'">Utilities</button>
         <button class="btn" onclick="location.href='magic-screen.html'">Magic Screen Legacy</button>
@@ -129,6 +174,10 @@
         <button class="btn" id="fullscreenBtn">⛶ Full</button>
     </div>
 
+    <nav class="mobile-panel-controls" aria-label="Drawing panels">
+        <button class="btn" id="toggleToolsPanel" type="button" aria-controls="sidebar" aria-expanded="false">Show tools</button>
+        <button class="btn" id="toggleInspectorPanel" type="button" aria-controls="inspector" aria-expanded="false">Show inspector</button>
+    </nav>
     <div class="main">
         <!-- LEFT SIDEBAR -->
         <div class="sidebar" id="sidebar">
@@ -251,6 +300,32 @@
         const overlayCtx = overlay.getContext('2d');
         const sidebar = document.getElementById('sidebar');
         const inspector = document.getElementById('inspector');
+        const mobilePanelLayout = window.matchMedia('(max-width:900px)');
+
+        function updatePanelToggleLabels() {
+            const toolsOpen = !sidebar.classList.contains('collapsed');
+            const inspectorOpen = !inspector.classList.contains('collapsed');
+            const toolsButton = document.getElementById('toggleToolsPanel');
+            const inspectorButton = document.getElementById('toggleInspectorPanel');
+            toolsButton.textContent = toolsOpen ? 'Hide tools' : 'Show tools';
+            inspectorButton.textContent = inspectorOpen ? 'Hide inspector' : 'Show inspector';
+            toolsButton.setAttribute('aria-expanded', String(toolsOpen));
+            inspectorButton.setAttribute('aria-expanded', String(inspectorOpen));
+        }
+
+        function syncResponsivePanels() {
+            sidebar.classList.toggle('collapsed', mobilePanelLayout.matches);
+            inspector.classList.toggle('collapsed', mobilePanelLayout.matches);
+            updatePanelToggleLabels();
+        }
+
+        function togglePhonePanel(panel, otherPanel) {
+            const opening = panel.classList.contains('collapsed');
+            panel.classList.toggle('collapsed', !opening);
+            if (opening) otherPanel.classList.add('collapsed');
+            updatePanelToggleLabels();
+            resize();
+        }
 
         let layers = [];
         let currentLayerIndex = 0;
@@ -264,6 +339,9 @@
         let selecting = false;
         let selection = null;
         let clipRegion = null;
+
+        // Keep the drawing colors used by the existing Pro utility palette.
+        const presetColors = ['#66ccff','#ff66cc','#ffd166','#7cf29a','#ffffff','#ff8f66','#8f9dff','#f472b6','#00d4ff','#8cff66'];
 
         let settings = {
             size: 24, alpha: 0.94, flow: 0.96, glow: 0,
@@ -717,8 +795,10 @@
                 if (item?.type.startsWith('image/')) loadImageAsLayer(item.getAsFile());
             });
 
-            sidebar.addEventListener('click', e => { if (e.target.closest('h3')) sidebar.classList.toggle('collapsed'); });
-            inspector.addEventListener('click', e => { if (e.target.closest('h3')) inspector.classList.toggle('collapsed'); });
+            sidebar.addEventListener('click', e => { if (e.target.closest('h3') && !mobilePanelLayout.matches) sidebar.classList.toggle('collapsed'); updatePanelToggleLabels(); });
+            inspector.addEventListener('click', e => { if (e.target.closest('h3') && !mobilePanelLayout.matches) inspector.classList.toggle('collapsed'); updatePanelToggleLabels(); });
+            document.getElementById('toggleToolsPanel').onclick = () => togglePhonePanel(sidebar, inspector);
+            document.getElementById('toggleInspectorPanel').onclick = () => togglePhonePanel(inspector, sidebar);
 
             document.getElementById('addLayerBtn').onclick = () => {
                 layers.push(createNewLayer(`Layer ${layers.length + 1}`));
@@ -882,10 +962,8 @@
 
         function init() {
             loadSettings();
-            if (window.innerWidth < 900 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                sidebar.classList.add('collapsed');
-                inspector.classList.add('collapsed');
-            }
+            syncResponsivePanels();
+            mobilePanelLayout.addEventListener('change', () => { syncResponsivePanels(); resize(); });
             resize();
             window.addEventListener('resize', resize);
             layers = [createNewLayer("Background")];

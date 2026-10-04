@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Game Utilities | Games</title>
-    <link rel="stylesheet" href="../../assets/css/site.css?v=20260416" />
+    <link rel="stylesheet" href="../../assets/css/site.css?v=20261003" />
     <style>
       .shell{display:grid;gap:1rem}
       .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:.75rem}
@@ -12,16 +12,20 @@
       .card strong{color:#fff}
       .card span{color:var(--muted)}
     </style>
-  </head>
+  <link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
+</head>
   <body>
     <main class="content shell">
-      <header class="site-header">
-        <a class="brand-lockup" href="../index.html"><strong>Jason Groce</strong><span>Games</span></a>
-        <nav class="site-menu" aria-label="Primary">
+      <header class="site-header jg-site-header">
+        <a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a>
+        <nav class="site-menu jg-site-links" aria-label="Primary">
           <a class="menu-link" href="../../index.html">Home</a>
-          <a class="menu-link" href="../../utilities/index.html">Utilities</a>
-          <a class="menu-link active" href="../index.html">Games</a>
-        </nav>
+    <a class="menu-link" href="/#about">About me</a>
+          <a class="menu-link" href="../../utilities/index.html">Apps &amp; tools</a>
+          <a class="menu-link active" href="../index.html" aria-current="location">Games</a>
+
+    <a class="menu-link" href="mailto:jason@jasongroce.com">Say hello <span aria-hidden="true">↗</span></a>
+  </nav>
       </header>
       <section class="panel stack">
         <h1>Game Utilities</h1>

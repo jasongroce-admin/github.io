@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Convert images privately in your browser. No image files are uploaded.">
   <title>Image Converter V2 | Jason Groce</title>
-  <link rel="stylesheet" href="../../assets/css/site.css?v=20260416">
+  <link rel="stylesheet" href="../../assets/css/site.css?v=20261003">
   <style>
     :root{--ic-bg:#f4f7fb;--ic-card:#fff;--ic-ink:#182230;--ic-muted:#5a6879;--ic-line:#dce4ed;--ic-blue:#1769d2;--ic-green:#16794a}
     body{background:var(--ic-bg);color:var(--ic-ink);padding:1rem;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -21,13 +21,31 @@
     .primary{display:block;width:100%;padding:.85rem 1rem;border:0;border-radius:10px;background:var(--ic-blue);color:#fff;font:inherit;font-weight:750;font-size:1rem;cursor:pointer}.primary:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:.6rem;margin-top:1rem}.actions .primary{flex:1}.secondary{padding:.75rem 1rem;border:1px solid var(--ic-line);border-radius:10px;background:white;color:var(--ic-ink);font:inherit;cursor:pointer}.status{min-height:1.5rem;margin:.7rem 0 0;color:var(--ic-muted);font-size:.9rem}.progress{height:8px;background:#e9eef4;border-radius:8px;overflow:hidden;margin-top:.7rem}.progress>i{display:block;height:100%;width:0;background:var(--ic-blue);transition:width .15s}.privacy{display:flex;gap:.8rem;align-items:flex-start;background:#f0faf5;border-color:#cae8d8}.privacy b{color:var(--ic-green)}.privacy p{margin:.2rem 0;color:#345d48;font-size:.9rem}.results{display:grid;gap:.4rem;margin-top:.75rem}.result{padding:.75rem 1rem;box-shadow:none;font-size:.9rem}.result.ok{border-color:#b9dfca}.result.fail{border-color:#efc1bb;background:#fff9f8}.result a{color:var(--ic-blue);font-weight:650}.small{font-size:.82rem;color:var(--ic-muted)}
     @media(max-width:560px){body{padding:.65rem}.file-row{font-size:.82rem}.actions{flex-direction:column}}
   </style>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+:root{--ic-bg:#fffaf0;--ic-card:#fffdf8;--ic-ink:#342724;--ic-muted:#725748;--ic-line:#ecd7bf;--ic-blue:#a33b21;--ic-green:#16794a}
+.sunshine-converter-v2 .intro h1{font-family:Georgia,serif;letter-spacing:-.04em;line-height:1.12}
+.sunshine-converter-v2 .intro{border-top:5px solid #ffd762}
+.sunshine-converter-v2 .step-num{background:#ffead1}
+.sunshine-converter-v2 .drop{border-color:#d3aa8d;background:#fffaf0}
+.sunshine-converter-v2 .drop.drag{background:#ffead1}
+.sunshine-converter-v2 .file-row{background:#fffaf0}
+.sunshine-converter-v2 .format-option input:checked+span{background:#ffead1;color:#96311b}
+.sunshine-converter-v2 .field input,.sunshine-converter-v2 .field select{border-color:#d3aa8d}
+.sunshine-converter-v2 .progress{background:#ffead1}
+.sunshine-converter-v2 .pick:focus-within,.sunshine-converter-v2 .format-option input:focus-visible+span{outline-color:#67341e}
+.sunshine-converter-v2 :focus-visible{outline:3px solid #67341e;outline-offset:3px}
+@media(max-width:400px){.sunshine-converter-v2 .file-summary{align-items:flex-start}.sunshine-converter-v2 .format-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+</style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
-<body>
+<body class="sunshine-utility sunshine-converter-v2">
 <main class="app site-shell">
-  <header class="site-header">
-    <a class="brand-lockup" href="../../index.html"><strong>Jason Groce</strong><span>Games, Tools &amp; Projects</span></a>
-    <nav class="site-menu" aria-label="Primary"><a class="menu-link" href="../../index.html">Home</a><a class="menu-link active" href="../index.html">Utilities</a><a class="menu-link" href="../image-converter.html">Original converter</a></nav>
-  </header>
+  <header class="site-header jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
   <section class="intro"><span class="eyebrow">Image Converter · Version 2</span><h1>Convert your images</h1><p>Choose images, pick a format, then download converted copies. Your originals stay as they are.</p></section>
   <section class="step" aria-labelledby="choose-title">
     <div class="step-head"><span class="step-num">1</span><div><h2 id="choose-title">Choose images</h2><p class="hint">Select one or more images, or drop them here.</p></div></div>

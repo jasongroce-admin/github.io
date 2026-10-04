@@ -56,19 +56,45 @@
             .calendar-panel, .events-panel { width:100%; }
         }
     </style>
+
+<style>
+/* Sunshine & Mischief: application shell; functional colors and data are preserved. */
+.sunshine-utility{--surface:#fffdf8;--surface-2:#ffead1;--ink:#342724;--muted:#725748;--line:#ecd7bf;--line-dark:#d3aa8d;--accent:#a33b21;--on-accent:#fff;--shadow:0 5px 18px #3427240d;color-scheme:light}
+
+.sunshine-archives{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0;overflow:hidden;background:#fffaf0;color:#342724;font-family:"Segoe UI",Arial,sans-serif}
+.sunshine-archives *{box-sizing:border-box}
+.sunshine-archives::before{display:none}
+.sunshine-archives>.jg-site-header{flex:none}
+.sunshine-archives .container{flex:1;min-height:0;height:auto}
+.sunshine-archives .calendar-panel{background:#fffdf8;border-color:#ecd7bf;box-shadow:none}
+.sunshine-archives .events-panel{background:#fffaf0}
+.sunshine-archives h1{font-family:Georgia,serif;color:#342724;border-color:#ffd762;font-size:clamp(1.5rem,2.8vw,2.2rem)}
+.sunshine-archives .day-header{color:#a33b21}
+.sunshine-archives .day{background:#ffead1;color:#342724;border-color:#ecd7bf;border-radius:8px}
+.sunshine-archives .day:hover,.sunshine-archives .day.today{background:#a33b21;color:#fff;box-shadow:none}
+.sunshine-archives .day.has-event{background:#ffd762;box-shadow:none}
+.sunshine-archives .day.today.has-event{background:#a33b21;color:#fff}
+.sunshine-archives .search-box{border-color:#d3aa8d;color:#342724;border-radius:10px}
+.sunshine-archives .event{background:#fffdf8;border-color:#ecd7bf;border-left-color:#ec6a2f;border-radius:12px;box-shadow:0 4px 14px #34272408}
+.sunshine-archives .event:hover{background:#ffead1}
+.sunshine-archives .event-title,.sunshine-archives .loader{color:#a33b21}
+.sunshine-archives .summary{color:#725748}
+.sunshine-archives .official-link{background:#a33b21;border-color:#a33b21;border-radius:8px}
+.sunshine-archives .source-links a{color:#a33b21;border-color:#d3aa8d;border-radius:8px}
+.sunshine-archives .source-links a:hover{background:#a33b21;color:#fff}
+.sunshine-archives .legend-item{color:#342724}
+.sunshine-archives .modal{background:#342724dd}
+.sunshine-archives .modal-content{background:#fffdf8;color:#342724;border-color:#ffd762;position:relative;max-height:90dvh;overflow-y:auto}
+.sunshine-archives .modal-close{color:#a33b21}
+.sunshine-archives :focus-visible{outline:3px solid #67341e;outline-offset:3px}
+@media(max-width:800px){.sunshine-archives{height:auto;min-height:100vh;overflow:auto}.sunshine-archives .container{flex:none;flex-direction:column;height:auto}.sunshine-archives .calendar-panel,.sunshine-archives .events-panel{width:100%;padding:16px}.sunshine-archives .calendar-panel{border-right:0;border-bottom:1px solid #ecd7bf}}
+@media(max-width:400px){.sunshine-archives .calendar{gap:3px}.sunshine-archives .day{height:48px;padding-top:6px}.sunshine-archives .day-header{font-size:.78rem}.sunshine-archives .modal-content{padding:20px}.sunshine-archives #monthYear{margin:0 9px!important}}
+
+</style>
+<link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
-<body>
-    <nav class="site-nav" aria-label="Site">
-        <a class="site-brand" href="../../index.html">
-            <strong>Jason Groce</strong>
-            <span>Games, Apps, Utilities</span>
-        </a>
-        <div class="site-links">
-            <a href="../../index.html">Home</a>
-            <a href="../index.html">Utilities</a>
-            <a href="../../games/index.html">Games</a>
-        </div>
-    </nav>
+<body class="sunshine-utility sunshine-archives">
+    <header class="jg-site-header"><a class="jg-site-brand" href="/" aria-label="Jason Groce home"><span class="jg-site-mark" aria-hidden="true">jg.</span><span>Jason Groce<small>makes things.</small></span></a><nav class="jg-site-links" aria-label="Primary navigation"><a href="/">Home</a><a href="/index.html#about">About me</a><a href="/games/index.html">Games</a><a href="/utilities/index.html">Apps &amp; tools</a><a href="mailto:jason@jasongroce.com">Say hello ↗</a></nav></header>
     <div class="container">
         <div class="calendar-panel">
             <h1>250th Founding Records Calendar</h1>
