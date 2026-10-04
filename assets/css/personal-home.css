@@ -170,6 +170,7 @@ body.personal-home {
 .personal-home .home-nav a {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   min-height: 44px;
   min-width: 44px;
   padding: 8px 0;
@@ -194,8 +195,8 @@ body.personal-home {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
   align-items: center;
-  gap: 64px;
-  padding-block: 56px 48px;
+  gap: 44px;
+  padding-block: 38px 34px;
 }
 
 .hero-copy,
@@ -343,6 +344,7 @@ body.personal-home {
 }
 
 .note-copy {
+  margin-top: 16px !important;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -388,17 +390,46 @@ body.personal-home {
 .project-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 26px;
+  gap: 20px;
 }
 
 .project {
   min-width: 0;
 }
 
+.personal-home a.project {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border: 1px solid var(--home-line);
+  border-radius: var(--home-radius);
+  color: var(--home-ink);
+  background: var(--home-bg);
+  text-decoration: none;
+}
+
+.personal-home a.project:hover {
+  border-color: var(--home-accent);
+  background: var(--home-soft);
+}
+
+.project-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: auto;
+  padding-top: 14px;
+  color: var(--home-accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .project-art {
+  flex: none;
   position: relative;
   width: 100%;
-  height: 194px;
+  height: 180px;
   margin-bottom: 19px;
   overflow: hidden;
   border-radius: var(--home-radius);
@@ -483,6 +514,7 @@ body.personal-home {
 
 .project-description {
   margin-top: 10px !important;
+  margin-bottom: 10px !important;
   color: var(--home-muted);
   font-size: 15px;
   line-height: 1.7;
@@ -528,17 +560,13 @@ body.personal-home {
 .interest-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 6px 18px;
   margin-top: 24px;
 }
 
 .interest-list span {
-  padding: 6px 10px;
-  border: 1px solid var(--home-line);
-  border-radius: 20px;
   color: var(--home-accent);
-  background: var(--home-soft);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -970,7 +998,6 @@ body.personal-home {
   .home-mark,
   .adventure-note,
   .collection,
-  .interest-list span,
   .file-card {
     border: 1px solid ButtonText;
   }
