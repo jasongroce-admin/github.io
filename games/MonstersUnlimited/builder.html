@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Monsters Unlimited Builder</title>
     <link rel="stylesheet" href="../../assets/css/site.css?v=20261003" />
-    <link rel="stylesheet" href="builder.css?v=20260527-3" />
+    <link rel="stylesheet" href="builder.css?v=20261004-2" />
   <link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
   <body>
@@ -31,7 +31,8 @@
           <button data-tool="rig" type="button">Rig</button>
         </div>
         <section id="rigPanel" class="rig-panel hidden" aria-label="Monster rig builder">
-          <h2>Monster Rig</h2>
+          <h2>Legacy Pose Editor</h2>
+          <p>This legacy tool edits and saves separated-part poses in this builder. Play uses the connected animation renderer, so these pose settings do not affect the game.</p>
           <label>Rig Part <select id="rigRole"></select></label>
           <label>Preview Art <select id="rigVariant"></select></label>
           <div class="grid-two">
@@ -76,7 +77,8 @@
         <canvas id="builderCanvas" width="1280" height="720"></canvas>
       </section>
     </main>
-    <script src="level-data.js?v=20260527-3"></script>
-    <script src="builder.js?v=20260527-3"></script>
+    <script src="level-data.js?v=20261004-2"></script>
+    <script src="monster-renderer.js?v=20261004-2"></script>
+    <script src="builder.js?v=20261004-2"></script>
   </body>
 </html>

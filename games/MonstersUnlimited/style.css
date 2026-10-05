@@ -45,7 +45,7 @@ body .content {
   right: 10px;
   z-index: 4;
   display: grid;
-  grid-template-columns: auto minmax(120px, 220px) auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(100px, 180px) auto auto auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   pointer-events: none;
@@ -86,12 +86,21 @@ body .content {
 }
 
 #scoreText,
-#objectiveText {
+#objectiveText,
+#livesText,
+#dayText {
   padding: 7px 10px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.46);
   text-shadow: 0 1px 1px #000;
 }
+
+.hud-actions { display: flex; gap: 6px; pointer-events: auto; }
+.hud-actions button { min-height: 36px; padding: 0 10px; border: 1px solid rgba(255,255,255,.25); border-radius: 7px; background: rgba(0,0,0,.64); color: #fff; font-weight: 700; cursor: pointer; }
+.start-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 14px; }
+.start-options label { display: grid; gap: 5px; color: #f7e6aa; font-size: 13px; font-weight: 700; }
+.start-options select { width: 100%; min-height: 42px; border: 1px solid #76643b; border-radius: 6px; padding: 0 9px; background: #242630; color: #fff; font: inherit; }
+.screen .controls-copy { margin: 0 0 14px; font-size: 13px; }
 
 .screen {
   position: absolute;
@@ -210,15 +219,24 @@ body .content {
   }
 
   .hud {
-    grid-template-columns: auto minmax(94px, 1fr) auto;
+    grid-template-columns: auto minmax(70px, 1fr) auto auto auto;
+    right: 8px;
+    left: 8px;
+    gap: 5px;
   }
 
   #objectiveText {
     display: none;
   }
+  .hud-actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
 
 @media (max-width: 680px) {
+  .mobile-stick,
+  .mobile-actions { display: grid; }
+  .hud { grid-template-columns: auto minmax(70px, 1fr) auto; }
+  #livesText, #dayText { grid-row: 2; }
+  .hud-actions { grid-column: 3; grid-row: 2; }
   .hud {
     font-size: 13px;
     gap: 7px;
@@ -231,11 +249,19 @@ body .content {
   #objectiveText {
     display: none;
   }
+  #dayText, #livesText { padding: 6px 7px; font-size: 11px; }
+}
+
+@media (max-width: 520px) {
+  .start-options { grid-template-columns: 1fr; }
+  .screen > div { max-height: calc(100vh - 24px); overflow: auto; padding: 17px; }
+  .controls-copy { font-size: 12px !important; }
+  .hud-actions button { min-height: 32px; }
 }
 
 @media (max-aspect-ratio: 1 / 1) {
   #game {
-    width: calc(100vh * 16 / 9);
-    height: 100vh;
+    width: 100vw;
+    height: calc(100vw * 9 / 16);
   }
 }

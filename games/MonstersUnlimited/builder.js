@@ -290,10 +290,10 @@
     ctx.fillStyle = '#9fb0c0';
     ctx.font = '800 18px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText('Monster Rig Builder', 24, 34);
+    ctx.fillText('Legacy Pose Editor', 24, 34);
     ctx.font = '13px Arial';
     ctx.fillStyle = '#c9d1dc';
-    ctx.fillText('Drag pieces until the head, arm, and leg sit in the sockets. Save Rig, then Play uses these settings.', 24, 58);
+    ctx.fillText('Adjusts this builder preview only; Play uses the connected animation renderer.', 24, 58);
 
     const asset = selectedMonster();
     if (!asset.rig?.parts) {
@@ -343,7 +343,7 @@
 
   function drawPlayer() {
     const asset = find(assets.monsters, level.player.monsterId);
-    if (asset.rig?.parts && drawRiggedPlayer(asset, level.player.x, level.world.groundY - level.player.monster.h, level.player.monster.w, level.player.monster.h)) return;
+    if (drawRiggedPlayer(asset, level.player.x, level.world.groundY - level.player.monster.h, level.player.monster.w, level.player.monster.h)) return;
     drawSprite(asset, level.player.x, level.world.groundY - level.player.monster.h, level.player.monster.w, level.player.monster.h, false);
   }
 
@@ -359,10 +359,17 @@
   }
 
   function drawRiggedPlayer(asset, x, y, w, h) {
+    const renderer = window.MonstersUnlimitedRenderer;
+    if (renderer?.draw(ctx, {
+      asset,
+      spec: { w, h },
+      player: { x, y, facing: 1, onGround: true, vx: 0, state: 'monster', climbing: false, attackTimer: 0 },
+      time: 0,
+      images: loadedImages
+    })) return true;
+
     // Generic rigged preview for any monster that defines rig.parts.
-    // Uses per-monster saved layouts (from Rig tool "Save Rig") when available,
-    // otherwise falls back to the monster's rig.layout or the shared defaultRigLayout.
-    // This lets new rigs (e.g. Vorgath) be previewed and adjusted in the builder immediately.
+    // Legacy pose preview remains available in the builder's Rig tool only.
     if (drawRigAssembly(asset, x + w * 0.48, y + h * 0.96, rigLayoutFor(asset.id), false, h / 218)) return true;
 
     // Legacy hard-coded default only for the original lizork rig (kept for safety during transition).
@@ -646,7 +653,7 @@
   function saveRigLocal() {
     applyRigForm();
     localStorage.setItem(RIG_STORAGE_KEY, JSON.stringify(rigLayouts));
-    setStatus('Rig saved. The Play page will use these socket settings.');
+    setStatus('Legacy pose saved for this builder preview; Play uses connected animation.');
   }
 
   function exportRig() {
@@ -655,7 +662,7 @@
     const text = `"layout": ${JSON.stringify(rigLayouts[monsterId], null, 2)}`;
     els.exportBox.value = text;
     navigator.clipboard?.writeText(text).catch(() => {});
-    setStatus('Rig layout exported and copied when clipboard is available.');
+    setStatus('Legacy pose settings exported and copied when clipboard is available.');
   }
 
   function resetRigPose() {

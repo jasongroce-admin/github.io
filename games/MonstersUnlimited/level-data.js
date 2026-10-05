@@ -62,9 +62,9 @@ window.MONSTERS_UNLIMITED_ASSETS = {
       }
     },
     { id: 'thorvak', name: 'Thorvak', src: 'MUimages/generated/thorvak.png', humanSrc: 'MUimages/generated/thorvak-human.png', morphSrcs: ['MUimages/generated/thorvak-morph-1.png', 'MUimages/generated/thorvak-morph-2.png'], climbSrc: 'MUimages/generated/thorvak-climb.png', attackSrc: 'MUimages/generated/thorvak-attack.png' },
-    { id: 'kragmor', name: 'Kragmor', src: 'MUimages/generated/kragmor-stand.png', humanSrc: 'MUimages/generated/kragmor-human.png', morphSrcs: ['MUimages/generated/kragmor-morph-1.png', 'MUimages/generated/kragmor-morph-2.png'], climbSrc: 'MUimages/generated/kragmor-climb.png', attackSrc: 'MUimages/generated/kragmor-stand.png' },
-    { id: 'vorgath', name: 'Vorgath', src: 'MUimages/generated/vorgath-stand.png', humanSrc: 'MUimages/generated/vorgath-human.png', morphSrcs: ['MUimages/generated/vorgath-morph-1.png', 'MUimages/generated/vorgath-morph-2.png'], climbSrc: 'MUimages/generated/vorgath-climb.png', attackSrc: 'MUimages/generated/vorgath-stand.png' },
-    { id: 'skorath', name: 'Skorath', src: 'MUimages/generated/skorath-stand.png', humanSrc: 'MUimages/generated/skorath-human.png', morphSrcs: ['MUimages/generated/skorath-morph-1.png', 'MUimages/generated/skorath-morph-2.png'], climbSrc: 'MUimages/generated/skorath-climb.png', attackSrc: 'MUimages/generated/skorath-stand.png' }
+    { id: 'kragmor', playable: false, name: 'Kragmor', src: 'MUimages/generated/kragmor-stand.png', humanSrc: 'MUimages/generated/kragmor-human.png', morphSrcs: ['MUimages/generated/kragmor-morph-1.png', 'MUimages/generated/kragmor-morph-2.png'], climbSrc: 'MUimages/generated/kragmor-climb.png', attackSrc: 'MUimages/generated/kragmor-stand.png' },
+    { id: 'vorgath', playable: false, name: 'Vorgath', src: 'MUimages/generated/vorgath-stand.png', humanSrc: 'MUimages/generated/vorgath-human.png', morphSrcs: ['MUimages/generated/vorgath-morph-1.png', 'MUimages/generated/vorgath-morph-2.png'], climbSrc: 'MUimages/generated/vorgath-climb.png', attackSrc: 'MUimages/generated/vorgath-stand.png' },
+    { id: 'skorath', playable: false, name: 'Skorath', src: 'MUimages/generated/skorath-stand.png', humanSrc: 'MUimages/generated/skorath-human.png', morphSrcs: ['MUimages/generated/skorath-morph-1.png', 'MUimages/generated/skorath-morph-2.png'], climbSrc: 'MUimages/generated/skorath-climb.png', attackSrc: 'MUimages/generated/skorath-stand.png' }
   ],
   humans: [
     { id: 'human-a', name: 'Civilian Blue', src: 'MUimages/generated/human-a.png', kind: 'window' },
@@ -90,12 +90,14 @@ window.MONSTERS_UNLIMITED_LEVELS = [
     world: { width: 1440, height: 760, groundY: 650, sky: '#8fb6d9', dusk: '#f6a15f' },
     player: {
       monsterId: 'lizork',
-      x: 150,
+      x: 75,
       health: 100,
       score: 0,
+      lives: 3,
       monster: { w: 154, h: 218, speed: 245, climbSpeed: 215, jump: 585, punchDamage: 1 },
       human: { w: 34, h: 62, speed: 150 }
     },
+    enemies: { tankInterval: 6, helicopterInterval: 10, soldierInterval: 4 },
     buildings: [
       { id: 'hotel', assetId: 'tbrickmain-tall', x: 250, y: 170, w: 180, h: 480, cols: 3, rows: 8, hp: 2, points: 80, structuralLimit: 0.5, fallBias: 'auto' },
       { id: 'bank', assetId: 'tbrick-tall', x: 485, y: 250, w: 150, h: 400, cols: 3, rows: 7, hp: 2, points: 70, structuralLimit: 0.5, fallBias: 'auto' },
@@ -112,6 +114,60 @@ window.MONSTERS_UNLIMITED_LEVELS = [
     vehicles: [
       { id: 'v1', assetId: 'vehicle-a', x: 1210, y: 606, dir: -1, speed: 72, health: 3 },
       { id: 'v2', assetId: 'vehicle-b', x: 80, y: 610, dir: 1, speed: 58, health: 3 }
+    ]
+  },
+  {
+    id: 'chicago-night-shift',
+    title: 'Day 2: Night Shift',
+    city: 'Chicago',
+    world: { width: 1740, height: 760, groundY: 650, sky: '#52627f', dusk: '#d77964' },
+    player: { monsterId: 'grokkon', x: 72, health: 100, score: 0, lives: 3, monster: { w: 154, h: 218, speed: 245, climbSpeed: 215, jump: 585, punchDamage: 1 }, human: { w: 34, h: 62, speed: 150 } },
+    enemies: { tankInterval: 5.5, helicopterInterval: 9, soldierInterval: 3.6 },
+    buildings: [
+      { id: 'loop-hotel', assetId: 'three-left', x: 240, y: 220, w: 170, h: 430, cols: 3, rows: 7, hp: 2, points: 75, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'loop-bank', assetId: 'tbrick2-mid-a', x: 475, y: 295, w: 160, h: 355, cols: 3, rows: 6, hp: 2, points: 70, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'loop-tower', assetId: 'tbrickmain-tall', x: 700, y: 120, w: 180, h: 530, cols: 3, rows: 9, hp: 3, points: 110, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'loop-office', assetId: 'tbrick3-mid-a', x: 945, y: 260, w: 165, h: 390, cols: 3, rows: 7, hp: 2, points: 75, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'loop-hq', assetId: 'three-center', x: 1175, y: 165, w: 180, h: 485, cols: 3, rows: 8, hp: 3, points: 105, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'loop-flats', assetId: 'tbrick-short-a', x: 1420, y: 350, w: 150, h: 300, cols: 3, rows: 5, hp: 2, points: 65, structuralLimit: 0.6, fallBias: 'auto' }
+    ],
+    humans: [
+      { id: 'ch1', assetId: 'human-a', kind: 'window', x: 365, y: 470, w: 22, h: 31 },
+      { id: 'ch2', assetId: 'human-d', kind: 'window', x: 810, y: 425, w: 21, h: 30 },
+      { id: 'ch3', assetId: 'human-b', kind: 'window', x: 1280, y: 450, w: 20, h: 29 },
+      { id: 'ch-runner', assetId: 'ground-runner-c', kind: 'ground', x: 620, y: 596, w: 46, h: 54, dir: -1 }
+    ],
+    vehicles: [
+      { id: 'ch-van', assetId: 'vehicle-b', x: 1640, y: 610, dir: -1, speed: 76, health: 3 },
+      { id: 'ch-car', assetId: 'vehicle-a', x: 90, y: 606, dir: 1, speed: 62, health: 3 }
+    ]
+  },
+  {
+    id: 'san-francisco-earthquake',
+    title: 'Day 3: Bay City Breaker',
+    city: 'San Francisco',
+    world: { width: 1900, height: 760, groundY: 650, sky: '#718da9', dusk: '#ed9368' },
+    player: { monsterId: 'thorvak', x: 72, health: 100, score: 0, lives: 3, monster: { w: 154, h: 218, speed: 245, climbSpeed: 215, jump: 585, punchDamage: 1 }, human: { w: 34, h: 62, speed: 150 } },
+    enemies: { tankInterval: 5, helicopterInterval: 8, soldierInterval: 3.2 },
+    buildings: [
+      { id: 'bay-theater', assetId: 'tbrick3-tall', x: 240, y: 200, w: 175, h: 450, cols: 3, rows: 8, hp: 2, points: 80, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-market', assetId: 'tbrick2-short-a', x: 475, y: 340, w: 150, h: 310, cols: 3, rows: 5, hp: 2, points: 65, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-skyscraper', assetId: 'three-right', x: 680, y: 105, w: 180, h: 545, cols: 3, rows: 9, hp: 3, points: 115, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-apartments', assetId: 'tbrick-mid-b', x: 925, y: 275, w: 160, h: 375, cols: 3, rows: 6, hp: 2, points: 75, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-financial', assetId: 'tbrickmain-mid', x: 1150, y: 235, w: 180, h: 415, cols: 3, rows: 7, hp: 3, points: 95, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-hotel', assetId: 'tbrick-tall', x: 1395, y: 205, w: 165, h: 445, cols: 3, rows: 8, hp: 2, points: 85, structuralLimit: 0.6, fallBias: 'auto' },
+      { id: 'bay-terminal', assetId: 'three-narrow', x: 1625, y: 310, w: 150, h: 340, cols: 3, rows: 6, hp: 2, points: 70, structuralLimit: 0.6, fallBias: 'auto' }
+    ],
+    humans: [
+      { id: 'sf1', assetId: 'human-c', kind: 'window', x: 360, y: 470, w: 22, h: 31 },
+      { id: 'sf2', assetId: 'human-b', kind: 'window', x: 790, y: 440, w: 21, h: 30 },
+      { id: 'sf3', assetId: 'human-a', kind: 'window', x: 1230, y: 440, w: 20, h: 29 },
+      { id: 'sf4', assetId: 'human-d', kind: 'window', x: 1490, y: 418, w: 20, h: 29 },
+      { id: 'sf-runner', assetId: 'ground-runner-b', kind: 'ground', x: 600, y: 596, w: 42, h: 54, dir: 1 }
+    ],
+    vehicles: [
+      { id: 'sf-truck', assetId: 'vehicle-c', x: 1800, y: 606, dir: -1, speed: 82, health: 3 },
+      { id: 'sf-car', assetId: 'vehicle-a', x: 90, y: 606, dir: 1, speed: 68, health: 3 }
     ]
   }
 ];
