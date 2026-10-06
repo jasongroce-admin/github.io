@@ -203,7 +203,7 @@
     player = {
       x: spec.x, y: level.world.groundY - spec.monster.h, vx: 0, vy: 0,
       facing: 1, punchDir: 1, attackTimer: 0, attackKind: 'punch', attackSerial: 0, attackAim: { x: 1, y: 0 },
-      eatTimer: 0, hurtTimer: 0,
+      eatTimer: 0, hurtTimer: 0, attackPending: false,
       aimX: spec.x + 140, aimY: level.world.groundY - spec.monster.h * .66,
       climbSide: null, climbBuildingId: '', state: 'monster', morph: 0,
       health: previous ? Math.min(spec.health, previous.health + 15) : spec.health,
@@ -289,6 +289,7 @@
     burst(player.x + monsterSpec().w * .5, player.y + monsterSpec().h * .5, '#e45b47', 10);
     tone(90, .12, 'sawtooth');
     if (player.health <= 0) {
+      player.attackPending = false; player.attackTimer = 0;
       player.lives--;
       if (player.lives <= 0) gameOver();
       else {
@@ -325,6 +326,7 @@
     if (qaMode) canvas.dataset.state = JSON.stringify({ x: player.x, y: player.y, vx: player.vx, vy: player.vy,
       onGround: player.onGround, climbing: player.climbing, onRoof: player.onRoof, health: player.health,
       monsterId: level.player.monsterId, facing: player.facing, attackKind: player.attackKind, attackTimer: player.attackTimer,
+      attackAim: player.attackAim, attackPending: player.attackPending,
       eatTimer: player.eatTimer, rigReady: !!loadedImages.get(byId(assets.monsters, level.player.monsterId).rig?.atlas),
       climbSide: player.climbSide, climbBuildingId: player.climbBuildingId,
       lives: player.lives, score: player.score, cameraX, cameraY, day: campaignIndex + 1, paused, running,
@@ -376,6 +378,8 @@
     updateBuildings(dt);
     updateParticles(dt); updateFloaters(dt);
     if (running && player.state === 'monster') {
+      const impactTimer = window.MonstersUnlimitedRenderer?.attackTiming?.impactTimer ?? .16;
+      if (player.attackPending && player.attackTimer <= impactTimer) resolvePunch();
       if (input.backhand || held.backhand || keys.has('k')) punch('backhand');
       else if (input.punch || held.punch || keys.has('j') || keys.has('control')) punch();
       if (input.eat || held.eat || keys.has('e')) eat();
@@ -460,7 +464,9 @@
     const spec = monsterSpec();
     const beforeY = player.y;
     const oldFeet = beforeY + spec.h;
-    if (!player.climbing && Math.abs(input.x) > .12) player.facing = Math.sign(input.x);
+    // Commit the striking side through the short attack; movement can still
+    // reverse, with the renderer showing a backward step during recovery.
+    if (!player.climbing && player.attackTimer <= 0 && Math.abs(input.x) > .12) player.facing = Math.sign(input.x);
     const currentWall = level.buildings.find(b => b.id === player.climbBuildingId);
     if (player.climbing && (!currentWall || !climbGrip(currentWall, player.climbSide))) {
       detach(); player.grabCooldown = .35;
@@ -556,21 +562,33 @@
 
   function punch(kind = 'punch') {
     if (player.state !== 'monster' || punchCooldown > 0) return;
-    punchCooldown = .24; player.attackTimer = .22;
+    punchCooldown = .24;
+    player.attackTimer = window.MonstersUnlimitedRenderer?.attackTiming?.duration ?? .22;
     let dx = kind === 'backhand' ? -player.facing : Math.abs(input.x) > .2 ? Math.sign(input.x) : player.facing;
     let dy = Math.abs(input.y) > .2 ? Math.sign(input.y) : 0;
     const behind = pointerAim && kind !== 'backhand' ? (pointerAim.x - player.x - monsterSpec().w * .5) * player.facing < -5 : dx * player.facing < 0;
     player.attackKind = kind === 'backhand' || behind ? 'backhand' : 'punch';
     player.attackSerial = (player.attackSerial || 0) + 1;
-    const origin = punchOrigin();
     if (dy) dx *= .25;
+    player.attackAim = {x: dx, y: dy};
+    const origin = punchOrigin();
     if (pointerAim && kind !== 'backhand') { dx = pointerAim.x - origin.x; dy = pointerAim.y - origin.y; }
     const length = Math.hypot(dx, dy) || 1;
     player.attackAim = { x: dx / length, y: dy / length };
     player.punchDir = dx < 0 ? -1 : 1;
+    player.attackPending = true;
+    if (!held.punch) pointerAim = null;
+  }
+
+  function resolvePunch() {
+    player.attackPending = false;
+    if (!running || player.state !== 'monster' || player.respawning > 0) return;
     const spec = monsterSpec();
-    const reach = window.MonstersUnlimitedRenderer?.attackReach?.({player, spec}) ?? (player.onRoof && player.attackAim.y > .5 ? spec.h * .64 : spec.w * .55);
-    const end = { x: origin.x + player.attackAim.x * reach, y: origin.y + player.attackAim.y * reach };
+    const options = {player, spec, asset: byId(assets.monsters, level.player.monsterId), time: animTime};
+    const origin = punchOrigin();
+    const reach = window.MonstersUnlimitedRenderer?.attackReach?.(options) ?? (player.onRoof && player.attackAim.y > .5 ? spec.h * .64 : spec.w * .55);
+    const end = window.MonstersUnlimitedRenderer?.attackHand?.(options) ??
+      { x: origin.x + player.attackAim.x * reach, y: origin.y + player.attackAim.y * reach };
     const hit = { x: end.x - 30, y: end.y - 30, w: 60, h: 60 };
     let didHit = false;
     level.buildings.forEach(b => {
@@ -603,7 +621,6 @@
     pickups.forEach(item => { if (!item.used && rects(hit, item)) { consume(item); didHit = true; } });
     if (didHit) { hitStop = .035; shake = Math.max(shake, 3); tone(110, .07, 'square'); }
     else tone(200, .025, 'triangle');
-    if (!held.punch) pointerAim = null;
   }
 
   function consume(item) {
@@ -1077,7 +1094,8 @@
   function punchOrigin(kind = player.attackKind) {
     const spec = currentSize();
     if (window.MonstersUnlimitedRenderer?.punchOrigin) return window.MonstersUnlimitedRenderer.punchOrigin({
-      player: kind === player.attackKind ? player : {...player, attackKind: kind}, spec
+      player: kind === player.attackKind ? player : {...player, attackKind: kind}, spec,
+      asset: byId(assets.monsters, level.player.monsterId), time: animTime
     });
     const facing = (player.facing || 1) * (kind === 'backhand' ? -1 : 1);
     return {

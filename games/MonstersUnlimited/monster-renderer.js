@@ -10,6 +10,17 @@
   const HIP = { x: 95, y: 158 };
   const TORSO = { scale: 0.76, anchor: [0.49, 0.96], neck: [0.37, 0.055], shoulder: [0.20, 0.37] };
   const ATTACK_SECONDS = 0.22;
+  const ATTACK_TIMING = Object.freeze({ duration: ATTACK_SECONDS, windup: .06, impactTimer: .16, impactHold: .04 });
+
+  function smoothstep(t) { const n = Math.max(0, Math.min(1, t)); return n * n * (3 - 2 * n); }
+
+  function strikeMotion(player) {
+    const elapsed = Math.max(0, ATTACK_SECONDS - (player.attackTimer || 0));
+    const active = player.attackTimer > 0;
+    const windup = Math.min(1, elapsed / ATTACK_TIMING.windup);
+    const recovery = smoothstep((elapsed - ATTACK_TIMING.windup - ATTACK_TIMING.impactHold) / .12);
+    return { active, elapsed, windup, recovery, extension: active ? smoothstep(windup) * (1 - recovery) : 0 };
+  }
 
   function imageFor(images, src) {
     return src && (typeof images?.get === 'function' ? images.get(src) : images?.[src]);
@@ -235,6 +246,35 @@
     };
   }
 
+  function bodyFrame(options, suppliedPhase) {
+    const { player, spec, asset, time = 0 } = options;
+    const face = player.facing < 0 ? -1 : 1;
+    const moving = !!player.onGround && Math.abs(player.vx || 0) > 10;
+    const travel = moving ? Math.sign(player.vx) * face : 1;
+    const climbing = !!player.climbing, airborne = !player.onGround && !climbing;
+    const cached = walkCache.get(player);
+    const frequency = Math.PI * Math.abs(player.vx || 0) / 48;
+    const phase = suppliedPhase ?? (moving && cached && cached.face === face && cached.travel === travel ?
+      cached.phase + Math.min(.10, Math.max(0, time - cached.time)) * frequency : time * (moving ? frequency : climbing ? 8 : 10));
+    const stride = Math.sin(phase), strike = strikeMotion(player);
+    const roofDown = strike.active && player.onRoof && aim(player).y > .5;
+    const crouch = roofDown ? BODY.h * .10 * strike.extension : 0;
+    const bob = climbing ? stride * 1.2 : moving ? -Math.abs(stride) * 3 : Math.sin(time * 3) * 1.1;
+    const hit = player.hurtTimer > 0 || player.hitTimer > 0;
+    const ascent = smoothstep((120 - (player.vy || 0)) / 240);
+    const lean = hit ? -.08 : climbing ? .025 : airborne ? -.035 + ascent * .10 : moving ? stride * .04 : 0;
+    const hip = { x: BODY.w * .50, y: BODY.h * .625 + crouch };
+    const torsoW = BODY.w * (asset.rig.species === 'insect' ? .55 : .62), torsoH = BODY.h * .48;
+    const torsoAnchor = [.50, .91], anatomy = asset.rig.sockets || SOCKETS[asset.id] || SOCKETS.grokkon;
+    const socketAt = fraction => {
+      const offset = rotate({ x: (fraction[0] - torsoAnchor[0]) * torsoW, y: (fraction[1] - torsoAnchor[1]) * torsoH }, lean);
+      return { x: hip.x + offset.x, y: hip.y + offset.y };
+    };
+    return { face, moving, travel, climbing, airborne, ascent, stride, strike, bob, lean, hip, torsoW, torsoH, torsoAnchor, anatomy,
+      rootX: player.x + (face < 0 ? spec.w : 0), scaleX: face * spec.w / BODY.w, scaleY: spec.h / BODY.h,
+      shoulders: anatomy.shoulders.map(socketAt), hips: anatomy.hips.map(socketAt), neck: socketAt([.55, .065]) };
+  }
+
   function skeletalPose(options) {
     const { player, spec, asset, time = 0 } = options;
     const face = player.facing < 0 ? -1 : 1;
@@ -252,25 +292,11 @@
       gait.time = time; gait.x = player.x; gait.y = player.y;
     } else walkCache.delete(player);
     const gaitPhase = gait?.phase ?? time * (climbing ? 8 : 10);
-    const stride = Math.sin(gaitPhase);
-    const bob = climbing ? stride * 1.2 : moving ? -Math.abs(stride) * 3 : Math.sin(time * 3) * 1.1;
-    const hit = player.hurtTimer > 0 || player.hitTimer > 0;
-    const lean = hit ? -.08 : climbing ? .025 : airborne ? ((player.vy || 0) < 0 ? .065 : -.035) : moving ? stride * .04 : 0;
-    const hip = { x: BODY.w * .50, y: BODY.h * .625 };
-    const torsoW = BODY.w * (asset.rig.species === 'insect' ? .55 : .62), torsoH = BODY.h * .48;
-    const torsoAnchor = [.50, .91];
-    const socketAt = fraction => {
-      const offset = rotate({ x: (fraction[0] - torsoAnchor[0]) * torsoW, y: (fraction[1] - torsoAnchor[1]) * torsoH }, lean);
-      return { x: hip.x + offset.x, y: hip.y + offset.y };
-    };
-    const rootX = player.x + (face < 0 ? spec.w : 0);
-    const scaleX = face * spec.w / BODY.w, scaleY = spec.h / BODY.h;
+    const body = bodyFrame(options, gaitPhase);
+    const { stride, bob, lean, hip, torsoW, torsoH, torsoAnchor, rootX, scaleX, scaleY, anatomy, shoulders, hips } = body;
     const local = point => ({ x: (point.x - rootX) / scaleX, y: (point.y - player.y) / scaleY - bob });
     const footH = BODY.h * .085;
     const thin = asset.rig.species === 'insect' ? .75 : asset.rig.species === 'alien' ? .86 : 1;
-    const anatomy = asset.rig.sockets || SOCKETS[asset.id] || SOCKETS.grokkon;
-    const shoulders = anatomy.shoulders.map(socketAt);
-    const hips = anatomy.hips.map(socketAt);
     const arms = [], legs = [];
     for (let index = 0; index < 2; index++) {
       const phase = gaitPhase + index * Math.PI;
@@ -300,25 +326,32 @@
         foot.current = footX; foot.swinging = swinging;
         ankle = local({ x: footX, y: player.y + spec.h - footH * .90 * scaleY - Math.max(0, Math.sin(phase)) * 16 * scaleY });
       } else if (climbing) {
-        ankle = { x: BODY.w * .645, y: BODY.h * (index ? .76 : .91) + Math.sin(phase) * 8 };
+        ankle = { x: BODY.w * .645, y: BODY.h * (index ? .76 : .91) + Math.sin(phase) * 12 };
       } else if (airborne) {
-        ankle = { x: BODY.w * (index ? .67 : .40), y: BODY.h * ((player.vy || 0) < 0 ? .81 : .91) + (index ? -3 : 3) };
+        ankle = { x: BODY.w * (index ? .67 : .40), y: BODY.h * (.91 - .10 * body.ascent) + (index ? -3 : 3) };
       }
-      const knee = solveIK(hips[index], ankle, BODY.h * .225, BODY.h * .19, moving ? -travel : -1);
-      legs.push({ hip: hips[index], knee: knee.joint, ankle: knee.end, width: BODY.w * .185 * thin, footH, toeDirection: travel,
+      // Retreat changes foot placement and the stance/swing cycle, never the
+      // direction of the knee joint or toes relative to the facing body.
+      const knee = solveIK(hips[index], ankle, BODY.h * .225, BODY.h * .19, -1);
+      legs.push({ hip: hips[index], knee: knee.joint, ankle: knee.end, width: BODY.w * .185 * thin, footH, toeDirection: 1,
         swinging: moving && gait.feet[index].swinging });
 
       let wrist = { x: BODY.w * (index ? .79 : .22), y: BODY.h * .615 };
       let handIndex = 6, handDirection = { x: 0, y: 1 }, handLength = BODY.h * .105;
-      if (moving) { wrist.x += Math.sin(phase) * 5; wrist.y += Math.cos(phase) * 3; }
+      if (moving) {
+        // Counter-swing the arm against the leg on that same side. The raised
+        // foot advances rear -> front while its arm moves front -> rear.
+        wrist.x += Math.cos(phase) * 10 * travel;
+        wrist.y -= Math.sin(phase) * 5 * travel;
+      }
       if (climbing) {
         // Existing wall snaps put the face at .68w. These palms contact that
         // face in the same .18-.30h grip band used by gameplay.
-        wrist = { x: BODY.w * .645, y: BODY.h * (index ? .165 : .205) + Math.sin(phase) * 3 };
+        wrist = { x: BODY.w * .645, y: BODY.h * (index ? .165 : .205) - Math.sin(phase) * 6 };
         handIndex = 7; handLength = BODY.h * .10;
       } else if (airborne) {
-        wrist = (player.vy || 0) < 0 ? { x: BODY.w * (index ? .85 : .15), y: BODY.h * .35 } :
-          { x: BODY.w * (index ? .90 : .10), y: BODY.h * .53 };
+        wrist = { x: BODY.w * ((index ? .90 : .10) + (index ? -.05 : .05) * body.ascent),
+          y: BODY.h * (.53 - .18 * body.ascent) };
       }
       const attacking = player.attackTimer > 0 && index === (player.attackKind === 'backhand' ? 0 : 1);
       if (attacking) {
@@ -327,23 +360,50 @@
         const localDirection = { x: direction.x / scaleX, y: direction.y / scaleY };
         const length = Math.hypot(localDirection.x, localDirection.y) || 1;
         handDirection = { x: localDirection.x / length, y: localDirection.y / length };
-        const progress = Math.min(1, Math.max(0, 1 - player.attackTimer / ATTACK_SECONDS));
-        const extension = 1 - progress * progress;
-        const returned = { x: shoulders[index].x + (index ? 25 : -25), y: shoulders[index].y + 34 };
-        const end = { x: returned.x + (fullEnd.x - returned.x) * extension, y: returned.y + (fullEnd.y - returned.y) * extension };
         handIndex = player.attackKind === 'backhand' ? 6 : 5;
         handLength = BODY.h * .115;
-        wrist = { x: end.x - handDirection.x * handLength, y: end.y - handDirection.y * handLength };
+        const fullWrist = { x: fullEnd.x - handDirection.x * handLength, y: fullEnd.y - handDirection.y * handLength };
+        const dx = fullWrist.x - shoulders[index].x, dy = fullWrist.y - shoulders[index].y;
+        const reach = Math.hypot(dx, dy), targetAngle = Math.atan2(dy, dx);
+        const restDx = wrist.x - shoulders[index].x, restDy = wrist.y - shoulders[index].y;
+        const restAngle = Math.atan2(restDy, restDx), restReach = Math.min(BODY.h * .375, Math.hypot(restDx, restDy));
+        let turn = targetAngle - restAngle;
+        while (turn > Math.PI) turn -= Math.PI * 2;
+        while (turn < -Math.PI) turn += Math.PI * 2;
+        const elapsed = body.strike.elapsed;
+        // Extend outward before rotating a raised strike across the shoulder
+        // line. The elbow pole changes only while the arm is straight, avoiding
+        // the abrupt inward elbow flip of a Cartesian wrist interpolation.
+        let radius, angle;
+        if (elapsed < ATTACK_TIMING.windup) {
+          radius = restReach + (reach - restReach) * smoothstep(elapsed / .022);
+          angle = restAngle + turn * smoothstep((elapsed - .012) / .048);
+        } else if (elapsed < .10) {
+          radius = reach; angle = targetAngle;
+        } else {
+          const recoveryTime = elapsed - .10;
+          angle = targetAngle - turn * smoothstep(recoveryTime / .07);
+          radius = reach + (restReach - reach) * smoothstep((recoveryTime - .07) / .05);
+        }
+        handDirection = { x: Math.cos(angle), y: Math.sin(angle) };
+        wrist = { x: shoulders[index].x + handDirection.x * radius, y: shoulders[index].y + handDirection.y * radius };
       } else if (index === 1 && (player.eatTimer > 0 || player.eating)) {
         wrist = { x: BODY.w * .75, y: BODY.h * .18 };
         handIndex = 7; handDirection = { x: .7, y: -.7 };
       }
-      const elbow = solveIK(shoulders[index], wrist, BODY.h * .19, BODY.h * .19, index ? 1 : -1, attacking);
+      // Elbows bend away from the rib cage. Raised hands reverse the pole
+      // because their wrist-to-shoulder axis points upward rather than down.
+      const outward = index ? 1 : -1;
+      const bend = wrist.y < shoulders[index].y ? outward : -outward;
+      // At contact the two limb segments are nearly straight at their natural
+      // length. A small shortening removes a residual kink without stretching.
+      const armLength = BODY.h * (attacking ? .1875 : .19);
+      const elbow = solveIK(shoulders[index], wrist, armLength, armLength, bend);
       arms.push({ shoulder: shoulders[index], elbow: elbow.joint, wrist: elbow.end, handIndex, handDirection, handLength,
         width: BODY.w * .15 * thin, attacking, error: elbow.error });
     }
     return { face, rootX, scaleX, scaleY, bob, lean, hip, torsoW, torsoH, torsoAnchor,
-      neck: socketAt([.55, .065]), headAnchor: anatomy.head, arms, legs, climbing, airborne, moving, stride, thin };
+      neck: body.neck, headAnchor: anatomy.head, arms, legs, climbing, airborne, moving, stride, thin };
   }
 
   function drawSkeletal(ctx, options) {
@@ -486,15 +546,20 @@
     return true;
   }
 
-  function punchOrigin({ player, spec }) {
-    // This is the rendered shoulder socket in world coordinates, rounded to a
-    // stable combat origin so breathing/walking cannot change hit detection.
+  function punchOrigin(options) {
+    const { player, spec, asset } = options;
+    if (asset?.rig?.type === 'skeletal') {
+      const body = bodyFrame(options);
+      const shoulder = body.shoulders[player.attackKind === 'backhand' ? 0 : 1];
+      return { x: body.rootX + shoulder.x * body.scaleX, y: player.y + (shoulder.y + body.bob) * body.scaleY };
+    }
     const facing = player.facing < 0 ? -1 : 1;
     const direction = player.attackKind === 'backhand' ? -facing : facing;
     return { x: player.x + spec.w * (direction > 0 ? 0.57 : 0.43), y: player.y + spec.h * 0.43 };
   }
 
-  function attackReach({ player, spec }) {
+  function attackReach({ player, spec, asset }) {
+    if (asset?.rig?.type === 'skeletal') return spec.h * .49;
     // A roof strike must pass the feet to reach the supporting floor. The
     // shoulder remains the common socket; only the extended arm grows.
     return player.onRoof && aim(player).y > 0.5 ? spec.h * 0.64 : spec.w * 0.55;
@@ -534,6 +599,7 @@
     },
     punchOrigin,
     attackReach,
-    attackHand
+    attackHand,
+    attackTiming: ATTACK_TIMING
   });
 })();

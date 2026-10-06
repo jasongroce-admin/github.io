@@ -50,10 +50,14 @@ Implemented in the isolated source repository:
 
 **Remaining priorities:** finish full-body art/rigs for Kragmor, Vorgath and Skorath (their supplied stand images are torso cards, so they remain in the builder but are unavailable in the playable roster); add animated limb rigs for Grokkon/Thorvak beyond whole-sprite pose animation; tune enemy pacing, health economy, city scoring and collision against longer play sessions; improve military artwork and add dedicated tanks/aircraft variety; consider original-style multiplayer and more cities. Exact Rampage scoring, cabinet timing and co-op rules are not reproduced.
 
-**Publication status:** this is a local source update on the named branch. Nothing was pushed or deployed. The public URL continues serving the existing version. No repository-access blocker prevented implementation. The unrelated original checkout changes were preserved. Luna handled routine audit, UI/data edits and regression work; stronger reasoning handled the gameplay architecture and connected-art debugging.
+**October 4 publication checkpoint:** this was a local source update on the named branch, without deployment. No repository-access blocker prevented implementation. The unrelated original checkout changes were preserved. Luna handled routine audit, UI/data edits and regression work; stronger reasoning handled the gameplay architecture and connected-art debugging. Later release changes are recorded below and in the follow-up documents.
 
 ## October 5 follow-up
 
 The street barrier, damaged-wall climbing, window-portrait transition, and helicopter art were revised after further gameplay reports. See [building physics and helicopter follow-up](PHYSICS-UPDATE.md) for the current behavior and expanded 29-test verification. Street movement now passes along façades; roof/ledge support and climbing follow surviving cells. The first-pass horizontal barrier design above is superseded.
 
 All six monsters now have new original full-body artwork and a shared connected skeletal renderer, including dedicated backhands and a corrected forward gait. The earlier unfinished-character and whole-sprite-animation limitations are superseded. See [six-monster model update](MODEL-UPDATE.md) for the current roster, movements and verification.
+
+## October 6 joint and combat follow-up
+
+Visual review found inward elbow bends and a too-short shoulder-to-fist target, leaving the arm folded at contact. Both relaxed elbows now bend outward. Attacks use the actual animated shoulder, fixed-length upper arm/forearm/hand, and windup/contact/recovery phases. Building and enemy damage resolves once at the visible contact phase. A downward roof strike crouches the body while keeping the soles supported. Backward steps retain forward-facing knees and toes while their foot cycle follows actual travel. Jump poses blend across the apex, and the climbing grips alternate more visibly. See [model update](MODEL-UPDATE.md) for the final release build and verification.
