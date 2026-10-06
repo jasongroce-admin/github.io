@@ -72,10 +72,10 @@ function makeContext() {
   const instrumented = `${gameSource.slice(0, markerIndex)}
   globalThis.__test = {
     reset, loadLevel, movePlayer, update, punch, getHitCell, damagePlayer,
-    updateBuildings, updateEnemies, currentSize, playerRect, humanRect, input, keys, held, projectiles,
+    updateBuildings, updateEnemies, updateHumans, roofAt, currentSize, playerRect, humanRect, input, keys, held, projectiles,
     get state() { return { player, level, cameraX, cameraY, pointerAim, running, campaignIndex, cleared }; },
     set running(value) { running = value; },
-    listeners: __listeners, elements: __elements,
+    listeners: __listeners, elements: __elements, assets,
     set punchCooldown(value) { punchCooldown = value; },
     get punchCooldown() { return punchCooldown; },
     set eatCooldown(value) { eatCooldown = value; }
@@ -134,6 +134,77 @@ test('masonry lookup rejects a hitbox entirely inside a destroyed cell', () => {
     h: cellH * .5
   };
   assert.equal(game.getHitCell(building, hit), null);
+});
+
+test('walking along the street can pass through a building facade', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  player.x = building.x - game.currentSize().w - 28;
+  player.y = level.world.groundY - game.currentSize().h;
+  player.onGround = true;
+  player.onRoof = '';
+  player.vx = player.vy = 0;
+  game.input.x = 1;
+  game.input.y = 0;
+  for (let i = 0; i < 120; i++) game.movePlayer(1 / 60);
+  assert.ok(player.x > building.x + building.w,
+    'street movement should carry the monster past the building instead of treating its facade as a wall');
+});
+
+test('roof landing uses the highest surviving cell in the player column', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  building.cells = Array.from({ length: building.rows }, () => Array(building.cols).fill(0));
+  const survivingColumn = 0;
+  const firstSurvivingRow = 3;
+  for (let row = firstSurvivingRow; row < building.rows; row++) building.cells[row][survivingColumn] = 1;
+  const cellW = building.w / building.cols;
+  const landingTop = building.y + firstSurvivingRow * building.h / building.rows;
+  player.x = building.x + cellW * .5 - game.currentSize().w * .5;
+  player.y = landingTop - game.currentSize().h - 4;
+  player.vy = 100;
+  player.onGround = false;
+  player.onRoof = '';
+  game.input.x = game.input.y = 0;
+  game.movePlayer(.05);
+  assert.equal(player.onRoof, building.id);
+  assert.equal(player.y + game.currentSize().h, landingTop,
+    'a destroyed top row should leave a lower roof on surviving masonry');
+});
+
+test('climb grab is unavailable when the nearby side cells are gone', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  for (const row of [1, 2]) building.cells[row][0] = 0;
+  player.x = building.x - game.currentSize().w * .68;
+  player.y = building.y + 90;
+  player.onGround = false;
+  player.climbing = false;
+  player.climbBuildingId = '';
+  player.grabCooldown = 0;
+  game.input.x = 0;
+  game.input.y = -1;
+  game.movePlayer(.016);
+  assert.equal(player.climbing, false,
+    'surviving interior cells should not allow a grip on a destroyed left edge');
+});
+
+test('climbing detaches when the edge cells supporting the grip are destroyed', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  player.x = building.x - game.currentSize().w * .68;
+  player.y = building.y + 90;
+  player.onGround = false;
+  player.climbing = true;
+  player.climbSide = 'left';
+  player.climbBuildingId = building.id;
+  player.grabCooldown = 0;
+  for (const row of [1, 2]) building.cells[row][0] = 0;
+  game.input.x = 0;
+  game.input.y = 0;
+  game.movePlayer(.016);
+  assert.equal(player.climbing, false);
+  assert.equal(player.climbBuildingId, '');
 });
 
 test('destroyed vehicles reach zero health and stop awarding repeated hit score', () => {
@@ -205,6 +276,24 @@ test('player can stand on an intact roof and falls when that support disappears'
   assert.ok(player.y > beforeFall, 'the player should descend after roof support is removed');
 });
 
+test('walking past a roof edge loses platform support and begins falling', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  const spec = game.currentSize();
+  player.x = building.x + building.w - spec.w * .5 - 4;
+  player.y = building.y - spec.h;
+  player.vx = 0;
+  player.vy = 0;
+  player.onGround = true;
+  player.onRoof = building.id;
+  game.input.x = 1;
+  game.input.y = 0;
+  game.movePlayer(.1);
+  assert.equal(player.onRoof, '');
+  assert.ok(player.y > building.y - spec.h,
+    'the player should fall once their support column passes the roof edge');
+});
+
 test('downward punch from a roof damages the masonry below the player', () => {
   const { level, player } = freshMonster();
   const building = level.buildings.find((item) => item.id === 'tower');
@@ -271,6 +360,107 @@ test('human target collision uses each human sprite dimensions', () => {
     { w: windowHuman.w, h: windowHuman.h });
   assert.deepEqual({ w: game.humanRect(groundHuman).w, h: game.humanRect(groundHuman).h },
     { w: groundHuman.w, h: groundHuman.h });
+});
+
+test('window civilians remain fixed while their host cell survives', () => {
+  const { level } = freshMonster();
+  const human = level.humans.find((item) => item.kind === 'window');
+  assert.ok(human?.buildingId);
+  const { x, y } = human;
+  game.updateHumans(.5);
+  game.updateHumans(.5);
+  assert.equal(human.kind, 'window');
+  assert.equal(human.x, x);
+  assert.equal(human.y, y);
+});
+
+test('destroying a different cell does not release a window civilian', () => {
+  const { level } = freshMonster();
+  const human = level.humans.find((item) => item.kind === 'window');
+  const host = level.buildings.find((building) => building.id === human.buildingId);
+  const row = (human.cellRow + 2) % host.rows;
+  const col = (human.cellCol + 1) % host.cols;
+  assert.notEqual(`${row}:${col}`, `${human.cellRow}:${human.cellCol}`);
+  host.cells[row][col] = 0;
+  game.updateHumans(.1);
+  assert.equal(human.kind, 'window');
+});
+
+test('destroying a window host cell releases, drops, and turns the civilian into a runner', () => {
+  const { level } = freshMonster();
+  const human = level.humans.find((item) => item.kind === 'window');
+  const host = level.buildings.find((building) => building.id === human.buildingId);
+  const beforeCenterX = human.x + human.w / 2;
+  const beforeFeet = human.y + human.h;
+  host.cells[human.cellRow][human.cellCol] = 0;
+  game.updateHumans(0);
+  assert.equal(human.kind, 'falling');
+  assert.ok(Math.abs(human.x + human.w / 2 - beforeCenterX) < 1e-9);
+  assert.ok(Math.abs(human.y + human.h - beforeFeet) < 1e-9);
+  assert.equal(human.w, 40);
+  assert.equal(human.h, 54);
+  const runnerAsset = game.assets.humans.find((asset) => asset.id === human.assetId);
+  assert.equal(runnerAsset?.kind, 'ground');
+
+  for (let i = 0; i < 20 && human.kind === 'falling'; i++) game.updateHumans(.1);
+  assert.equal(human.kind, 'ground');
+  assert.equal(human.y + human.h, level.world.groundY);
+  const landedX = human.x;
+  game.updateHumans(.1);
+  assert.notEqual(human.x, landedX, 'a released civilian should start walking after reaching the street');
+});
+
+test('a higher surviving cell does not mask a lower exposed landing ledge', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  building.cells = Array.from({ length: building.rows }, () => Array(building.cols).fill(0));
+  building.cells[0][0] = 1;
+  building.cells[2][0] = 1;
+  building.cells[3][0] = 1;
+  const cellW = building.w / building.cols;
+  const lowerLedge = building.y + 2 * building.h / building.rows;
+  const centerX = building.x + cellW / 2;
+  player.x = centerX - game.currentSize().w / 2;
+  player.y = lowerLedge - game.currentSize().h - 4;
+  player.vy = 100;
+  player.onGround = false;
+  player.onRoof = '';
+  game.input.x = game.input.y = 0;
+  game.movePlayer(.05);
+  assert.equal(player.onRoof, building.id);
+  assert.equal(player.y + game.currentSize().h, lowerLedge);
+});
+
+test('climbing onto a damaged edge uses the held ledge height, not the original roof', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  for (let row = 0; row < 2; row++) building.cells[row][0] = 0;
+  const ledgeTop = building.y + 2 * building.h / building.rows;
+  player.x = building.x - game.currentSize().w * .68;
+  player.y = ledgeTop - game.currentSize().h * .23 - 1;
+  player.onGround = false;
+  player.climbing = true;
+  player.climbSide = 'left';
+  player.climbBuildingId = building.id;
+  player.grabCooldown = 0;
+  game.input.x = 0;
+  game.input.y = -1;
+  game.movePlayer(.016);
+  assert.equal(player.onRoof, building.id);
+  assert.equal(player.y + game.currentSize().h, ledgeTop);
+  assert.notEqual(player.y + game.currentSize().h, building.y,
+    'vaulting must land on the exposed damaged ledge, not teleport to the original roof');
+});
+
+test('soldiers disappear when their host edge tile is destroyed', () => {
+  const { level } = freshMonster();
+  const soldier = level.soldiers.find((item) => item.side < 0);
+  const building = level.buildings.find((item) => item.id === soldier.buildingId);
+  const row = Math.floor((soldier.y + soldier.h / 2 - building.y) / (building.h / building.rows));
+  assert.ok(building.cells[row][0] > 0);
+  building.cells[row][0] = 0;
+  game.updateEnemies(.016);
+  assert.equal(soldier.health, 0);
 });
 
 test('held punch repeats and released input stops attacking', () => {

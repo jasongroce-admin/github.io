@@ -51,3 +51,7 @@ Implemented in the isolated source repository:
 **Remaining priorities:** finish full-body art/rigs for Kragmor, Vorgath and Skorath (their supplied stand images are torso cards, so they remain in the builder but are unavailable in the playable roster); add animated limb rigs for Grokkon/Thorvak beyond whole-sprite pose animation; tune enemy pacing, health economy, city scoring and collision against longer play sessions; improve military artwork and add dedicated tanks/aircraft variety; consider original-style multiplayer and more cities. Exact Rampage scoring, cabinet timing and co-op rules are not reproduced.
 
 **Publication status:** this is a local source update on the named branch. Nothing was pushed or deployed. The public URL continues serving the existing version. No repository-access blocker prevented implementation. The unrelated original checkout changes were preserved. Luna handled routine audit, UI/data edits and regression work; stronger reasoning handled the gameplay architecture and connected-art debugging.
+
+## October 5 follow-up
+
+The street barrier, damaged-wall climbing, window-portrait transition, and helicopter art were revised after further gameplay reports. See [building physics and helicopter follow-up](PHYSICS-UPDATE.md) for the current behavior and expanded 29-test verification. Street movement now passes along façades; roof/ledge support and climbing follow surviving cells. The first-pass horizontal barrier design above is superseded.

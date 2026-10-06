@@ -45,6 +45,7 @@
   const projectiles = [];
   const helicopters = [];
   const pickups = [];
+  const helicopterAsset = { src: 'MUimages/generated/attack-helicopter.png' };
   const qaMode = new URLSearchParams(window.location.search).has('qa');
 
   function clone(data) {
@@ -147,7 +148,7 @@
   }
 
   async function preload() {
-    const srcs = new Set();
+    const srcs = new Set([helicopterAsset.src]);
     const used = Object.fromEntries(['buildings', 'humans', 'vehicles'].map(category => [category, new Set(levels.flatMap(city => city[category].map(item => item.assetId)))]));
     Object.entries(assets).flatMap(([category, items]) => items.filter(item => category === 'monsters' ? item.playable !== false : used[category]?.has(item.id))).forEach((item) => {
       srcs.add(item.src);
@@ -184,6 +185,15 @@
       building.collapse = null;
       building.collapsed = false;
       building.rubble = [];
+    });
+    level.humans.forEach(human => {
+      if (human.kind !== 'window') return;
+      const center = { x: human.x + (human.w || 22) / 2, y: human.y + (human.h || 30) / 2 };
+      const host = level.buildings.find(b => center.x >= b.x && center.x < b.x + b.w && center.y >= b.y && center.y < b.y + b.h);
+      if (!host) return;
+      human.buildingId = host.id;
+      human.cellCol = Math.floor((center.x - host.x) / (host.w / host.cols));
+      human.cellRow = Math.floor((center.y - host.y) / (host.h / host.rows));
     });
     const spec = level.player;
     spec.monsterId = selectedMonsterId;
@@ -309,8 +319,12 @@
     document.getElementById('dayText').textContent = `Day ${campaignIndex + 1} · ${level.city}`;
     if (qaMode) canvas.dataset.state = JSON.stringify({ x: player.x, y: player.y, vx: player.vx, vy: player.vy,
       onGround: player.onGround, climbing: player.climbing, onRoof: player.onRoof, health: player.health,
+      climbSide: player.climbSide, climbBuildingId: player.climbBuildingId,
       lives: player.lives, score: player.score, cameraX, day: campaignIndex + 1, paused, running,
-      buildings: level.buildings.map(b => ({id: b.id, cells: countCells(b), collapsed: b.collapsed, collapsing: !!b.collapse})),
+      buildings: level.buildings.map(b => ({id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, rows: b.rows, cols: b.cols,
+        cells: countCells(b), grid: b.cells, collapsed: b.collapsed, collapsing: !!b.collapse})),
+      humans: level.humans.map(h => ({id: h.id, kind: h.kind, assetId: h.assetId, x: h.x, y: h.y, eaten: !!h.eaten,
+        buildingId: h.buildingId, cellRow: h.cellRow, cellCol: h.cellCol})),
       projectiles: projectiles.length, helicopters: helicopters.length });
   }
 
@@ -399,24 +413,48 @@
     player.climbing = false; player.climbSide = null; player.climbBuildingId = '';
   }
 
-  function roofAt(building, x) {
+  function roofAt(building, x, minimumY = -Infinity) {
+    if (!solid(building) || x < building.x || x >= building.x + building.w) return null;
+    const col = Math.floor((x - building.x) / (building.w / building.cols));
+    const cellH = building.h / building.rows;
+    for (let row = 0; row < building.rows; row++) {
+      const top = building.y + row * cellH;
+      // Facades sit behind the street. Only exposed surviving tile tops are platforms.
+      if (building.cells[row][col] > 0 && (row === 0 || building.cells[row - 1][col] <= 0) && top >= minimumY - 2) return top;
+    }
+    return null;
+  }
+
+  function climbGrip(building, side, y = player.y) {
     if (!solid(building)) return null;
-    const col = clamp(Math.floor((x - building.x) / (building.w / building.cols)), 0, building.cols - 1);
-    const row = building.cells.findIndex(cells => cells[col] > 0);
-    return row < 0 ? null : building.y + row * building.h / building.rows;
+    const spec = monsterSpec();
+    const col = side === 'left' ? 0 : building.cols - 1;
+    const cellH = building.h / building.rows;
+    const handTop = y + spec.h * .18, handBottom = y + spec.h * .30;
+    for (let row = 0; row < building.rows; row++) {
+      const top = building.y + row * cellH;
+      if (building.cells[row][col] > 0 && handBottom >= top && handTop < top + cellH) return { row, col, top };
+    }
+    return null;
+  }
+
+  function hasRoofSupport(building) {
+    if (!building) return false;
+    const spec = monsterSpec(), feet = player.y + spec.h;
+    const top = roofAt(building, player.x + spec.w * .5, feet);
+    return top !== null && Math.abs(top - feet) <= 2;
   }
 
   function movePlayer(dt) {
     if (player.state !== 'monster') return;
     const spec = monsterSpec();
-    const beforeX = player.x;
     const beforeY = player.y;
     const oldFeet = beforeY + spec.h;
     if (!player.climbing && Math.abs(input.x) > .12) player.facing = Math.sign(input.x);
     const currentWall = level.buildings.find(b => b.id === player.climbBuildingId);
-    if (player.climbing && !currentWall?.collapsed && currentWall?.collapse) {
+    if (player.climbing && (!currentWall || !climbGrip(currentWall, player.climbSide))) {
       detach(); player.grabCooldown = .35;
-    } else if (player.climbing && (!currentWall || !solid(currentWall))) detach();
+    }
     const target = player.grabCooldown <= 0 ? getClimbTarget() : null;
     const toward = target && (target.side === 'left' ? input.x > .18 : input.x < -.18);
     if (!player.climbing && target && (input.y < -.18 || (!player.onGround && toward))) {
@@ -428,24 +466,29 @@
       player.facing = player.climbSide === 'left' ? 1 : -1;
       player.x = player.climbSide === 'left' ? b.x - spec.w * .68 : b.x + b.w - spec.w * .32;
       player.vx = 0; player.vy = input.y * spec.climbSpeed;
-      player.y = clamp(player.y + player.vy * dt, b.y - spec.h * .65, level.world.groundY - spec.h);
+      const grip = climbGrip(b, player.climbSide);
+      player.y = Math.min(player.y + player.vy * dt, level.world.groundY - spec.h);
       if (player.jumpBuffer > 0) {
         const direction = Math.abs(input.x) > .18 ? Math.sign(input.x) : -player.facing;
         detach(); player.grabCooldown = .32; player.wallKick = .24;
         player.vx = direction * spec.speed * 1.35; player.vy = -spec.jump * .92;
         player.jumpBuffer = 0; player.onGround = false;
         tone(350, .07);
-      } else if (input.y < -.18 && player.y + spec.h * .64 <= b.y + 8) {
-        player.x = player.climbSide === 'left' ? b.x - spec.w * .18 : b.x + b.w - spec.w * .82;
-        player.y = b.y - spec.h;
+      } else if (input.y < -.18 && grip && (grip.row === 0 || b.cells[grip.row - 1][grip.col] <= 0) && player.y + spec.h * .23 <= grip.top + 8) {
+        // Pull onto the ledge actually held, including a lowered, damaged roof edge.
+        const footX = b.x + (grip.col + .5) * b.w / b.cols;
+        player.x = footX - spec.w * .5;
+        player.y = grip.top - spec.h;
         detach(); player.onGround = true; player.onRoof = b.id; player.vy = 0; player.grabCooldown = .18;
         return;
       } else if (input.y > .18 && player.y >= level.world.groundY - spec.h - 1) {
         detach(); player.onGround = true; player.grabCooldown = .18;
+      } else if (!climbGrip(b, player.climbSide)) {
+        detach(); player.grabCooldown = .35;
       } else return;
     }
     const roof = level.buildings.find(b => b.id === player.onRoof);
-    if (player.onRoof && (!roof || roofAt(roof, player.x + spec.w * .5) !== player.y + spec.h)) {
+    if (player.onRoof && !hasRoofSupport(roof)) {
       player.onGround = false; player.onRoof = '';
     }
     player.coyote = player.onGround ? .1 : Math.max(0, player.coyote - dt);
@@ -459,16 +502,6 @@
       player.vx += clamp(targetVx - player.vx, -acceleration * dt, acceleration * dt);
     }
     player.x += player.vx * dt;
-    const horizontalBody = bodyRect();
-    level.buildings.forEach(b => {
-      if (!solid(b) || oldFeet <= b.y + 1 || beforeY + spec.h * .12 >= b.y + b.h) return;
-      if (!rects(horizontalBody, b)) return;
-      const oldBody = bodyRect(beforeX, beforeY);
-      if (oldBody.x + oldBody.w <= b.x + 2 && player.vx > 0) player.x = b.x - spec.w * .66;
-      else if (oldBody.x >= b.x + b.w - 2 && player.vx < 0) player.x = b.x + b.w - spec.w * .34;
-      else return;
-      player.vx = 0;
-    });
     const fallSpeed = player.vy;
     player.vy = Math.min(1050, player.vy + 1450 * dt);
     player.y += player.vy * dt;
@@ -477,7 +510,7 @@
     let landingY = level.world.groundY;
     let landingBuilding = null;
     if (player.vy >= 0) level.buildings.forEach(b => {
-      const top = roofAt(b, player.x + spec.w * .5);
+      const top = roofAt(b, player.x + spec.w * .5, oldFeet);
       if (top === null || body.x + body.w <= b.x || body.x >= b.x + b.w) return;
       if (oldFeet <= top + 2 && player.y + spec.h >= top && top < landingY) { landingY = top; landingBuilding = b; }
     });
@@ -506,7 +539,7 @@
       if (body.y + body.h <= building.y + 12 || body.y >= building.y + building.h) return;
       const side = player.climbing ? player.climbSide : leftDistance < rightDistance ? 'left' : 'right';
       const distance = side === 'left' ? leftDistance : rightDistance;
-      if (distance <= (player.climbing ? 24 : 20) && (!best || distance < best.distance)) best = { building, side, distance };
+      if (distance <= (player.climbing ? 24 : 20) && climbGrip(building, side) && (!best || distance < best.distance)) best = { building, side, distance };
     });
     return best;
   }
@@ -642,16 +675,14 @@
         building.cells.forEach(row => row.fill(0)); building.rubble = makeRubble(building);
         level.soldiers.filter(s => s.buildingId === building.id).forEach(s => s.health = 0);
         pickups.filter(item => item.buildingId === building.id).forEach(item => item.y = level.world.groundY - item.h);
-        level.humans.filter(h => h.kind === 'window' && rects(humanRect(h), building)).forEach(h => {
-          h.kind = 'ground'; h.y = level.world.groundY - (h.h || 54); h.dir = h.x < player.x ? -1 : 1;
-        });
+        level.humans.filter(h => h.kind === 'window' && h.buildingId === building.id).forEach(releaseHuman);
         shake = Math.max(shake, 10);
       }
     });
     const wall = level.buildings.find(b => b.id === player.climbBuildingId);
-    if (player.climbing && (!wall || !solid(wall))) { detach(); player.grabCooldown = .3; }
+    if (player.climbing && (!wall || !climbGrip(wall, player.climbSide))) { detach(); player.grabCooldown = .3; }
     const roof = level.buildings.find(b => b.id === player.onRoof);
-    if (player.onRoof && (!roof || !solid(roof))) { player.onGround = false; player.onRoof = ''; }
+    if (player.onRoof && !hasRoofSupport(roof)) { player.onGround = false; player.onRoof = ''; }
   }
 
   function makeRubble(building) {
@@ -668,12 +699,36 @@
     return pieces;
   }
 
+  function releaseHuman(human) {
+    if (human.eaten || human.kind !== 'window') return;
+    const centerX = human.x + (human.w || 22) / 2;
+    const feetY = human.y + (human.h || 30);
+    const runners = assets.humans.filter(asset => asset.kind === 'ground');
+    const index = Math.max(0, assets.humans.findIndex(asset => asset.id === human.assetId));
+    human.assetId = runners[index % runners.length]?.id || human.assetId;
+    human.kind = 'falling'; human.w = 40; human.h = 54;
+    human.x = centerX - human.w / 2; human.y = feetY - human.h;
+    human.dir = centerX < player.x + monsterSpec().w / 2 ? -1 : 1;
+    human.vy = 0;
+  }
+
   function updateHumans(dt) {
     level.humans.forEach((human) => {
       if (human.eaten) return;
-      if (human.kind === 'window') return;
+      if (human.kind === 'window') {
+        const host = level.buildings.find(b => b.id === human.buildingId);
+        if (!host || !solid(host) || host.cells[human.cellRow]?.[human.cellCol] <= 0) releaseHuman(human);
+        else return;
+      }
+      if (human.kind === 'falling') {
+        human.vy = Math.min(700, human.vy + 1000 * dt);
+        human.y += human.vy * dt;
+        if (human.y + human.h < level.world.groundY) return;
+        human.y = level.world.groundY - human.h; human.vy = 0; human.kind = 'ground';
+      }
       human.x += (human.dir || 1) * 44 * dt;
-      if (human.x < 20 || human.x > level.world.width - 45) human.dir *= -1;
+      if (human.x < 20) { human.x = 20; human.dir = 1; }
+      if (human.x > level.world.width - (human.w || 40) - 20) { human.x = level.world.width - (human.w || 40) - 20; human.dir = -1; }
     });
   }
 
@@ -707,12 +762,17 @@
     if (heliTimer <= 0) {
       const dir = Math.random() < .5 ? 1 : -1;
       helicopters.push({x: dir > 0 ? cameraX - 110 : cameraX + canvas.width + 20, y: 175 + Math.random() * 130,
-        w: 86, h: 38, dir, health: 2, fire: 1.5, speed: 85 + Math.min(70, campaignIndex * 8)});
+        w: 124, h: 54, dir, health: 2, fire: 1.5, speed: 85 + Math.min(70, campaignIndex * 8)});
       heliTimer = Math.max(5, (level.enemies?.helicopterInterval || 10) - campaignIndex * .3);
     }
     level.soldiers.forEach(soldier => {
       const building = level.buildings.find(b => b.id === soldier.buildingId);
       if (!building || !solid(building)) soldier.health = 0;
+      else {
+        const col = soldier.side < 0 ? 0 : building.cols - 1;
+        const row = Math.floor((soldier.y + soldier.h / 2 - building.y) / (building.h / building.rows));
+        if (!building.cells[row]?.[col]) soldier.health = 0;
+      }
       if (soldier.health <= 0) return;
       soldier.fire -= dt;
       if (soldier.fire <= 0) {
@@ -743,13 +803,7 @@
       ctx.fillStyle = '#1d2324'; ctx.fillRect(s.x + (s.side < 0 ? -8 : 10), s.y + 12, 14, 4);
     });
     helicopters.forEach(h => {
-      ctx.save(); ctx.translate(h.x + h.w / 2, h.y + 20); ctx.scale(h.dir, 1);
-      ctx.fillStyle = '#46534b'; ctx.beginPath(); ctx.ellipse(0, 0, 30, 15, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillRect(-50, -3, 30, 6); ctx.fillRect(-50, -16, 5, 20);
-      ctx.fillStyle = '#a8d8e7'; ctx.fillRect(8, -10, 14, 10);
-      ctx.strokeStyle = '#242c30'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-25, 18); ctx.lineTo(29, 18);
-      ctx.moveTo(0, -13); ctx.lineTo(0, -23); ctx.moveTo(-42 * Math.cos(animTime * 35), -23); ctx.lineTo(42 * Math.cos(animTime * 35), -23); ctx.stroke();
-      ctx.restore();
+      drawSprite(helicopterAsset, h.x, h.y + Math.sin(animTime * 5 + h.x * .01) * 1.5, h.w, h.h, h.dir < 0);
     });
     ctx.fillStyle = '#ffe48d'; projectiles.forEach(s => ctx.fillRect(s.x - 3, s.y - 3, 6, 6));
     pickups.forEach(item => {
