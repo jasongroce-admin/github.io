@@ -1,0 +1,142 @@
+[data-brush-recipes="desktop"] {
+  margin-top: .75rem;
+  padding-top: .75rem;
+  border-top: 1px solid #ddd2c1;
+}
+
+[data-brush-recipe-title] {
+  margin: 0 0 .5rem;
+  color: #746b61;
+  font-size: .75rem;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+
+[data-brush-recipe-list="desktop"] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .3rem;
+}
+
+[data-brush-recipe-list="mobile"] {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: .3rem;
+  white-space: nowrap;
+}
+
+[data-brush-recipe-control] {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .2rem;
+}
+
+button[data-brush-recipe] {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: .45rem;
+  overflow: hidden;
+  border: 1px solid #ded4c5;
+  border-radius: .45rem;
+  background: #f4efe6;
+  padding: .32rem .45rem;
+  color: #2d251e;
+  font: inherit;
+  font-size: .75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+button[data-brush-recipe]:hover { background: #eadfd0; }
+button[data-brush-recipe][aria-pressed="true"] {
+  border-color: #a84025;
+  background: #a84025;
+  color: #fffaf4;
+}
+
+button[data-brush-recipe]:focus-visible,
+button[data-brush-recipe-remove]:focus-visible,
+button[data-brush-recipe-save]:focus-visible,
+[data-brush-recipe-form] button:focus-visible,
+[data-brush-recipe-form] input:focus-visible {
+  outline: 2px solid #a84025;
+  outline-offset: 2px;
+}
+
+[data-brush-recipe] span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-brush-recipe] canvas { display: block; border-radius: 3px; background: #fffaf4; }
+
+button[data-brush-recipe-remove] {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: .4rem;
+  background: transparent;
+  color: #746b61;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button[data-brush-recipe-remove]:hover { background: #eadfd0; color: #2d251e; }
+
+[data-brush-recipes="mobile"] {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  overflow-x: auto;
+  border-top: 1px solid #ddd2c1;
+  padding: .3rem .5rem;
+  scrollbar-width: thin;
+}
+
+button[data-brush-recipe-save] {
+  flex: 0 0 auto;
+  border: 1px solid #ded4c5;
+  border-radius: .4rem;
+  background: transparent;
+  padding: .35rem .55rem;
+  color: #746b61;
+  font: inherit;
+  font-size: .72rem;
+  cursor: pointer;
+}
+button[data-brush-recipe-save]:hover { background: #eadfd0; color: #2d251e; }
+
+[data-brush-recipe-form] { display: flex; align-items: center; gap: .3rem; }
+[data-brush-recipe-form] input {
+  min-width: 5rem;
+  flex: 1 1 auto;
+  border: 1px solid #cfc3b1;
+  border-radius: .35rem;
+  background: #fffaf4;
+  padding: .4rem .5rem;
+  color: #2d251e;
+  font: inherit;
+  font-size: .75rem;
+}
+[data-brush-recipe-form] button {
+  flex: 0 0 auto;
+  border: 1px solid #ded4c5;
+  border-radius: .35rem;
+  background: #eadfd0;
+  padding: .4rem .5rem;
+  color: #2d251e;
+  font: inherit;
+  font-size: .75rem;
+  cursor: pointer;
+}
+
+[data-brush-recipe-status] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+}
