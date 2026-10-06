@@ -3,8 +3,13 @@
 
   const W = 1400;
   const H = 760;
-  // Pull back to 62% for a wider battlefield while retaining readable tanks.
-  const WORLD_ZOOM = .62;
+  const BALLISTIC_GRAVITY = .16;
+  // Keep the calibrated high arc/range, but play it at artillery-shot pace.
+  // Gravity naturally reduces speed on ascent and increases it on descent.
+  const FLIGHT_TIME_SCALE = 1.65;
+  const MAX_BALLISTIC_STEP = .5;
+  const MAX_FLIGHT_FRAMES = 420;
+  const MAX_FULL_CHARGE_SPEED = 20;
   const TERRAIN_OVERDRAW = 520;
   const TERRAIN_BOTTOM_OVERDRAW = 220;
   const SURFACE_BASE = 640;
@@ -45,7 +50,113 @@
   const angleInput = $("angle");
   const powerInput = $("power");
   const weaponSelect = $("weapon");
+  const playerChassisSelect = $("playerChassis");
+  const cockpitViewSelect = $("cockpitView");
   const fireButton = $("fire");
+  const cockpitSkin = $("cockpitSkin");
+  const gaugeLayer = document.createElement("div");
+  gaugeLayer.className = "gauge-layer";
+  for (const [kind, selector] of [["elevation", ".angle-instrument"], ["charge", ".power-instrument"]]) {
+    const instrument = document.querySelector(selector), dial = document.createElement("div");
+    dial.className = `live-dial live-${kind}`;
+    for (const node of instrument.querySelectorAll(".dial-face, .dial-label, .wheel-handle")) dial.append(node);
+    gaugeLayer.append(dial);
+  }
+  cockpitSkin.before(gaugeLayer);
+  // Photo hardware is a real moving layer behind the fixed steel shell. The
+  // accessible controls above it supply input; sockets and guard rails stay put.
+  const hardwareLayer = document.createElement("div");
+  hardwareLayer.className = "hardware-layer";
+  const hardwareParts = {};
+  for (const part of ["fire", "night", "assist"]) {
+    const mount = document.createElement("div"), face = document.createElement("div"), photo = new Image();
+    mount.className = `hardware-mount hardware-${part}`; face.className = "hardware-face";
+    photo.alt = ""; photo.draggable = false; photo.setAttribute("aria-hidden", "true");
+    face.append(photo); mount.append(face); hardwareLayer.append(mount);
+    hardwareParts[part] = { mount, face, photo };
+  }
+  for (const node of fireButton.querySelectorAll("strong, small")) hardwareParts.fire.face.append(node);
+  fireButton.setAttribute("aria-label", "Fire main gun");
+  fireButton.title = "Fire main gun · Enter / Space";
+  cockpitSkin.before(hardwareLayer);
+  const HARDWARE_GEOMETRY = {
+    m40: { fire: [900,640,207,203,1003,741], night: [1291,700,80,168,1314,720], assist: [1483,706,89,162,1506,727] },
+    r12: { fire: [1107,614,70,272,1137,649], night: [1316,677,88,171,1341,703], assist: [1516,677,94,171,1542,707] },
+    b76: { fire: [894,640,207,203,997,741], night: [1284,694,82,182,1308,730], assist: [1482,694,86,182,1505,730] },
+    s90: { fire: [900,640,207,203,1003,741], night: [1291,700,80,168,1314,720], assist: [1483,706,89,162,1506,727] },
+  };
+  // Dial positions are calibrated to each photographed fascia. R12 has a
+  // right-shifted pair; M40, B76 and S90 share the left-row apertures.
+  const GAUGE_GEOMETRY = {
+    // [center x/y, live face width/height, mask radius x/y], in photo pixels.
+    // Oversized live faces extend under the steel; the mask defines the aperture.
+    m40: { angle: [281, 724, 330, 330, 134, 132], power: [647, 736, 280, 280, 114, 110], guard: "M62 641 Q135 649 213 678 L200 697 Q193 720 190 746 L205 783 Q172 800 151 782 L115 731 L62 712 Z M205 875 L215 851 Q233 829 263 836 Q280 821 298 835 L331 824 Q333 810 354 802 Q376 796 393 815 L411 841 L383 895 L236 921 Z" },
+    r12: { angle: [582, 724, 280, 280, 106, 110], power: [854, 727, 280, 280, 109, 112], guard: "M447 684 Q478 682 487 697 L485 720 Q474 731 460 725 L447 713 Z" },
+    b76: { angle: [280, 720, 330, 330, 133, 129], power: [644, 732, 280, 280, 112, 109], guard: "M62 641 Q135 649 213 678 L200 697 Q193 720 190 746 L205 783 Q172 800 151 782 L115 731 L62 712 Z M205 875 L215 851 Q233 829 263 836 Q280 821 298 835 L331 824 Q333 810 354 802 Q376 796 393 815 L411 841 L383 895 L236 921 Z" },
+    s90: { angle: [279, 723, 330, 330, 134, 131], power: [647, 738, 280, 280, 114, 111], guard: "M62 641 Q135 649 213 678 L200 697 Q193 720 190 746 L205 783 Q172 800 151 782 L115 731 L62 712 Z M205 875 L215 851 Q233 829 263 836 Q280 821 298 835 L331 824 Q333 810 354 802 Q376 796 393 815 L411 841 L383 895 L236 921 Z" },
+  };
+  const hardwarePath = (chassis, part) => `assets/hardware/${chassis}-${part}.webp?v=20261002-moving-hardware`;
+  // Keep the battlefield aperture wide, while the tank-specific lower fascia
+  // stays in its own undistorted 1672:941 frame. Scaling one full dashboard
+  // over the whole stage made the controls consume almost half the screen.
+  const instrumentFrame = document.createElement("div"); instrumentFrame.className = "instrument-frame";
+  const dashboardFrame = document.createElement("div"); dashboardFrame.className = "dashboard-frame";
+  const windowArmor = new Image(); windowArmor.className = "window-armor"; windowArmor.alt = ""; windowArmor.setAttribute("aria-hidden","true");
+  const stage = document.querySelector(".canvas-wrap");
+  dashboardFrame.append(gaugeLayer, hardwareLayer, cockpitSkin, document.querySelector(".console"));
+  instrumentFrame.append(windowArmor, dashboardFrame);
+  stage.append(instrumentFrame);
+  document.body.dataset.inputMode = "pointer";
+  window.addEventListener("pointerdown", () => { document.body.dataset.inputMode = "pointer"; }, true);
+  window.addEventListener("keydown", () => { document.body.dataset.inputMode = "keyboard"; }, true);
+  const CHASSIS = Object.freeze({
+    m40: { name: "M40 LINE", hp: 100, travel: 180, scenery: 1.15, direct: 1, mitigation: 1, skin: "cockpit-m40-line.webp", specialty: "BREACH CREW · +15% scenery damage" },
+    r12: { name: "R12 SCOUT", hp: 90, travel: 240, scenery: 1, direct: 1, mitigation: 1, skin: "cockpit-r12-scout.webp", specialty: "RECON DRIVE · 240 m reposition allowance" },
+    b76: { name: "B76 BULWARK", hp: 115, travel: 120, scenery: 1, direct: 1, mitigation: .9, skin: "cockpit-b76-bulwark.webp", specialty: "REINFORCED ARMOR · 10% less direct hit damage" },
+    s90: { name: "S90 SIEGE", hp: 95, travel: 144, scenery: 1.2, direct: 1.1, mitigation: 1, skin: "cockpit-s90-siege.webp", specialty: "SIEGE GUN · +10% shell damage / +20% scenery" },
+  });
+  const defaultChassis = (id) => ({ L1: "m40", R1: "r12", L2: "b76", R2: "s90" })[id] || "m40";
+  const chassisData = (tank) => CHASSIS[tank?.chassis] || CHASSIS[defaultChassis(tank?.id)];
+  const skinPath = (chassis) => `assets/${chassis.skin}?v=20261002-moving-hardware`;
+  // Decode all four lightweight fascias once; turn changes never wait for art.
+  for (const chassis of Object.values(CHASSIS)) { const skin = new Image(); skin.src = skinPath(chassis); }
+  for (const chassis of Object.keys(CHASSIS)) for (const part of Object.keys(hardwareParts)) { const photo = new Image(); photo.src = hardwarePath(chassis, part); }
+  const missionMenu = document.querySelector(".mission-settings");
+  missionMenu.querySelector("summary").innerHTML = '<span>MISSION MENU</span>';
+  document.querySelector(".topbar").append(missionMenu);
+  // Chassis/crew details are HUD information, not a label floating over the
+  // lower fascia. Keep the same live text, but put it beside the field-test stamp.
+  const topbar = document.querySelector(".topbar");
+  const crewPlate = document.querySelector(".crew-plate");
+  topbar.insertBefore(crewPlate, topbar.querySelector("nav"));
+  const crewReadouts = document.querySelector(".keyline");
+  topbar.insertBefore(crewReadouts, topbar.querySelector("nav"));
+  // Keep the small battlefield telemetry on the top rail instead of floating
+  // over the enlarged terrain and hiding sightlines.
+  const sceneReadouts = document.querySelector(".readouts");
+  topbar.insertBefore(sceneReadouts, topbar.querySelector("nav"));
+  topbar.insertBefore($("mapReadout"), topbar.querySelector("nav"));
+  const viewControl = document.querySelector(".cockpit-selector");
+  topbar.insertBefore(viewControl, topbar.querySelector("nav"));
+  const trackSteering = document.createElement("div");
+  trackSteering.className = "track-steering";
+  trackSteering.setAttribute("aria-label", "Tank movement controls");
+  for (const id of ["moveLeft", "moveRight"]) trackSteering.append($(id));
+  topbar.insertBefore(trackSteering, topbar.querySelector("nav"));
+  const loadedRound = document.createElement("div");
+  loadedRound.className = "loaded-round";
+  loadedRound.setAttribute("aria-live", "polite");
+  loadedRound.innerHTML = '<span class="loaded-round-icon" aria-hidden="true">●</span><span><b id="loadedWeaponName">120mm Shell</b></span>';
+  topbar.insertBefore(loadedRound, topbar.querySelector("nav"));
+  const menuActions = document.createElement("div");
+  menuActions.className = "menu-actions";
+  for (const id of ["newMap", "saveGame", "loadGame", "helpButton"]) menuActions.append($(id));
+  const missionPanel = document.createElement("div");
+  missionPanel.className = "mission-panel";
+  missionPanel.append($("missionRecords"), missionMenu.querySelector(".settings-grid"), menuActions);
+  missionMenu.append(missionPanel);
+  weaponSelect.setAttribute("aria-hidden", "true");
+  weaponSelect.tabIndex = -1;
   const background = new Image();
   background.src = "assets/battlefield-dusk.jpg";
   const tankImage = new Image();
@@ -65,6 +176,71 @@
     { key: "rail", name: "Rail Lance", unlock: 20, speed: 21, radius: 24, damage: 50, color: "#69d9ff", trail: "#e9ffff", class: "KINETIC / PIERCE", desc: "Flat, fast penetrator with a narrow crater", effect: "rail" },
     { key: "quantum", name: "Quantum Obliterator", unlock: 24, speed: 8.1, radius: 78, damage: 68, color: "#f179dc", trail: "#ffd6fa", class: "EXOTIC / SINGULARITY", desc: "Slow implosion followed by a wide rupture", effect: "quantum" }
   ];
+  const ordnanceRack = $("ordnanceRack");
+  const ordnanceConsole = document.createElement("aside");
+  ordnanceConsole.className = "side-console ordnance-console";
+  ordnanceConsole.setAttribute("aria-label", "Ammunition side console");
+  const consoleTitle = document.createElement("span"); consoleTitle.className = "console-stencil"; consoleTitle.textContent = "AMMUNITION";
+  const selectedShellArt = document.createElement("span"); selectedShellArt.className = "selected-shell-art"; selectedShellArt.setAttribute("aria-hidden", "true");
+  loadedRound.prepend(selectedShellArt);
+  ordnanceConsole.append(consoleTitle, ordnanceRack, loadedRound);
+  const statusConsole = document.createElement("aside"); statusConsole.className = "side-console status-console";
+  statusConsole.setAttribute("aria-label", "Battle information and driving controls");
+  const battleStrip = document.createElement("div"); battleStrip.className = "battle-strip";
+  battleStrip.setAttribute("aria-label", "Sector and armor status");
+  battleStrip.append(document.querySelector(".mission-card"), $("mapReadout"), $("targetCard"));
+  topbar.insertBefore(battleStrip, topbar.querySelector("nav"));
+  statusConsole.append(crewPlate, crewReadouts, sceneReadouts, viewControl, trackSteering);
+  instrumentFrame.append(ordnanceConsole, statusConsole);
+  let switchHintTimer = 0;
+  function showSwitchHints() {
+    clearTimeout(switchHintTimer);
+    for (const hardware of [hardwareParts.night, hardwareParts.assist]) hardware.mount.classList.remove("is-hinting");
+    if (state.level !== 1 && state.atmosphere !== "NIGHTFALL") return;
+    hardwareParts.night.mount.classList.add("is-hinting");
+    if (state.level === 1) hardwareParts.assist.mount.classList.add("is-hinting");
+    switchHintTimer = window.setTimeout(() => {
+      hardwareParts.night.mount.classList.remove("is-hinting"); hardwareParts.assist.mount.classList.remove("is-hinting");
+    }, 2800);
+  }
+  const weaponGlyphs = {
+    blast: '<path d="M5 10h15l8 5-8 5H5l-3-5z"/><path d="M8 10v10m4-10v10"/>',
+    heavy: '<path d="M4 8h17l5 7-5 7H4l-2-7z"/><path d="M8 8v14m5-14v14m5-14v14"/>',
+    ice: '<path d="M4 11h19l5 4-5 4H4l-2-4z"/><path d="M12 8v12m-4-9 8 6m0-6-8 6"/>',
+    cluster: '<path d="M4 11h17l6 4-6 4H4l-2-4z"/><circle cx="10" cy="15" r="1.7"/><circle cx="15" cy="15" r="1.7"/><circle cx="20" cy="15" r="1.7"/>',
+    emp: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><path d="m14 8-3 5h4l-3 6 7-8h-4l3-3z"/>',
+    fire: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><path d="M13 18c-3-3 2-4 1-8 4 3 5 6 2 9z"/>',
+    lava: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><path d="M10 12h8m-6 3h7m-9 3h5"/>',
+    acid: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><circle cx="12" cy="14" r="2"/><circle cx="19" cy="17" r="1.5"/>',
+    plasma: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><circle cx="17" cy="15" r="4"/><path d="M17 8v2m0 10v2m-7-7h2m10 0h2"/>',
+    lightning: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><path d="m17 9-5 6h4l-2 5 6-7h-4z"/>',
+    rail: '<path d="M1 13h27v4H1z"/><path d="m21 10 7 5-7 5z"/><path d="M4 10v10"/>',
+    quantum: '<path d="M4 11h18l6 4-6 4H4l-2-4z"/><circle cx="16" cy="15" r="4"/><circle cx="16" cy="15" r="1.5"/>'
+  };
+  function drawWeaponRack(available) {
+    const fragment = document.createDocumentFragment();
+    for (const weapon of available) {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "ordnance-choice"; button.dataset.weapon = weapon.key;
+      button.style.setProperty("--shell-color", weapon.color);
+      button.setAttribute("aria-label", `${weapon.name}. ${weapon.class}. ${weapon.desc}`);
+      button.title = `${weapon.name} · ${weapon.class} — ${weapon.desc}`;
+      const icon = document.createElement("span"); icon.className = `shell-icon shell-${weapon.effect}`; icon.setAttribute("aria-hidden", "true");
+      icon.innerHTML = `<svg viewBox="0 0 30 30" focusable="false">${weaponGlyphs[weapon.effect] || weaponGlyphs.blast}</svg>`;
+      const name = document.createElement("span"); name.className = "ordnance-name"; name.textContent = weapon.name;
+      button.append(icon, name); fragment.append(button);
+    }
+    ordnanceRack.replaceChildren(fragment);
+    syncWeaponRack();
+  }
+  function syncWeaponRack() {
+    for (const button of ordnanceRack.querySelectorAll(".ordnance-choice")) {
+      const selected = button.dataset.weapon === weaponSelect.value;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+      button.disabled = !canControlTank();
+    }
+  }
   // CPU solutions deliberately carry range and gun-laying error. Recruit fires
   // broad ranging shots; Elite is sharper, but none has perfect aim.
   const CPU_SKILL = {
@@ -107,20 +283,97 @@
   const effects = [];
   const hazards = [];
   const ambientSmoke = [];
+  const muzzleFlashes = [];
+  const MAX_MUZZLE_FLASHES = 8;
   const colors = { left: ["#9a6a48", "#c79a63"], right: ["#526e70", "#8eb1a6"] };
   const modeNames = { skirmish: "SKIRMISH / FIELD TEST", campaign: "CAMPAIGN / OPERATION", night: "NIGHT CAMPAIGN / OPERATION", endless: "ENDLESS WAR / SECTOR", custom: "CUSTOM / BATTLEFIELD" };
   const state = {
-    tanks: [], turnIndex: 0, turn: 1, level: 1, seed: 7821, mode: "skirmish", opponent: "cpu", formation: 2, sceneIndex: 0,
+    tanks: [], turnIndex: 0, turn: 1, level: 1, seed: 7821, mode: "skirmish", opponent: "cpu", formation: 2, sceneIndex: 0, atmosphere: "DUSK",
+    playerChassis: "m40",
     difficulty: "recruit", weather: "clear", smoke: "thin", support: "off", supportUsed: { left: false, right: false },
-    angle: 12, power: 63, weapon: "shell", moving: false, aiMove: null, night: false, assist: false,
-    winner: "", toastTimer: 0, mapName: "DUSK FRONT", rain: [], shake: 0, lastTime: 0
+    angle: 12, power: 63, weapon: "shell", moving: false, resolving: false, aiMove: null, night: false, assist: false,
+    winner: "", recorded: false, toastTimer: 0, mapName: "DUSK FRONT", rain: [], shake: 0, lastTime: 0
   };
+  const RECORDS_KEY = "tam-v2-battle-records-v1";
+  function readBattleRecords() {
+    const empty = { battles: 0, wins: 0, fastestWin: 0, bestOperation: 0, recentGrid: "" };
+    try {
+      const saved = JSON.parse(localStorage.getItem(RECORDS_KEY) || "null");
+      if (!saved || typeof saved !== "object") return empty;
+      return {
+        battles: Math.max(0, Number(saved.battles) || 0), wins: Math.max(0, Number(saved.wins) || 0),
+        fastestWin: Math.max(0, Number(saved.fastestWin) || 0), bestOperation: Math.max(0, Number(saved.bestOperation) || 0),
+        recentGrid: /^[0-9A-F]{8}$/.test(saved.recentGrid) ? saved.recentGrid : ""
+      };
+    } catch { return empty; }
+  }
+  let battleRecords = readBattleRecords();
+  function renderBattleRecords() {
+    $("recordBattles").textContent = String(battleRecords.battles);
+    $("recordWins").textContent = String(battleRecords.wins);
+    $("recordFastest").textContent = battleRecords.fastestWin ? `${battleRecords.fastestWin} turns` : "—";
+    $("recordOperation").textContent = battleRecords.bestOperation ? `OP ${String(battleRecords.bestOperation).padStart(2, "0")}` : "—";
+    $("recordGrid").textContent = battleRecords.recentGrid || "—";
+  }
+  function recordBattleResult() {
+    if (state.recorded) return;
+    state.recorded = true;
+    const won = state.winner === "left";
+    battleRecords.battles++;
+    if (won) {
+      battleRecords.wins++;
+      battleRecords.fastestWin = battleRecords.fastestWin ? Math.min(battleRecords.fastestWin, state.turn) : state.turn;
+      if (state.mode === "campaign" || state.mode === "night") battleRecords.bestOperation = Math.max(battleRecords.bestOperation, state.level);
+    }
+    battleRecords.recentGrid = state.seed.toString(16).padStart(8, "0").slice(-8).toUpperCase();
+    try { localStorage.setItem(RECORDS_KEY, JSON.stringify(battleRecords)); } catch { /* The current session still shows its result if storage is unavailable. */ }
+    renderBattleRecords();
+  }
+  let battleEpoch = 0;
+  function deferBattle(callback, delay, tank = activeTank()) {
+    const epoch = battleEpoch;
+    setTimeout(() => { if (epoch === battleEpoch && tank === activeTank()) callback(); }, delay);
+  }
 
   function rand(seed) {
     let x = seed >>> 0;
     return () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
   }
+  function randomSeed() {
+    try {
+      if (window.crypto?.getRandomValues) {
+        const value = new Uint32Array(1); window.crypto.getRandomValues(value);
+        return value[0] || 1;
+      }
+    } catch { /* Fall back for restricted or older browser contexts. */ }
+    return ((Math.random() * 0xffffffff) >>> 0) || 1;
+  }
+  function gridCode() { return state.seed.toString(16).padStart(8, "0").slice(-8).toUpperCase(); }
+  function generateBattlefield(seed = randomSeed()) {
+    state.seed = Number(seed) >>> 0;
+    const sceneRoll = rand(state.seed ^ 0x9e3779b9);
+    state.sceneIndex = Math.floor(sceneRoll() * FIELD_SCENES.length);
+    state.mapName = FIELD_SCENES[state.sceneIndex].name;
+    const layoutRoll = rand(state.seed ^ 0x51ed270b);
+    state.spawnOffset = (layoutRoll() - .5) * 52;
+    state.landmarkOffsets = { left: (layoutRoll() - .5) * 112, right: (layoutRoll() - .5) * 112 };
+    state.atmosphere = ["DAWN", "DAYLIGHT", "DUSK", "NIGHTFALL"][Math.floor(layoutRoll() * 4)];
+    createTerrain();
+    generateObstacles();
+    $("mapReadout").textContent = `SECTOR ${String(state.level).padStart(2, "0")} // GRID ${gridCode()}`;
+  }
+  function requestedGridSeed() {
+    const value = $("mapSeed").value.trim();
+    if (!value) return randomSeed();
+    if (!/^[0-9a-f]{8}$/i.test(value)) {
+      announce("GRID CODE MUST BE 8 HEX DIGITS"); $("mapSeed").focus(); return null;
+    }
+    return Number.parseInt(value, 16) >>> 0;
+  }
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  function spawnX(side) { return FIELD_LAYOUT[side === "left" ? "leftStart" : "rightStart"] + (side === "left" ? 1 : -1) * (state.spawnOffset || 0); }
+  function landmarkX(side) { return FIELD_LAYOUT[side === "left" ? "leftLandmark" : "rightLandmark"] + (state.landmarkOffsets?.[side] || 0); }
+  function formatAngle(value) { const angle = Number(value); return Number.isInteger(angle) ? String(angle) : angle.toFixed(1); }
   function smoothstep(value) { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t); }
   // A lightweight side-view perspective cheat: the ground and tank silhouettes
   // recede together from the near-left camera lane toward the far-right shelf.
@@ -129,15 +382,106 @@
     return FIELD_LAYOUT.nearScale + (FIELD_LAYOUT.farScale - FIELD_LAYOUT.nearScale) * smoothstep(depth);
   }
   function activeTank() { return state.tanks[state.turnIndex] || state.tanks[0]; }
+  function canControlTank(tank = activeTank()) { return !!tank?.alive && !state.winner && !(state.opponent === "cpu" && tank.team === "right"); }
   function living(team) { return state.tanks.filter((tank) => tank.alive && (!team || tank.team === team)); }
-  function weaponData(key = state.weapon) { return weapons.find((item) => item.key === key) || weapons[0]; }
+  function weaponData(key = activeTank()?.weapon || state.weapon) { return weapons.find((item) => item.key === key) || weapons[0]; }
+  // A full charge must clear the authored ridge even if a crew has driven to
+  // the far edges of the playable overdraw. Keep ordnance speed differences,
+  // guarantee a 17.7-unit/frame floor, and cap extreme speeds so a high arc
+  // still has a valid firing angle instead of sailing past the target.
+  function launchSpeed(weapon, power) {
+    const charge = clamp(Number(power) || 20, 20, 100) / 100;
+    return Math.min(MAX_FULL_CHARGE_SPEED, weapon.speed * (.45 + charge * .75) + 8 * charge);
+  }
+  const COCKPIT_VIEWS = ["battlefield", "periscope", "commander"];
+  function syncCockpitView() {
+    const tank = activeTank();
+    const view = COCKPIT_VIEWS.includes(tank?.view) ? tank.view : "battlefield";
+    document.body.dataset.cockpitView = view;
+    document.body.dataset.chassis = tank?.chassis || "m40";
+    cockpitSkin.src = skinPath(chassisData(tank));
+    windowArmor.src = cockpitSkin.src;
+    const chassis = tank?.chassis || "m40";
+    const gauge = GAUGE_GEOMETRY[chassis] || GAUGE_GEOMETRY.m40;
+    for (const [kind, selector] of [["angle", ".live-elevation"], ["power", ".live-charge"]]) {
+      const [, , w, h, rx, ry] = gauge[kind];
+      const face = gaugeLayer.querySelector(selector);
+      // Tick arcs follow the aperture ellipse, not the larger overscan box.
+      face.style.setProperty("--tick-w", `${rx * 2 / .83 / w * 100}%`);
+      face.style.setProperty("--tick-h", `${ry * 2 / .83 / h * 100}%`);
+      face.style.setProperty("--needle-length", `${ry * .82 / h * 100}%`);
+      face.style.setProperty("--opening-rx", `${rx / w * 100}%`);
+      face.style.setProperty("--opening-ry", `${ry / h * 100}%`);
+    }
+    gaugeLayer.style.setProperty("--gauge-metal", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
+    for (const target of [gaugeLayer, document.querySelector(".console")]) {
+      for (const kind of ["angle", "power"]) {
+        const [x, y, w, h] = gauge[kind];
+        target.style.setProperty(`--${kind}-x`, `${x / 1672 * 100}%`);
+        target.style.setProperty(`--${kind}-y`, `${y / 941 * 100}%`);
+        target.style.setProperty(`--${kind}-w`, `${w / 1672 * 100}%`);
+        target.style.setProperty(`--${kind}-h`, `${h / 941 * 100}%`);
+      }
+    }
+    const hole = ([x, y, , , rx, ry]) => `M${x-rx} ${y}a${rx} ${ry} 0 1 0 ${rx*2} 0a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
+    const mask = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941"><path fill="white" fill-rule="evenodd" d="M0 0H1672V941H0Z ${hole(gauge.angle)} ${hole(gauge.power)}"/><path fill="white" d="${gauge.guard}"/></svg>`;
+    cockpitSkin.style.setProperty("--gauge-mask", `url("data:image/svg+xml,${encodeURIComponent(mask)}")`);
+    hardwareLayer.style.setProperty("--socket-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
+    stage.style.setProperty("--deck-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
+    for (const [part, hardware] of Object.entries(hardwareParts)) {
+      const [x,y,w,h,px,py] = HARDWARE_GEOMETRY[chassis][part];
+      hardware.photo.src = hardwarePath(chassis, part);
+      hardware.mount.style.setProperty("--part-x", `${x / 1672 * 100}%`);
+      hardware.mount.style.setProperty("--part-y", `${y / 941 * 100}%`);
+      hardware.mount.style.setProperty("--part-w", `${w / 1672 * 100}%`);
+      hardware.mount.style.setProperty("--part-h", `${h / 941 * 100}%`);
+      hardware.mount.style.setProperty("--part-aspect", String(w / h));
+      hardware.face.style.transformOrigin = `${(px-x)/w*100}% ${(py-y)/h*100}%`;
+    }
+    $("chassisName").textContent = chassisData(tank).name;
+    $("chassisSpecialty").textContent = chassisData(tank).specialty;
+    cockpitViewSelect.value = view;
+    canvas.setAttribute("aria-label", `${view === "periscope" ? "Magnified periscope" : view === "commander" ? "Turret station" : "Wide battlefield"} view, ${tank?.name || "tank"}`);
+  }
+  function syncInstruments() {
+    const deck = document.querySelector(".console");
+    deck.style.setProperty("--barrel-angle", `${state.angle * 2.3 - 90}deg`);
+    deck.style.setProperty("--dial-elevation", `${-120 + state.angle / 85 * 240}deg`);
+    deck.style.setProperty("--power-angle", `${-120 + (state.power - 20) / 80 * 240}deg`);
+    deck.style.setProperty("--wheel-angle", `${state.angle * 4}deg`);
+    deck.style.setProperty("--angle-position", `${state.angle / 85 * 100}%`);
+    deck.style.setProperty("--power-position", `${(state.power - 20) / 80 * 100}%`);
+    deck.style.setProperty("--charge-lever-position", `${(100 - state.power) / 80 * 81}%`);
+    // Gauges sit behind the armored fascia; hit targets stay above it. Share
+    // live instrument variables across those sibling layers without duplicating values.
+    for (const property of ["--dial-elevation", "--power-angle", "--wheel-angle"]) gaugeLayer.style.setProperty(property, deck.style.getPropertyValue(property));
+    const tank = activeTank();
+    $("moveBudget").textContent = `${Math.round(tank?.moveRemaining || 0)} / ${chassisData(tank).travel} m`;
+    $("crewArmor").textContent = `${Math.ceil((tank?.hp || 0) / (tank?.maxHp || 100) * 100)}%`;
+  }
+  function syncCombatSwitches() {
+    for (const [id, enabled] of [["nightToggle", !!state.night], ["assistToggle", !!state.assist]]) {
+      const button = $(id);
+      button.classList.toggle("is-on", enabled);
+      button.classList.remove("is-suggested");
+      button.setAttribute("aria-pressed", String(enabled));
+      button.querySelector("span").textContent = enabled ? "ON" : "OFF";
+      const label = id === "nightToggle" ? "Night optics" : "Trajectory assistance";
+      button.setAttribute("aria-label", `${label}, ${enabled ? "on" : "off"}`);
+      button.title = `${label} · ${enabled ? "on" : "off"}`;
+      hardwareParts[id === "nightToggle" ? "night" : "assist"].mount.classList.toggle("is-on", enabled);
+    }
+  }
   function announce(message) {
     const box = $("toast"); box.textContent = message; box.classList.add("visible");
     clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => box.classList.remove("visible"), 1850);
   }
-  function surfaceY(x) {
+  function terrainSampleY(x) {
     const i = Math.max(0, Math.min(terrain.length - 1, Math.round(x / STEP)));
     return terrain[i] ?? 570;
+  }
+  function surfaceY(x) {
+    return x < 0 || x > W ? terrainOverdrawY(x) : terrainSampleY(x);
   }
   function terrainSlope(x) {
     return Math.max(-.24, Math.min(.24, Math.atan2(surfaceY(x + 22) - surfaceY(x - 22), 44)));
@@ -148,9 +492,12 @@
       const t2 = t * t, t3 = t2 * t;
       return (2*t3 - 3*t2 + 1) * y0 + (t3 - 2*t2 + t) * tangent0 + (-2*t3 + 3*t2) * y1 + (t3 - t2) * tangent1;
     };
-    if (x < 0) return hermite((x + ext) / ext, SURFACE_BASE, surfaceY(0), 0, Math.tan(terrainSlope(0)) * ext);
-    if (x > W) return hermite((x - W) / ext, surfaceY(W), SURFACE_BASE, Math.tan(terrainSlope(W)) * ext, 0);
-    return surfaceY(x);
+    // Visual overdraw is playable ground. Use the same contour for tanks,
+    // shell collisions and terrain pixels rather than clamping tank height at W.
+    const edgeSlope = edge => clamp((terrainSampleY(edge + 22) - terrainSampleY(edge - 22)) / 44, -Math.tan(.24), Math.tan(.24));
+    if (x < 0) return hermite(clamp((x + ext) / ext, 0, 1), SURFACE_BASE, terrainSampleY(0), 0, edgeSlope(0) * ext);
+    if (x > W) return hermite(clamp((x - W) / ext, 0, 1), terrainSampleY(W), SURFACE_BASE, edgeSlope(W) * ext, 0);
+    return terrainSampleY(x);
   }
   function createTerrain() {
     const r = rand(state.seed);
@@ -162,10 +509,10 @@
     const hills = hillCenters.map((x) => ({ x, width: 80 + r() * 95, height: 34 + r() * 68 }));
     // This authored ridge is deliberately taller than the flanks. It creates a
     // broad, uneven mountain chain rather than a centered triangular mound.
-    const ridgeCenter = W * profile.ridgeX + (r() - 0.5) * 28;
-    const ridgeWidth = profile.ridgeWidth * (0.96 + r() * 0.08);
+    const ridgeCenter = W * profile.ridgeX + (r() - 0.5) * 56;
+    const ridgeWidth = profile.ridgeWidth * (0.86 + r() * 0.28);
     hills.push({ x: ridgeCenter - ridgeWidth * .52, width: ridgeWidth * .55, height: profile.ridgeHeight * .07 });
-    hills.push({ x: ridgeCenter, width: ridgeWidth, height: profile.ridgeHeight * .78 });
+    hills.push({ x: ridgeCenter, width: ridgeWidth, height: profile.ridgeHeight * (.68 + r() * .2) });
     hills.push({ x: ridgeCenter + ridgeWidth * .48, width: ridgeWidth * .48, height: profile.ridgeHeight * .1 });
     let drift = 0;
     for (let i = 0; i < count; i++) {
@@ -192,11 +539,11 @@
     // placement fixes. Each pad blends out beyond its footprint so props and
     // tracks sit on the ground without an obvious cut line.
     const pads = [
-      { x: FIELD_LAYOUT.leftStart, y: profile.nearY, flat: 124, fade: 66 },
-      { x: FIELD_LAYOUT.rightStart, y: profile.farY, flat: 106, fade: 58 },
+      { x: spawnX("left"), y: profile.nearY, flat: 124, fade: 66 },
+      { x: spawnX("right"), y: profile.farY, flat: 106, fade: 58 },
     ];
     for (const placement of FIELD_SCENES[state.sceneIndex].placements) {
-      const center = placement.side === "left" ? FIELD_LAYOUT.leftLandmark : FIELD_LAYOUT.rightLandmark;
+      const center = landmarkX(placement.side);
       pads.push({ x: center, y: terrain[Math.round(center / STEP)], flat: FIELD_LAYOUT.benchFlatRadius, fade: FIELD_LAYOUT.benchFadeRadius });
     }
     for (const pad of pads) {
@@ -224,50 +571,60 @@
   function generateObstacles() {
     obstacles.length = 0;
     for (const placement of FIELD_SCENES[state.sceneIndex].placements) {
-      const x = placement.side === "left" ? FIELD_LAYOUT.leftLandmark : FIELD_LAYOUT.rightLandmark;
+      const x = landmarkX(placement.side);
       obstacles.push({ ...placement, x, maxHp: placement.hp, active: true });
     }
   }
   function setFormation(count = 2) {
+    const previous = new Map(state.tanks.map((tank) => [tank.id, tank]));
     state.formation = count;
     // The hero begins on the near shelf; hostiles begin on the raised far shelf.
     // Four-tank formations use authored shoulders between spawn pads and ridge.
-    const leftXs = count === 4 ? [FIELD_LAYOUT.leftStart, 490] : [FIELD_LAYOUT.leftStart];
-    const rightXs = count === 4 ? [910, FIELD_LAYOUT.rightStart] : [FIELD_LAYOUT.rightStart];
-    const left = leftXs.map((x, i) => ({ id: `L${i + 1}`, team: "left", x, hp: 100, maxHp: 100, damageStage: 0, alive: true, dir: 1, name: `HERO-0${i + 1}`, angle: state.angle, move: 0 }));
-    const right = rightXs.map((x, i) => ({ id: `R${i + 1}`, team: "right", x, hp: 100, maxHp: 100, damageStage: 0, alive: true, dir: -1, name: state.opponent === "local" ? `PLAYER-02-${i + 1}` : `HOSTILE-0${i + 1}`, angle: state.angle, move: 0 }));
+    const leftXs = count === 4 ? [spawnX("left"), Math.max(490, landmarkX("left") + 165)] : [spawnX("left")];
+    const rightXs = count === 4 ? [Math.min(910, landmarkX("right") - 165), spawnX("right")] : [spawnX("right")];
+    const loadout = (id) => ({ weapon: previous.get(id)?.weapon || "shell", power: previous.get(id)?.power || 63, view: previous.get(id)?.view || "battlefield" });
+    const crew = (id) => {
+      const chassis = id.startsWith("L") && CHASSIS[state.playerChassis] ? state.playerChassis : defaultChassis(id);
+      const spec = CHASSIS[chassis]; return { chassis, hp: spec.hp, maxHp: spec.hp, moveRemaining: spec.travel };
+    };
+    const left = leftXs.map((x, i) => ({ id: `L${i + 1}`, team: "left", x, ...crew(`L${i + 1}`), damageStage: 0, alive: true, dir: 1, name: `HERO-0${i + 1}`, angle: 12, move: 0, ...loadout(`L${i + 1}`) }));
+    const right = rightXs.map((x, i) => ({ id: `R${i + 1}`, team: "right", x, ...crew(`R${i + 1}`), damageStage: 0, alive: true, dir: -1, name: state.opponent === "local" ? `PLAYER-02-${i + 1}` : `HOSTILE-0${i + 1}`, angle: 12, move: 0, ...loadout(`R${i + 1}`) }));
     state.tanks = [];
     const n = Math.max(left.length, right.length);
     for (let i = 0; i < n; i++) { if (left[i]) state.tanks.push(left[i]); if (right[i]) state.tanks.push(right[i]); }
-    state.turnIndex = 0; state.turn = 1; state.winner = ""; state.supportUsed = { left: false, right: false };
-    projectiles.length = 0; particles.length = 0; effects.length = 0; hazards.length = 0;
+    state.turnIndex = 0; state.turn = 1; state.winner = ""; state.recorded = false; state.supportUsed = { left: false, right: false };
+    projectiles.length = 0; particles.length = 0; effects.length = 0; hazards.length = 0; muzzleFlashes.length = 0;
   }
-  function newMap(announceChange = true) {
-    if (state.winner === "left" && (state.mode === "campaign" || state.mode === "night")) state.level = Math.min(30, state.level + 1);
-    state.sceneIndex = (state.sceneIndex + 1) % FIELD_SCENES.length;
-    state.mapName = FIELD_SCENES[state.sceneIndex].name;
-    state.seed = (Math.random() * 0xffffffff) >>> 0;
-    createTerrain(); generateObstacles(); setFormation(state.formation);
-    $("mapReadout").textContent = `SECTOR ${String(state.level).padStart(2, "0")} // GRID ${state.seed.toString(16).slice(-4).toUpperCase()}`;
+  function newMap(announceChange = true, explicitSeed = undefined) {
+    const seed = explicitSeed === undefined ? requestedGridSeed() : explicitSeed;
+    if (seed === null) return false;
+    battleEpoch++; state.resolving = false; state.moving = false; state.aiMove = null;
+    if (announceChange && state.winner === "left" && state.opponent === "cpu") state.level = (state.mode === "campaign" || state.mode === "night") ? Math.min(30, state.level + 1) : state.level + 1;
+    generateBattlefield(seed); setFormation(state.formation);
+    $("weatherReadout").textContent = `${state.atmosphere} // ${state.weather === "rain" ? "RAIN SQUALL" : state.weather === "wind" ? "CROSSWIND" : "OVERCAST"} // ${state.smoke === "clear" ? "CLEAR AIR" : state.smoke === "dense" ? "DENSE SMOKE" : "DRIFTING SMOKE"}`;
     if (announceChange) announce("NEW SECTOR GENERATED // ARMOR READY");
-    refreshHud();
+    selectTurn(0, false); refreshHud(); showSwitchHints(); return true;
   }
   function applyModeSettings() {
-    if (projectiles.length || state.moving) { announce("WAIT FOR THE ROUND TO CLEAR BEFORE RECONFIGURING"); return; }
+    if (projectiles.length || state.moving || state.resolving) { announce("WAIT FOR THE ROUND TO CLEAR BEFORE RECONFIGURING"); return; }
+    const seed = requestedGridSeed(); if (seed === null) return;
     state.mode = $("mode").value; state.opponent = $("opponent").value; state.formation = Number($("formation").value);
+    state.playerChassis = CHASSIS[playerChassisSelect.value] ? playerChassisSelect.value : "m40";
     state.difficulty = $("difficulty").value; state.weather = $("weather").value; state.smoke = $("smoke").value; state.support = $("support").value;
     state.level = 1;
     state.night = state.mode === "night";
     if (state.mode === "campaign" || state.mode === "night") state.formation = 2;
     $("formation").value = String(state.formation);
-    newMap(false); $("modeLabel").textContent = modeNames[state.mode] || modeNames.skirmish;
-    $("weatherReadout").textContent = `${state.weather === "rain" ? "RAIN SQUALL" : state.weather === "wind" ? "CROSSWIND" : "OVERCAST"} // ${state.smoke === "clear" ? "CLEAR AIR" : state.smoke === "dense" ? "DENSE SMOKE" : "DRIFTING SMOKE"}`;
-    $("nightToggle").classList.toggle("is-on", state.night); $("nightToggle").setAttribute("aria-pressed", String(state.night)); $("nightToggle").querySelector("span").textContent = state.night ? "ON" : "OFF";
+    newMap(false, seed); $("modeLabel").textContent = modeNames[state.mode] || modeNames.skirmish;
+    $("weatherReadout").textContent = `${state.atmosphere} // ${state.weather === "rain" ? "RAIN SQUALL" : state.weather === "wind" ? "CROSSWIND" : "OVERCAST"} // ${state.smoke === "clear" ? "CLEAR AIR" : state.smoke === "dense" ? "DENSE SMOKE" : "DRIFTING SMOKE"}`;
+    syncCombatSwitches();
     refreshWeaponChoices(); refreshHud(); announce("CONFIGURATION DEPLOYED // FIRE CONTROL READY");
   }
   function refreshWeaponChoices() {
-    const previous = state.weapon;
-    const savedProgress = Number(localStorage.getItem("tam-v2-unlock") || 1);
+    const tank = activeTank();
+    const previous = tank?.weapon || "shell";
+    let savedProgress = 1;
+    try { savedProgress = Number(localStorage.getItem("tam-v2-unlock") || 1); } catch { /* Playing without browser storage remains supported. */ }
     const available = state.mode === "campaign" || state.mode === "night" ? weapons.filter((item) => item.unlock <= Math.max(1, state.level, savedProgress) + 1) : weapons;
     weaponSelect.replaceChildren(...available.map((weapon) => {
       const option = document.createElement("option"); option.value = weapon.key;
@@ -275,28 +632,44 @@
       return option;
     }));
     state.weapon = available.some((item) => item.key === previous) ? previous : "shell";
-    weaponSelect.value = state.weapon; updateWeaponReadout();
+    if (tank) tank.weapon = state.weapon;
+    weaponSelect.value = state.weapon; drawWeaponRack(available); updateWeaponReadout();
   }
   function updateWeaponReadout() {
     const weapon = weaponData(); $("weaponClass").textContent = weapon.class; $("weaponDescription").textContent = weapon.desc;
+    $("loadedWeaponName").textContent = weapon.name;
+    selectedShellArt.innerHTML = `<svg viewBox="0 6 30 18" focusable="false">${weaponGlyphs[weapon.effect] || weaponGlyphs.blast}</svg>`;
+    loadedRound.style.setProperty("--shell-color", weapon.color);
+    loadedRound.title = `${weapon.class} — ${weapon.desc}`;
+    ordnanceRack.querySelectorAll(".ordnance-choice").forEach((button) => {
+      const selected = button.dataset.weapon === weapon.key;
+      button.classList.toggle("is-selected", selected); button.setAttribute("aria-pressed", String(selected));
+    });
   }
   function selectTurn(index, increment = true) {
     const tank = state.tanks[index]; if (!tank?.alive) return;
     state.turnIndex = index; if (increment) state.turn++;
-    state.angle = Math.round(tank.angle); angleInput.value = state.angle;
-    $("angleValue").textContent = state.angle; $("activeTankName").textContent = tank.name;
+    state.resolving = false;
+    if (increment) tank.moveRemaining = chassisData(tank).travel;
+    state.angle = Number(tank.angle); angleInput.value = state.angle;
+    state.power = clamp(tank.power || 63, 20, 100); powerInput.value = state.power; $("powerValue").textContent = state.power;
+    refreshWeaponChoices(); syncCockpitView(); syncInstruments();
+    $("angleValue").textContent = formatAngle(state.angle); $("activeTankName").textContent = tank.name;
     const isCpu = state.opponent === "cpu" && tank.team === "right";
     $("turnLabel").textContent = isCpu ? "ENEMY TURN" : tank.team === "left" ? "PLAYER 1 TURN" : "PLAYER 2 TURN";
     $("consoleTurn").textContent = isCpu ? "HOSTILE GUNNER" : tank.team === "left" ? "YOUR TURN" : "PLAYER 2 TURN";
     $("consoleTurn").parentElement.style.borderColor = isCpu ? "#bd6655" : "#4a5a5a";
     fireButton.disabled = !!state.winner || isCpu || projectiles.length > 0 || state.moving;
+    for (const control of [angleInput, powerInput, weaponSelect, $("moveLeft"), $("moveRight")]) control.disabled = !canControlTank(tank);
     refreshTargetCard(); refreshSupportButton();
-    if (isCpu && !state.winner) { fireButton.disabled = true; setTimeout(cpuTurn, 800); }
+    if (isCpu && !state.winner) { fireButton.disabled = true; deferBattle(cpuTurn, 800, tank); }
   }
   function nextTurn() {
+    state.resolving = false;
     const leftAlive = living("left").length; const rightAlive = living("right").length;
     if (!leftAlive || !rightAlive) {
       state.winner = leftAlive ? "left" : "right";
+      recordBattleResult();
       $("turnLabel").textContent = state.winner === "left" ? "VICTORY // SECTOR SECURED" : "DEFEAT // ARMOR LOST";
       $("consoleTurn").textContent = state.winner === "left" ? "MISSION SUCCESS" : "MISSION FAILED";
       fireButton.disabled = true; announce(state.winner === "left" ? "HOSTILE BATTERY SILENCED // VICTORY" : "ALL FRIENDLY ARMOR LOST // RETRY SECTOR");
@@ -304,7 +677,17 @@
         const unlock = Number(localStorage.getItem("tam-v2-unlock") || 1);
         localStorage.setItem("tam-v2-unlock", String(Math.max(unlock, Math.min(30, state.level + 1))));
       }
-      refreshHud(); return;
+      refreshHud();
+      const canAutoDeploy = state.winner === "left" && state.opponent === "cpu" && !((state.mode === "campaign" || state.mode === "night") && state.level >= 30);
+      if (canAutoDeploy) {
+        const completedEpoch = battleEpoch;
+        announce("SECTOR SECURED // NEXT GRID DEPLOYING IN 3 SECONDS");
+        window.setTimeout(() => {
+          if (battleEpoch !== completedEpoch || state.winner !== "left") return;
+          newMap(true, randomSeed());
+        }, 3000);
+      } else if (state.winner === "left" && (state.mode === "campaign" || state.mode === "night")) announce("CAMPAIGN COMPLETE // ALL 30 OPERATIONS SECURED");
+      return;
     }
     const current = activeTank();
     let next = (state.turnIndex + 1) % state.tanks.length;
@@ -319,27 +702,30 @@
   function refreshTargetCard() {
     const current = activeTank(); const opponent = living(current?.team === "left" ? "right" : "left").sort((a, b) => Math.abs(a.x - current.x) - Math.abs(b.x - current.x))[0];
     $("targetCard").style.display = opponent ? "block" : "none";
-    if (opponent) { $("targetHealth").textContent = `ARMOR ${Math.ceil(opponent.hp)}%`; $("targetHealthFill").style.width = `${Math.max(0, opponent.hp)}%`; }
+    if (opponent) { const health = clamp(opponent.hp / opponent.maxHp * 100, 0, 100); $("targetHealth").textContent = `ARMOR ${Math.ceil(health)}%`; $("targetHealthFill").style.width = `${health}%`; }
   }
   function refreshHud() {
     const tank = activeTank(); if (!tank) return;
     $("missionTitle").textContent = state.mode === "campaign" || state.mode === "night" ? `${state.mapName} // OP ${String(state.level).padStart(2, "0")}` : state.mapName;
+    $("mapReadout").textContent = `SECTOR ${String(state.level).padStart(2, "0")} // GRID ${gridCode()}`;
     $("modeLabel").textContent = modeNames[state.mode] || modeNames.skirmish;
     $("windReadout").textContent = state.weather === "wind" ? "09 ⇢" : state.weather === "clear" ? "02 →" : "05 ←";
     $("rangeReadout").textContent = `${Math.round(Math.abs((living(tank.team === "left" ? "right" : "left")[0]?.x || tank.x) - tank.x) * 1.25)} m`;
-    refreshTargetCard(); refreshSupportButton();
+    refreshTargetCard(); refreshSupportButton(); syncInstruments();
+    syncWeaponRack();
   }
   function refreshSupportButton() {
     const button = document.querySelector(".support-button"); if (!button) return;
     const used = state.supportUsed[activeTank()?.team] || false;
     const labels = { off: "NO SUPPORT", air: "AIR STRIKE", repair: "FIELD REPAIR", laser: "LASER STRIKE", rod: "ORBITAL ROD", meteor: "METEOR DROP", scanner: "RECON SCAN" };
     button.querySelector("span").textContent = used ? "SPENT" : (labels[state.support] || "SUPPORT");
-    button.disabled = state.support === "off" || used || !!state.winner || projectiles.length > 0 || state.moving;
+    button.disabled = state.support === "off" || used || !!state.winner || projectiles.length > 0 || state.moving || state.resolving || !canControlTank();
     button.title = state.support === "off" ? "Select a support option in Mission Configuration" : used ? "Support already expended this side" : `Use ${labels[state.support]} support`;
   }
 
   function drawBackground(time) {
-    if (background.complete && background.naturalWidth) ctx.drawImage(background, 0, 0, W, H);
+    const grade = { DAWN: "sepia(.28) saturate(1.18) brightness(1.06)", DAYLIGHT: "saturate(.82) brightness(1.2)", DUSK: "saturate(.92) brightness(.98)", NIGHTFALL: "saturate(.72) brightness(.62) hue-rotate(12deg)" }[state.atmosphere] || "none";
+    if (background.complete && background.naturalWidth) { ctx.save(); ctx.filter = grade; ctx.drawImage(background, 0, 0, W, H); ctx.restore(); }
     else { const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#303a43"); sky.addColorStop(.55, "#8a7060"); sky.addColorStop(1, "#24292a"); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H); }
     ctx.fillStyle = "#11192044"; ctx.fillRect(0, 0, W, H);
     const haze = ctx.createLinearGradient(0, 180, 0, 550); haze.addColorStop(0, "#c4c7be00"); haze.addColorStop(.72, "#a9aaa612"); haze.addColorStop(1, "#151b1dcc"); ctx.fillStyle = haze; ctx.fillRect(0, 0, W, H);
@@ -350,6 +736,23 @@
   }
   function drawTerrain() {
     if (terrainDirty) rebuildTerrainLayer();
+    // The cached detailed face stays small. Continue its existing material to
+    // the viewport edges when portrait framing sees below that cache or a wide
+    // screen sees beyond its sides. Surface geometry and collisions stay fixed.
+    const transform = ctx.getTransform();
+    const left = -transform.e / transform.a - 2, right = (canvas.width - transform.e) / transform.a + 2;
+    const bottom = (canvas.height - transform.f) / transform.d + 2;
+    if (bottom > terrainLayer.height || left < -TERRAIN_OVERDRAW || right > W + TERRAIN_OVERDRAW) {
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(left, terrainOverdrawY(clamp(left, -TERRAIN_OVERDRAW, W + TERRAIN_OVERDRAW)));
+      for (let x = Math.max(left, -TERRAIN_OVERDRAW); x < Math.min(right, W + TERRAIN_OVERDRAW); x += STEP) ctx.lineTo(x, terrainOverdrawY(x));
+      ctx.lineTo(right, terrainOverdrawY(clamp(right, -TERRAIN_OVERDRAW, W + TERRAIN_OVERDRAW)));
+      ctx.lineTo(right, bottom); ctx.lineTo(left, bottom); ctx.closePath(); ctx.clip();
+      ctx.fillStyle = soilGradient(ctx); ctx.fillRect(left, 0, right - left, bottom);
+      if (groundTexturePattern) { ctx.globalAlpha = .36; ctx.fillStyle = groundTexturePattern; ctx.fillRect(left, 0, right - left, bottom); }
+      if (soilNoisePattern) { ctx.globalAlpha = .9; ctx.fillStyle = soilNoisePattern; ctx.fillRect(left, 0, right - left, bottom); }
+      ctx.restore();
+    }
     ctx.drawImage(terrainLayer, -TERRAIN_OVERDRAW, 0);
   }
   function structureFrame(object) {
@@ -503,17 +906,21 @@
     drawSmokePuffs(time, -w * .05, -h * .2, .38, object.id * 13 + object.x * .02);
     ctx.restore();
   }
+  function soilGradient(context) {
+    const ground = context.createLinearGradient(0, 420, 0, H);
+    ground.addColorStop(0, "#806e58"); ground.addColorStop(.035, "#6a5846"); ground.addColorStop(.18, "#514439"); ground.addColorStop(.53, "#383334"); ground.addColorStop(1, "#242a2b");
+    return ground;
+  }
   function rebuildTerrainLayer() {
     const c = terrainCtx; c.clearRect(0, 0, W + TERRAIN_OVERDRAW * 2, H + TERRAIN_BOTTOM_OVERDRAW); c.save(); c.translate(TERRAIN_OVERDRAW, 0);
-    const ground = c.createLinearGradient(0, 420, 0, H); ground.addColorStop(0, "#806e58"); ground.addColorStop(.035, "#6a5846"); ground.addColorStop(.18, "#514439"); ground.addColorStop(.53, "#383334"); ground.addColorStop(1, "#242a2b");
-    c.beginPath(); c.moveTo(-TERRAIN_OVERDRAW, terrainOverdrawY(-TERRAIN_OVERDRAW));
-    for (let i = 1; i < terrain.length; i++) c.lineTo(i * STEP, terrain[i]);
-    c.lineTo(W + TERRAIN_OVERDRAW, terrainOverdrawY(W + TERRAIN_OVERDRAW));
-    c.lineTo(W + TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.lineTo(-TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.closePath(); c.fillStyle = ground; c.fill();
-    c.save(); c.beginPath(); c.moveTo(-TERRAIN_OVERDRAW, terrainOverdrawY(-TERRAIN_OVERDRAW));
-    for (let i = 1; i < terrain.length; i++) c.lineTo(i * STEP, terrain[i]);
-    c.lineTo(W + TERRAIN_OVERDRAW, terrainOverdrawY(W + TERRAIN_OVERDRAW));
-    c.lineTo(W + TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.lineTo(-TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.closePath(); c.clip();
+    const ground = soilGradient(c);
+    const traceGround = () => {
+      c.beginPath(); c.moveTo(-TERRAIN_OVERDRAW, surfaceY(-TERRAIN_OVERDRAW));
+      for (let x = -TERRAIN_OVERDRAW + STEP; x <= W + TERRAIN_OVERDRAW; x += STEP) c.lineTo(x, surfaceY(x));
+      c.lineTo(W + TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.lineTo(-TERRAIN_OVERDRAW, H + TERRAIN_BOTTOM_OVERDRAW); c.closePath();
+    };
+    traceGround(); c.fillStyle = ground; c.fill();
+    c.save(); traceGround(); c.clip();
     if (!groundTexturePattern && groundTexture.complete && groundTexture.naturalWidth) groundTexturePattern = c.createPattern(groundTexture, "repeat");
     if (groundTexturePattern) { c.globalAlpha = .36; c.fillStyle = groundTexturePattern; c.fillRect(-TERRAIN_OVERDRAW, 0, W + TERRAIN_OVERDRAW * 2, H + TERRAIN_BOTTOM_OVERDRAW); c.globalAlpha = 1; }
     if (!soilNoisePattern) {
@@ -564,8 +971,8 @@
       c.strokeStyle = tint; c.lineWidth = 1 + seamRand() * 1.2; c.stroke();
     }
     drawSurfaceDebris(c); c.restore();
-    terrainSkyMask = new Path2D(); terrainSkyMask.moveTo(0, 0); terrainSkyMask.lineTo(W, 0);
-    for (let i = terrain.length - 1; i >= 0; i--) terrainSkyMask.lineTo(i * STEP, terrain[i]);
+    terrainSkyMask = new Path2D(); terrainSkyMask.moveTo(-TERRAIN_OVERDRAW, 0); terrainSkyMask.lineTo(W + TERRAIN_OVERDRAW, 0);
+    for (let x = W + TERRAIN_OVERDRAW; x >= -TERRAIN_OVERDRAW; x -= STEP) terrainSkyMask.lineTo(x, surfaceY(x));
     terrainSkyMask.closePath();
     terrainDirty = false;
   }
@@ -620,6 +1027,8 @@
     shadow.addColorStop(0, "rgba(7,9,10,.72)"); shadow.addColorStop(.68, "rgba(7,9,10,.32)"); shadow.addColorStop(1, "rgba(7,9,10,0)");
     ctx.fillStyle = shadow; ctx.beginPath(); ctx.ellipse(tank.x, groundY - 2, 118 * depthScale, 10 * depthScale, 0, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.translate(tank.x, groundY); ctx.rotate(slope); ctx.scale(depthScale, depthScale); if (tank.dir < 0) ctx.scale(-1, 1);
+    // Opaque tracks end at row 405 of 444; place the blank lower margin below soil.
+    ctx.translate(0, 11);
     ctx.filter = wrecked ? "grayscale(.82) brightness(.58) sepia(.24)" : "none";
     ctx.drawImage(tankImage, -127, -127, 254, 127);
     ctx.filter = "none";
@@ -627,11 +1036,11 @@
     ctx.save(); ctx.translate(63, -76); ctx.rotate(-Math.max(-20, Math.min(85, tank.angle - slope * 180 / Math.PI - (wrecked ? 19 : 0))) * Math.PI / 180);
     const barrel = ctx.createLinearGradient(0, -5, 0, 5); barrel.addColorStop(0, "#c0c2ba"); barrel.addColorStop(.24, "#68716f"); barrel.addColorStop(.72, "#303736"); barrel.addColorStop(1, "#93968e");
     ctx.fillStyle = "#1c2221"; ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = barrel; ctx.beginPath(); ctx.moveTo(-3, -4); ctx.lineTo(68, -3); ctx.lineTo(80, -5); ctx.lineTo(84, -4); ctx.lineTo(84, 4); ctx.lineTo(76, 5); ctx.lineTo(68, 3); ctx.lineTo(-3, 4); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#c3c5bb"; ctx.lineWidth = .8; ctx.stroke();
+    ctx.fillStyle = barrel; ctx.beginPath(); ctx.moveTo(-3, -4); ctx.lineTo(68, -3); ctx.lineTo(80, -5); ctx.lineTo(84, -4); ctx.lineTo(84, 4); ctx.lineTo(76, 5); ctx.lineTo(68, 3); ctx.lineTo(-3, 4); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = "#151a19"; ctx.beginPath(); ctx.moveTo(80, -3); ctx.lineTo(80, 3); ctx.stroke();
-    ctx.fillStyle = lightColor; ctx.shadowBlur = 7; ctx.shadowColor = lightColor; ctx.fillRect(3, -2, 3, 3); ctx.shadowBlur = 0;
     ctx.restore();
-    const smokeStrength = wrecked ? .98 : tank.hp <= 25 ? .72 : tank.hp <= 55 ? .46 : tank.hp <= 80 ? .28 : .025;
+    const health = tank.hp / tank.maxHp * 100;
+    const smokeStrength = wrecked ? .98 : health <= 25 ? .72 : health <= 55 ? .46 : health <= 80 ? .28 : .025;
     if ((tank.damageStage || 0) > 0 || wrecked) drawTankDamage(tank, time, wrecked);
     drawSmokePuffs(time, -48, -73, smokeStrength, tank.x * .1 + (tank.team === "right" ? 4 : 0));
     if (wrecked) {
@@ -676,16 +1085,16 @@
     ctx.beginPath(); ctx.moveTo(-31, -60); ctx.lineTo(-25, -76); ctx.lineTo(-13, -83); ctx.lineTo(32, -82); ctx.lineTo(41, -73); ctx.lineTo(39, -61); ctx.closePath(); ctx.fillStyle = turret; ctx.fill(); ctx.strokeStyle = "#c3b89b"; ctx.lineWidth = 1; ctx.stroke();
     ctx.save(); ctx.translate(18, -76); ctx.rotate(-Math.min(85, Math.max(-20, tank.angle - slope * 180 / Math.PI - (wrecked ? 14 : 0))) * Math.PI / 180);
     const barrel = ctx.createLinearGradient(0, -4, 0, 4); barrel.addColorStop(0, "#99988e"); barrel.addColorStop(.3, "#555d5b"); barrel.addColorStop(1, "#262e2f");
-    ctx.fillStyle = barrel; ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(59, -3); ctx.lineTo(67, -5); ctx.lineTo(70, -4); ctx.lineTo(70, 4); ctx.lineTo(64, 5); ctx.lineTo(57, 3); ctx.lineTo(0, 4); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#c3c2b2"; ctx.lineWidth = .8; ctx.stroke();
+    ctx.fillStyle = barrel; ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(59, -3); ctx.lineTo(67, -5); ctx.lineTo(70, -4); ctx.lineTo(70, 4); ctx.lineTo(64, 5); ctx.lineTo(57, 3); ctx.lineTo(0, 4); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = "#101719"; ctx.beginPath(); ctx.moveTo(66, -3); ctx.lineTo(66, 3); ctx.stroke();
-    if (activeTank() === tank && !wrecked) { ctx.shadowBlur = 9; ctx.shadowColor = "#eab46b"; ctx.strokeStyle = "#e6ba77"; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0; }
     ctx.restore();
     // Optical glass and antenna.
     ctx.fillStyle = "#78d2d0"; ctx.shadowBlur = 5; ctx.shadowColor = "#70d4d1"; ctx.fillRect(26, -78, 5, 3); ctx.shadowBlur = 0;
     ctx.strokeStyle = "#454c48"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-24, -75); ctx.lineTo(-28, -92); ctx.stroke(); ctx.fillStyle = "#df8753"; ctx.fillRect(-29, -94, 3, 3);
     ctx.fillStyle = "#161b1b"; ctx.fillRect(-11, -35, 49, 2); ctx.fillStyle = "#d3c8ac"; ctx.font = "bold 7px Arial"; ctx.textAlign = "center"; ctx.fillText(tank.name, 13, -36);
     // Heat shimmer and exhaust after firing.
-    const damageSmoke = wrecked ? .72 : tank.hp < 25 ? .4 : tank.hp < 52 ? .24 : tank.hp < 76 ? .12 : .035;
+    const health = tank.hp / tank.maxHp * 100;
+    const damageSmoke = wrecked ? .72 : health < 25 ? .4 : health < 52 ? .24 : health < 76 ? .12 : .035;
     drawSmokePuffs(time, -53, -61, damageSmoke, tank.x * .1 + (tank.team === "right" ? 4 : 0));
     if (tank.damageStage > 0 || wrecked) drawTankDamage(tank, time, wrecked);
     ctx.restore();
@@ -710,7 +1119,7 @@
     if (wrecked) {
       ctx.fillStyle = "#ed6f34"; ctx.shadowBlur = 12; ctx.shadowColor = "#f36a35";
       for (let i = 0; i < 4; i++) { const flicker = 9 + Math.sin(time / 60 + i * 3) * 4; ctx.beginPath(); ctx.ellipse(-54 + i * 34, -33 - flicker / 2, 5, flicker, (i - 1) * .12, 0, Math.PI * 2); ctx.fill(); }
-    } else if (tank.hp < 45 && Math.floor(time / 400) % 3 === 0) {
+    } else if (tank.hp / tank.maxHp < .45 && Math.floor(time / 400) % 3 === 0) {
       ctx.fillStyle = "#ffc46d"; ctx.shadowBlur = 6; ctx.shadowColor = "#ff9a43"; ctx.beginPath(); ctx.arc(-43, -56, 1.8, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
@@ -769,27 +1178,36 @@
     }
   }
   function aimVector(tank) {
-    const a = tank.angle * Math.PI / 180; const weapon = weaponData(); const speed = weapon.speed * (.45 + state.power / 100 * .75);
+    const a = tank.angle * Math.PI / 180; const weapon = weaponData(tank.weapon); const speed = launchSpeed(weapon, tank.power);
     return { x: Math.cos(a) * speed * tank.dir, y: -Math.sin(a) * speed };
+  }
+  function ballisticWind() { return state.weather === "wind" ? .018 : state.weather === "rain" ? -.008 : .002; }
+  function advanceBallistic(p, dt, wind = ballisticWind()) {
+    // Exact constant-acceleration step: independent of display frame rate.
+    p.x += p.vx * dt + .5 * wind * dt * dt;
+    p.y += p.vy * dt + .5 * BALLISTIC_GRAVITY * dt * dt;
+    p.vx += wind * dt; p.vy += BALLISTIC_GRAVITY * dt; p.age += dt;
   }
   function muzzle(tank, angle = tank.angle) {
     const slope = terrainSlope(tank.x); const a = Math.max(0, Math.min(85, angle)) * Math.PI / 180;
     const scale = battlefieldScale(tank.x);
-    const localX = tank.dir * (63 + 84 * Math.cos(a - slope)) * scale; const localY = (-76 - 84 * Math.sin(a - slope)) * scale;
+    const localX = tank.dir * (63 + 84 * Math.cos(a - slope)) * scale; const localY = (-65 - 84 * Math.sin(a - slope)) * scale;
     return { x: tank.x + localX * Math.cos(slope) - localY * Math.sin(slope), y: surfaceY(tank.x) + localX * Math.sin(slope) + localY * Math.cos(slope) };
   }
   function drawAimGuide(time) {
     const tank = activeTank(); if (!state.assist || !tank?.alive || state.winner || (state.opponent === "cpu" && tank.team === "right")) return;
     const origin = muzzle(tank);
-    const v = aimVector(tank); const gravity = weaponData().effect === "rail" ? .05 : .16;
+    const v = aimVector(tank);
     ctx.save(); ctx.setLineDash([3, 9]); ctx.lineWidth = 1.2; ctx.strokeStyle = "#dfc18d88"; ctx.beginPath();
-    let x = origin.x, y = origin.y, started = false;
-    const wind = state.weather === "wind" ? .018 : state.weather === "rain" ? -.008 : .002;
-    for (let i = 0; i < 170; i++) { v.x += wind; x += v.x; y += v.y; v.y += gravity; if (!started) { ctx.moveTo(origin.x, origin.y); started = true; } ctx.lineTo(x, y); if (x < -TERRAIN_OVERDRAW || x > W + TERRAIN_OVERDRAW || y > surfaceY(x) || obstacleAt(x, y)) break; }
+    const preview = { x: origin.x, y: origin.y, vx: v.x, vy: v.y, age: 0 };
+    ctx.moveTo(origin.x, origin.y);
+    for (let i = 0; i < MAX_FLIGHT_FRAMES; i++) { advanceBallistic(preview, 1); ctx.lineTo(preview.x, preview.y); if (preview.x < -TERRAIN_OVERDRAW || preview.x > W + TERRAIN_OVERDRAW || preview.y > surfaceY(preview.x) || obstacleAt(preview.x, preview.y)) break; }
     ctx.stroke(); ctx.setLineDash([]); ctx.restore();
   }
   function drawProjectile(projectile) {
-    const weapon = weaponData(projectile.weapon); const angle = Math.atan2(projectile.vy, projectile.vx);
+    const weapon = weaponData(projectile.weapon);
+    const angle = projectile.age < 3 && Number.isFinite(projectile.launchVX)
+      ? Math.atan2(projectile.launchVY, projectile.launchVX) : Math.atan2(projectile.vy, projectile.vx);
     ctx.save(); ctx.translate(projectile.x, projectile.y); ctx.rotate(angle);
     if (["heavy", "cluster", "fire", "lava", "blast"].includes(weapon.effect)) {
       ctx.globalAlpha = .22; ctx.fillStyle = "#565450";
@@ -823,6 +1241,27 @@
     ctx.shadowBlur = weapon.effect === "rail" ? 16 : 9; ctx.shadowColor = weapon.color; ctx.fillStyle = weapon.color;
     ctx.beginPath(); ctx.ellipse(0, 0, projectile.isSub ? 4 : weapon.effect === "rail" ? 10 : 6, projectile.isSub ? 3 : 4, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
+  }
+  function drawMuzzleFlashes() {
+    for (const flash of muzzleFlashes) {
+      const t = clamp(flash.age / flash.life, 0, 1), smokeFade = (1 - t) ** 1.35;
+      const flareFade = clamp(1 - flash.age / 8, 0, 1) ** 1.25;
+      const size = 1 + t * 1.7, color = weaponData(flash.weapon).color;
+      ctx.save(); ctx.translate(flash.x, flash.y); ctx.scale(flash.dir, 1);
+      ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = flareFade;
+      const glow = ctx.createRadialGradient(5 * size, 0, 1, 5 * size, 0, 26 * size);
+      glow.addColorStop(0, "#fff6dc"); glow.addColorStop(.2, color); glow.addColorStop(.58, "#ff9b45a8"); glow.addColorStop(1, "#ff6e2800");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.ellipse(7 * size, 0, 29 * size, 11 * size, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff5d9"; ctx.shadowBlur = 18 * flareFade; ctx.shadowColor = color;
+      ctx.beginPath(); ctx.ellipse(4, 0, 8 * (1 - t * .65), 4.5 * (1 - t * .55), 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalCompositeOperation = "source-over"; ctx.shadowBlur = 0;
+      ctx.globalAlpha = smokeFade * .5; ctx.fillStyle = "#54534d";
+      for (let i = 0; i < 3; i++) {
+        const puff = t * (10 + i * 3), back = 7 + puff + i * 5;
+        ctx.beginPath(); ctx.ellipse(-back, -puff * .22 + Math.sin(t * 7 + i) * 2, (4 + t * 10) * (1 + i * .08), (3 + t * 6) * (1 + i * .08), -.18, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
   }
   function drawEffects() {
     for (const fx of effects) {
@@ -908,39 +1347,142 @@
     }
     ctx.globalAlpha = 1;
   }
+  function combatCamera() {
+    const crews = living().length ? living() : state.tanks;
+    const view = activeTank()?.view || "battlefield", inset = view === "periscope" ? 48 : view === "commander" ? 65 : 85;
+    let left = W / 2, right = W / 2, top = Math.min(...terrain) - inset, bottom = 0;
+    for (const crew of crews) {
+      const scale = battlefieldScale(crew.x), ground = surfaceY(crew.x);
+      left = Math.min(left, crew.x - 145 * scale); right = Math.max(right, crew.x + 145 * scale);
+      top = Math.min(top, ground - 155 * scale); bottom = Math.max(bottom, ground + 26);
+    }
+    for (const object of obstacles.filter(item => item.active)) {
+      left = Math.min(left, object.x - object.width * .55); right = Math.max(right, object.x + object.width * .55);
+      top = Math.min(top, surfaceY(object.x) - object.height * (object.visualScale || 1) - 18);
+    }
+    // Anticipate ascending ordnance a few frames so high lobs ease into view.
+    // Crew bounds remain included even when following a shell toward an edge.
+    for (const shot of projectiles) {
+      left = Math.min(left, clamp(shot.x - 30, FIELD_LAYOUT.moveMin - 350, FIELD_LAYOUT.moveMax + 350));
+      right = Math.max(right, clamp(shot.x + 30, FIELD_LAYOUT.moveMin - 350, FIELD_LAYOUT.moveMax + 350));
+      top = Math.min(top, shot.y + Math.min(0, shot.vy) * 14 - 36);
+    }
+    left -= 55; right += 55;
+    const scale = Math.min(opticalFrame.w / (right-left), opticalFrame.h / Math.max(280,bottom-top));
+    return { scale, x: opticalFrame.x + opticalFrame.w / 2 - (left+right) / 2 * scale, y: opticalFrame.y + opticalFrame.h / 2 - (top+bottom) / 2 * scale };
+  }
   function render(time = 0, dt = 1) {
-    ctx.save(); if (state.shake > 0) { ctx.translate((Math.random() - .5) * state.shake, (Math.random() - .5) * state.shake); state.shake *= .82; }
-    drawBackground(time);
-    ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(WORLD_ZOOM, WORLD_ZOOM); ctx.translate(-W / 2, -H / 2);
+    const desired = combatCamera(), stamp = `${battleEpoch}/${activeTank()?.view}`;
+    if (!cameraPose || cameraStamp !== stamp) { cameraPose = desired; cameraStamp = stamp; }
+    const blend = 1 - Math.exp(-dt * .13);
+    for (const key of ["scale","x","y"]) cameraPose[key] += (desired[key] - cameraPose[key]) * blend;
+    ctx.save(); ctx.beginPath(); ctx.rect(opticalFrame.x,opticalFrame.y,opticalFrame.w,opticalFrame.h); ctx.clip();
+    ctx.setTransform(cameraPose.scale,0,0,cameraPose.scale,cameraPose.x,cameraPose.y);
+    if (state.shake > 0) { ctx.translate((Math.random() - .5) * state.shake, (Math.random() - .5) * state.shake); state.shake *= .82; }
+    ctx.save();
     drawTerrain(); drawAtmosphericSmoke(); drawObstacles(time);
     for (const tank of state.tanks) drawTank(tank, time);
     drawAimGuide(time);
+    drawMuzzleFlashes();
     for (const projectile of projectiles) drawProjectile(projectile);
     drawEffects(); drawParticles(dt);
     if (state.weather === "rain") drawRain(time);
     ctx.restore();
-    if (state.night) drawNightVision(time);
+    const gradeWash = { DAWN: "#c7793b12", DAYLIGHT: "#e8d9b10e", DUSK: "#34394408", NIGHTFALL: "#101c3828" }[state.atmosphere];
+    if (gradeWash) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = gradeWash; ctx.fillRect(opticalFrame.x, opticalFrame.y, opticalFrame.w, opticalFrame.h); ctx.restore(); }
     ctx.restore();
   }
   function drawRain(time) {
     ctx.save(); ctx.strokeStyle = "#a8c7db42"; ctx.lineWidth = 1; for (let i = 0; i < 75; i++) { const x = (i * 79 + time * .18) % W; const y = (i * 67 + time * .58) % H; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 4, y + 13); ctx.stroke(); } ctx.restore();
   }
   function drawNightVision(time) {
-    ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.fillStyle = "#06120d"; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = "screen";
-    const glow = ctx.createRadialGradient(W * .52, H * .58, 20, W * .52, H * .58, W * .56); glow.addColorStop(0, "#b5ffad45"); glow.addColorStop(1, "#00e67600"); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "#9cffaf36"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(W / 2, H / 2, 240 + Math.sin(time / 500) * 3, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = "#c9ffd080"; ctx.font = "10px monospace"; ctx.fillText("NVG // GEN III", 30, H - 24); ctx.restore();
+    const width = canvas.width, height = canvas.height;
+    const scale = Math.min(window.devicePixelRatio || 1, 1.5);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // Intensifier hue preserves the scene's luminance. Multiplying by nearly
+    // black green crushed terrain/tank detail into an unreadable blank scope.
+    ctx.globalCompositeOperation = "color"; ctx.fillStyle = "#72ac68"; ctx.fillRect(0, 0, width, height); ctx.globalCompositeOperation = "screen";
+    const glow = ctx.createRadialGradient(width * .52, viewportFieldHeight * .58, 20 * scale, width * .52, viewportFieldHeight * .58, Math.max(width, viewportFieldHeight) * .56);
+    glow.addColorStop(0, "#a7e59620"); glow.addColorStop(1, "#6abc5700"); ctx.fillStyle = glow; ctx.fillRect(0, 0, width, height);
+    ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "#9cffaf36"; ctx.lineWidth = scale; ctx.beginPath(); ctx.arc(width / 2, viewportFieldHeight / 2, Math.min(width, viewportFieldHeight) * .36 + Math.sin(time / 500) * 3 * scale, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#c9ffd080"; ctx.font = `${10 * scale}px monospace`; ctx.fillText("NVG // GEN III", 30 * scale, Math.max(30 * scale, viewportFieldHeight - 20 * scale)); ctx.restore();
   }
+  let opticalFrame = {x:0,y:0,w:W,h:560}, cameraPose = null, cameraStamp = "", viewportFieldHeight = 560;
   function resize() {
     const box = canvas.getBoundingClientRect(); const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = Math.round((box.width || W) * ratio); canvas.height = Math.round((box.height || (box.width || W) * H / W) * ratio);
+    const portrait = box.width < 601 && box.height > box.width;
+    const sideLayout = !portrait && box.width >= 820;
+    instrumentFrame.classList.toggle("has-side-consoles", sideLayout);
+    const statusHost = sideLayout ? instrumentFrame : missionPanel;
+    if (statusConsole.parentElement !== statusHost) statusHost.append(statusConsole);
+    instrumentFrame.style.cssText = `left:0;top:0;width:${box.width}px;height:${box.height}px`;
+    cameraPose = null;
+    // Move the actual support action, not a disconnected duplicate, into the
+    // phone mission menu when the compact dashboard has no safe spare slot.
+    const supportAction = document.querySelector(".support-button");
+    const supportHost = missionPanel;
+    if (supportAction && supportAction.parentElement !== supportHost) supportHost.append(supportAction);
+    // Compact controls reuse the same photographs, but sit above their cropped
+    // steel backing and below the real hit targets/labels. Desktop hardware is
+    // restored below the full fascia when the phone rotates.
+    const compactDeck = document.querySelector(".console");
+    if (portrait && hardwareLayer.parentElement !== compactDeck) compactDeck.prepend(hardwareLayer);
+    else if (!portrait && hardwareLayer.parentElement !== cockpitSkin.parentElement) cockpitSkin.before(hardwareLayer);
+    if (portrait) {
+      dashboardFrame.classList.remove("rack-side-layout");
+      dashboardFrame.style.cssText = `left:0;top:0;width:${box.width}px;height:${box.height}px`;
+      const aperture = { x: .025, y: .035, w: .95, h: .44 };
+      opticalFrame = {x:canvas.width*aperture.x,y:canvas.height*aperture.y,w:canvas.width*aperture.w,h:canvas.height*aperture.h};
+    } else {
+      // The viewing port occupies the upper ~54% of the stage; its shell ends
+      // at the exact seam where the lower 32% dashboard artwork begins.
+      const viewShellHeight = box.height * (0.67 / 0.54);
+      windowArmor.style.cssText = `left:0;top:0;width:${box.width}px;height:${viewShellHeight}px`;
+      const dashboardHeight = Math.min(box.height * (0.33 / 0.46), (sideLayout ? box.width * .64 : box.width) * 941 / 1672);
+      const dashboardWidth = dashboardHeight * 1672 / 941;
+      const dashboardTop = box.height - dashboardHeight;
+      dashboardFrame.style.cssText = `left:${(box.width - dashboardWidth) / 2}px;top:${dashboardTop}px;width:${dashboardWidth}px;height:${dashboardHeight}px`;
+      const sideWidth = (box.width - dashboardWidth) / 2;
+      instrumentFrame.style.setProperty("--side-width", `${Math.max(0, sideWidth - 16)}px`);
+      const left = box.width * .094 * ratio;
+      const top = viewShellHeight * .088 * ratio;
+      const right = box.width * .906 * ratio;
+      const bottom = viewShellHeight * .522 * ratio;
+      opticalFrame = {
+        x: Math.max(0, left), y: Math.max(0, top),
+        w: Math.max(1, Math.min(canvas.width, right) - Math.max(0, left)),
+        h: Math.max(1, Math.min(canvas.height, bottom) - Math.max(0, top))
+      };
+    }
+    viewportFieldHeight = opticalFrame.y + opticalFrame.h;
   }
+  // Support activation can reveal an extra dashboard row and shrink the clean
+  // firing lane; keep the camera fit in sync without polling every frame.
+  new ResizeObserver(resize).observe(document.querySelector(".console"));
   function frame(time) {
     const dt = Math.min(2, state.lastTime ? (time - state.lastTime) / 16.67 : 1); state.lastTime = time;
-    update(dt); ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0); render(time, dt); requestAnimationFrame(frame);
+    update(dt);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#242a2b"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (background.complete && background.naturalWidth) {
+      const backdropScale = Math.max(canvas.width / background.naturalWidth, canvas.height / background.naturalHeight);
+      const bw = background.naturalWidth * backdropScale, bh = background.naturalHeight * backdropScale;
+      const grade = { DAWN: "sepia(.28) saturate(1.18) brightness(1.06)", DAYLIGHT: "saturate(.82) brightness(1.2)", DUSK: "saturate(.92) brightness(.98)", NIGHTFALL: "saturate(.72) brightness(.62) hue-rotate(12deg)" }[state.atmosphere] || "none";
+      ctx.save(); ctx.filter = grade;
+      ctx.drawImage(background, (canvas.width - bw) / 2, (canvas.height - bh) / 2, bw, bh);
+      ctx.restore();
+    }
+    render(time, dt);
+    if (state.night) drawNightVision(time);
+    requestAnimationFrame(frame);
   }
   function update(dt) {
     updateAmbientSmoke(dt);
+    for (let i = muzzleFlashes.length - 1; i >= 0; i--) {
+      muzzleFlashes[i].age += dt;
+      if (muzzleFlashes[i].age >= muzzleFlashes[i].life) muzzleFlashes.splice(i, 1);
+    }
     if (state.aiMove) {
       const move = state.aiMove;
       move.elapsed += dt;
@@ -949,22 +1491,31 @@
       move.tank.x = move.startX + (move.targetX - move.startX) * eased;
       if (progress >= 1) {
         move.tank.x = move.targetX; state.aiMove = null; state.moving = false; refreshHud();
-        setTimeout(() => cpuTakeShot(move.tank, move.target, move.aimPoint), 280);
+        deferBattle(() => cpuTakeShot(move.tank, move.target, move.aimPoint), 280, move.tank);
       }
     } else if (state.moving) {
       const tank = activeTank(); if (tank) { tank.x += tank.move * 2.2 * dt; tank.x = Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, tank.x)); }
     }
     for (let i = projectiles.length - 1; i >= 0; i--) {
-      const p = projectiles[i]; const w = weaponData(p.weapon); const wind = state.weather === "wind" ? .018 : state.weather === "rain" ? -.008 : .002; p.vx += wind * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (w.effect === "rail" ? .05 : .16) * dt; p.age += dt;
+      const p = projectiles[i]; const w = weaponData(p.weapon);
+      const flightDt = dt * FLIGHT_TIME_SCALE;
+      // Cap both time and traveled distance per collision check. Fast rounds
+      // still contact narrow cover/tanks instead of jumping over them.
+      const collisionStride = obstacles.reduce((stride, object) => object.active
+        ? Math.min(stride, Math.max(.5, object.width * battlefieldScale(object.x) * .5)) : stride, 8);
+      const steps = Math.max(1, Math.ceil(flightDt / MAX_BALLISTIC_STEP), Math.ceil(Math.hypot(p.vx, p.vy) * flightDt / collisionStride));
+      const stepDt = flightDt / steps;
+      for (let substep = 0; substep < steps; substep++) {
+      advanceBallistic(p, stepDt);
       const clearance = surfaceY(p.x) - p.y;
-      if (w.effect === "cluster" && !p.isSub && p.vy > 0 && clearance < 96) {
+      if (w.effect === "cluster" && !p.isSub && p.vy > 0 && clearance > 8 && clearance < 96) {
         effects.push({ x: p.x, y: p.y, weapon: w.key, age: 0, life: 18, radius: 34, stage: "split" });
         for (let j = 0; j < 5; j++) {
           const spread = j - 2;
           projectiles.push({ x: p.x + spread * 2, y: p.y, vx: p.vx * .72 + spread * 1.05,
-            vy: p.vy * .72 - (2 - Math.abs(spread)) * .7, weapon: p.weapon, team: p.team, age: 0, isSub: true });
+            vy: p.vy * .72 - (2 - Math.abs(spread)) * .7, weapon: p.weapon, team: p.team, age: 0, isSub: true, perks: p.perks });
         }
-        projectiles.splice(i, 1); continue;
+        projectiles.splice(i, 1); break;
       }
       const hit = state.tanks.find((tank) => {
         if (!tank.alive || tank.team === p.team) return false;
@@ -973,7 +1524,8 @@
       });
       const groundHit = p.x < -TERRAIN_OVERDRAW + 4 || p.x > W + TERRAIN_OVERDRAW - 4 || p.y > surfaceY(Math.max(-TERRAIN_OVERDRAW, Math.min(W + TERRAIN_OVERDRAW, p.x))) || p.y > H - 8;
       const coverHit = obstacleAt(p.x, p.y);
-      if (hit || coverHit || groundHit || p.age > 180) { impact(p.x, p.y, w, p.team, hit, p.isSub); projectiles.splice(i, 1); if (projectiles.length === 0) setTimeout(nextTurn, 850); }
+      if (hit || coverHit || groundHit || p.age > MAX_FLIGHT_FRAMES) { impact(p.x, p.y, w, p.team, hit, p.isSub, p.perks); projectiles.splice(i, 1); if (projectiles.length === 0) deferBattle(nextTurn, 850); break; }
+      }
     }
     for (let i = effects.length - 1; i >= 0; i--) { effects[i].age += dt; if (effects[i].age > effects[i].life) effects.splice(i, 1); }
     for (let i = hazards.length - 1; i >= 0; i--) {
@@ -989,28 +1541,35 @@
     tank.damageStage = Math.min(3, (tank.damageStage || 0) + 1);
     tank.hp = Math.max(0, tank.hp - amount);
     if (tank.hp === 0) { tank.alive = false; tank.smokeUntil = performance.now() + 9000; }
+    if (tank === activeTank()) syncInstruments();
+    // Ground hazards can finish a crew while its gun is idle. Resolve that
+    // death once; shots/support already own their delayed turn completion.
+    if (!tank.alive && !state.resolving && !projectiles.length && (tank === activeTank() || !living("left").length || !living("right").length)) {
+      state.aiMove = null; state.moving = false; state.resolving = true;
+      fireButton.disabled = true; refreshSupportButton(); deferBattle(nextTurn, 500);
+    }
   }
-  function impact(x, y, weapon, team, directHit, isSub = false) {
+  function impact(x, y, weapon, team, directHit, isSub = false, perks = { direct: 1, scenery: 1 }) {
     const w = weapon; let radius = w.radius;
     const damage = w.damage * (isSub ? .62 : 1);
     if (isSub && w.effect === "cluster") radius = 14;
     if (w.effect === "rail") radius = 21;
     if (w.effect === "quantum") state.shake = 12;
     if (w.effect === "emp") radius *= .84;
-    deformTerrain(x, y, radius * (w.effect === "rail" ? .4 : 1), isSub ? 5 : w.effect === "rail" ? 8 : Math.min(70, radius * .62));
+    deformTerrain(x, y, radius * (w.effect === "rail" ? .4 : 1), (isSub ? 5 : w.effect === "rail" ? 8 : Math.min(70, radius * .62)) * perks.scenery);
     effects.push({ x, y, weapon: w.key, age: 0, life: isSub ? 22 : w.effect === "quantum" ? 60 : w.effect === "emp" ? 44 : 35, radius, stage: isSub ? "subimpact" : "impact" });
     // Armor only drops on a direct shell/pellet collision. Blast radius still
     // deforms terrain and damages placed scenery, but near-misses do not hurt tanks.
     if (directHit?.alive && directHit.team !== team) {
       const multiplier = w.effect === "emp" ? .55 : w.effect === "ice" ? .78 : 1;
-      damageTank(directHit, Math.max(1, Math.round(damage * multiplier)));
+      damageTank(directHit, Math.max(1, Math.round(damage * multiplier * perks.direct * chassisData(directHit).mitigation)));
     }
     for (const object of obstacles) {
       if (!object.active) continue;
       const distance = Math.hypot(object.x - x, surfaceY(object.x) - object.height * .48 - y);
       const reach = radius + object.width * .48 * battlefieldScale(object.x);
       if (distance < reach) {
-        object.hp = Math.max(0, object.hp - damage * Math.max(.22, 1 - distance / reach));
+        object.hp = Math.max(0, object.hp - damage * perks.scenery * Math.max(.22, 1 - distance / reach));
         if (object.hp === 0) {
           object.active = false;
           object.destroyed = true;
@@ -1036,19 +1595,31 @@
     terrainDirty = true;
   }
   function fire(fromCpu = false) {
-    const tank = activeTank(); if (!tank?.alive || state.winner || projectiles.length || state.moving || (!fromCpu && state.opponent === "cpu" && tank.team === "right")) return;
-    tank.angle = state.angle; const v = aimVector(tank); const start = muzzle(tank);
-    projectiles.push({ x: start.x, y: start.y, vx: v.x, vy: v.y, weapon: state.weapon, team: tank.team, age: 0, isSub: false });
+    const tank = activeTank(); if (!tank?.alive || state.winner || state.resolving || projectiles.length || state.moving || (!fromCpu && state.opponent === "cpu" && tank.team === "right")) return;
+    state.resolving = true;
+    tank.angle = state.angle; tank.power = state.power; const v = aimVector(tank); const start = muzzle(tank);
+    const chassis = chassisData(tank);
+    const perks = { direct: ["shell", "heavy"].includes(tank.weapon) ? chassis.direct : 1, scenery: chassis.scenery };
+    if (muzzleFlashes.length >= MAX_MUZZLE_FLASHES) muzzleFlashes.shift();
+    muzzleFlashes.push({ x: start.x, y: start.y, dir: tank.dir, weapon: tank.weapon, age: 0, life: 32 });
+    projectiles.push({ x: start.x, y: start.y, vx: v.x, vy: v.y, launchVX: v.x, launchVY: v.y, weapon: tank.weapon, team: tank.team, age: 0, isSub: false, perks });
+    fireButton.classList.remove("is-firing");
+    hardwareParts.fire.mount.classList.remove("is-firing");
+    void fireButton.offsetWidth;
+    fireButton.classList.add("is-firing");
+    hardwareParts.fire.mount.classList.add("is-firing");
+    setTimeout(() => { fireButton.classList.remove("is-firing"); hardwareParts.fire.mount.classList.remove("is-firing"); }, 480);
     tank.angle = state.angle; fireButton.disabled = true;
+    refreshSupportButton();
   }
   function cpuShotSolution(tank, target) {
     let best = { score: Infinity, angle: 25, power: 65, blocked: true };
-    const weapon = weaponData(); const originalX = tank.x;
+    const weapon = weaponData(tank.weapon); const originalX = tank.x;
     for (let angle = 1; angle <= 85; angle += 3) for (let power = 40; power <= 100; power += 6) {
-      const radians = angle * Math.PI / 180; const speed = weapon.speed * (.45 + power / 100 * .75);
+      const radians = angle * Math.PI / 180; const speed = launchSpeed(weapon, power);
       const start = muzzle(tank, angle); const vx = Math.cos(radians) * speed * tank.dir; const vy = -Math.sin(radians) * speed;
-      const flight = (target.x - start.x) / vx; const gravity = weapon.effect === "rail" ? .05 : .16;
-      let blocked = flight <= 0 || flight > 210;
+      const flight = (target.x - start.x) / vx; const gravity = BALLISTIC_GRAVITY;
+      let blocked = flight <= 0 || flight > MAX_FLIGHT_FRAMES;
       if (!blocked) for (let sample = 1; sample <= 16; sample++) {
         const t = flight * sample / 17; const sx = start.x + vx * t; const sy = start.y + vy * t + .5 * gravity * t * t;
         if (sy > surfaceY(sx) - 4 || obstacleAt(sx, sy)) { blocked = true; break; }
@@ -1084,18 +1655,24 @@
     return true;
   }
   function cpuTakeShot(tank, target, aimPoint = target) {
-    if (!tank?.alive || state.winner || state.opponent !== "cpu" || !target?.alive) return;
+    if (tank !== activeTank() || !tank?.alive || state.winner || state.resolving || state.opponent !== "cpu") return;
+    if (!target?.alive) {
+      target = living(tank.team === "right" ? "left" : "right").sort((a, b) => Math.abs(a.x - tank.x) - Math.abs(b.x - tank.x))[0];
+      if (!target) { nextTurn(); return; }
+      const skill = CPU_SKILL[state.difficulty] || CPU_SKILL.recruit;
+      aimPoint = { ...target, x: clamp(target.x + (Math.random() - .5) * skill.impactError * 2, 35, W - 35) };
+    }
     const best = cpuShotSolution(tank, aimPoint);
     const skill = CPU_SKILL[state.difficulty] || CPU_SKILL.recruit;
     const angleError = (Math.random() - .5) * skill.angleError;
     const chargeError = (Math.random() - .5) * skill.chargeError;
     state.angle = clamp(Math.round(best.angle + angleError), 0, 85);
-    state.power = clamp(Math.round(best.power + chargeError), 35, 100); tank.angle = state.angle;
-    angleInput.value = state.angle; powerInput.value = state.power; $("angleValue").textContent = state.angle; $("powerValue").textContent = state.power;
-    fireButton.disabled = false; fire(true);
+    state.power = clamp(Math.round(best.power + chargeError), 35, 100); tank.angle = state.angle; tank.power = state.power;
+    angleInput.value = state.angle; powerInput.value = state.power; $("angleValue").textContent = formatAngle(state.angle); $("powerValue").textContent = state.power;
+    syncInstruments(); fireButton.disabled = false; fire(true);
   }
   function cpuTurn() {
-    const tank = activeTank(); if (!tank?.alive || state.winner || state.opponent !== "cpu" || tank.team !== "right") return;
+    const tank = activeTank(); if (!tank?.alive || state.winner || state.resolving || state.moving || projectiles.length || state.opponent !== "cpu" || tank.team !== "right") return;
     const targets = living("left"); if (!targets.length) return;
     const target = targets.sort((a, b) => Math.abs(a.x - tank.x) - Math.abs(b.x - tank.x))[0];
     const skill = CPU_SKILL[state.difficulty] || CPU_SKILL.recruit;
@@ -1105,7 +1682,8 @@
     const currentX = tank.x, currentShot = cpuShotSolution(tank, aimPoint);
     const currentCover = cpuHasCover(currentX, target);
     const allies = state.tanks.filter((other) => other.alive && other.team === tank.team && other !== tank);
-    const candidates = [-180, 180].map((offset) => Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, currentX + offset)))
+    const allowance = Math.min(180, Math.max(0, tank.moveRemaining));
+    const candidates = [-allowance, allowance].map((offset) => Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, currentX + offset)))
       .filter((x, i, list) => Math.abs(x - currentX) > 55 && list.indexOf(x) === i)
       .filter((x) => !allies.some((ally) => Math.abs(ally.x - x) < 115))
       .filter((x) => cpuPathClear(currentX, x))
@@ -1114,34 +1692,39 @@
     for (const x of candidates) {
       tank.x = x; const shot = cpuShotSolution(tank, aimPoint); tank.x = currentX;
       const covered = cpuHasCover(x, target);
-      const defensiveCredit = covered && tank.hp <= 62 ? 210 : covered && tank.hp <= 82 ? 85 : 0;
+      const health = tank.hp / tank.maxHp * 100;
+      const defensiveCredit = covered && health <= 62 ? 210 : covered && health <= 82 ? 85 : 0;
       const utility = shot.score - defensiveCredit;
-      const currentUtility = currentShot.score - (currentCover && tank.hp <= 62 ? 210 : currentCover && tank.hp <= 82 ? 85 : 0);
       const betterFiringLane = shot.score < currentShot.score - 24;
-      const defensiveReposition = tank.hp <= 62 && covered && !currentCover && shot.score < currentShot.score + 500;
+      const defensiveReposition = health <= 62 && covered && !currentCover && shot.score < currentShot.score + 500;
       if ((betterFiringLane || defensiveReposition) && (!moveChoice || utility < moveChoice.utility)) moveChoice = { x, utility, covered, shot };
     }
     if (moveChoice) {
+      tank.moveRemaining = Math.max(0, tank.moveRemaining - Math.abs(moveChoice.x - currentX));
       state.moving = true; fireButton.disabled = true;
       state.aiMove = { tank, target, aimPoint, startX: currentX, targetX: moveChoice.x, elapsed: 0, duration: Math.max(32, Math.abs(moveChoice.x - currentX) / 2.2) };
       refreshHud();
-      announce(moveChoice.covered && tank.hp <= 62 ? "HOSTILE REPOSITIONING // SEEKING COVER" : "HOSTILE REPOSITIONING // CLEARING FIRING LANE");
+      announce(moveChoice.covered && tank.hp / tank.maxHp <= .62 ? "HOSTILE REPOSITIONING // SEEKING COVER" : "HOSTILE REPOSITIONING // CLEARING FIRING LANE");
       return;
     }
     cpuTakeShot(tank, target, aimPoint);
   }
   function moveTank(delta) {
-    const tank = activeTank(); if (!tank?.alive || projectiles.length || state.winner || (state.opponent === "cpu" && tank.team === "right")) return;
+    const tank = activeTank(); if (!tank?.alive || projectiles.length || state.resolving || state.moving || state.winner || (state.opponent === "cpu" && tank.team === "right")) return;
+    if (tank.moveRemaining <= 0) { announce("TRACK ALLOWANCE SPENT // FIRE TO END THIS TURN"); return; }
     const sameSide = state.tanks.filter((other) => other.alive && other.team === tank.team && other !== tank);
-    const next = Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, tank.x + delta * 24));
+    const next = Math.max(FIELD_LAYOUT.moveMin, Math.min(FIELD_LAYOUT.moveMax, tank.x + delta * Math.min(24, tank.moveRemaining)));
     if (sameSide.some((other) => Math.abs(other.x - next) < 115)) { announce("TRACKS BLOCKED BY FRIENDLY UNIT"); return; }
+    if (!cpuPathClear(tank.x, next) || obstacleAt(next, surfaceY(next) - 35)) { announce("TRACKS BLOCKED BY INTACT COVER // BREACH OR REPOSITION"); return; }
+    tank.moveRemaining = Math.max(0, tank.moveRemaining - Math.abs(next - tank.x));
     tank.x = next; tank.move = 0; refreshHud();
   }
   function useSupport() {
-    const tank = activeTank(); if (!tank || state.support === "off" || state.supportUsed[tank.team] || projectiles.length || state.winner || (state.opponent === "cpu" && tank.team === "right")) { announce("NO SUPPORT AVAILABLE"); return; }
+    const tank = activeTank(); if (!tank || state.support === "off" || state.supportUsed[tank.team] || projectiles.length || state.resolving || state.moving || state.winner || (state.opponent === "cpu" && tank.team === "right")) { announce("NO SUPPORT AVAILABLE"); return; }
+    state.resolving = true;
     state.supportUsed[tank.team] = true;
     let delay = 350;
-    if (state.support === "repair") { tank.hp = Math.min(100, tank.hp + 30); announce("FIELD CREW // ARMOR PATCHED +30"); }
+    if (state.support === "repair") { tank.hp = Math.min(tank.maxHp, tank.hp + 30); announce("FIELD CREW // ARMOR PATCHED +30"); }
     else if (state.support === "scanner") {
       state.scanUntil = performance.now() + 7000; announce("RECON SCAN // CONTACTS PAINTED FOR 7 SECONDS");
     } else {
@@ -1151,57 +1734,127 @@
         if (state.support === "air" || state.support === "meteor") {
           delay = state.support === "air" ? 1450 : 950;
           const weapon = weapons.find((w) => w.key === supportWeapon);
-          for (let i = 0; i < (state.support === "air" ? 3 : 1); i++) setTimeout(() => { if (!state.winner) impact(target.x + (Math.random() - .5) * 90, surfaceY(target.x), weapon, tank.team, target); }, i * 330);
+          for (let i = 0; i < (state.support === "air" ? 3 : 1); i++) deferBattle(() => { if (!state.winner) impact(target.x + (Math.random() - .5) * 90, surfaceY(target.x), weapon, tank.team, target); }, i * 330, tank);
         } else {
           const weapon = weapons.find((w) => w.key === supportWeapon); impact(target.x, surfaceY(target.x) - 45, weapon, tank.team, target);
         }
       }
       announce(`${({ air: "AIR SUPPORT INBOUND", laser: "ORBITAL LASER LOCK", rod: "LIGHTNING ROD CHARGING", meteor: "METEOR DROP INBOUND" })[state.support]} // TARGET MARKED`);
     }
-    refreshHud(); setTimeout(() => { if (!state.winner) nextTurn(); }, delay);
+    refreshHud(); deferBattle(() => { if (!state.winner) nextTurn(); }, delay, tank);
   }
   function saveGame() {
+    if (state.resolving || state.moving || projectiles.length) { announce("WAIT FOR THE ROUND TO CLEAR BEFORE SAVING"); return; }
     const saved = { ...state, tanks: state.tanks, terrain, obstacles, projectiles: [], effects: [], particles: [], hazards: [] };
     try { localStorage.setItem("tam-v2-save", JSON.stringify(saved)); announce("BATTLE STATE SAVED TO THIS BROWSER"); } catch { announce("SAVE FAILED // STORAGE UNAVAILABLE"); }
   }
   function loadGame() {
     try {
       const saved = JSON.parse(localStorage.getItem("tam-v2-save") || "null"); if (!saved || !Array.isArray(saved.terrain) || !Array.isArray(saved.tanks)) throw new Error("No save");
-      Object.assign(state, saved); terrain.splice(0, terrain.length, ...saved.terrain); obstacles.splice(0, obstacles.length, ...(Array.isArray(saved.obstacles) ? saved.obstacles : [])); terrainDirty = true; state.tanks = saved.tanks; projectiles.length = 0; effects.length = 0; particles.length = 0; hazards.length = 0;
-      $("mode").value = state.mode; $("opponent").value = state.opponent; $("formation").value = String(state.formation); $("difficulty").value = state.difficulty; $("weather").value = state.weather; $("smoke").value = state.smoke || "thin"; $("support").value = state.support;
-      angleInput.value = state.angle; powerInput.value = state.power; $("angleValue").textContent = state.angle; $("powerValue").textContent = state.power; refreshWeaponChoices(); selectTurn(state.turnIndex, false); announce("BATTLE STATE RESTORED");
+      battleEpoch++;
+      Object.assign(state, saved); state.recorded = !!saved.recorded;
+      terrain.splice(0, terrain.length, ...saved.terrain); obstacles.splice(0, obstacles.length, ...(Array.isArray(saved.obstacles) ? saved.obstacles : [])); terrainDirty = true;
+      if (!Number.isFinite(state.seed)) state.seed = randomSeed();
+      if (!FIELD_SCENES[state.sceneIndex]) state.sceneIndex = 0;
+      state.mapName = FIELD_SCENES[state.sceneIndex].name;
+      if (!state.atmosphere) state.atmosphere = "DUSK";
+      // Old saves had one shared weapon. Migrate it only to the saved active
+      // tank; other crews start with their own standard shell and charge.
+      state.tanks = saved.tanks.map((tank, index) => {
+        const chassis = CHASSIS[tank.chassis] ? tank.chassis : defaultChassis(tank.id);
+        const spec = CHASSIS[chassis];
+        // Preserve existing health on legacy saves, including old 100 HP crews.
+        // Missing current-turn travel is zero so loading never grants extra moves.
+        const maxHp = Number.isFinite(tank.maxHp) && tank.maxHp > 0 ? tank.maxHp : Math.max(spec.hp, tank.hp || 0);
+        return { ...tank, chassis, maxHp, hp: clamp(tank.hp, 0, maxHp), moveRemaining: Number.isFinite(tank.moveRemaining) ? clamp(tank.moveRemaining, 0, spec.travel) : index === saved.turnIndex ? 0 : spec.travel,
+          weapon: weaponData(tank.weapon || (index === saved.turnIndex ? saved.weapon : "shell")).key, power: clamp(tank.power || (index === saved.turnIndex ? saved.power : 63) || 63, 20, 100), view: COCKPIT_VIEWS.includes(tank.view) ? tank.view : "battlefield" };
+      });
+      state.moving = false; state.resolving = false; state.aiMove = null; state.lastTime = 0;
+      projectiles.length = 0; effects.length = 0; particles.length = 0; hazards.length = 0; muzzleFlashes.length = 0;
+      state.playerChassis = CHASSIS[saved.playerChassis] ? saved.playerChassis : state.tanks.find((tank) => tank.team === "left")?.chassis || "m40";
+      $("mode").value = state.mode; $("opponent").value = state.opponent; $("formation").value = String(state.formation); playerChassisSelect.value = state.playerChassis; $("difficulty").value = state.difficulty; $("weather").value = state.weather; $("smoke").value = state.smoke || "thin"; $("support").value = state.support;
+      angleInput.value = state.angle; powerInput.value = state.power; $("angleValue").textContent = formatAngle(state.angle); $("powerValue").textContent = state.power; refreshWeaponChoices(); selectTurn(state.turnIndex, false); syncCombatSwitches(); refreshHud(); announce("BATTLE STATE RESTORED");
     } catch { announce("NO VALID FIELD SAVE FOUND"); }
   }
   function aimChange() {
-    state.angle = Number(angleInput.value); const tank = activeTank(); if (tank) tank.angle = state.angle; $("angleValue").textContent = state.angle;
+    if (!canControlTank()) return;
+    state.angle = Number(angleInput.value); const tank = activeTank(); if (tank) tank.angle = state.angle; $("angleValue").textContent = formatAngle(state.angle);
+    syncInstruments();
   }
   angleInput.addEventListener("input", aimChange);
-  powerInput.addEventListener("input", () => { state.power = Number(powerInput.value); $("powerValue").textContent = state.power; });
-  weaponSelect.addEventListener("change", () => { state.weapon = weaponSelect.value; updateWeaponReadout(); });
-  fireButton.addEventListener("click", fire);
+  powerInput.addEventListener("input", () => { if (!canControlTank()) return; state.power = Number(powerInput.value); activeTank().power = state.power; $("powerValue").textContent = state.power; syncInstruments(); });
+  // Native ranges remain focusable and keyboard-readable, while the full dial
+  // is the pointer/touch target. Dragging either gauge never arms the gun.
+  for (const input of [angleInput, powerInput]) {
+    let pointer = null;
+    let leverDrag = false;
+    const lever = input.closest(".instrument").querySelector(".charge-lever");
+    const setFromPointer = (event) => {
+      if (input.disabled || !canControlTank()) return;
+      const box = input.getBoundingClientRect();
+      const degrees = Math.atan2(event.clientX - box.left - box.width / 2, -(event.clientY - box.top - box.height / 2)) * 180 / Math.PI;
+      const leverBox = leverDrag ? lever.getBoundingClientRect() : null;
+      const fraction = leverDrag ? clamp(1 - (event.clientY - leverBox.top) / leverBox.height, 0, 1) : (clamp(degrees, -120, 120) + 120) / 240;
+      const selected = Number(input.min) + fraction * (Number(input.max) - Number(input.min));
+      input.value = input === angleInput ? (Math.round(selected * 10) / 10).toFixed(1) : Math.round(selected);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    const startDrag = (event) => {
+      if (input.disabled || !canControlTank() || (event.pointerType === "mouse" && event.button !== 0)) return;
+      leverDrag = event.currentTarget === lever;
+      event.preventDefault(); pointer = event.pointerId; input.setPointerCapture(pointer); input.focus({ preventScroll: true }); setFromPointer(event);
+    };
+    input.addEventListener("pointerdown", startDrag);
+    lever?.addEventListener("pointerdown", startDrag);
+    input.addEventListener("pointermove", (event) => { if (pointer === event.pointerId) setFromPointer(event); });
+    const endDrag = () => { pointer = null; };
+    input.addEventListener("pointerup", endDrag); input.addEventListener("pointercancel", endDrag); input.addEventListener("lostpointercapture", endDrag);
+  }
+  weaponSelect.addEventListener("change", () => { if (!canControlTank()) return; state.weapon = weaponSelect.value; activeTank().weapon = state.weapon; updateWeaponReadout(); });
+  ordnanceRack.addEventListener("click", (event) => {
+    const choice = event.target.closest(".ordnance-choice");
+    if (!choice || choice.disabled || !canControlTank()) return;
+    weaponSelect.value = choice.dataset.weapon;
+    weaponSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  cockpitViewSelect.addEventListener("change", () => { const tank = activeTank(); if (tank && COCKPIT_VIEWS.includes(cockpitViewSelect.value)) { tank.view = cockpitViewSelect.value; syncCockpitView(); resize(); } });
+  fireButton.addEventListener("click", () => fire());
   $("moveLeft").addEventListener("click", () => moveTank(-1)); $("moveRight").addEventListener("click", () => moveTank(1));
-  $("newMap").addEventListener("click", () => { if (projectiles.length || state.moving) { announce("WAIT FOR THE ROUND TO CLEAR"); return; } newMap(); });
+  $("newMap").addEventListener("click", () => { if (projectiles.length || state.moving || state.resolving) { announce("WAIT FOR THE ROUND TO CLEAR"); return; } newMap(); });
   $("saveGame").addEventListener("click", saveGame); $("loadGame").addEventListener("click", loadGame);
   $("helpButton").addEventListener("click", () => $("manualDialog").showModal());
-  $("nightToggle").addEventListener("click", (event) => { state.night = !state.night; const btn = event.currentTarget; btn.classList.toggle("is-on", state.night); btn.setAttribute("aria-pressed", String(state.night)); btn.querySelector("span").textContent = state.night ? "ON" : "OFF"; });
-  $("assistToggle").addEventListener("click", (event) => { state.assist = !state.assist; const btn = event.currentTarget; btn.classList.toggle("is-on", state.assist); btn.setAttribute("aria-pressed", String(state.assist)); btn.querySelector("span").textContent = state.assist ? "ON" : "OFF"; });
-  $("applySettings").addEventListener("click", applyModeSettings);
+  $("nightToggle").addEventListener("click", () => { hardwareParts.night.mount.classList.remove("is-hinting"); state.night = !state.night; syncCombatSwitches(); });
+  $("assistToggle").addEventListener("click", () => { hardwareParts.assist.mount.classList.remove("is-hinting"); state.assist = !state.assist; syncCombatSwitches(); });
+  fireButton.addEventListener("pointerdown", () => { if (!fireButton.disabled) hardwareParts.fire.mount.classList.add("is-pressed"); });
+  const releaseFireFace = () => hardwareParts.fire.mount.classList.remove("is-pressed");
+  for (const event of ["pointerup", "pointercancel", "pointerleave", "lostpointercapture"]) fireButton.addEventListener(event, releaseFireFace);
+  window.addEventListener("blur", releaseFireFace);
+  $("applySettings").addEventListener("click", () => { applyModeSettings(); missionMenu.open = false; $("applySettings").blur(); });
   $("formation").addEventListener("change", (event) => { if (state.mode !== "campaign" && state.mode !== "night") { state.formation = Number(event.target.value); } });
   window.addEventListener("resize", resize);
   window.addEventListener("keydown", (event) => {
-    if (event.repeat || $("manualDialog").open || /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
-    const tank = activeTank(); if (!tank) return;
+    const focused = document.activeElement;
+    const focusedGauge = focused === angleInput || focused === powerInput;
+    if ($("manualDialog").open || missionMenu.open || /SELECT|TEXTAREA/.test(focused.tagName) || (focused.tagName === "INPUT" && !focusedGauge) || focused.isContentEditable) return;
+    const tank = activeTank(); if (!canControlTank(tank)) return;
     const key = event.key.toLowerCase();
-    if (["w", "s", "q", "e", "a", "d", " "].includes(key) || event.key === "Enter") event.preventDefault();
+    // Focused native ranges keep their standard arrow/Home/End semantics while
+    // labeled game keys still work immediately after dragging a dial.
+    if (focusedGauge && ["arrowleft", "arrowright", "arrowup", "arrowdown", "home", "end", "pageup", "pagedown"].includes(key)) return;
+    // Space and Enter activate a focused native button exactly once.
+    if ((key === " " || key === "enter") && /BUTTON|SUMMARY|A/.test(focused.tagName)) return;
+    if (["w", "s", "q", "e", "a", "d", "arrowleft", "arrowright", " "].includes(key) || event.key === "Enter") event.preventDefault();
+    if (event.repeat && ["a", "d", "arrowleft", "arrowright", " ", "enter"].includes(key)) return;
     if (key === "w") { state.angle = Math.min(85, state.angle + 1); angleInput.value = state.angle; aimChange(); }
     if (key === "s") { state.angle = Math.max(0, state.angle - 1); angleInput.value = state.angle; aimChange(); }
-    if (key === "q") { state.power = Math.max(20, state.power - 1); powerInput.value = state.power; $("powerValue").textContent = state.power; }
-    if (key === "e") { state.power = Math.min(100, state.power + 1); powerInput.value = state.power; $("powerValue").textContent = state.power; }
-    if (key === "a") moveTank(-1); if (key === "d") moveTank(1);
+    if (key === "q") { state.power = Math.max(20, state.power - 1); tank.power = state.power; powerInput.value = state.power; $("powerValue").textContent = state.power; syncInstruments(); }
+    if (key === "e") { state.power = Math.min(100, state.power + 1); tank.power = state.power; powerInput.value = state.power; $("powerValue").textContent = state.power; syncInstruments(); }
+    if (key === "a" || key === "arrowleft") moveTank(-1); if (key === "d" || key === "arrowright") moveTank(1);
     if (key === " " || event.key === "Enter") fire();
   });
   const supportButton = document.createElement("button"); supportButton.className = "control-button slim support-button"; supportButton.type = "button"; supportButton.innerHTML = "✦ <span>NO SUPPORT</span>"; supportButton.title = "Select a support option in Mission Configuration"; supportButton.addEventListener("click", useSupport);
-  document.querySelector(".utility-actions").append(supportButton);
-  createTerrain(); generateObstacles(); setFormation(2); refreshWeaponChoices(); resize(); selectTurn(0, false); refreshHud();
+  menuActions.append(supportButton);
+  playerChassisSelect.value = state.playerChassis;
+  generateBattlefield(randomSeed()); setFormation(2); refreshWeaponChoices(); resize(); selectTurn(0, false); refreshHud(); syncCombatSwitches(); renderBattleRecords(); showSwitchHints();
   requestAnimationFrame(frame);
 })();

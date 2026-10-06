@@ -23,7 +23,7 @@ button { color: inherit; }
 .build-stamp { display: flex; align-items: center; gap: 8px; color: #c0c9c9; font-size: 9px; letter-spacing: .16em; }
 .build-stamp i, .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #88d693; box-shadow: 0 0 9px #88d693; }
 .topbar nav { display: flex; gap: 5px; margin-left: auto; }
-.topbar nav a { padding: 8px 11px; color: #aab5b5; border: 1px solid #465254; text-decoration: none; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.topbar nav a { flex: 0 0 auto; white-space: nowrap; padding: 8px 11px; color: #aab5b5; border: 1px solid #465254; text-decoration: none; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
 .topbar nav a:hover, .topbar nav a:focus-visible { color: #fff; border-color: var(--cyan); }
 .battlefield-section { margin-top: 12px; overflow: hidden; border: 1px solid #697577; background: #101719; box-shadow: 0 15px 42px #0007, inset 0 0 0 3px #111719; }
 .view-rim { height: 25px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(#384346,#202a2c); border-bottom: 1px solid #778081; color: #aeb8b8; font-size: 8px; letter-spacing: .17em; }
@@ -172,4 +172,1147 @@ footer { display: flex; justify-content: space-between; gap: 8px; padding: 12px 
   .build-stamp { display: none; }
   .readouts > span:nth-child(3) { display: none; }
   .weapon-spec span { max-width: 100px; }
+}
+
+/* The field is the screen; the console occupies the unused foreground soil. */
+html, body { height: 100%; }
+.app-shell { display: flex; flex-direction: column; align-items: stretch; width: 100%; max-width: none; height: 100dvh; min-height: 430px; padding: 0; }
+.topbar { flex: 0 0 52px; height: 52px; padding: 0 16px; position: relative; z-index: 5; }
+.battlefield-section { display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; border: 0; box-shadow: none; }
+.canvas-wrap { flex: 1; min-height: 0; }
+canvas { width: 100%; height: 100%; aspect-ratio: auto; }
+.view-rim, .readouts { flex-shrink: 0; }
+footer { display: none; }
+.console { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; margin: 0; padding: 8px 14px 6px; border: 0; border-top: 2px solid #9eaba4; border-radius: 0; background: linear-gradient(165deg,#55605e 0,#2f3939 4%,#1d2728 42%,#0e1719 100%); box-shadow: 0 -6px 26px #0009,inset 0 1px #ced0b64a; line-height: normal; display: grid; grid-template-columns: minmax(0,1fr) minmax(205px,24%); column-gap: 10px; }
+.console-heading { grid-column: 1/-1; border: 0; padding: 0 0 5px; }
+.console-heading h1 { display: none; }
+.turn-pill { padding: 3px 8px; font-size: 9px; }
+.control-grid { grid-template-columns: 1fr 1fr 1.15fr .9fr; gap: 8px; padding: 0; }
+.instrument { min-height: 94px; padding: 9px 10px 5px; }
+.instrument .eyebrow { font-size: 10px; margin-bottom: 5px; }
+.instrument input[type=range] { height: 44px; touch-action: none; }
+.instrument select { height: 44px; font-size: 13px; }
+.weapon-spec { margin-top: 4px; font-size: 9px; }
+.action-rail { padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.utility-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.control-button, .control-button.slim { min-height: 44px; font-size: 11px; }
+.fire-button { flex: 1; min-width: 0; height: 48px; width: 100%; }
+.fire-button strong { font-size: 13px; }
+.fire-button small { font-size: 9px; }
+.support-button { grid-column: 1/-1; }
+.support-button:disabled { display: none; }
+.quick-instrument { display: flex; flex-direction: column; }
+.quick-instrument > .eyebrow { display: none; }
+.switch-row { margin: 0; gap: 4px; font-size: 9px; flex: 1; }
+.toggle { min-height: 44px; min-width: 70px; justify-content: center; font-size: 10px; }
+.toggle svg { width: 28px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.toggle.is-on { color: #a3ffb7; background: linear-gradient(#355647,#13281e); border-color: #91d8a3; }
+.keyline { grid-column: 1/-1; min-height: 20px; font-size: 8px; padding: 3px 0 0; }
+.mission-settings { position: relative; margin: 0 0 0 5px; border: 0; background: transparent; }
+.mission-settings summary { min-height: 44px; padding: 8px 12px; gap: 8px; font-size: 10px; }
+.mission-settings summary::after { content: "☰"; font-size: 17px; padding: 0; border: 0; background: transparent; }
+.mission-settings[open] summary::after { content: "×"; }
+.mission-settings[open] { background: #202b2c; }
+.mission-settings .settings-grid { position: absolute; top: 44px; right: 0; width: min(660px,calc(100vw - 16px)); grid-template-columns: repeat(3,minmax(0,1fr)); padding: 12px; padding-bottom: 68px; background: linear-gradient(#344140,#172223); box-shadow: 0 15px 30px #000a; border: 1px solid #8e9993; max-height: calc(100dvh - 110px); overflow-y: auto; }
+.settings-grid label { font-size: 10px; color: #d7e0dc; }
+.settings-grid select { height: 44px; font-size: 12px; }
+.apply-settings { min-height: 44px; }
+.menu-actions { position: absolute; top: 266px; right: 12px; left: auto; width: min(634px,calc(100vw - 40px)); display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.canvas-toast { bottom: 190px; white-space: normal; text-align: center; max-width: 85%; font-size: 12px; }
+button:focus-visible, summary:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid #9bffff; outline-offset: 2px; }
+@media (max-width: 900px) {
+  .build-stamp, .brand small { display: none; }
+  .topbar { gap: 7px; padding: 0 8px; }
+  .brand { min-width: 0; font-size: 9px; }
+  .topbar nav a { font-size: 8px; padding: 6px; }
+  .console { padding: 6px 8px 4px; column-gap: 6px; grid-template-columns: minmax(0,1fr) 180px; }
+  .control-grid { grid-template-columns: 1fr 1fr 1.15fr; gap: 5px; }
+  .quick-instrument { grid-column: 1/-1; flex-direction: row; min-height: 44px; padding: 0 6px; gap: 18px; }
+  .switch-row { justify-content: center; }
+  .instrument { padding: 5px 7px; min-height: 80px; }
+  .instrument .eyebrow { font-size: 8px; }
+  .weapon-spec span { display: none; }
+  .action-rail { justify-content: flex-end; }
+  .keyline { display: none; }
+  .console-heading { padding-bottom: 3px; }
+}
+@media (max-width: 600px) {
+  .app-shell { min-height: 570px; }
+  .topbar { flex-wrap: nowrap; flex-basis: 48px; }
+  .brand > span:last-child, .topbar nav a:not(:first-child), .rim-coords { display: none; }
+  .topbar nav { margin-left: auto; }
+  .mission-settings summary { font-size: 9px; padding: 8px; }
+  .console { grid-template-columns: 1fr; padding: 6px; gap: 5px; }
+  .control-grid { grid-template-columns: 1fr 1fr; }
+  .ammo-instrument { grid-column: 1; }
+  .quick-instrument { grid-column: 2; flex-direction: row; gap: 4px; padding: 4px; }
+  .switch-row { flex-direction: column; font-size: 7px; }
+  .toggle { min-width: 54px; padding: 1px; }
+  .toggle svg { width: 22px; }
+  .action-rail { flex-direction: row; }
+  .utility-actions { flex: 1; }
+  .fire-button { flex: 1; min-height: 44px; padding: 0 7px; }
+  .fire-button strong { font-size: 10px; }
+  .fire-button kbd, .fire-icon { display: none; }
+  .support-button { display: none; }
+  .console-heading .eyebrow { font-size: 8px; }
+  .turn-pill { font-size: 7px; }
+  .readouts { height: 24px; font-size: 7px; }
+  .readouts .weather-readout { display: none; }
+  .canvas-toast { bottom: 245px; }
+  .mission-settings .settings-grid { grid-template-columns: 1fr 1fr; }
+  .menu-actions { top: 351px; grid-template-columns: 1fr 1fr; }
+}
+.mission-panel { position: absolute; top: 44px; right: 0; width: min(660px,calc(100vw - 16px)); max-height: calc(100dvh - 75px); overflow-y: auto; padding: 12px; background: linear-gradient(#344140,#172223); border: 1px solid #8e9993; box-shadow: 0 15px 30px #000a; }
+.mission-settings .settings-grid { position: static; width: auto; max-height: none; padding: 0; background: none; box-shadow: none; border: 0; overflow: visible; }
+.menu-actions { position: static; width: auto; margin-top: 12px; }
+@media (max-width:600px) {
+  .utility-actions { grid-template-columns: 1fr 1fr; }
+  .support-button { display: block; grid-column:1/-1; }
+}
+/* Phones in landscape keep the battle lane above a two-row dashboard. */
+@media (max-height: 520px) and (min-width: 601px) {
+  .app-shell { min-height: 0; }
+  .topbar { flex-basis: 44px; height: 44px; }
+  .view-rim { height: 18px; }
+  .readouts { height: 20px; }
+  .console { padding: 3px 6px; grid-template-columns: minmax(0,1fr) 170px; gap: 4px; }
+  .console-heading, .keyline, .range-label, .weapon-spec, .quick-instrument > .eyebrow { display: none; }
+  .control-grid { grid-template-columns: 1fr 1fr 1fr .8fr; gap: 4px; }
+  .instrument { min-height: 78px; padding: 4px; }
+  .instrument .eyebrow { font-size: 8px; margin-bottom: 2px; }
+  .quick-instrument { grid-column: auto; flex-direction: row; gap: 3px; }
+  .switch-row { flex-direction: column; gap: 0; font-size: 7px; }
+  .toggle { min-width: 44px; padding: 0; flex-direction: column; gap: 0; }
+  .toggle svg { width: 20px; height: 20px; }
+  .fire-button, .control-button { min-height: 44px; }
+  .fire-button strong { font-size: 10px; }
+  .fire-button small, .fire-button kbd, .fire-icon { display: none; }
+  .mission-card, .target-card { top: 5px; padding: 4px 6px; }
+}
+@media (max-height:570px) and (max-width:600px) { .app-shell { min-height: 0; } }
+
+/* Reimagined steel gunner deck: generated fascia is art only; every control stays live HTML. */
+.console {
+  grid-template-columns: minmax(0,1fr);
+  row-gap: 5px;
+  padding: 8px 14px 5px;
+  border-top: 2px solid #c4b89a;
+  background-color: #12191a;
+  background-image: linear-gradient(180deg,#12191a35,#12191a70),url("assets/cockpit-dashboard-v2.webp");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100% 100%;
+}
+.console-heading { min-height: 32px; padding: 0 4px 4px; border: 0; }
+.console-heading h1 { display: none; }
+.cockpit-selector { display: inline-flex; align-items: center; gap: 8px; color: #d9c9a3; font-size: 9px; font-weight: 900; letter-spacing: .15em; }
+.cockpit-selector select { min-height: 32px; max-width: min(270px,38vw); padding: 0 28px 0 10px; border: 1px solid #998966; border-radius: 2px; background: linear-gradient(#252c2a,#0e1413); color: #f4e5c0; font-size: 11px; font-weight: 800; }
+.cockpit-selector select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.control-grid { grid-template-columns: 1.08fr 1.04fr 1.2fr .72fr; gap: 8px; padding-top: 0; }
+.instrument { min-height: 86px; padding: 11px 10px 6px; border: 0; background: transparent; box-shadow: none; }
+.instrument::before, .instrument::after { display: none; }
+.instrument .eyebrow { color: #bbc0b2; text-shadow: 0 1px 3px #000; }
+.instrument input[type="range"] { height: 38px; }
+.ammo-instrument select { height: 38px; }
+.quick-instrument { padding-inline: 6px; }
+.switch-row { color: #c3c2ae; text-shadow: 0 1px 3px #000; }
+.action-rail { flex-direction: row; align-items: center; padding: 3px 2px 0; border-top: 1px solid #b6a88245; }
+.utility-actions { flex: 1 1 auto; gap: 5px; }
+.control-button, .control-button.slim { min-height: 40px; border-color: #90846a; background: linear-gradient(#3c423d,#171d1b 70%,#0c1110); }
+.fire-button { flex: 0 0 260px; width: 260px; height: 46px; min-width: 220px; min-height: 46px; }
+.angle-wheel, .power-gauge { position: absolute; z-index: 0; right: 12px; top: 25px; width: 54px; height: 54px; border: 2px solid #98896b; border-radius: 50%; background: radial-gradient(circle at 40% 35%,#49504a,#111614 67%); box-shadow: 0 0 0 4px #090d0cb8,inset 0 0 0 2px #b0a17a35,0 2px 6px #000; pointer-events: none; }
+.angle-wheel::before, .power-gauge::before { content: ""; position: absolute; inset: 5px; border: 1px dashed #d0bc8b76; border-radius: 50%; }
+.angle-wheel i, .power-gauge i { position: absolute; left: 50%; top: 50%; width: 2px; height: 20px; border-radius: 2px; background: #edb75e; box-shadow: 0 0 6px #f5ae46; transform-origin: 50% 1px; }
+.angle-wheel i { transform: rotate(var(--barrel-angle)) translateY(-15px); }
+.power-gauge i { transform: rotate(var(--power-angle)) translateY(-15px); }
+.angle-instrument > .eyebrow, .angle-instrument > input, .angle-instrument > .range-label,
+.power-instrument > .eyebrow, .power-instrument > input, .power-instrument > .range-label { position: relative; z-index: 1; }
+.angle-instrument input[type="range"], .power-instrument input[type="range"] { width: calc(100% - 58px); }
+.angle-instrument .range-label, .power-instrument .range-label { width: calc(100% - 58px); }
+.mission-settings { grid-column: 1; margin: 0 -14px; }
+@media (max-width: 900px) {
+  .console { grid-template-columns: minmax(0,1fr) 180px; }
+  .control-grid { grid-template-columns: 1fr 1fr 1.15fr; }
+  .quick-instrument { grid-column: 1/-1; }
+  .angle-wheel, .power-gauge { width: 44px; height: 44px; right: 7px; }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .console { grid-template-columns: minmax(0,1fr); }
+  .action-rail { flex-direction: row; align-items: center; }
+  .utility-actions { display: flex; flex: 1 1 auto; }
+  .fire-button { flex: 0 0 210px; width: 210px; height: 46px; }
+}
+@media (max-width: 600px) {
+  .console { grid-template-columns: 1fr; background-image: linear-gradient(#12191a55,#12191a85),url("assets/cockpit-dashboard-v2.webp"); }
+  .control-grid { grid-template-columns: 1fr 1fr; }
+  .quick-instrument { grid-column: 2; }
+  .cockpit-selector { gap: 4px; font-size: 7px; }
+  .cockpit-selector select { min-height: 32px; max-width: 37vw; font-size: 9px; }
+  .angle-wheel, .power-gauge { width: 38px; height: 38px; right: 5px; top: 27px; }
+  .angle-instrument input[type="range"], .power-instrument input[type="range"], .angle-instrument .range-label, .power-instrument .range-label { width: calc(100% - 43px); }
+}
+/* Short landscape screens keep the view picker visible instead of hiding its parent. */
+@media (max-height: 520px) {
+  .console-heading { display: flex; min-height: 26px; padding: 0 2px 2px; }
+  .console-heading > div { display: none; }
+  .cockpit-selector select { min-height: 26px; }
+}
+@media (max-height: 520px) and (min-width: 601px) {
+  .console { grid-template-columns: minmax(0,1fr); padding: 2px 6px; row-gap: 1px; }
+  .console-heading { min-height: 22px; }
+  .turn-pill { padding: 2px 6px; }
+  .control-grid { grid-template-columns: 1fr 1fr 1.15fr .75fr; gap: 3px; }
+  .quick-instrument { grid-column: auto; flex-direction: column; min-height: 56px; padding: 2px; }
+  .instrument { min-height: 56px; padding: 3px 5px; }
+  .instrument .eyebrow { margin-bottom: 2px; font-size: 7px; }
+  .instrument input[type="range"], .ammo-instrument select { height: 28px; }
+  .angle-wheel, .power-gauge { display: none; }
+  .action-rail { flex-direction: row; align-items: center; gap: 4px; padding: 1px 2px; }
+  .utility-actions { display: flex; flex: 1 1 auto; gap: 3px; }
+  .control-button, .control-button.slim { min-height: 36px; }
+  .fire-button { flex: 0 0 190px; width: 190px; height: 38px; min-height: 38px; }
+  .mission-settings { margin: 0 -6px; }
+  .mission-settings summary { min-height: 26px; padding: 2px 8px; font-size: 8px; }
+  .mission-settings summary::after { padding: 2px 6px; }
+}
+@media (max-width: 600px) {
+  .action-rail { flex-direction: row; }
+  .utility-actions { flex: 1 1 0; }
+  .fire-button { flex: 1 1 0; width: auto; height: 44px; min-width: 0; }
+}
+
+/* Armored optical station. Image carries the steel; native controls carry state. */
+body { background: #090b09; }
+.app-shell { min-height: 0; }
+.topbar { flex-basis: 42px; height: 42px; background: #171b17; border-color: #585343; }
+.brand { font-size: 10px; color: #cec8ac; }
+.brand small, .build-stamp { font-size: 7px; }
+.topbar nav a { background: #191d17; border-color: #555544; color: #d6cfb6; }
+.battlefield-section { position: relative; }
+.view-rim { display: none; }
+.canvas-wrap { position: relative; overflow: hidden; background: #10130f; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cockpit-skin { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+.gauge-layer { --angle-x: 17.6%; --power-x: 38.5%; position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+body[data-chassis="r12"] .gauge-layer { --angle-x: 35%; --power-x: 52%; }
+.live-dial { position: absolute; top: 78%; width: 12.2%; height: 21.68%; transform: translate(-50%,-50%); pointer-events: none; }
+.live-elevation { left: var(--angle-x); }
+.live-charge { left: var(--power-x); }
+.live-dial .dial-face { inset: -1%; border: 0; box-shadow: none; }
+.live-dial .dial-label { top: 60%; bottom: auto; left: 8%; right: 8%; font-size: clamp(6px,.55vw,10px); z-index: 5; }
+.live-dial .dial-label b { font-size: clamp(17px,1.75vw,29px); margin: 2px 0; }
+.live-dial .dial-label small { font-size: clamp(5px,.43vw,8px); }
+.console {
+  --angle-x: 17.6%; --power-x: 38.5%; --fire-x: 60%; --night-x: 79%; --assist-x: 90%;
+  position: absolute; inset: 0; z-index: 3; display: block; margin: 0; padding: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none; pointer-events: none;
+}
+body[data-chassis="r12"] .console { --angle-x: 35%; --power-x: 52%; --fire-x: 68%; --night-x: 81%; --assist-x: 92%; }
+.console button, .console input, .console select, .console label, .console .instrument { pointer-events: auto; }
+.console-heading { position: absolute; inset: 0; display: block; min-height: 0; padding: 0; pointer-events: none; }
+.crew-plate { position: absolute; top: 55%; left: 10%; width: 27%; color: #d6ccb5; text-shadow: 0 2px 2px #000; }
+.crew-plate .eyebrow { display: block; font-size: clamp(7px,.62vw,11px); letter-spacing: .12em; }
+.crew-plate > strong { display: block; margin: 2px 0; color: #ded4b6; font: 800 clamp(13px,1.3vw,22px)/1.05 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .13em; }
+.crew-plate > span:last-child { display: block; font-size: clamp(6px,.6vw,10px); font-weight: 700; letter-spacing: .03em; }
+.cockpit-selector { position: absolute; top: 55.2%; right: 7.5%; display: flex; flex-direction: column; align-items: stretch; width: 16%; gap: 2px; font-size: clamp(6px,.55vw,9px); letter-spacing: .12em; color: #c4bba2; text-shadow: 0 1px #000; }
+.cockpit-selector select { width: 100%; max-width: none; min-height: 28px; height: auto; padding: 4px 6px; border: 1px solid #6a6653; border-radius: 1px; background: #161b15e8; color: #eadfc0; font-size: clamp(8px,.7vw,12px); box-shadow: inset 0 1px 4px #000; }
+.turn-pill { position: absolute; left: 50%; top: 2.5%; transform: translateX(-50%); min-height: 0; padding: 3px 9px; border: 0; background: #141711b5; color: #dacdaf; font-size: clamp(7px,.6vw,10px); text-shadow: 0 1px #000; }
+.control-grid, .action-rail, .quick-instrument { display: contents; }
+.instrument { position: absolute; min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.angle-instrument, .power-instrument { top: 78%; width: 16%; height: auto; aspect-ratio: 1; transform: translate(-50%,-50%); touch-action: none; cursor: grab; }
+.angle-instrument { left: var(--angle-x); }
+.power-instrument { left: var(--power-x); }
+.angle-instrument:active, .power-instrument:active { cursor: grabbing; }
+.dial-face { position: absolute; inset: 8%; border-radius: 50%; overflow: hidden; background: radial-gradient(ellipse at 40% 23%,#222821f7,#10130ff7 53%,#090a08 90%); box-shadow: inset 0 5px 13px #000b,inset 0 -1px 3px #bba26e35; pointer-events: none; }
+.dial-face::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(125deg,#dce6c50f 5%,#0000 28%,#0003 74%); }
+.dial-ticks { position: absolute; inset: 7%; border-radius: 50%; background: repeating-conic-gradient(from -121deg,#d4ba7a 0deg 1deg,transparent 1deg 10deg); mask: radial-gradient(transparent 64%,#000 66% 73%,transparent 76%); }
+.live-dial .dial-ticks { display: none; }
+.dial-ticks::after { content: ""; position: absolute; inset: 0; background: #10130f; clip-path: polygon(50% 50%,100% 100%,0 100%); }
+.dial-needle { position: absolute; z-index: 1; left: 50%; top: 50%; width: 2.5%; height: 36%; transform-origin: 50% 100%; margin-left: -1.25%; margin-top: -36%; background: linear-gradient(90deg,#815b2c,#ffe9ae 50%,#d9973f); clip-path: polygon(50% 0,100% 10%,70% 100%,30% 100%,0 10%); filter: drop-shadow(0 0 3px #e8a13d); transition: transform .09s ease-out; }
+.elevation-needle { transform: rotate(var(--dial-elevation,-86deg)); }
+.power-needle { transform: rotate(var(--power-angle,9deg)); }
+.dial-hub { position: absolute; z-index: 2; left: 43.5%; top: 43.5%; width: 13%; height: 13%; border-radius: 50%; background: radial-gradient(circle at 35% 25%,#ada78c,#575a4a 30%,#151911 75%); box-shadow: 0 2px 4px #000,0 0 0 1px #a7996866; }
+.dial-label { position: absolute; z-index: 2; left: 12%; right: 12%; bottom: 15%; color: #c3b48d; text-align: center; font: 800 clamp(7px,.65vw,11px)/1.05 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .12em; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.dial-label b { display: block; margin: 3px 0; color: #f5d392; font-size: clamp(18px,2.1vw,35px); letter-spacing: .02em; }
+.dial-label small { color: #a5a78e; font-size: clamp(6px,.48vw,9px); }
+.instrument input[type="range"] { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; opacity: .001; cursor: grab; touch-action: none; }
+.instrument:focus-within { border-radius: 50%; outline: 2px solid #f4d390; outline-offset: -3px; }
+.instrument:has(input:disabled) { cursor: default; }
+.wheel-handle { position: absolute; z-index: 3; width: 17%; height: 17%; border-radius: 50%; left: 41.5%; top: 41.5%; background: radial-gradient(ellipse at 35% 25%,#b9ad91,#777562 37%,#2b3027 70%,#15170f); box-shadow: 0 2px 6px #000; pointer-events: none; transform: rotate(var(--wheel-angle,48deg)); transition: transform .12s ease-out; }
+.wheel-handle i { position: absolute; top: 41%; left: 28%; width: 44%; height: 18%; border-radius: 3px; background: linear-gradient(#c1b493,#444837); box-shadow: inset 0 -1px #111; }
+.charge-lever { display: none; }
+body[data-chassis="r12"] .charge-lever { display: block; position: absolute; z-index: 3; right: -13%; top: 7%; width: 10%; height: 82%; border: 1px solid #74654a; border-radius: 4px; background: linear-gradient(90deg,#050704,#24291d,#050704); pointer-events: none; }
+body[data-chassis="r12"] .charge-lever { pointer-events: auto; touch-action: none; cursor: ns-resize; }
+.charge-lever i { position: absolute; left: -40%; width: 180%; height: 19%; top: var(--charge-lever-position,37%); border-radius: 5px; background: linear-gradient(90deg,#292f23,#c3b188 38%,#605d46 68%,#14180e); box-shadow: 0 3px 5px #000; transition: top .1s ease-out; }
+.ammo-instrument { top: 54.7%; left: 40%; width: 33%; text-align: center; }
+.ammo-instrument .eyebrow { display: block; margin: 0 0 2px; color: #c5bb9e; font-size: clamp(6px,.55vw,10px); letter-spacing: .18em; text-shadow: 0 1px #000; }
+.ammo-instrument select { width: min(100%,290px); height: 31px; min-height: 31px; padding: 3px 8px; border: 1px solid #7d7354; border-radius: 2px; background: linear-gradient(#22271de8,#10140feb); color: #f0deae; font: 800 clamp(10px,.94vw,16px)/1.1 "Arial Narrow","Segoe UI",sans-serif; box-shadow: inset 0 2px 5px #000; }
+.weapon-spec { justify-content: center; margin-top: 3px; color: #bab598; font-size: clamp(6px,.48vw,9px); line-height: 1; text-shadow: 0 1px #000; }
+.weapon-spec b { color: #ddb57b; }
+.weapon-spec span { display: none; }
+.fire-button { position: absolute; z-index: 4; left: var(--fire-x); top: 78%; transform: translate(-50%,-50%); width: 14%; height: auto; min-width: 0; min-height: 0; aspect-ratio: 1; padding: 13%; padding: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; border: 0; border-radius: 50%; background: radial-gradient(circle at 35% 15%,#d9793820,#66251412 62%,#10080242); color: #e9d3bb; text-shadow: 0 2px 3px #442314; box-shadow: none; cursor: pointer; touch-action: manipulation; }
+.fire-button strong { font: 900 clamp(13px,1.8vw,30px)/1.15 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .055em; }
+.fire-button small { font-size: clamp(6px,.52vw,10px); font-weight: 800; letter-spacing: .08em; }
+.fire-button:hover:enabled { background: radial-gradient(circle,#dc64231a,#f4974812); box-shadow: inset 0 0 10px #fedbb435,0 0 10px #ffb35414; }
+.fire-button:active:enabled { transform: translate(-50%,-49%) scale(.97); filter: brightness(.83); }
+.fire-button.is-firing { animation: gun-button .45s ease-out; }
+@keyframes gun-button { 0%,30% { transform: translate(-50%,-48%) scale(.96); filter: brightness(1.3); } 100% { transform: translate(-50%,-50%); filter: brightness(1); } }
+.fire-button:disabled { opacity: .65; cursor: default; filter: saturate(.6); }
+.quick-instrument > .eyebrow { display: none; }
+.switch-row { position: absolute; top: 65%; height: 28%; width: 8.6%; min-height: 44px; margin: 0; display: block; }
+.night-switch { left: calc(var(--night-x) - 4.3%); }
+.assist-switch { left: calc(var(--assist-x) - 4.3%); }
+.toggle { position: relative; width: 100%; height: 100%; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 8%; background: none; color: #d5c7a1; display: block; box-shadow: none; touch-action: manipulation; }
+.toggle svg { position: absolute; width: 24%; height: 14%; top: 0; left: 38%; color: #c4c2a4; stroke: currentColor; fill: none; stroke-width: 1.6; filter: drop-shadow(0 1px 1px #000); }
+.toggle strong { position: absolute; left: -12%; right: -12%; top: 15%; color: #d4cbb1; text-align: center; font: 800 clamp(6px,.62vw,11px)/1.15 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .08em; text-shadow: 0 2px 2px #000; }
+.toggle > span { position: absolute; bottom: 0; left: 0; right: 0; font: 800 clamp(8px,.84vw,15px)/1.1 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .12em; text-shadow: 0 2px 2px #000; }
+.switch-stem { position: absolute; left: 48%; top: 40%; width: 8%; height: 34%; border-radius: 7px; background: linear-gradient(90deg,#252a22,#b7b89b 35%,#747865 70%,#1d2418); box-shadow: 2px 2px 3px #0009; transform-origin: 50% 3%; transform: rotate(-15deg); transition: transform .18s ease-out; opacity: .85; }
+.switch-stem::after { content: ""; position: absolute; left: -85%; bottom: -10%; width: 270%; height: 40%; border-radius: 50%; background: radial-gradient(ellipse at 35% 24%,#d2d4b6,#8e927c 30%,#4a5142 61%,#151b11 91%); box-shadow: 0 2px 4px #000b; }
+.toggle.is-on { color: #d5f49b; background: none; border: 0; }
+.toggle.is-on .switch-stem { transform: rotate(15deg); }
+.toggle.is-on svg, .toggle.is-on > span { color: #d3f18e; filter: drop-shadow(0 0 3px #96b85555); }
+.utility-actions { position: absolute; bottom: 1.7%; left: 10%; width: 27%; display: flex; gap: 3px; padding: 4px; border-radius: 30px; background: linear-gradient(145deg,#626751,#181f13 36%,#0d140b 72%,#4e5841); box-shadow: inset 0 2px 4px #111,0 2px 4px #000; }
+.control-button, .control-button.slim { min-width: 44px; min-height: 44px; padding: 0 11px; border: 1px solid #736c50; border-radius: 3px; background: linear-gradient(150deg,#414536c9,#1c2217ee 65%,#0d1409); color: #ded6b9; font-size: clamp(9px,.65vw,12px); box-shadow: inset 0 1px #c1b18a42,0 2px 3px #000; }
+.control-button:active { transform: translateY(2px); }
+.utility-actions .control-button { flex: 1; border-radius: 26px; border: 1px solid #8f9376; background: radial-gradient(ellipse at 45% 20%,#747c62,#353f28 48%,#111c0c 83%); box-shadow: inset 0 1px #d1d1aa5c,0 2px 3px #000; font-size: clamp(13px,1vw,18px); }
+.utility-actions .control-button kbd { border: 0; background: none; color: #ddd7b7; font-size: clamp(8px,.63vw,11px); box-shadow: none; }
+.utility-actions .support-button { flex: 1.2; }
+.keyline { position: absolute; left: 76%; top: 60%; bottom: auto; width: 18%; min-height: 0; border: 1px solid #655e3d99; border-radius: 2px; padding: 4px 3px; background: #11190de8; display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 12px; font-size: clamp(8px,.67vw,11px); color: #b2b49b; text-shadow: 0 1px #000; letter-spacing: .06em; pointer-events: none; }
+.keyline b { color: #e8cf8e; }
+.keyline-hint { display: none; }
+.mission-card, .target-card { z-index: 2; top: 12%; padding: 6px 10px; min-width: 0; background: #121811ab; border-color: #a9936c; box-shadow: none; pointer-events: none; }
+.mission-card { left: 11.3%; }
+.target-card { right: 11.3%; border-color: #be7760; }
+.mission-card strong, .target-card strong { font-size: clamp(11px,1vw,17px); }
+.mission-card .eyebrow, .target-card .eyebrow { font-size: clamp(6px,.58vw,10px); }
+.mission-card > span:last-child { font-size: clamp(7px,.62vw,10px); }
+.aim-hud { pointer-events: none; z-index: 2; }
+.readouts { position: absolute; z-index: 2; top: 49%; left: 12%; right: 12%; height: auto; min-height: 0; padding: 0; display: flex; justify-content: space-between; gap: 6px; border: 0; background: none; font-size: clamp(6px,.54vw,10px); color: #c7c2a5; text-shadow: 0 2px #000; pointer-events: none; }
+.readouts b { font-size: inherit; color: #ecc78e; }
+.readouts > span:nth-child(3) { display: none; }
+.weather-readout { margin-left: 0; }
+.canvas-toast { z-index: 6; top: 40%; bottom: auto; max-width: 70%; padding: 7px 12px; background: #111710e8; border-color: #aea072; font-size: clamp(9px,.7vw,13px); }
+.topbar .mission-settings { margin: 0; flex-shrink: 0; }
+.mission-settings summary { min-height: 36px; padding: 4px 10px; font-size: 9px; }
+.mission-panel { top: 36px; background: linear-gradient(#353b2e,#171f13); border-color: #9d916e; }
+.mission-panel .support-button, .mission-panel .support-button:disabled { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; width: 100%; margin-top: 9px; }
+.mission-panel .support-button:disabled { opacity: .55; cursor: default; }
+.settings-grid label { color: #e2d5b4; }
+.settings-grid select { background: #1a2117; color: #eee1be; border-color: #756c51; }
+.manual-dialog { background: linear-gradient(145deg,#363c2d,#10170e 80%); border-color: #b0a079; }
+button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid #f4d390; outline-offset: 3px; }
+body[data-chassis="r12"] .crew-plate { left: 25%; width: 24%; }
+body[data-chassis="r12"] .ammo-instrument { left: 45%; width: 18%; }
+body[data-chassis="r12"] .utility-actions { left: 25%; width: 27%; }
+body[data-chassis="r12"] .keyline { left: 5%; top: 69%; width: 17%; padding: 5px; border: 0; background: none; text-align: center; font-size: clamp(9px,.8vw,13px); }
+body[data-chassis="r12"] .keyline > span { width: 100%; }
+body[data-chassis="r12"] .keyline b { display: block; margin-top: 4px; font-size: clamp(14px,1.3vw,21px); }
+body[data-chassis="r12"] .fire-button { width: 6.6%; height: 28%; aspect-ratio: auto; top: 78.5%; border-radius: 35%; }
+body[data-chassis="r12"] .fire-button strong { font-size: clamp(11px,1.1vw,19px); line-height: 1.22; color: #2c2213; text-shadow: 0 1px #d4a56766; }
+body[data-chassis="r12"] .fire-button small { color: #302111; font-size: clamp(5px,.38vw,7px); text-shadow: none; }
+body[data-chassis="s90"] .crew-plate > strong { color: #e6c08c; }
+body[data-chassis="s90"] .keyline { background: linear-gradient(#16170f,#090d08); border: 2px ridge #a18b55; color: #e5c48c; box-shadow: inset 0 1px 4px #000; }
+body[data-chassis="s90"] .keyline b { color: #ffd783; }
+body[data-chassis="s90"] .dial-face { background: radial-gradient(ellipse at 40% 23%,#222419f7,#0d100cf7 53%,#060804 90%); box-shadow: inset 0 5px 13px #000d,inset 0 -1px 3px #deb56147; }
+body[data-chassis="s90"] .dial-ticks { background: repeating-conic-gradient(from -121deg,#bda168 0deg 1deg,transparent 1deg 10deg); }
+body[data-chassis="s90"] .dial-label { color: #c6b184; }
+body[data-chassis="s90"] .fire-button strong { color: #e3c5a4; }
+body[data-chassis="s90"] .utility-actions .control-button { background: radial-gradient(ellipse at 45% 20%,#6d6b4c,#292e1d 48%,#0c1208 83%); border-color: #97895d; }
+
+@media (max-width: 900px) {
+  .topbar { gap: 5px; padding: 0 7px; }
+  .topbar nav a { min-height: 28px; padding: 6px; }
+  .cockpit-selector { right: 6%; width: 17%; }
+  .cockpit-selector select { min-height: 25px; }
+  .ammo-instrument select { min-height: 27px; height: 27px; }
+  .control-button, .control-button.slim { padding: 0 4px; min-height: 36px; }
+  .utility-actions { bottom: 1%; }
+  .keyline { bottom: 1.5%; }
+  .keyline-hint { display: none; }
+  .mission-card, .target-card { padding: 4px 6px; }
+}
+@media (max-height: 520px) and (min-width: 601px) {
+  .topbar { height: 34px; flex-basis: 34px; }
+  .console-heading { display: block; }
+  .console-heading > div { display: block; }
+  .crew-plate { top: 53%; }
+  .crew-plate > strong { font-size: 12px; }
+  .crew-plate > span:last-child, .crew-plate .eyebrow { display: none; }
+  .cockpit-selector { top: 53%; gap: 0; }
+  .cockpit-selector > span { display: none; }
+  .cockpit-selector select { min-height: 24px; height: 24px; padding: 0 5px; }
+  .ammo-instrument { top: 53%; }
+  .ammo-instrument .eyebrow, .weapon-spec { display: none; }
+  .ammo-instrument select { min-height: 24px; height: 24px; }
+  .dial-label b { font-size: 21px; }
+  .dial-label small { display: none; }
+  .live-dial .dial-label { top: 58%; bottom: auto; font-size: 6px; }
+  .live-dial .dial-label b { font-size: 14px; }
+  .switch-row { top: 63%; height: 31%; }
+  .toggle strong { top: 12%; }
+  .toggle svg { display: none; }
+  .utility-actions { top: 61%; bottom: auto; left: .8%; width: 8.5%; flex-direction: column; }
+  .utility-actions .support-button { position: absolute; top: 100%; left: 0; width: 100%; }
+  .control-button, .control-button.slim { min-height: 44px; }
+  .keyline { top: auto; bottom: 1%; left: 32%; width: 38%; font-size: 6px; }
+  .fire-button { width: 12%; }
+  .fire-button strong { font-size: 17px; }
+  .fire-button small { display: none; }
+  body[data-chassis="r12"] .utility-actions { top: auto; bottom: 1%; left: .8%; width: 21.5%; flex-direction: row; }
+  body[data-chassis="r12"] .keyline { top: 69%; bottom: auto; left: 5%; width: 17%; font-size: 7px; }
+  body[data-chassis="r12"] .keyline b { margin-top: 1px; font-size: 11px; }
+  .readouts { font-size: 6px; }
+  .weather-readout { display: none; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .app-shell { min-height: 610px; }
+  .topbar { flex-basis: 40px; height: 40px; }
+  .cockpit-skin { display: none; }
+  .gauge-layer { z-index: 4; }
+  .live-dial { top: 66.72%; width: 35%; height: auto; aspect-ratio: 1; }
+  .live-elevation, body[data-chassis="r12"] .live-elevation { left: 25%; }
+  .live-charge, body[data-chassis="r12"] .live-charge { left: 73%; }
+  .live-dial .dial-face { inset: 7%; box-shadow: 0 0 0 4px #68684e,0 0 0 7px #252b1d,inset 0 3px 7px #000; }
+  .live-dial .dial-label { top: 61%; bottom: auto; font-size: 7px; }
+  .live-dial .dial-label b { font-size: 24px; }
+  .live-dial .dial-label small { font-size: 6px; }
+  .live-dial .dial-ticks { display: block; }
+  .canvas-wrap::after { content: ""; position: absolute; z-index: 1; top: 2%; left: 1%; right: 1%; height: 45%; border: 9px ridge #635f46; border-radius: 12px; box-shadow: inset 0 0 18px #000,0 4px 12px #000; pointer-events: none; }
+  .console { inset: 48% 0 0; background: linear-gradient(#0b120954,#0c100766),url("assets/cockpit-m40-line.webp") center bottom / auto 220%; border-top: 3px ridge #6f6b4e; box-shadow: 0 -2px 7px #000; }
+  body[data-chassis="r12"] .console { background-image: linear-gradient(#0b120954,#0c100766),url("assets/cockpit-r12-scout.webp"); }
+  body[data-chassis="b76"] .console { background-image: linear-gradient(#0b120954,#0c100766),url("assets/cockpit-b76-bulwark.webp"); }
+  body[data-chassis="s90"] .console { background-image: linear-gradient(#0b120954,#0c100766),url("assets/cockpit-s90-siege.webp"); }
+  .crew-plate, body[data-chassis="r12"] .crew-plate { top: 3%; left: 5%; width: 56%; }
+  .crew-plate .eyebrow { font-size: 7px; }
+  .crew-plate > strong { font-size: 15px; }
+  .crew-plate > span:last-child { font-size: 6px; }
+  .cockpit-selector { top: 3%; right: 4%; width: 35%; }
+  .cockpit-selector select { min-height: 32px; font-size: 8px; }
+  .cockpit-selector > span { font-size: 6px; }
+  .turn-pill { top: -94%; left: 50%; font-size: 7px; }
+  .angle-instrument, .power-instrument { top: 36%; width: 35%; }
+  .angle-instrument, body[data-chassis="r12"] .angle-instrument { left: 25%; }
+  .power-instrument, body[data-chassis="r12"] .power-instrument { left: 73%; }
+  .dial-face { inset: 7%; box-shadow: 0 0 0 4px #68684e,0 0 0 7px #252b1d,inset 0 3px 7px #000; }
+  .dial-label { bottom: 15%; font-size: 7px; }
+  .dial-label b { font-size: 24px; }
+  .dial-label small { font-size: 6px; }
+  .charge-lever, body[data-chassis="r12"] .charge-lever { display: none; }
+  .ammo-instrument, body[data-chassis="r12"] .ammo-instrument { top: 60%; left: 4%; width: 48%; }
+  .ammo-instrument .eyebrow { font-size: 6px; }
+  .ammo-instrument select { min-height: 44px; height: 44px; font-size: 10px; }
+  .weapon-spec { display: block; font-size: 6px; }
+  .fire-button, body[data-chassis="r12"] .fire-button { left: 27%; top: 82%; width: 24%; height: auto; aspect-ratio: 1.6; min-height: 44px; background: radial-gradient(ellipse at 35% 20%,#b55c3c,#89351f 57%,#531f13); border: 3px ridge #938568; border-radius: 10px; box-shadow: 0 3px 5px #000; }
+  .fire-button strong { font-size: 12px; }
+  .fire-button small { font-size: 6px; }
+  .switch-row { top: 59%; height: 27%; width: 17%; }
+  .night-switch, body[data-chassis="r12"] .night-switch { left: 57%; }
+  .assist-switch, body[data-chassis="r12"] .assist-switch { left: 78%; }
+  .toggle { background: radial-gradient(#383f2c,#11190c); border: 2px ridge #6f6e51; border-radius: 7px; }
+  .toggle.is-on { background: radial-gradient(#383f2c,#11190c); border: 2px ridge #6f6e51; }
+  .toggle svg { display: block; top: 6%; height: 16%; }
+  .toggle strong { top: 24%; font-size: 6px; }
+  .switch-stem { top: 41%; height: 35%; }
+  .toggle > span { bottom: 5%; font-size: 8px; }
+  .utility-actions, body[data-chassis="r12"] .utility-actions { left: 4%; bottom: 1%; width: 45%; }
+  .utility-actions .control-button { min-height: 44px; font-size: 8px; padding: 0 2px; }
+  .utility-actions .support-button { display: none; }
+  .keyline, body[data-chassis="r12"] .keyline { top: auto; left: 53%; bottom: 3%; width: 44%; gap: 5px; font-size: 6px; padding: 2px; background: #10190bbd; border: 1px solid #655e3d99; }
+  body[data-chassis="r12"] .keyline b { display: inline; font-size: inherit; margin: 0; }
+  body[data-chassis="r12"] .fire-button strong { color: #e9d3bb; font-size: 12px; text-shadow: 0 1px #531f13; }
+  .keyline > span { width: 100%; text-align: center; }
+  .mission-card { top: 6%; left: 5%; }
+  .target-card { top: 6%; right: 5%; }
+  .mission-card strong, .target-card strong { font-size: 9px; }
+  .mission-card .eyebrow, .target-card .eyebrow, .mission-card > span:last-child { font-size: 6px; }
+  .readouts { top: 43.4%; left: 7%; right: 7%; font-size: 6px; }
+  .canvas-toast { top: 32%; max-width: 87%; font-size: 9px; }
+  .settings-grid { grid-template-columns: 1fr 1fr; }
+  .mission-panel { max-height: calc(100dvh - 60px); }
+}
+@media (prefers-reduced-motion: reduce) { .dial-needle, .wheel-handle, .switch-stem { transition: none; } .fire-button.is-firing { animation: none; } }
+
+/* Moving photograph cutouts sit beneath their fixed metal sockets/guards. */
+.hardware-layer { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+.hardware-mount { position: absolute; left: var(--part-x); top: var(--part-y); width: var(--part-w); height: var(--part-h); pointer-events: none; }
+.hardware-mount::before { content: ""; position: absolute; inset: -35%; background: #10150c; }
+.hardware-night::before, .hardware-assist::before { background-color: #434537; background-image: radial-gradient(ellipse at 43% 25%,#060a06c0,transparent 35%),var(--socket-plate); background-position: center; background-size: 100% 100%,60% 50%; background-repeat: no-repeat,repeat; }
+.hardware-face { position: absolute; inset: 0; pointer-events: none; transition: transform .22s cubic-bezier(.2,.8,.25,1),filter .2s; }
+.hardware-face > img { display: block; width: 100%; height: 100%; user-select: none; pointer-events: none; }
+.hardware-fire .hardware-face { transform-origin: 50% 50% !important; }
+.hardware-fire strong { position: absolute; top: 28%; left: 5%; width: 90%; color: #e9d3bb; font: 900 clamp(13px,1.8vw,30px)/1.15 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .055em; text-align: center; text-shadow: 0 2px 3px #442314; }
+.hardware-fire small { position: absolute; top: 77%; left: 0; width: 100%; color: #e9d3bb; font-size: clamp(6px,.52vw,10px); font-weight: 800; letter-spacing: .08em; text-align: center; text-shadow: 0 1px #331608; }
+.hardware-night.is-on .hardware-face, .hardware-assist.is-on .hardware-face { transform: rotate(-12deg); filter: brightness(1.12); }
+.hardware-fire.is-pressed .hardware-face { transform: translateY(3%) scale(.965); filter: brightness(.83); }
+.hardware-fire.is-firing .hardware-face { animation: photo-gun-button .45s ease-out; }
+@keyframes photo-gun-button { 0%,25% { transform: translateY(4%) scale(.96); filter: brightness(1.18); } 55% { transform: translateY(-1%) scale(1.006); } 100% { transform: none; filter: brightness(1); } }
+.switch-stem { display: none; }
+.fire-button, .fire-button:hover:enabled { background: none; box-shadow: none; }
+.fire-button.is-firing { animation: none; }
+body[data-chassis="r12"] .hardware-fire .hardware-face { transform-origin: 43% 13% !important; }
+body[data-chassis="r12"] .hardware-fire strong { top: 39%; left: 0; width: 100%; color: #2c2213; font-size: clamp(11px,1.1vw,19px); line-height: 1.22; text-shadow: 0 1px #d4a56766; }
+body[data-chassis="r12"] .hardware-fire small { top: 76%; color: #302111; font-size: clamp(5px,.38vw,7px); text-shadow: none; }
+body[data-chassis="r12"] .charge-lever { border: 2px ridge #857457; border-radius: 5px; background: linear-gradient(90deg,#574e38,#080d07 25%,#192013 70%,#62543b); box-shadow: 0 0 0 2px #283020,0 0 0 3px #867857,inset 0 3px 5px #000,0 3px 5px #0009; }
+body[data-chassis="r12"] .charge-lever::after { content: "CHARGE"; position: absolute; left: 50%; bottom: -13%; transform: translateX(-50%); color: #d3c19a; font: 800 clamp(5px,.42vw,8px)/1 "Arial Narrow","Segoe UI",sans-serif; letter-spacing: .09em; text-shadow: 0 1px #000; }
+@media (max-height: 520px) and (min-width: 601px) {
+  .hardware-fire strong { font-size: 17px; }
+  .hardware-fire small { display: none; }
+  body[data-chassis="r12"] .hardware-fire strong { font-size: 11px; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .hardware-layer { z-index: 1; }
+  .hardware-mount { height: auto; aspect-ratio: var(--part-aspect); background: none; }
+  .hardware-mount::before { display: none; }
+  .hardware-fire { left: 14.5%; top: 66%; width: 23%; }
+  .hardware-fire strong { font-size: 12px; top: 24%; }
+  .hardware-fire small { font-size: 5px; top: 80%; }
+  .hardware-night { left: 62.9%; top: 67%; width: 8%; }
+  .hardware-assist { left: 84%; top: 67%; width: 8%; }
+  .hardware-night::before, .hardware-assist::before { display: block; inset: auto; left: 6%; top: -10%; width: 65%; height: 38%; background: radial-gradient(ellipse,#050704 40%,#676b51 43%,#252c1d 59%,#0d150b 67%); border-radius: 30%; box-shadow: 0 2px 3px #0009; }
+  .fire-button, body[data-chassis="r12"] .fire-button { left: 26%; top: 77%; width: 23%; background: none; box-shadow: none; border: 0; aspect-ratio: 1.05; }
+  .ammo-instrument, body[data-chassis="r12"] .ammo-instrument { top: 52%; z-index: 4; }
+  .switch-row, .utility-actions { z-index: 4; }
+  .toggle, .toggle.is-on { background: none; }
+  body[data-chassis="r12"] .hardware-fire { left: 23.15%; top: 66%; width: 5.7%; }
+  body[data-chassis="r12"] .hardware-fire strong { font-size: 8px; top: 39%; }
+  body[data-chassis="r12"] .hardware-fire small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .hardware-face { transition: none; } .hardware-fire.is-firing .hardware-face { animation: none; } }
+
+/* One proportional physical station; only long optical rails widen. */
+.instrument-frame { position: absolute; z-index: 3; pointer-events: none; container-type: inline-size; }
+.window-armor { position: absolute; z-index: 2; left: 0; top: 0; width: 100%; height: auto; clip-path: inset(0 0 46% 0); pointer-events: none; }
+.dashboard-frame { position: absolute; z-index: 3; pointer-events: none; container-type: inline-size; }
+.instrument-frame .cockpit-skin { clip-path: inset(54% 0 0 0); }
+.canvas-wrap::before { content: ""; position: absolute; z-index: 1; left: 0; right: 0; top: 67%; bottom: 0; pointer-events: none; background-color: #49493d; background-image: radial-gradient(circle at 2.5% 14%,#c5b687 0 2px,#34352b 3px 5px,transparent 6px),radial-gradient(circle at 97.5% 14%,#c5b687 0 2px,#34352b 3px 5px,transparent 6px),radial-gradient(circle at 2.5% 86%,#c5b687 0 2px,#34352b 3px 5px,transparent 6px),radial-gradient(circle at 97.5% 86%,#c5b687 0 2px,#34352b 3px 5px,transparent 6px),linear-gradient(90deg,#282a22a0 0%,#64605118 18%,#252a2255 50%,#64605118 82%,#282a22a0 100%),linear-gradient(#716c4a28,#151b1260),var(--deck-plate); background-size: 100% 100%; background-repeat: no-repeat; box-shadow: inset 0 3px 9px #090d0bb3; }
+.angle-instrument, .power-instrument { width: 12.2%; height: 21.68%; aspect-ratio: auto; }
+.live-dial .dial-face { inset: -2%; border-radius: 0; background: #151615; box-shadow: inset 0 0 8px #0008; }
+.live-dial .dial-face::after { border-radius: 0; background: linear-gradient(128deg,#f8ecd603,transparent 40%,#0001); }
+.wheel-handle { display: none; }
+.dial-hub { background: radial-gradient(circle,#66665c,#3a3e36 40%,#20241f 82%); box-shadow: 0 1px 2px #0009; }
+.live-dial .dial-label { color: #bfb69e; text-shadow: none; font-family: "Bahnschrift Condensed","Arial Narrow",sans-serif; font-size: clamp(6px,.65cqw,10px); letter-spacing: .07em; }
+.live-dial .dial-label b { color: #d9cba6; font-size: clamp(17px,1.8cqw,29px); font-weight: 650; text-shadow: none; }
+.live-dial .dial-label small { color: #aaa791; }
+.live-dial .dial-label small, .hardware-fire small, .charge-lever::after { display: none !important; }
+.turn-pill { display: none !important; }
+.crew-plate, .crew-plate > strong, .crew-plate > span, .cockpit-selector, .ammo-instrument .eyebrow, .weapon-spec, .toggle strong, .toggle > span, .readouts, .keyline, .hardware-fire strong, body[data-chassis="r12"] .hardware-fire strong { text-shadow: none; }
+.crew-plate > strong, .ammo-instrument .eyebrow, .toggle strong, .hardware-fire strong, .cockpit-selector > span { font-family: "Bahnschrift Condensed","Arial Narrow",sans-serif; font-weight: 600; letter-spacing: .055em; opacity: .86; mask-image: none; }
+.hardware-fire strong { color: #d4c6ab; font-size: clamp(13px,2.1cqw,30px); }
+body[data-chassis="r12"] .hardware-fire strong { color: #372a1b; font-size: clamp(11px,1.3cqw,19px); }
+.toggle strong, .toggle > span { color: #c6bca1; }
+.ammo-instrument select { color: #d1c5a4; font-family: "Bahnschrift Condensed","Arial Narrow",sans-serif; font-weight: 650; }
+.ammo-instrument .eyebrow { font-size: clamp(8px,.75cqw,11px); line-height: 1.15; letter-spacing: .05em; opacity: .84; mask-image: none; text-shadow: none; }
+.instrument:focus-within { outline: none; }
+button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: none !important; box-shadow: inset 0 -2px #b4b7a599 !important; }
+body[data-input-mode="pointer"] button:focus-visible, body[data-input-mode="pointer"] summary:focus-visible, body[data-input-mode="pointer"] input:focus-visible, body[data-input-mode="pointer"] select:focus-visible, body[data-input-mode="pointer"] a:focus-visible { box-shadow: none !important; }
+body[data-input-mode="keyboard"] .instrument:has(input:focus-visible)::after { content: ""; position: absolute; left: 35%; right: 35%; bottom: 14%; height: 1px; background: #b4b7a5b0; pointer-events: none; }
+select { color-scheme: dark; }
+select option { background-color: #151a14; color: #eee7d3; }
+select option:checked { background-color: #3c4434; color: #fff3d4; }
+@media (max-width: 600px) and (orientation: portrait) {
+  .window-armor { display: none; }
+  .canvas-wrap::before { display: none; }
+  .angle-instrument, .power-instrument { width: 35%; height: auto; aspect-ratio: 1; }
+  .live-dial .dial-face { inset: 7%; border-radius: 50%; box-shadow: 0 0 0 4px #68684e,0 0 0 7px #252b1d,inset 0 3px 7px #000; }
+  .live-dial .dial-label { font-size: 7px; }
+  .live-dial .dial-label b { font-size: 24px; }
+  .hardware-fire strong { font-size: 12px; }
+  body[data-chassis="r12"] .hardware-fire strong { font-size: 8px; }
+}
+
+/* Full-width, chassis-specific fascia: cover-cropping removes the empty
+   gutters while the live HTML controls remain registered to the same art. */
+.topbar .crew-plate {
+  position: static;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-content: center;
+  align-items: baseline;
+  gap: 1px 8px;
+  flex: 1 1 220px;
+  min-width: 155px;
+  max-width: 470px;
+  width: auto;
+  margin: 0 4px 0 8px;
+  padding: 3px 9px;
+  border-left: 2px solid #a18556;
+  background: linear-gradient(90deg,#0c1110ad,#0c111044 70%,transparent);
+  color: #d6ccb5;
+  text-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.topbar .crew-plate .eyebrow {
+  grid-column: 1 / -1;
+  display: block;
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: .12em;
+}
+.topbar .crew-plate > strong {
+  display: block;
+  margin: 0;
+  color: #ded4b6;
+  font: 700 11px/1.15 "Arial Narrow","Segoe UI",sans-serif;
+  letter-spacing: .12em;
+}
+.topbar .crew-plate > span:last-child {
+  display: block;
+  min-width: 0;
+  color: #bcb49d;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: .035em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar .keyline {
+  position: static;
+  display: flex;
+  flex: 0 1 205px;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 3px;
+  padding: 0 7px;
+  border: 0;
+  border-left: 1px solid #827653;
+  background: none;
+  box-shadow: none;
+  color: #c0b79e;
+  font-size: 7px;
+  line-height: 1.15;
+  letter-spacing: .045em;
+  white-space: nowrap;
+}
+.topbar .keyline > span { width: auto; text-align: left; }
+.topbar .keyline-hint { display: none; }
+.topbar .keyline b { color: #e2d1a7; font-size: inherit; }
+/* R12's old fascia-specific armor labels belonged inside its deck. These
+   readouts now live on the shared top rail, just like the other chassis. */
+body[data-chassis="r12"] .topbar .keyline { top: auto; left: auto; bottom: auto; width: auto; padding: 0 7px; border: 0; border-left: 1px solid #827653; background: none; text-align: left; font-size: 7px; }
+body[data-chassis="r12"] .topbar .keyline > span { width: auto; }
+body[data-chassis="r12"] .topbar .keyline b { display: inline; margin: 0; font-size: inherit; }
+.topbar .readouts { position: static; display: flex; flex: 0 1 400px; align-items: center; justify-content: center; gap: 10px; width: auto; min-height: 0; height: auto; margin: 0 5px; padding: 0; border: 0; background: none; box-shadow: none; color: #c0b493; font-size: clamp(6px,.5vw,9px); line-height: 1.1; letter-spacing: .04em; white-space: nowrap; pointer-events: none; }
+.topbar .readouts > span { width: auto; text-align: left; }
+.topbar .readouts .readout-dot { width: 4px; height: 4px; }
+.topbar .readouts b { color: #e0c996; font-size: inherit; }
+.topbar .readouts .weather-readout { margin-left: 0; }
+@media (min-width: 901px) and (max-width: 1400px) {
+  .topbar .keyline { display: none; }
+  .topbar .readouts { flex-basis: 230px; gap: 6px; }
+  .topbar .readouts .weather-readout { display: none; }
+}
+
+/* Recess selectors into the photographed lower console instead of leaving
+   flat, floating computer dropdowns across its edge. */
+.cockpit-selector {
+  top: 55.2%;
+  right: 6%;
+  width: 19%;
+  gap: 3px;
+  padding: 4px 6px 6px;
+  border: 2px ridge #827653;
+  background: linear-gradient(145deg,#5e5945 0%,#262a20 18%,#121611 78%,#73694b 100%);
+  box-shadow: inset 0 1px 4px #000c, 0 2px 3px #000a;
+  color: #d2c4a0;
+}
+.cockpit-selector > span {
+  padding-left: 2px;
+  color: #d2c4a0;
+  font-size: clamp(7px,.56vw,10px);
+  line-height: 1.1;
+}
+.cockpit-selector select {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 23px 0 8px;
+  border: 1px inset #a39066;
+  border-radius: 1px;
+  background: linear-gradient(#34392f,#161b15 58%,#0b100d);
+  color: #eee2c2;
+  font-size: clamp(9px,.72vw,12px);
+  font-weight: 700;
+  box-shadow: inset 0 2px 4px #000b;
+}
+.ammo-instrument {
+  top: 55.1%;
+  left: 50%;
+  width: 22%;
+  transform: translateX(-50%);
+  padding: 4px 7px 5px;
+  border: 2px ridge #837653;
+  background: linear-gradient(150deg,#625c46 0%,#282a20 17%,#111510 80%,#746a4e 100%);
+  box-shadow: inset 0 1px 4px #000c, 0 2px 3px #000a;
+  text-align: center;
+}
+.ammo-instrument .eyebrow {
+  margin: 0 0 3px;
+  color: #d3c7a5;
+  font-size: clamp(7px,.58vw,10px);
+  line-height: 1.1;
+  letter-spacing: .11em;
+}
+.ammo-instrument select {
+  width: 100%;
+  max-width: none;
+  height: 30px;
+  min-height: 30px;
+  padding: 2px 22px 2px 8px;
+  border: 1px inset #a08c61;
+  border-radius: 1px;
+  background: linear-gradient(#34382d,#161b14 58%,#090e0b);
+  color: #f0e1bb;
+  font-size: clamp(10px,.78vw,13px);
+  box-shadow: inset 0 2px 4px #000c;
+}
+.weapon-spec { display: none; }
+
+@media (max-width: 900px) {
+  .topbar { gap: 7px; }
+  .topbar .keyline { display: none; }
+  .topbar .readouts { flex: 0 1 190px; gap: 7px; }
+  .topbar .readouts > span:nth-child(3), .topbar .readouts .weather-readout { display: none; }
+  .topbar .crew-plate { flex: 1 1 110px; min-width: 100px; max-width: 210px; margin-inline: 2px; padding: 2px 5px; }
+  .topbar .crew-plate .eyebrow { font-size: 6px; }
+  .topbar .crew-plate > strong { font-size: 9px; }
+  .topbar .crew-plate > span:last-child { display: none; }
+  .cockpit-selector { width: 22%; right: 4%; }
+  .ammo-instrument { width: 25%; }
+}
+@media (max-width: 600px) {
+  .topbar .readouts { display: none; }
+  .topbar .crew-plate { display: block; flex: 1 1 70px; min-width: 70px; max-width: 96px; margin: 0; padding: 2px 4px; }
+  .topbar .crew-plate .eyebrow, .topbar .crew-plate > span:last-child { display: none; }
+  .topbar .crew-plate > strong { font-size: 8px; }
+  .cockpit-selector { top: 3%; right: 4%; width: 35%; }
+  .cockpit-selector select { min-height: 30px; height: 30px; font-size: 8px; }
+  .ammo-instrument { top: 4%; left: 4%; width: 48%; transform: none; }
+  .ammo-instrument select { height: 38px; min-height: 38px; font-size: 10px; }
+  .weapon-spec { display: none; }
+}
+
+/* V2 field-test pass: replace the smeared side fill with the same small,
+   photographed steel grain, keep every dial in its own chassis aperture, and
+   move the interactive ammunition rack to the lower full-width deck lip. */
+.canvas-wrap::before {
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 64px 64px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-position: center, center, center, center, center, center, left top;
+  background-blend-mode: normal, normal, normal, normal, normal, normal, soft-light;
+}
+.live-dial {
+  top: var(--dial-y, 77%);
+  width: var(--dial-w, 12.2%);
+  height: var(--dial-h, 21.68%);
+}
+.live-dial .dial-face {
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 30%, #151713 0%, #0c0e0c 76%, #080a08 100%);
+  box-shadow: inset 0 2px 7px #000d, inset 0 -1px 2px #b8a06b24;
+}
+.live-dial .dial-face::after { border-radius: inherit; }
+.live-dial .dial-label { top: 58%; left: 5%; right: 5%; }
+.angle-instrument, .power-instrument {
+  top: var(--dial-y, 77%);
+  width: var(--dial-w, 12.2%);
+  height: var(--dial-h, 21.68%);
+  aspect-ratio: auto;
+}
+.ammo-instrument {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  pointer-events: none !important;
+}
+.ammo-instrument select { position: absolute; width: 1px; height: 1px; min-height: 1px; padding: 0; }
+.ammo-instrument .eyebrow, .ammo-instrument .weapon-spec { display: none !important; }
+
+/* These buttons remain semantic, labeled controls; only their modern-looking
+   printed words are hidden. The stamped hardware and highlighted levers carry
+   the visual meaning while ARIA announces the current on/off state. */
+.toggle strong, .toggle > span { display: none !important; }
+.toggle svg { display: none; }
+.toggle.is-suggested::after { content: none; }
+.hardware-mount.is-hinting .hardware-face { animation: switch-introduction .7s ease-in-out 4; }
+@keyframes switch-introduction { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.8); } }
+@media (prefers-reduced-motion: reduce) { .hardware-mount.is-hinting .hardware-face { animation: none; filter: brightness(1.4); } }
+
+.dashboard-frame > .ordnance-rack {
+  position: absolute;
+  z-index: 8;
+  left: 1.1%; right: 1.1%; bottom: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(66px, 1fr);
+  gap: 3px;
+  height: clamp(44px, 7.2%, 58px);
+  padding: 4px 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  pointer-events: auto;
+  border: 2px ridge #7b7455;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #555444f2 0%, #24291ff5 20%, #111610fa 100%);
+  box-shadow: inset 0 1px 4px #000d, 0 -2px 6px #050806c9;
+  scrollbar-color: #82734e #171a15;
+  scrollbar-width: thin;
+}
+.dashboard-frame.rack-side-layout > .ordnance-rack {
+  left: .8%; right: auto; top: 54%; bottom: 1.5%; width: 15.8%; height: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  grid-auto-flow: row; grid-auto-columns: auto;
+  gap: 3px; padding: 5px;
+  border: 2px ridge #7b7455; border-radius: 4px;
+  background: linear-gradient(145deg, #5b5949ef 0%, #272c23f7 18%, #111610fa 100%);
+  box-shadow: inset 0 1px 5px #000e, 1px 2px 8px #000b;
+}
+.dashboard-frame.rack-side-layout > .ordnance-rack .ordnance-choice { min-height: 0; height: 100%; gap: 3px; padding: 2px 4px; }
+.dashboard-frame.rack-side-layout > .ordnance-rack .shell-icon { flex-basis: 24px; width: 24px; height: 24px; }
+.dashboard-frame.rack-side-layout > .ordnance-rack .ordnance-name { font-size: clamp(7px,.48cqw,9px); line-height: 1.05; }
+.ordnance-choice {
+  min-width: 0;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border: 1px solid #6c705a;
+  border-radius: 3px;
+  background: linear-gradient(145deg, #34392e, #141914 72%);
+  color: #d2c6a8;
+  font: 700 clamp(8px, .58vw, 11px)/1.05 "Arial Narrow", "Segoe UI", sans-serif;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.ordnance-choice:hover:enabled { border-color: #c5a66a; filter: brightness(1.16); }
+.ordnance-choice.is-selected {
+  border-color: var(--shell-color, #d9b66d);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--shell-color, #d9b66d) 22%, #293027), #111611 78%);
+  color: #fff0cc;
+  box-shadow: inset 0 0 9px color-mix(in srgb, var(--shell-color, #d9b66d) 28%, transparent), 0 0 4px #000;
+}
+.ordnance-choice:disabled { opacity: .48; cursor: default; }
+.ordnance-choice:focus-visible { outline: 2px solid #f1d18b !important; outline-offset: -3px; box-shadow: 0 0 0 2px #111 !important; }
+.shell-icon { flex: 0 0 27px; width: 27px; height: 27px; display: grid; place-items: center; color: var(--shell-color, #d9b66d); }
+.shell-icon svg { width: 100%; height: 100%; fill: #111610; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px #000); }
+.ordnance-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.topbar > .rim-coords {
+  display: block;
+  flex: 0 0 auto;
+  position: static;
+  margin-inline: 2px 7px;
+  padding: 5px 7px;
+  border: 1px solid #665d43;
+  background: #121713;
+  color: #d4c39a;
+  font: 700 8px/1 "Arial Narrow", "Segoe UI", sans-serif;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.topbar .cockpit-selector {
+  position: relative;
+  inset: auto;
+  display: flex;
+  flex: 0 1 190px;
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  min-width: 0;
+  gap: 5px;
+  margin: 0 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: #c5b48a;
+  white-space: nowrap;
+}
+.topbar .cockpit-selector > span { font-size: 7px; }
+.topbar .cockpit-selector select {
+  min-width: 0;
+  min-height: 30px;
+  height: 30px;
+  max-width: 142px;
+  padding: 0 20px 0 6px;
+  font-size: 9px;
+}
+.track-steering { display: flex; flex: 0 0 auto; gap: 3px; align-items: center; }
+.topbar .track-steering .control-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 43px;
+  min-height: 31px;
+  padding: 2px 5px;
+  border: 1px ridge #77714f;
+  border-radius: 3px;
+  background: linear-gradient(#343a30, #141913);
+  color: #e0d2ad;
+  font-size: 10px;
+}
+.topbar .track-steering kbd { padding: 1px 3px; border: 1px solid #77745e; background: #171b16; color: #eadbb3; font: 700 8px/1 monospace; }
+.loaded-round { display: flex; flex: 0 1 120px; align-items: center; gap: 5px; min-width: 0; padding: 2px 6px; border-left: 1px solid #7a6c49; color: #e0d1a9; }
+.loaded-round-icon { color: #d9aa5d; font-size: 15px; }
+.loaded-round small { display: block; color: #b2a47f; font-size: 6px; letter-spacing: .14em; }
+.loaded-round b { display: block; overflow: hidden; text-overflow: ellipsis; font-size: 9px; white-space: nowrap; }
+.topbar .mission-settings { flex: 0 0 auto; }
+.settings-grid input[type="text"] {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  margin-top: 5px;
+  padding: 0 9px;
+  border: 1px solid #756c51;
+  border-radius: 2px;
+  background: #111711;
+  color: #f1dfb2;
+  font: 700 12px/1 monospace;
+  letter-spacing: .12em;
+}
+.settings-grid input[type="text"]::placeholder { color: #8a8976; font: 600 10px/1 "Arial Narrow", sans-serif; letter-spacing: .02em; }
+.settings-grid .seed-hint { display: block; margin-top: 4px; color: #a9a083; font-size: 9px; line-height: 1.3; }
+.settings-grid input[type="text"]:focus-visible { outline: 2px solid #e6c47a !important; outline-offset: 1px; }
+.mission-records {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(72px, 1fr));
+  gap: 5px;
+  margin: 0 0 10px;
+  padding: 8px;
+  border: 1px solid #84744f;
+  background: linear-gradient(145deg, #22291f, #101511);
+  box-shadow: inset 0 1px 4px #000a;
+}
+.mission-records > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 4px 6px; border-left: 2px solid #776846; background: #0b100d88; }
+.mission-records small { color: #a9a083; font-size: 7px; letter-spacing: .09em; }
+.mission-records b { overflow: hidden; color: #e4d2a5; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.mission-records .record-grid { border-left-color: #638e89; }
+.mission-records em { grid-column: 1 / -1; color: #8d917e; font-size: 7px; font-style: normal; letter-spacing: .08em; text-align: right; }
+.mission-panel .menu-actions { position: static; inset: auto; width: auto; margin-top: 10px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.menu-actions > .support-button { grid-column: 1 / -1; }
+
+@media (max-width: 1400px) {
+  .topbar .build-stamp, .topbar .keyline, .topbar .readouts { display: none; }
+  .topbar .crew-plate { flex: 1 1 150px; min-width: 105px; max-width: 240px; }
+  .topbar .cockpit-selector { flex-basis: 160px; }
+  .loaded-round { flex-basis: 96px; }
+  .topbar > .rim-coords { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-width: 1100px) {
+  .topbar { gap: 6px; }
+  .topbar .build-stamp { display: none; }
+  .topbar .crew-plate { flex: 1 1 95px; min-width: 78px; max-width: 155px; }
+  .topbar .readouts { display: none; }
+  .topbar .rim-coords { font-size: 7px; margin-inline: 0 3px; }
+  .topbar .cockpit-selector { flex-basis: 150px; }
+  .topbar .cockpit-selector > span { display: none; }
+  .loaded-round { flex-basis: 100px; }
+  .topbar .mission-settings summary { min-height: 30px; padding: 3px 7px; }
+  .topbar nav a { padding: 6px; font-size: 7px; }
+}
+@media (max-width: 900px) {
+  .topbar { height: auto; min-height: 50px; flex-basis: 50px; }
+  .topbar .crew-plate, .loaded-round { display: none; }
+  .topbar > .rim-coords { max-width: 118px; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .cockpit-selector { flex-basis: 145px; }
+  .topbar .track-steering .control-button { min-height: 44px; }
+  .topbar nav a:not(:first-child) { display: none; }
+}
+@media (max-width: 650px) {
+  .topbar { height: auto; min-height: 82px; flex-basis: 82px; flex-wrap: wrap; align-content: center; gap: 3px 5px; padding: 3px 6px; }
+  .topbar .brand { order: 0; flex: 0 0 24px; }
+  .topbar .brand > span:last-child, .topbar .build-stamp, .topbar .crew-plate, .topbar .readouts, .loaded-round { display: none; }
+  .topbar .cockpit-selector { order: 1; flex: 1 1 115px; }
+  .topbar .cockpit-selector select { width: 100%; max-width: none; min-height: 27px; height: 27px; font-size: 8px; }
+  .track-steering { order: 2; }
+  .topbar .track-steering .control-button { min-width: 44px; min-height: 44px; }
+  .topbar > .rim-coords { order: 3; padding: 4px 5px; font-size: 7px; }
+  .topbar nav { order: 4; margin-left: auto; }
+  .topbar nav a:not(:first-child) { display: none; }
+  .topbar .mission-settings { order: 5; }
+  .topbar .mission-settings summary { min-height: 27px; padding: 2px 6px; font-size: 8px; }
+  .mission-records { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mission-records .record-grid { grid-column: 1 / -1; }
+  .dashboard-frame > .ordnance-rack { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 48px; padding: 3px; grid-auto-flow: column; grid-auto-columns: minmax(82px, 1fr); grid-template-columns: none; grid-template-rows: none; }
+  .ordnance-choice { min-height: 38px; gap: 3px; padding: 2px 4px; }
+  .shell-icon { flex-basis: 23px; width: 23px; height: 23px; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .dashboard-frame > .ordnance-rack { bottom: 0; height: 48px; }
+  .angle-instrument, .power-instrument { top: 36%; width: 35%; height: auto; aspect-ratio: 1; }
+  .live-dial { top: 66.72%; width: 35%; height: auto; aspect-ratio: 1; }
+  .angle-instrument, .live-elevation { left: 25%; }
+  .power-instrument, .live-charge { left: 73%; }
+}
+
+/* Separate steel side consoles use the space beyond the instrument fascia.
+   Their coordinates belong to the stage, never to a gauge's artwork frame. */
+.side-console { box-sizing: border-box; pointer-events: auto; color: #d8ceb2; }
+.has-side-consoles > .side-console {
+  position: absolute; z-index: 5; top: calc(67% + 5px); bottom: 5px;
+  width: var(--side-width); padding: 9px;
+  border: 3px ridge #706b58; border-radius: 4px;
+  background: radial-gradient(circle at 5% 4%, #b1a588 0 2px, #292921 3px 5px, transparent 6px), radial-gradient(circle at 95% 96%, #b1a588 0 2px, #292921 3px 5px, transparent 6px), linear-gradient(125deg, #77705b30, #080d0aac), var(--deck-plate) repeat;
+  background-size: auto, auto, auto, 64px 64px;
+  box-shadow: inset 0 1px 6px #000d, 0 2px 4px #000a;
+}
+.has-side-consoles > .ordnance-console { left: 6px; display: grid; grid-template-rows: 15px minmax(0,1fr) 75px; gap: 5px; }
+.has-side-consoles > .status-console { right: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; align-content: start; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #82734e #171a15; }
+.console-stencil { font: 700 10px/1.2 "Bahnschrift Condensed","Arial Narrow",sans-serif; letter-spacing: .16em; color: #c4b797; text-shadow: 1px 1px #171a13, -.3px 0 #8d8068; opacity: .86; }
+.has-side-consoles .ordnance-console > .ordnance-rack {
+  position: static; display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+  grid-auto-flow: row; grid-auto-rows: minmax(44px,auto); gap: 4px;
+  min-height: 0; height: auto; padding: 2px; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin; scrollbar-color: #82734e #171a15;
+}
+.has-side-consoles .ordnance-choice { min-height: 44px; font-size: clamp(9px,.65vw,12px); padding: 3px 4px; gap: 3px; }
+.has-side-consoles .ordnance-name { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.ordnance-console > .loaded-round {
+  display: grid; position: static; grid-template-columns: 42% minmax(0,1fr); align-items: center;
+  gap: 6px; min-width: 0; margin: 0; padding: 5px 7px; height: auto;
+  border: 2px inset #79725c; border-radius: 3px;
+  background: radial-gradient(ellipse at top, #414736, #11170f 75%); box-shadow: inset 0 2px 6px #000b;
+}
+.ordnance-console .loaded-round-icon { display: none; }
+.ordnance-console .loaded-round small { color: #b4a88a; font-size: 9px; letter-spacing: .13em; }
+.ordnance-console .loaded-round b { display: block; color: #f1e2bd; font: 700 clamp(12px,.9vw,17px)/1.1 "Arial Narrow",sans-serif; white-space: normal; }
+.selected-shell-art { display: block; height: 58px; color: var(--shell-color,#d9b66d); }
+.selected-shell-art svg { display: block; width: 100%; height: 100%; fill: #514d34; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(2px 3px 2px #000); }
+.status-console .mission-card, .status-console .target-card, .status-console .crew-plate, .status-console .keyline, .status-console .readouts, .status-console .cockpit-selector, .status-console .rim-coords, .status-console .track-steering {
+  position: static; inset: auto; transform: none; margin: 0; min-width: 0; max-width: none; width: auto; min-height: 0;
+}
+.status-console .mission-card, .status-console .target-card { padding: 5px 6px; background: #11170ed9; border: 2px inset #6b6654; color: #dcd1b2; }
+.status-console .mission-card strong, .status-console .target-card strong { margin: 2px 0; font-size: clamp(10px,.78vw,14px); line-height: 1.15; }
+.status-console .eyebrow, .status-console #turnLabel { font-size: 8px; letter-spacing: .07em; line-height: 1.15; }
+.status-console .crew-plate { grid-column: 1/-1; border-bottom: 1px solid #7a715454; padding: 3px 0; }
+.status-console .crew-plate > strong { display: inline; font: 700 12px/1.1 "Arial Narrow",sans-serif; }
+.status-console .crew-plate > span:last-child { display: inline; font-size: 9px; margin-left: 5px; }
+.status-console .keyline { grid-column: 1/-1; display: flex; justify-content: space-between; gap: 5px; border: 0; background: none; padding: 0; font-size: 9px; }
+.status-console .keyline-hint { display: none; }
+.status-console .readouts { grid-column: 1/-1; display: flex; flex-wrap: wrap; gap: 4px 9px; background: none; border: 0; padding: 0; font-size: 9px; }
+.status-console .readouts > span:nth-child(3) { display: none; }
+.status-console .weather-readout { flex: 1 1 100%; font-size: 8px; }
+.status-console .rim-coords { grid-column: 1/-1; display: block; font-size: 8px; padding: 2px 0; }
+.status-console .cockpit-selector { grid-column: 1/-1; display: block; font-size: 8px; }
+.status-console .cockpit-selector select { margin-top: 2px; width: 100%; min-height: 30px; font-size: 10px; }
+.status-console .track-steering { grid-column: 1/-1; display: flex; gap: 5px; }
+.status-console .track-steering .control-button { flex: 1; min-width: 44px; min-height: 44px; padding: 4px; font-size: 11px; }
+.status-console .track-steering kbd { font-size: 10px; }
+.mission-panel > .status-console { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 9px; border: 2px ridge #706b58; background: #23291c; }
+.instrument-frame:not(.has-side-consoles) > .ordnance-console { position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; height: 48px; display: grid; grid-template-columns: minmax(0,1fr) 135px; gap: 4px; background: #1b2117; }
+.instrument-frame:not(.has-side-consoles) .console-stencil { display: none; }
+.instrument-frame:not(.has-side-consoles) .ordnance-rack { display: grid; grid-auto-flow: column; grid-auto-columns: 100px; overflow-x: auto; gap: 3px; padding: 3px; }
+.instrument-frame:not(.has-side-consoles) .loaded-round { padding: 2px 4px; gap: 2px; }
+.instrument-frame:not(.has-side-consoles) .loaded-round b { font-size: 10px; }
+.instrument-frame:not(.has-side-consoles) .loaded-round small { font-size: 7px; }
+.instrument-frame:not(.has-side-consoles) .selected-shell-art { height: 38px; }
+
+/* Full-size instrument faces sit UNDER the photographed steel aperture mask. */
+.instrument-frame .cockpit-skin {
+  -webkit-mask-image: var(--gauge-mask);
+  mask-image: var(--gauge-mask);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+}
+.live-elevation, .angle-instrument {
+  left: var(--angle-x); top: var(--angle-y);
+  width: var(--angle-w); height: var(--angle-h);
+}
+.live-charge, .power-instrument {
+  left: var(--power-x); top: var(--power-y);
+  width: var(--power-w); height: var(--power-h);
+}
+.live-dial {
+  /* Backfill old, oversized alpha cuts with chassis steel, not black glass. */
+  background: linear-gradient(#070b0966,#070b0966),var(--gauge-metal) repeat;
+  background-size: auto,64px 64px;
+}
+.live-dial .dial-face {
+  inset: 0; border-radius: 0; box-shadow: none;
+  clip-path: ellipse(var(--opening-rx,43%) var(--opening-ry,43%) at 50% 50%);
+}
+.live-dial .dial-ticks {
+  display: block; inset: auto; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: var(--tick-w,100%); height: var(--tick-h,100%); opacity: .68;
+  mask: radial-gradient(transparent 79%,#000 81% 84%,transparent 86%);
+  background: repeating-conic-gradient(from -121deg,#b6a47c 0deg .8deg,transparent .8deg 10deg);
+}
+.live-dial .dial-needle { height: var(--needle-length,36%); margin-top: calc(-1 * var(--needle-length,36%)); filter: none; }
+.live-dial .dial-label { opacity: .84; letter-spacing: .04em; }
+.live-dial .dial-label b { font-weight: 600; }
+
+/* Calm, evenly spaced field strip: keep the glass viewport unobstructed. */
+.topbar > .battle-strip {
+  flex: 1 1 440px; min-width: 0; display: flex; align-items: center;
+  justify-content: space-evenly; gap: clamp(8px,2vw,36px);
+}
+.battle-strip .mission-card, .battle-strip .target-card {
+  position: static; inset: auto; transform: none; margin: 0; padding: 2px 8px;
+  width: auto; min-width: 0; max-width: 220px; background: none;
+  border: 0; box-shadow: none; color: #c8c7b4;
+}
+.battle-strip .eyebrow { display: block; font-size: 7px; line-height: 1.2; letter-spacing: .08em; }
+.battle-strip strong { display: block; margin: 1px 0; font-size: 11px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.battle-strip #turnLabel { font-size: 7px; line-height: 1.2; margin-top: 0; }
+.battle-strip .rim-coords { position: static; inset: auto; display: block; min-width: 0; max-width: 170px; padding: 0; color: #a8aa98; font-size: 9px; letter-spacing: .04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.battle-strip .health-track { height: 2px; margin-top: 2px; background: #292c25; }
+.battle-strip .health-track i { background: #a96350; }
+
+/* Dark rubbed steel, not bright rectangular computer outlines. */
+.has-side-consoles > .side-console, .mission-panel > .status-console {
+  border: 1px solid #343c30; border-radius: 3px;
+  background-image: radial-gradient(circle at 5% 4%,#777b69 0 2px,#161c16 3px 5px,transparent 6px),radial-gradient(circle at 95% 96%,#777b69 0 2px,#161c16 3px 5px,transparent 6px),linear-gradient(125deg,#070c09b0,#0b110cce),var(--deck-plate);
+  background-size: auto,auto,auto,64px 64px;
+  box-shadow: inset 0 2px 10px #000b,0 2px 6px #0009;
+}
+.ordnance-choice, .ordnance-console > .loaded-round { border: 1px solid #3b4537; background: linear-gradient(150deg,#283024bc,#0e150ff0); box-shadow: inset 0 1px 3px #0009; }
+.ordnance-choice.is-selected { border-color: #727d68; background: linear-gradient(145deg,#434a35,#182018); box-shadow: inset 3px 0 #8c9877,inset 0 1px 4px #000b; color: #d9d6be; }
+.ordnance-choice:hover:enabled { border-color: #7a8670; }
+.ordnance-choice:focus-visible { outline: 2px solid #a5b49b !important; outline-offset: -3px; }
+.has-side-consoles > .status-console { grid-template-columns: minmax(0,1fr); gap: 9px; padding: 12px; scrollbar-color: #505c48 #111710; }
+.status-console .crew-plate, .status-console .keyline, .status-console .readouts, .status-console .cockpit-selector, .status-console .track-steering { height: auto; min-height: 0; flex: none; line-height: 1.35; }
+.status-console .crew-plate { padding: 0 0 7px; border-bottom-color: #59624b50; }
+.status-console .crew-plate > strong { display: block; margin: 3px 0; font-size: 15px; }
+.status-console .crew-plate > span:last-child { display: block; margin: 0; font-size: 10px; color: #aaa995; }
+.status-console .keyline { display: grid; grid-template-columns: 1fr; gap: 4px; font-size: 10px; letter-spacing: .03em; }
+.status-console .readouts { align-items: start; font-size: 10px; letter-spacing: .03em; gap: 4px 12px; }
+.status-console .weather-readout { font-size: 9px; }
+.status-console .cockpit-selector { font-size: 9px; letter-spacing: .08em; }
+.status-console .cockpit-selector select { min-height: 34px; border-color: #49523f; color: #c7c8af; }
+.status-console .track-steering .control-button { border: 1px solid #424d3c; background: linear-gradient(#30372a,#141c13); color: #bdc6ac; }
+.status-console .track-steering kbd { border-color: #4d5744; background: #172016; color: #bdc6ac; }
+@media (max-width: 900px) {
+  .battle-strip .rim-coords { font-size: 7px; max-width: 130px; }
+  .battle-strip strong { font-size: 9px; }
+}
+@media (max-width: 650px) {
+  .topbar > .battle-strip { order: 6; flex-basis: 100%; gap: 8px; }
+  .battle-strip .mission-card, .battle-strip .target-card { padding: 1px 3px; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  /* Compact mobile panel is a separate layout, not stretched photo apertures. */
+  .instrument-frame .cockpit-skin { -webkit-mask-image: none; mask-image: none; }
+  .angle-instrument, .power-instrument { top: 36%; width: 35%; height: auto; aspect-ratio: 1; }
+  .live-dial { top: 66.72%; width: 35%; height: auto; aspect-ratio: 1; }
+  .angle-instrument, body[data-chassis="r12"] .angle-instrument, .live-elevation { left: 25%; }
+  .power-instrument, body[data-chassis="r12"] .power-instrument, .live-charge { left: 73%; }
+  .live-dial .dial-face { inset: 7%; border-radius: 50%; }
+  .live-dial { background: none; }
+  .live-dial .dial-face { clip-path: none; }
 }
