@@ -208,8 +208,8 @@ body .content {
 }
 
 .mobile-actions button:nth-child(2) {
-  grid-row: span 2;
-  height: 122px;
+  grid-row: auto;
+  height: 56px;
 }
 
 @media (hover: none) and (pointer: coarse) {

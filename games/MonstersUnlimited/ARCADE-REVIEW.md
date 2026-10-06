@@ -55,3 +55,5 @@ Implemented in the isolated source repository:
 ## October 5 follow-up
 
 The street barrier, damaged-wall climbing, window-portrait transition, and helicopter art were revised after further gameplay reports. See [building physics and helicopter follow-up](PHYSICS-UPDATE.md) for the current behavior and expanded 29-test verification. Street movement now passes along façades; roof/ledge support and climbing follow surviving cells. The first-pass horizontal barrier design above is superseded.
+
+All six monsters now have new original full-body artwork and a shared connected skeletal renderer, including dedicated backhands and a corrected forward gait. The earlier unfinished-character and whole-sprite-animation limitations are superseded. See [six-monster model update](MODEL-UPDATE.md) for the current roster, movements and verification.

@@ -14,7 +14,7 @@
   const assets = window.MONSTERS_UNLIMITED_ASSETS;
   const levels = window.MONSTERS_UNLIMITED_LEVELS;
   const keys = new Set();
-  const input = { x: 0, y: 0, jump: false, punch: false, eat: false, special: false };
+  const input = { x: 0, y: 0, jump: false, punch: false, backhand: false, eat: false, special: false };
   const stickInput = { x: 0, y: 0 };
   const imageCache = new Map();
   const loadedImages = new Map();
@@ -41,7 +41,7 @@
   let audioContext;
   let soundEnabled = true;
   let pointerAim = null;
-  const held = { punch: false, eat: false };
+  const held = { punch: false, backhand: false, eat: false };
   const projectiles = [];
   const helicopters = [];
   const pickups = [];
@@ -77,7 +77,8 @@
       img.onload = () => {
         window.clearTimeout(timer);
         try {
-          const decoded = maskPink(img);
+          // New atlases already have alpha; color-keying would erase violet chitin.
+          const decoded = src.includes('/monster-rigs-v2/') ? img : maskPink(img);
           loadedImages.set(src, decoded);
           finish(decoded);
         } catch {
@@ -155,6 +156,7 @@
       if (item.humanSrc) srcs.add(item.humanSrc);
       if (item.climbSrc) srcs.add(item.climbSrc);
       if (item.attackSrc) srcs.add(item.attackSrc);
+      if (item.rig?.atlas) srcs.add(item.rig.atlas);
       (item.damageSrcs || []).forEach((src) => srcs.add(src));
       Object.values(item.rig?.parts || {}).forEach((src) => srcs.add(src));
     });
@@ -168,6 +170,7 @@
         if (img) loadedImages.set(src, img);
       }
     }));
+    assets.monsters.filter(item => item.playable !== false).forEach(item => window.MonstersUnlimitedRenderer?.prepare?.(item, loadedImages));
   }
 
   function reset(newRun = true) {
@@ -199,7 +202,8 @@
     spec.monsterId = selectedMonsterId;
     player = {
       x: spec.x, y: level.world.groundY - spec.monster.h, vx: 0, vy: 0,
-      facing: 1, punchDir: 1, attackTimer: 0, attackAim: { x: 1, y: 0 },
+      facing: 1, punchDir: 1, attackTimer: 0, attackKind: 'punch', attackSerial: 0, attackAim: { x: 1, y: 0 },
+      eatTimer: 0, hurtTimer: 0,
       aimX: spec.x + 140, aimY: level.world.groundY - spec.monster.h * .66,
       climbSide: null, climbBuildingId: '', state: 'monster', morph: 0,
       health: previous ? Math.min(spec.health, previous.health + 15) : spec.health,
@@ -280,6 +284,7 @@
     if (!running || player.state !== 'monster' || player.invulnerable > 0 || player.respawning > 0) return false;
     player.health = Math.max(0, player.health - amount);
     player.invulnerable = .75;
+    player.hurtTimer = .18;
     shake = Math.max(shake, 6);
     burst(player.x + monsterSpec().w * .5, player.y + monsterSpec().h * .5, '#e45b47', 10);
     tone(90, .12, 'sawtooth');
@@ -319,8 +324,10 @@
     document.getElementById('dayText').textContent = `Day ${campaignIndex + 1} · ${level.city}`;
     if (qaMode) canvas.dataset.state = JSON.stringify({ x: player.x, y: player.y, vx: player.vx, vy: player.vy,
       onGround: player.onGround, climbing: player.climbing, onRoof: player.onRoof, health: player.health,
+      monsterId: level.player.monsterId, facing: player.facing, attackKind: player.attackKind, attackTimer: player.attackTimer,
+      eatTimer: player.eatTimer, rigReady: !!loadedImages.get(byId(assets.monsters, level.player.monsterId).rig?.atlas),
       climbSide: player.climbSide, climbBuildingId: player.climbBuildingId,
-      lives: player.lives, score: player.score, cameraX, day: campaignIndex + 1, paused, running,
+      lives: player.lives, score: player.score, cameraX, cameraY, day: campaignIndex + 1, paused, running,
       buildings: level.buildings.map(b => ({id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, rows: b.rows, cols: b.cols,
         cells: countCells(b), grid: b.cells, collapsed: b.collapsed, collapsing: !!b.collapse})),
       humans: level.humans.map(h => ({id: h.id, kind: h.kind, assetId: h.assetId, x: h.x, y: h.y, eaten: !!h.eaten,
@@ -349,7 +356,7 @@
       player.respawning = Math.max(0, player.respawning - dt);
       if (!player.respawning) respawnPlayer();
       updateParticles(dt); updateFloaters(dt); updateHud();
-      input.jump = input.punch = input.eat = false;
+      input.jump = input.punch = input.backhand = input.eat = false;
       return;
     }
     if (input.jump) player.jumpBuffer = .14;
@@ -360,6 +367,8 @@
     punchCooldown = Math.max(0, punchCooldown - dt);
     eatCooldown = Math.max(0, eatCooldown - dt);
     player.attackTimer = Math.max(0, player.attackTimer - dt);
+    player.eatTimer = Math.max(0, player.eatTimer - dt);
+    player.hurtTimer = Math.max(0, player.hurtTimer - dt);
     movePlayer(dt);
     updateHumans(dt);
     updateVehicles(dt);
@@ -367,7 +376,8 @@
     updateBuildings(dt);
     updateParticles(dt); updateFloaters(dt);
     if (running && player.state === 'monster') {
-      if (input.punch || held.punch || keys.has('j') || keys.has('control')) punch();
+      if (input.backhand || held.backhand || keys.has('k')) punch('backhand');
+      else if (input.punch || held.punch || keys.has('j') || keys.has('control')) punch();
       if (input.eat || held.eat || keys.has('e')) eat();
     }
     const cameraTarget = clamp(player.x + monsterSpec().w * .5 - canvas.width * .42, 0, Math.max(0, level.world.width - canvas.width));
@@ -376,7 +386,7 @@
     cameraY += (verticalTarget - cameraY) * (1 - Math.exp(-7 * dt));
     if (running && level.buildings.every(b => b.collapsed)) completeLevel();
     updateHud();
-    input.jump = input.punch = input.eat = input.special = false;
+    input.jump = input.punch = input.backhand = input.eat = input.special = false;
   }
 
   function monsterSpec() {
@@ -544,14 +554,17 @@
     return best;
   }
 
-  function punch() {
+  function punch(kind = 'punch') {
     if (player.state !== 'monster' || punchCooldown > 0) return;
     punchCooldown = .24; player.attackTimer = .22;
-    const origin = punchOrigin();
-    let dx = Math.abs(input.x) > .2 ? Math.sign(input.x) : player.facing;
+    let dx = kind === 'backhand' ? -player.facing : Math.abs(input.x) > .2 ? Math.sign(input.x) : player.facing;
     let dy = Math.abs(input.y) > .2 ? Math.sign(input.y) : 0;
+    const behind = pointerAim && kind !== 'backhand' ? (pointerAim.x - player.x - monsterSpec().w * .5) * player.facing < -5 : dx * player.facing < 0;
+    player.attackKind = kind === 'backhand' || behind ? 'backhand' : 'punch';
+    player.attackSerial = (player.attackSerial || 0) + 1;
+    const origin = punchOrigin();
     if (dy) dx *= .25;
-    if (pointerAim) { dx = pointerAim.x - origin.x; dy = pointerAim.y - origin.y; }
+    if (pointerAim && kind !== 'backhand') { dx = pointerAim.x - origin.x; dy = pointerAim.y - origin.y; }
     const length = Math.hypot(dx, dy) || 1;
     player.attackAim = { x: dx / length, y: dy / length };
     player.punchDir = dx < 0 ? -1 : 1;
@@ -602,7 +615,8 @@
   function eat() {
     if (player.state !== 'monster' || eatCooldown > 0) return;
     eatCooldown = .35;
-    const origin = punchOrigin();
+    player.eatTimer = .3;
+    const origin = punchOrigin('punch');
     const mouth = { x: origin.x - 55, y: origin.y - 45, w: 110, h: 90 };
     const human = level.humans.find(item => !item.eaten && rects(mouth, humanRect(item)));
     if (human) { human.eaten = true; player.health = Math.min(player.maxHealth, player.health + 18); score(150, human.x, human.y, '#74e48c'); }
@@ -1060,10 +1074,12 @@
     }
   }
 
-  function punchOrigin() {
+  function punchOrigin(kind = player.attackKind) {
     const spec = currentSize();
-    if (window.MonstersUnlimitedRenderer?.punchOrigin) return window.MonstersUnlimitedRenderer.punchOrigin({player, spec});
-    const facing = player.climbing ? player.facing : player.facing || 1;
+    if (window.MonstersUnlimitedRenderer?.punchOrigin) return window.MonstersUnlimitedRenderer.punchOrigin({
+      player: kind === player.attackKind ? player : {...player, attackKind: kind}, spec
+    });
+    const facing = (player.facing || 1) * (kind === 'backhand' ? -1 : 1);
     return {
       x: player.x + spec.w * (facing > 0 ? 0.57 : 0.43),
       y: player.y + spec.h * 0.43
@@ -1186,8 +1202,8 @@
   function clearInput() {
     keys.clear();
     input.x = input.y = stickInput.x = stickInput.y = 0;
-    input.jump = input.punch = input.eat = input.special = false;
-    held.punch = held.eat = false;
+    input.jump = input.punch = input.backhand = input.eat = input.special = false;
+    held.punch = held.backhand = held.eat = false;
     pointerAim = null;
     const knob = document.getElementById('stickKnob');
     if (knob) knob.style.transform = 'translate(0, 0)';
@@ -1213,12 +1229,13 @@
   window.addEventListener('keydown', event => {
     if (event.target?.tagName === 'SELECT' || event.target?.tagName === 'INPUT') return;
     const key = event.key.toLowerCase();
-    if (['arrowleft','arrowright','arrowup','arrowdown',' ','control','j','e','w','a','s','d'].includes(key) && running) event.preventDefault();
+    if (['arrowleft','arrowright','arrowup','arrowdown',' ','control','j','k','e','w','a','s','d'].includes(key) && running) event.preventDefault();
     if (key === 'escape' && !event.repeat) { togglePause(); return; }
     if (!running || paused) return;
     keys.add(key);
     if ((key === ' ' || key === 'spacebar') && !event.repeat) input.jump = true;
     if (key === 'j' || key === 'control') { pointerAim = null; input.punch = true; }
+    if (key === 'k') { pointerAim = null; input.backhand = true; }
     if (key === 'e') input.eat = true;
   });
   window.addEventListener('keyup', event => keys.delete(event.key.toLowerCase()));
@@ -1262,7 +1279,7 @@
     const release = () => { if (action !== 'jump') held[action] = false; };
     ['pointerup','pointercancel','lostpointercapture'].forEach(name => button.addEventListener(name, release));
   }
-  bindAction('jumpBtn', 'jump'); bindAction('punchBtn', 'punch'); bindAction('eatBtn', 'eat');
+  bindAction('jumpBtn', 'jump'); bindAction('punchBtn', 'punch'); bindAction('backhandBtn', 'backhand'); bindAction('eatBtn', 'eat');
   const stick = document.getElementById('mobileStick'), knob = document.getElementById('stickKnob');
   let stickId = null;
   function moveStick(event) {

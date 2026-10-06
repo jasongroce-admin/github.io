@@ -133,7 +133,10 @@
     hydrateRigVariants();
     writeForm();
     writeRigForm();
-    preload().then(draw);
+    preload().then(() => {
+      assets.monsters.forEach((monster) => window.MonstersUnlimitedRenderer?.prepare?.(monster, loadedImages));
+      draw();
+    });
   }
 
   function hydrateRigVariants() {
@@ -154,11 +157,19 @@
       (item.morphSrcs || []).forEach((src) => srcs.add(src));
       (item.damageSrcs || []).forEach((src) => srcs.add(src));
       Object.values(item.rig?.parts || {}).forEach((src) => srcs.add(src));
+      if (item.rig?.atlas) srcs.add(item.rig.atlas);
     });
-    const loaded = await Promise.all([...srcs].map(async (src) => [src, await loadImage(src)]));
-    loaded.forEach(([src, img]) => {
-      if (img) loadedImages.set(src, img);
-    });
+    // Match the game's bounded asset loader. Starting every large art request
+    // at once can delay or time out the new skeletal atlases in the builder.
+    const queue = [...srcs];
+    let cursor = 0;
+    await Promise.all(Array.from({ length: 4 }, async () => {
+      while (cursor < queue.length) {
+        const src = queue[cursor++];
+        const img = await loadImage(src);
+        if (img) loadedImages.set(src, img);
+      }
+    }));
   }
 
   function loadImage(src) {
@@ -175,7 +186,7 @@
       img.onload = () => {
         window.clearTimeout(timer);
         try {
-          finish(maskPink(img));
+          finish(src.includes('/monster-rigs-v2/') ? img : maskPink(img));
         } catch {
           finish(img);
         }

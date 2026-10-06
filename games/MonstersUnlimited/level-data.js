@@ -27,7 +27,7 @@ window.MONSTERS_UNLIMITED_ASSETS = {
     { id: 'three-narrow', name: 'Three Sheet Narrow Tower', src: 'MUimages/generated/three-narrow.png' }
   ],
   monsters: [
-    { id: 'grokkon', name: 'Grokkon', src: 'MUimages/generated/grokkon.png', humanSrc: 'MUimages/generated/grokkon-human.png', morphSrcs: ['MUimages/generated/grokkon-morph-1.png', 'MUimages/generated/grokkon-morph-2.png'], climbSrc: 'MUimages/generated/grokkon-climb.png', attackSrc: 'MUimages/generated/grokkon-attack.png' },
+    { id: 'grokkon', name: 'Grokkon', src: 'MUimages/generated/grokkon.png', humanSrc: 'MUimages/generated/grokkon-human.png', morphSrcs: ['MUimages/generated/grokkon-morph-1.png', 'MUimages/generated/grokkon-morph-2.png'], climbSrc: 'MUimages/generated/grokkon-climb.png', attackSrc: 'MUimages/generated/grokkon-attack.png', rig: { type: 'skeletal', atlas: 'MUimages/generated/monster-rigs-v2/grokkon-atlas.png', species: 'ape', tail: false } },
     {
       id: 'lizork',
       name: 'Lizork',
@@ -37,7 +37,10 @@ window.MONSTERS_UNLIMITED_ASSETS = {
       climbSrc: 'MUimages/generated/lizork-climb.png',
       attackSrc: 'MUimages/generated/lizork-attack.png',
       rig: {
-        type: 'lizork',
+        type: 'skeletal',
+        atlas: 'MUimages/generated/monster-rigs-v2/lizork-atlas.png',
+        species: 'reptile',
+        tail: true,
         parts: {
           torsoSide: 'MUimages/generated/lizork3-rig/torso-side.png',
           torsoThree: 'MUimages/generated/lizork3-rig/torso-three.png',
@@ -61,10 +64,10 @@ window.MONSTERS_UNLIMITED_ASSETS = {
         }
       }
     },
-    { id: 'thorvak', name: 'Thorvak', src: 'MUimages/generated/thorvak.png', humanSrc: 'MUimages/generated/thorvak-human.png', morphSrcs: ['MUimages/generated/thorvak-morph-1.png', 'MUimages/generated/thorvak-morph-2.png'], climbSrc: 'MUimages/generated/thorvak-climb.png', attackSrc: 'MUimages/generated/thorvak-attack.png' },
-    { id: 'kragmor', playable: false, name: 'Kragmor', src: 'MUimages/generated/kragmor-stand.png', humanSrc: 'MUimages/generated/kragmor-human.png', morphSrcs: ['MUimages/generated/kragmor-morph-1.png', 'MUimages/generated/kragmor-morph-2.png'], climbSrc: 'MUimages/generated/kragmor-climb.png', attackSrc: 'MUimages/generated/kragmor-stand.png' },
-    { id: 'vorgath', playable: false, name: 'Vorgath', src: 'MUimages/generated/vorgath-stand.png', humanSrc: 'MUimages/generated/vorgath-human.png', morphSrcs: ['MUimages/generated/vorgath-morph-1.png', 'MUimages/generated/vorgath-morph-2.png'], climbSrc: 'MUimages/generated/vorgath-climb.png', attackSrc: 'MUimages/generated/vorgath-stand.png' },
-    { id: 'skorath', playable: false, name: 'Skorath', src: 'MUimages/generated/skorath-stand.png', humanSrc: 'MUimages/generated/skorath-human.png', morphSrcs: ['MUimages/generated/skorath-morph-1.png', 'MUimages/generated/skorath-morph-2.png'], climbSrc: 'MUimages/generated/skorath-climb.png', attackSrc: 'MUimages/generated/skorath-stand.png' }
+    { id: 'thorvak', name: 'Thorvak', src: 'MUimages/generated/thorvak.png', humanSrc: 'MUimages/generated/thorvak-human.png', morphSrcs: ['MUimages/generated/thorvak-morph-1.png', 'MUimages/generated/thorvak-morph-2.png'], climbSrc: 'MUimages/generated/thorvak-climb.png', attackSrc: 'MUimages/generated/thorvak-attack.png', rig: { type: 'skeletal', atlas: 'MUimages/generated/monster-rigs-v2/thorvak-atlas.png', species: 'wolf', tail: true } },
+    { id: 'kragmor', name: 'Kragmor', src: 'MUimages/generated/kragmor-stand.png', humanSrc: 'MUimages/generated/kragmor-human.png', morphSrcs: ['MUimages/generated/kragmor-morph-1.png', 'MUimages/generated/kragmor-morph-2.png'], climbSrc: 'MUimages/generated/kragmor-climb.png', attackSrc: 'MUimages/generated/kragmor-stand.png', rig: { type: 'skeletal', atlas: 'MUimages/generated/monster-rigs-v2/kragmor-atlas.png', species: 'horned', tail: true } },
+    { id: 'vorgath', name: 'Vorgath', src: 'MUimages/generated/vorgath-stand.png', humanSrc: 'MUimages/generated/vorgath-human.png', morphSrcs: ['MUimages/generated/vorgath-morph-1.png', 'MUimages/generated/vorgath-morph-2.png'], climbSrc: 'MUimages/generated/vorgath-climb.png', attackSrc: 'MUimages/generated/vorgath-stand.png', rig: { type: 'skeletal', atlas: 'MUimages/generated/monster-rigs-v2/vorgath-atlas.png', species: 'insect', tail: true } },
+    { id: 'skorath', name: 'Skorath', src: 'MUimages/generated/skorath-stand.png', humanSrc: 'MUimages/generated/skorath-human.png', morphSrcs: ['MUimages/generated/skorath-morph-1.png', 'MUimages/generated/skorath-morph-2.png'], climbSrc: 'MUimages/generated/skorath-climb.png', attackSrc: 'MUimages/generated/skorath-stand.png', rig: { type: 'skeletal', atlas: 'MUimages/generated/monster-rigs-v2/skorath-atlas.png', species: 'scorpion', tail: true } }
   ],
   humans: [
     { id: 'human-a', name: 'Civilian Blue', src: 'MUimages/generated/human-a.png', kind: 'window' },

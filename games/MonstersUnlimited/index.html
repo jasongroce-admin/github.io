@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Monsters Unlimited</title>
     <link rel="stylesheet" href="../../assets/css/site.css?v=20261003" />
-    <link rel="stylesheet" href="style.css?v=20261004-2" />
+    <link rel="stylesheet" href="style.css?v=20261005-4" />
   <link rel="stylesheet" href="../../assets/css/site-chrome.css?v=20261003">
 </head>
   <body>
@@ -27,6 +27,7 @@
       <div id="mobileActions" class="mobile-actions" aria-label="Actions">
         <button id="jumpBtn" type="button">Jump</button>
         <button id="punchBtn" type="button">Punch</button>
+        <button id="backhandBtn" data-action="backhand" type="button">Backhand</button>
         <button id="eatBtn" type="button">Eat</button>
       </div>
       <section id="startScreen" class="screen">
@@ -36,7 +37,7 @@
           <h1>Rampage through the city</h1>
           <p>Pick a monster and a city. Smash buildings, eat to recover, and keep moving to the next skyline.</p>
           <div class="start-options"><label>Monster<select id="monsterSelect"></select></label><label>City<select id="levelSelect"></select></label></div>
-          <p class="controls-copy"><strong>Controls:</strong> A/D or ←/→ move · W/S or ↑/↓ climb at walls · Space jump · hold J or Ctrl to punch, with direction aiming up/down · E eat · Esc pause.</p>
+          <p class="controls-copy"><strong>Controls:</strong> A/D or ←/→ move · W/S or ↑/↓ climb at walls · Space jump · hold J or Ctrl to punch · K backhand · aim up/down with direction · E eat · Esc pause.</p>
           <button id="startBtn" type="button">Start</button>
           <a href="builder.html" target="_blank" rel="noreferrer">Open Builder</a>
         </div>
@@ -51,8 +52,8 @@
         </div>
       </section>
     </main>
-    <script src="level-data.js?v=20261004-2"></script>
-    <script src="monster-renderer.js?v=20261004-2"></script>
-    <script src="game.js?v=20261005-1"></script>
+    <script src="level-data.js?v=20261005-4"></script>
+    <script src="monster-renderer.js?v=20261005-4"></script>
+    <script src="game.js?v=20261005-4"></script>
   </body>
 </html>

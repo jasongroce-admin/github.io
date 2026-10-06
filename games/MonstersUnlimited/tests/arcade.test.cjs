@@ -65,6 +65,8 @@ function makeContext() {
 
   const levelSource = fs.readFileSync(path.join(gameDir, 'level-data.js'), 'utf8');
   vm.runInNewContext(levelSource, sandbox, { filename: 'level-data.js' });
+  const rendererSource = fs.readFileSync(path.join(gameDir, 'monster-renderer.js'), 'utf8');
+  vm.runInNewContext(rendererSource, sandbox, { filename: 'monster-renderer.js' });
   const gameSource = fs.readFileSync(path.join(gameDir, 'game.js'), 'utf8').replace(/\r\n/g, '\n');
   const marker = '  reset();\n  draw();';
   const markerIndex = gameSource.lastIndexOf(marker);
@@ -72,10 +74,11 @@ function makeContext() {
   const instrumented = `${gameSource.slice(0, markerIndex)}
   globalThis.__test = {
     reset, loadLevel, movePlayer, update, punch, getHitCell, damagePlayer,
-    updateBuildings, updateEnemies, updateHumans, roofAt, currentSize, playerRect, humanRect, input, keys, held, projectiles,
-    get state() { return { player, level, cameraX, cameraY, pointerAim, running, campaignIndex, cleared }; },
+    updateBuildings, updateEnemies, updateHumans, roofAt, punchOrigin, currentSize, playerRect, humanRect, input, keys, held, projectiles,
+    get state() { return { player, level, cameraX, cameraY, pointerAim, running, paused, campaignIndex, cleared }; },
     set running(value) { running = value; },
-    listeners: __listeners, elements: __elements, assets,
+    listeners: __listeners, elements: __elements, assets, renderer: window.MonstersUnlimitedRenderer,
+    set selectedMonsterId(value) { selectedMonsterId = value; },
     set punchCooldown(value) { punchCooldown = value; },
     get punchCooldown() { return punchCooldown; },
     set eatCooldown(value) { eatCooldown = value; }
@@ -106,6 +109,31 @@ function keepCityActive(level) {
   level.buildings = [{ id: 'remote-test-building', x: world.width - 80, y: world.groundY - 90,
     w: 60, h: 90, cols: 1, rows: 1, hp: 1, points: 0, maxCells: 1,
     cells: [[1]], collapsed: false, collapse: null, rubble: [] }];
+}
+
+function prepareBackhandTargets() {
+  const { level, player } = freshMonster();
+  game.running = true;
+  keepCityActive(level);
+  level.humans = [];
+  level.soldiers = [];
+  const spec = game.currentSize();
+  player.attackKind = 'backhand';
+  const backOrigin = game.punchOrigin();
+  player.attackKind = 'punch';
+  const frontOrigin = game.punchOrigin();
+  const reach = spec.w * .55;
+  const makeVehicle = (origin, direction) => ({
+    x: origin.x + direction * reach - 52,
+    y: origin.y - 25,
+    health: 5,
+    dir: 0,
+    speed: 0
+  });
+  const rear = makeVehicle(backOrigin, -1);
+  const front = makeVehicle(frontOrigin, 1);
+  level.vehicles = [rear, front];
+  return { level, player, rear, front };
 }
 
 test('masonry lookup rejects attacks whose hitbox misses the building', () => {
@@ -308,6 +336,242 @@ test('downward punch from a roof damages the masonry below the player', () => {
   game.punch();
   const after = building.cells.flat().reduce((sum, hp) => sum + hp, 0);
   assert.ok(after < before, 'the downward strike should intersect the building below the roof');
+});
+
+test('left and right directional strikes hit only within the intended reach', () => {
+  const { level, player } = freshMonster();
+  level.buildings = [];
+  level.humans = [];
+  level.soldiers = [];
+  const spec = game.currentSize();
+  const origin = game.punchOrigin();
+  const reach = spec.w * .55;
+  const makeVehicle = (centerX) => ({ x: centerX - 52, y: origin.y - 25, health: 3, dir: 0, speed: 0 });
+  const nearRight = makeVehicle(origin.x + reach);
+  const farRight = makeVehicle(origin.x + reach + 90);
+  const nearLeft = makeVehicle(origin.x - reach);
+  level.vehicles = [nearRight, farRight, nearLeft];
+
+  game.input.x = 1;
+  game.input.y = 0;
+  game.punch();
+  assert.equal(nearRight.health, 2);
+  assert.equal(farRight.health, 3, 'targets beyond the strike box should not be hit');
+  assert.equal(nearLeft.health, 3);
+  assert.ok(player.attackAim.x > .99);
+
+  game.punchCooldown = 0;
+  game.input.x = -1;
+  game.punch();
+  assert.equal(nearLeft.health, 2);
+  assert.equal(nearRight.health, 2);
+  assert.equal(player.punchDir, -1);
+  assert.ok(player.attackAim.x < -.99);
+});
+
+test('reversing strike direction can create a backhand vector without flipping facing', () => {
+  const { level, player } = freshMonster();
+  level.buildings = [];
+  level.humans = [];
+  level.vehicles = [];
+  level.soldiers = [];
+  player.facing = 1;
+  game.input.x = -1;
+  game.input.y = 0;
+  game.punch();
+  assert.equal(player.facing, 1, 'a swing direction should not rotate the body facing');
+  assert.ok(player.attackAim.x * player.facing < 0, 'the swing vector points behind the facing direction');
+  assert.equal(player.attackKind, 'backhand', 'a strike behind the current facing should select the backhand pose');
+});
+
+test('K backhand hits behind the monster without turning the body around', () => {
+  const { player, rear, front } = prepareBackhandTargets();
+  const originalFacing = player.facing;
+  const serial = player.attackSerial;
+  game.listeners.get('window:keydown')({ key: 'k', repeat: false, preventDefault() {} });
+  game.update(.016);
+  assert.equal(rear.health, 4);
+  assert.equal(front.health, 5);
+  assert.equal(player.facing, originalFacing);
+  assert.equal(player.attackKind, 'backhand');
+  assert.ok(player.attackAim.x * player.facing < 0);
+  assert.equal(player.attackSerial, serial + 1);
+});
+
+test('held K backhand repeats until key release', () => {
+  const { player, rear, front } = prepareBackhandTargets();
+  const initialSerial = player.attackSerial;
+  game.listeners.get('window:keydown')({ key: 'k', repeat: false, preventDefault() {} });
+  game.update(.016);
+  game.update(.25);
+  assert.equal(rear.health, 3);
+  assert.equal(front.health, 5);
+  assert.equal(player.attackSerial, initialSerial + 2);
+  const serialAtRelease = player.attackSerial;
+  game.listeners.get('window:keyup')({ key: 'k' });
+  game.update(.25);
+  assert.equal(rear.health, 3);
+  assert.equal(player.attackSerial, serialAtRelease);
+});
+
+test('touch backhand repeats while held and pointerup stops subsequent swings', () => {
+  const { player, rear, front } = prepareBackhandTargets();
+  const button = game.elements.get('backhandBtn');
+  button.listeners.get('pointerdown')({ preventDefault() {}, pointerId: 7 });
+  game.update(.016);
+  game.update(.25);
+  assert.equal(rear.health, 3);
+  assert.equal(front.health, 5);
+  const serialAtRelease = player.attackSerial;
+  button.listeners.get('pointerup')();
+  assert.equal(game.held.backhand, false);
+  game.update(.25);
+  assert.equal(rear.health, 3);
+  assert.equal(player.attackSerial, serialAtRelease);
+});
+
+test('all six playable monsters select a skeletal rig with connected attack and climb poses', () => {
+  const roster = game.assets.monsters.filter((asset) => asset.playable !== false);
+  assert.equal(roster.length, 6);
+  const buildingTemplate = game.state.level.buildings[0];
+
+  for (const asset of roster) {
+    assert.equal(asset.rig?.type, 'skeletal', `${asset.id} should use the skeletal renderer`);
+    assert.ok(asset.rig?.atlas, `${asset.id} should provide a rig atlas`);
+    assert.ok(fs.existsSync(path.join(gameDir, asset.rig.atlas)), `${asset.id} atlas must exist`);
+    game.selectedMonsterId = asset.id;
+    game.loadLevel(0);
+    const { level, player } = game.state;
+    const spec = game.currentSize();
+    assert.equal(level.player.monsterId, asset.id);
+
+    player.facing = 1;
+    player.attackTimer = .2;
+    player.attackKind = 'backhand';
+    player.attackAim = { x: -1, y: 0 };
+    let pose = game.renderer.geometry({ asset, player, spec, time: .2 });
+    assert.equal(pose.arms[0].attacking, true, `${asset.id} should animate a rear-side backhand`);
+    assert.equal(pose.arms[1].attacking, false);
+    assert.ok(pose.arms[0].hand.x < player.x, `${asset.id} backhand should extend behind its facing`);
+
+    player.attackKind = 'punch';
+    player.attackAim = { x: 1, y: 0 };
+    pose = game.renderer.geometry({ asset, player, spec, time: .2 });
+    assert.equal(pose.arms[0].attacking, false);
+    assert.equal(pose.arms[1].attacking, true, `${asset.id} should animate the forward punch arm`);
+    assert.ok(pose.arms[1].hand.x > player.x + spec.w, `${asset.id} punch should reach in front of its facing`);
+
+    const building = level.buildings[0] || buildingTemplate;
+    player.x = building.x - spec.w * .68;
+    player.y = building.y + 100;
+    player.climbing = true;
+    player.climbSide = 'left';
+    player.climbBuildingId = building.id;
+    player.onGround = false;
+    player.attackTimer = 0;
+    pose = game.renderer.geometry({ asset, player, spec, time: .2 });
+    for (const arm of pose.arms) {
+      for (const point of [arm.shoulder, arm.elbow, arm.wrist, arm.hand]) {
+        assert.ok(Number.isFinite(point.x) && Number.isFinite(point.y), `${asset.id} climb joints should remain finite`);
+      }
+      assert.ok(Math.abs(arm.hand.x - building.x) < spec.w * .1,
+        `${asset.id} climbing hand should stay connected to the contacted wall`);
+    }
+  }
+});
+
+test('ape and wolf gaits plant the stance foot and swing it forward in both travel directions', () => {
+  for (const monsterId of ['grokkon', 'thorvak']) {
+    for (const direction of [1, -1]) {
+      game.selectedMonsterId = monsterId;
+      game.loadLevel(0);
+      const { level, player } = game.state;
+      const asset = game.assets.monsters.find((item) => item.id === monsterId);
+      const spec = game.currentSize();
+      player.x = 500;
+      player.y = level.world.groundY - spec.h;
+      player.vx = direction * 240;
+      player.facing = direction;
+      player.onGround = true;
+      player.climbing = false;
+      player.attackTimer = 0;
+
+      const geometry = (time) => game.renderer.geometry({ asset, player, spec, time });
+      const stanceStart = geometry(0).legs[1].sole;
+      const stanceCenterStart = player.x + spec.w * .5;
+      player.x += direction * 240 * .02;
+      const stanceNext = geometry(.02).legs[1].sole;
+      const stanceCenterNext = player.x + spec.w * .5;
+      assert.ok(Math.abs(stanceNext.x - stanceStart.x) < .01,
+        `${monsterId} stance foot should stay planted in world space while facing ${direction}`);
+      const stanceRelativeStart = direction * (stanceStart.x - stanceCenterStart);
+      const stanceRelativeNext = direction * (stanceNext.x - stanceCenterNext);
+      assert.ok(stanceRelativeNext < stanceRelativeStart,
+        `${monsterId} planted foot should move rearward relative to its facing torso`);
+
+      game.loadLevel(0);
+      const swingPlayer = game.state.player;
+      swingPlayer.x = 500;
+      swingPlayer.y = level.world.groundY - spec.h;
+      swingPlayer.vx = direction * 240;
+      swingPlayer.facing = direction;
+      swingPlayer.onGround = true;
+      swingPlayer.climbing = false;
+      const swingGeometry = (time) => game.renderer.geometry({ asset, player: swingPlayer, spec, time });
+      const swingStart = swingGeometry(0).legs[0].sole;
+      swingPlayer.x += direction * 240 * .1;
+      const swingMid = swingGeometry(.1).legs[0].sole;
+      const swingMidCenter = swingPlayer.x + spec.w * .5;
+      swingPlayer.x += direction * 240 * .05;
+      const swingLifted = swingGeometry(.15).legs[0].sole;
+      const swingLiftedCenter = swingPlayer.x + spec.w * .5;
+      const relativeMid = direction * (swingMid.x - swingMidCenter);
+      const relativeLifted = direction * (swingLifted.x - swingLiftedCenter);
+      assert.ok(relativeLifted > relativeMid,
+        `${monsterId} swing foot should advance forward relative to its facing torso`);
+      assert.ok(swingLifted.y < swingStart.y,
+        `${monsterId} swing foot should lift instead of scuffing backward on the street`);
+    }
+  }
+});
+
+test('focus pause clears both held punch and backhand inputs', () => {
+  prepareBackhandTargets();
+  const punchButton = game.elements.get('punchBtn');
+  const backhandButton = game.elements.get('backhandBtn');
+  punchButton.listeners.get('pointerdown')({ preventDefault() {}, pointerId: 8 });
+  backhandButton.listeners.get('pointerdown')({ preventDefault() {}, pointerId: 9 });
+  assert.equal(game.held.punch, true);
+  assert.equal(game.held.backhand, true);
+  game.listeners.get('window:blur')();
+  assert.equal(game.state.paused, true);
+  assert.equal(game.held.punch, false);
+  assert.equal(game.held.backhand, false);
+  assert.equal(game.input.punch, false);
+  assert.equal(game.input.backhand, false);
+  assert.equal(game.keys.size, 0);
+});
+
+test('punching while climbing preserves the wall grip and facing', () => {
+  const { level, player } = freshMonster();
+  const building = level.buildings[0];
+  player.x = building.x - game.currentSize().w * .68;
+  player.y = building.y + 100;
+  player.onGround = false;
+  player.climbing = true;
+  player.climbSide = 'left';
+  player.climbBuildingId = building.id;
+  player.facing = 1;
+  const before = { x: player.x, y: player.y, facing: player.facing };
+  game.input.x = -1;
+  game.input.y = 0;
+  game.punch();
+  assert.equal(player.climbing, true);
+  assert.equal(player.climbSide, 'left');
+  assert.equal(player.climbBuildingId, building.id);
+  assert.equal(player.x, before.x);
+  assert.equal(player.y, before.y);
+  assert.equal(player.facing, before.facing);
 });
 
 test('incoming damage respects invulnerability and a lethal hit costs a life', () => {
@@ -609,4 +873,27 @@ test('held pointer punch keeps its original aim through cooldown repeats', () =>
   canvas.listeners.get('pointerup')();
   game.update(.25);
   assert.equal(vehicle.health, 2, 'releasing the pointer should stop repeat attacks');
+});
+
+test('eating after a backhand still reaches the mouth-side target in either facing', () => {
+  for (const facing of [-1, 1]) {
+    const { player, level } = freshMonster();
+    game.running = true;
+    keepCityActive(level);
+    level.vehicles = [];
+    level.soldiers = [];
+    player.facing = facing;
+    player.attackKind = 'backhand';
+    const mouthOriginX = game.punchOrigin('punch').x;
+    const spec = game.currentSize();
+    const human = {
+      id: `mouth-edge-${facing}`, kind: 'ground', eaten: false,
+      x: mouthOriginX + facing * 48, y: player.y + spec.h * .43 - 20,
+      w: 12, h: 40, dir: 0
+    };
+    level.humans = [human];
+    game.input.eat = true;
+    game.update(1 / 60);
+    assert.equal(human.eaten, true, `the target at the forward mouth edge should be eaten facing ${facing}`);
+  }
 });
