@@ -1,0 +1,158 @@
+{
+  "cornerwall": [
+    {
+      "center": 0.5059,
+      "base": 0.8262,
+      "width": 0.9688,
+      "height": 0.5527
+    },
+    {
+      "center": 0.4893,
+      "base": 0.8418,
+      "width": 0.9355,
+      "height": 0.5293
+    },
+    {
+      "center": 0.5107,
+      "base": 0.7695,
+      "width": 0.9668,
+      "height": 0.5078
+    },
+    {
+      "center": 0.4902,
+      "base": 0.8047,
+      "width": 0.9531,
+      "height": 0.3301
+    }
+  ],
+  "truck": [
+    {
+      "center": 0.5078,
+      "base": 0.8652,
+      "width": 0.9648,
+      "height": 0.6133
+    },
+    {
+      "center": 0.4941,
+      "base": 0.8691,
+      "width": 0.957,
+      "height": 0.5996
+    },
+    {
+      "center": 0.5137,
+      "base": 0.8398,
+      "width": 0.9688,
+      "height": 0.5684
+    },
+    {
+      "center": 0.4932,
+      "base": 0.8379,
+      "width": 0.9863,
+      "height": 0.3223
+    }
+  ],
+  "airwreck": [
+    {
+      "center": 0.5049,
+      "base": 0.8281,
+      "width": 0.9629,
+      "height": 0.5645
+    },
+    {
+      "center": 0.5029,
+      "base": 0.8398,
+      "width": 0.959,
+      "height": 0.5566
+    },
+    {
+      "center": 0.5039,
+      "base": 0.8184,
+      "width": 0.9688,
+      "height": 0.5352
+    },
+    {
+      "center": 0.5029,
+      "base": 0.8164,
+      "width": 0.9785,
+      "height": 0.3672
+    }
+  ],
+  "fieldgun": [
+    {
+      "center": 0.4971,
+      "base": 0.9453,
+      "width": 0.9629,
+      "height": 0.5918
+    },
+    {
+      "center": 0.4971,
+      "base": 0.9473,
+      "width": 0.9668,
+      "height": 0.5527
+    },
+    {
+      "center": 0.4971,
+      "base": 0.9043,
+      "width": 0.9551,
+      "height": 0.5039
+    },
+    {
+      "center": 0.4971,
+      "base": 0.8965,
+      "width": 0.9668,
+      "height": 0.3809
+    }
+  ],
+  "depot": [
+    {
+      "center": 0.5107,
+      "base": 0.9355,
+      "width": 0.959,
+      "height": 0.5918
+    },
+    {
+      "center": 0.5059,
+      "base": 0.9375,
+      "width": 0.9492,
+      "height": 0.5938
+    },
+    {
+      "center": 0.5068,
+      "base": 0.8633,
+      "width": 0.9824,
+      "height": 0.5645
+    },
+    {
+      "center": 0.498,
+      "base": 0.8691,
+      "width": 0.9648,
+      "height": 0.3281
+    }
+  ],
+  "rocks": [
+    {
+      "center": 0.498,
+      "base": 0.8887,
+      "width": 0.9688,
+      "height": 0.627
+    },
+    {
+      "center": 0.4971,
+      "base": 0.8906,
+      "width": 0.9707,
+      "height": 0.623
+    },
+    {
+      "center": 0.499,
+      "base": 0.873,
+      "width": 0.9707,
+      "height": 0.6172
+    },
+    {
+      "center": 0.499,
+      "base": 0.8789,
+      "width": 0.9668,
+      "height": 0.3672
+    }
+  ]
+}
