@@ -102,6 +102,9 @@ source = source.replace(/\}\)\(\);\s*$/, `globalThis.reviewGame = { state, newMa
   offlineViewport() { canvas.width=1600; canvas.height=900; opticalFrame={x:0,y:0,w:1600,h:854}; cameraPose=null; cameraStamp=''; terrainDirty=true; },
   flatFixture() { terrain.fill(640); terrainDirty=true; cameraPose=null; },
   fixtureFrame(time) { ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle='#242a2b'; ctx.fillRect(0,0,1600,900); ctx.translate(100,70); drawBackground(time); drawTerrain(); drawObstacles(time); ctx.restore(); },
+  edgeFrame(side) { opticalFrame={x:0,y:0,w:1600,h:854}; ctx.save(); ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle='#758086'; ctx.fillRect(0,0,1600,900); ctx.translate(side==='left'?1100+TERRAIN_OVERDRAW:400-W-TERRAIN_OVERDRAW,0);
+    drawTerrain(); ctx.restore(); },
 }; })();`);
 vm.runInNewContext(source, sandbox);
 const game = sandbox.reviewGame;
@@ -134,6 +137,36 @@ async function main() {
   // Ensure both authored and newly generated local atlases are fully decoded.
   for (const type of ['bunker', 'wall', 'jeep', 'tree', ...Object.keys(game.FIELD_PROPS)]) game.getStructureAtlas(type);
   await awaitAssets();
+  if (process.argv.includes('--edge-only')) {
+    await mission(1);
+    for (const side of ['left','right']) {
+      game.edgeFrame(side); label(side.toUpperCase() + ' SOIL CACHE EDGE / NO RAW-TEXTURE HANDOFF');
+      const native = backing(document.getElementById('battlefield')), c = native.getContext('2d');
+      const edgeX = side==='left'?1100:400;
+      for (const y of [700,800]) {
+        const pixels = c.getImageData(edgeX-1,y,2,1).data;
+        assert(Math.max(...[0,1,2].map(i=>Math.abs(pixels[i]-pixels[i+4]))) < 12, 'Visible soil seam at cache edge');
+      }
+      const target = path.join(output, 'offline-soil-edge-'+side+'.png'); fs.writeFileSync(target,native.toBuffer('image/png')); console.log(target);
+    }
+    console.log('PASS: left/right cached-soil pixel continuity under forced zoom-out framing. No browser/input QA.');
+    return;
+  }
+  if (process.argv.includes('--crumble-only')) {
+    await mission(1);
+    // Use an actual ridge-flank impact, then show both airborne clods and the
+    // permanent terrain shape after gravity has settled the loose soil.
+    const x = game.state.terrainRecipe.center * 1400 - 80;
+    const y = game.surfaceY(x);
+    await capture('offline-soil-before.png', 'RIDGE BEFORE HEAVY IMPACT');
+    game.impact(x, y, game.weapons.find(w => w.key === 'heavy'), 'left', null);
+    for (let i = 0; i < 12; i++) game.update(1);
+    await capture('offline-soil-impact.png', 'HEAVY IMPACT / DUST AND EJECTED CLODS', 2000);
+    for (let i = 0; i < 90; i++) game.update(1);
+    await capture('offline-soil-settled.png', 'CRATER AND SETTLED BANKS', 3500);
+    console.log('PASS: before/impact/settled native-canvas soil renders. No browser/input QA.');
+    return;
+  }
   for (const level of [1, 2, 3, 6]) {
     await mission(level); await capture(`offline-op-${String(level).padStart(2, '0')}.png`, `OP ${level} / SEED 00001E8D / ${level % 2 ? 'NORMAL' : 'REVERSED'} / ${game.state.tanks.length - 1} HOSTILE(S)`);
   }

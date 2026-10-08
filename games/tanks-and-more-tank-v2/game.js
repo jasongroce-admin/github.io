@@ -178,6 +178,8 @@
     return backdropLayer;
   }
   const tankImage = new Image();
+  tankImage.onload = () => { canvas.dataset.tankArt = "ready"; };
+  tankImage.onerror = () => { canvas.dataset.tankArt = "failed"; };
   tankImage.src = "assets/tank-realistic-base-v2-2x.png";
 
   const weapons = [
@@ -267,6 +269,8 @@
     elite: { impactError: 105, angleError: .8, chargeError: 3 },
   };
   const terrain = [];
+  const soilSlides = [];
+  let soilSlideClock = 0;
   const obstacles = [];
   const terrainLayer = document.createElement("canvas");
   terrainLayer.width = W + TERRAIN_OVERDRAW * 2; terrainLayer.height = H + TERRAIN_BOTTOM_OVERDRAW;
@@ -278,7 +282,7 @@
   groundTexture.onload = () => { terrainDirty = true; };
   groundTexture.src = "assets/ground-grit-640.jpg";
   let groundTexturePattern = null;
-  let soilApron = null, terrainMaterial = null, terrainMaterialKey = "";
+  let terrainMaterial = null, terrainMaterialKey = "";
   const structureAtlases = {
     bunker: new Image(), wall: new Image(), jeep: new Image(), tree: new Image(),
     cornerwall: new Image(), truck: new Image(), airwreck: new Image(), fieldgun: new Image(), depot: new Image(), rocks: new Image()
@@ -389,6 +393,7 @@
   }
   function gridCode() { return state.seed.toString(16).padStart(8, "0").slice(-8).toUpperCase(); }
   function generateBattlefield(seed = randomSeed()) {
+    soilSlides.length = 0; soilSlideClock = 0;
     terrainMaterial = null; terrainMaterialKey = ""; state.shotCameraBounds = null;
     state.seed = Number(seed) >>> 0;
     const sceneRoll = rand(state.seed ^ 0x9e3779b9);
@@ -895,16 +900,30 @@
       for (let x = Math.max(left, -TERRAIN_OVERDRAW); x < Math.min(right, W + TERRAIN_OVERDRAW); x += STEP) ctx.lineTo(x, terrainOverdrawY(x));
       ctx.lineTo(right, terrainOverdrawY(clamp(right, -TERRAIN_OVERDRAW, W + TERRAIN_OVERDRAW)));
       ctx.lineTo(right, bottom); ctx.lineTo(left, bottom); ctx.closePath(); ctx.clip();
-      if (!soilApron) {
-        soilApron = document.createElement("canvas"); soilApron.width = soilApron.height = 512;
-        const material = soilApron.getContext("2d"); material.fillStyle = "#51473a"; material.fillRect(0, 0, 512, 512);
-        if (groundTexture.complete && groundTexture.naturalWidth) { material.globalAlpha = .55; material.drawImage(groundTexture, 0, 0, 512, 512); }
-        if (soilNoisePattern) { material.globalAlpha = .9; material.fillStyle = soilNoisePattern; material.fillRect(0, 0, 512, 512); }
+      // Continue the actual shaded soil pixels, not a differently lit raw dirt
+      // photograph. Mirror edge strips so both the material and its grain meet
+      // exactly at the cache boundary. Draw only the visible peripheral area.
+      const edge = TERRAIN_OVERDRAW, height = terrainLayer.height;
+      const strip = 64, soilTop = SURFACE_BASE;
+      for (const side of [-1, 1]) {
+        const start = side < 0 ? -edge : W + edge;
+        const end = side < 0 ? left : right;
+        for (let distance = 0; distance < (end - start) * side; distance += strip) {
+          const tile = Math.floor(distance / strip), mirrored = tile % 2 === 0;
+          const origin = start + side * distance;
+          ctx.save(); ctx.translate(origin, 0);
+          ctx.scale(mirrored ? -1 : 1, 1);
+          const destX = side > 0 ? (mirrored ? -strip : 0) : (mirrored ? 0 : -strip);
+          const sourceX = side < 0 ? 0 : terrainLayer.width - strip;
+          ctx.drawImage(terrainLayer, sourceX, soilTop, strip, height - soilTop, destX, soilTop, strip, height - soilTop);
+          if (bottom > height) ctx.drawImage(terrainLayer, sourceX, height - strip, strip, strip, destX, height, strip, bottom - height);
+          ctx.restore();
+        }
       }
-      // Stretch only the peripheral apron, never repeat high-res photograph /
-      // alpha-noise patterns across a huge offscreen rectangle during zoom.
-      const visibleTop = Math.max(0, (opticalFrame.y - transform.f) / transform.d - 2);
-      ctx.drawImage(soilApron, left, visibleTop, right - left, bottom - visibleTop);
+      if (bottom > height) {
+        const lo = Math.max(left, -edge), hi = Math.min(right, W + edge);
+        if (hi > lo) ctx.drawImage(terrainLayer, lo + edge, height - strip, hi - lo, strip, lo, height, hi - lo, bottom - height);
+      }
       ctx.restore();
     }
     ctx.drawImage(terrainLayer, -TERRAIN_OVERDRAW, 0);
@@ -1542,17 +1561,23 @@
   }
   function drawParticles(dt) {
     for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt;
+      const p = particles[i];
+      if (p.kind !== "earth") { p.x += p.vx * dt; p.y += p.vy * dt; }
       if (p.kind === "smoke") {
         p.age = (p.age || 0) + dt; p.vx += Math.sin(p.phase + p.age * .075) * .009 * dt;
         p.vx += (state.weather === "wind" ? .0016 : state.weather === "rain" ? -.0006 : .00025) * dt;
         p.vy -= .028 * dt;
-      } else p.vy += .018 * dt;
-      p.life -= dt;
+      } else if (p.kind !== "earth") p.vy += .018 * dt;
+      if (p.kind !== "earth") p.life -= dt;
       if (p.life <= 0) { particles.splice(i, 1); continue; }
       const remain = Math.min(1, p.life / p.maxLife); const size = Math.max(.3, p.size * remain);
       ctx.save(); ctx.globalAlpha = remain;
-      if (p.kind === "smoke") {
+      if (p.kind === "earth") {
+        ctx.globalAlpha = Math.min(1, remain * 4); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.moveTo(-p.size, 0); ctx.lineTo(-p.size * .4, -p.size * .7);
+        ctx.lineTo(p.size * .65, -p.size * .5); ctx.lineTo(p.size, p.size * .25); ctx.lineTo(0, p.size * .55); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#a58c6c66"; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-p.size * .4, -p.size * .7); ctx.lineTo(p.size * .65, -p.size * .5); ctx.stroke();
+      } else if (p.kind === "smoke") {
         p.size += .025 * dt; ctx.globalAlpha *= .66;
         drawSoftSprite(p.color || "#5a5550", p.x, p.y, size * 1.65, size * 1.12);
       } else if (p.kind === "frost") {
@@ -1730,6 +1755,8 @@
     Object.assign(samples, { since: time, count: 0, elapsed: 0, work: 0, slow: 0, peak: 0 });
   }
   function update(dt) {
+    updateSoilSlides(dt);
+    updateEarthClods(dt);
     for (const tank of state.tanks) tank.burnLife = Math.max(0, (tank.burnLife || 0) - dt);
     updateAmbientSmoke(dt);
     updateSideRocks(dt);
@@ -1886,11 +1913,86 @@
     if (!isSub) announce(`${w.name.toUpperCase()} IMPACT // ${w.effect === "emp" ? "ELECTROMAGNETIC PULSE" : w.effect === "ice" ? "CRYO FRACTURE" : w.effect === "fire" ? "INCENDIARY SPREAD" : w.effect === "rail" ? "KINETIC PENETRATION" : "TERRAIN BREACH"}`);
   }
   function deformTerrain(x, y, radius, depth) {
+    // Blast excavation is local to contact with the soil, not a vertical drill
+    // through the hill from an explosion in the sky.
+    if (Math.abs(y - surfaceY(x)) > radius + 24) return;
+    const before = terrain.slice();
+    let excavated = 0;
     for (let i = 0; i < terrain.length; i++) {
       const tx = i * STEP; const d = Math.abs(tx - x);
-      if (d < radius) { const influence = Math.sqrt(Math.max(0, 1 - (d / radius) ** 2)); terrain[i] = Math.min(H - 25, terrain[i] + depth * influence); }
+      if (d < radius) { const influence = Math.sqrt(Math.max(0, 1 - (d / radius) ** 2));
+        terrain[i] = Math.min(H - 25, terrain[i] + depth * influence);
+        excavated += terrain[i] - before[i];
+      }
     }
+    if (excavated <= .01) return;
+    const first = Math.max(0, Math.floor((x - radius - 56) / STEP));
+    const last = Math.min(terrain.length - 1, Math.ceil((x + radius + 56) / STEP));
+    // Coalesce nearby impacts; cluster bomblets do not multiply the work budget.
+    const nearby = soilSlides.find(slide => slide.first <= last && slide.last >= first);
+    if (nearby) { nearby.first = Math.min(nearby.first, first); nearby.last = Math.max(nearby.last, last); nearby.life = 96; }
+    else { if (soilSlides.length >= 8) soilSlides.shift(); soilSlides.push({ first, last, life: 96 }); }
+    const count = Math.min(20, Math.max(4, Math.ceil(excavated / 30)));
+    for (let n = 0; n < count; n++) {
+      const sx = clamp(x + (Math.random() - .5) * radius * 1.5, 0, W);
+      const sy = before[Math.min(before.length - 1, Math.round(sx / STEP))];
+      addParticle({ kind: "earth", x: sx, y: sy - 3, vx: (sx < x ? -1 : 1) * (.6 + Math.random() * 2),
+        vy: -1.5 - Math.random() * Math.min(4, depth * .06), size: 2 + Math.random() * 5,
+        life: 170, maxLife: 170, angle: Math.random() * 6, spin: (Math.random() - .5) * .12,
+        color: n % 2 ? "#655343" : "#443c32" });
+    }
+    for (let n = 0; n < 6; n++) addParticle({ kind: "smoke", x: x + (Math.random() - .5) * radius, y: surfaceY(x) - 8,
+      vx: (Math.random() - .5) * .35, vy: -.15 - Math.random() * .25, size: 10 + Math.random() * 11,
+      life: 110 + Math.random() * 60, maxLife: 170, phase: Math.random() * 6, color: "#82715e" });
     terrainDirty = true;
+  }
+  function updateSoilSlides(dt) {
+    if (!soilSlides.length) { soilSlideClock = 0; return; }
+    soilSlideClock += dt;
+    // Fixed cadence preserves the collapse rate on slower displays. A cached
+    // terrain redraw is needed at most twenty times/second while soil moves.
+    while (soilSlideClock >= 3) {
+      soilSlideClock -= 3;
+      const delta = new Float64Array(terrain.length);
+      let changed = false;
+      const visited = new Set();
+      for (const slide of soilSlides) {
+        slide.life -= 3;
+        for (let i = slide.first; i < slide.last; i++) {
+          if (visited.has(i)) continue; visited.add(i);
+          const difference = terrain[i + 1] - terrain[i];
+          // Angle of repose: move a limited amount from the higher bank to the
+          // lower bed. Equal/opposite deltas conserve loose soil, not flatten it.
+          if (Math.abs(difference) <= STEP * .9) continue;
+          const amount = Math.min(1.35, (Math.abs(difference) - STEP * .9) * .12);
+          const sign = Math.sign(difference);
+          delta[i] += amount * sign; delta[i + 1] -= amount * sign;
+          changed = true;
+        }
+      }
+      for (let i = 0; i < terrain.length; i++) terrain[i] += delta[i];
+      for (let i = soilSlides.length - 1; i >= 0; i--) if (soilSlides[i].life <= 0) soilSlides.splice(i, 1);
+      if (changed) terrainDirty = true;
+      else soilSlides.length = 0;
+    }
+  }
+  function updateEarthClods(dt) {
+    // Debris is decorative: it never damages armor or changes projectile aim.
+    for (const p of particles) {
+      if (p.kind !== "earth") continue;
+      for (let remaining = dt; remaining > 0; remaining -= .5) {
+        const step = Math.min(.5, remaining);
+        p.vy += .12 * step; p.x += p.vx * step; p.y += p.vy * step; p.angle += p.spin * step;
+        const floor = surfaceY(p.x) - p.size * .45;
+        if (p.y >= floor) {
+          p.y = floor;
+          if (p.vy > .75 && (p.bounces || 0) < 2) { p.vy *= -.24; p.bounces = (p.bounces || 0) + 1; }
+          else { p.vy = 0; p.vx += clamp((surfaceY(p.x + 8) - surfaceY(p.x - 8)) / 16, -1, 1) * .1 * step; }
+          p.vx *= Math.pow(.86, step); p.spin *= Math.pow(.8, step);
+        }
+      }
+      p.life -= dt;
+    }
   }
   function updateSideRocks(dt) {
     for (const rock of obstacles) {
@@ -2071,6 +2173,7 @@
         || new Set(saved.tanks.map((tank) => tank.id)).size !== saved.tanks.length
         || !saved.tanks.some((tank) => tank.team === "left") || !saved.tanks.some((tank) => tank.team === "right")) throw new Error("No save");
       battleEpoch++;
+      soilSlides.length = 0; soilSlideClock = 0;
       terrainMaterial = null; terrainMaterialKey = "";
       Object.assign(state, saved); state.recorded = !!saved.recorded;
       state.shotCameraBounds = null;
