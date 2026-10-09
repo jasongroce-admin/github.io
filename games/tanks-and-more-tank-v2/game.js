@@ -54,6 +54,7 @@
   const cockpitViewSelect = $("cockpitView");
   const fireButton = $("fire");
   const cockpitSkin = $("cockpitSkin");
+  const battleContinuation = $("battleContinuation");
   const gaugeLayer = document.createElement("div");
   gaugeLayer.className = "gauge-layer";
   for (const [kind, selector] of [["elevation", ".angle-instrument"], ["charge", ".power-instrument"]]) {
@@ -63,17 +64,28 @@
     gaugeLayer.append(dial);
   }
   cockpitSkin.before(gaugeLayer);
-  // Photo hardware is a real moving layer behind the fixed steel shell. The
-  // accessible controls above it supply input; sockets and guard rails stay put.
+  // Each operating handle is independent of the fixed fascia and socket.
+  // Native ranges/buttons remain the single input path into the game state.
   const hardwareLayer = document.createElement("div");
   hardwareLayer.className = "hardware-layer";
+  const socketLayer = document.createElement("div"); socketLayer.className = "socket-layer";
   const hardwareParts = {};
   for (const part of ["fire", "night", "assist"]) {
     const mount = document.createElement("div"), face = document.createElement("div"), photo = new Image();
+    const backfill = document.createElement("div"); backfill.className = `socket-backfill socket-${part}`;
+    socketLayer.append(backfill);
     mount.className = `hardware-mount hardware-${part}`; face.className = "hardware-face";
     photo.alt = ""; photo.draggable = false; photo.setAttribute("aria-hidden", "true");
     face.append(photo); mount.append(face); hardwareLayer.append(mount);
-    hardwareParts[part] = { mount, face, photo };
+    let gripPhoto = null;
+    if (part !== "fire") {
+      const grip = document.createElement("span"), collar = document.createElement("span");
+      grip.className = "hardware-grip"; collar.className = "hardware-collar";
+      gripPhoto = new Image(); gripPhoto.alt = ""; gripPhoto.draggable = false;
+      gripPhoto.setAttribute("aria-hidden", "true"); grip.append(gripPhoto);
+      face.append(grip); mount.append(collar);
+    }
+    hardwareParts[part] = { mount, face, photo, gripPhoto, backfill };
   }
   for (const node of fireButton.querySelectorAll("strong, small")) hardwareParts.fire.face.append(node);
   fireButton.setAttribute("aria-label", "Fire main gun");
@@ -95,7 +107,25 @@
     b76: { angle: [280, 720, 330, 330, 133, 129], power: [644, 732, 280, 280, 112, 109], guard: "M62 641 Q135 649 213 678 L200 697 Q193 720 190 746 L205 783 Q172 800 151 782 L115 731 L62 712 Z M205 875 L215 851 Q233 829 263 836 Q280 821 298 835 L331 824 Q333 810 354 802 Q376 796 393 815 L411 841 L383 895 L236 921 Z" },
     s90: { angle: [279, 723, 330, 330, 134, 131], power: [647, 738, 280, 280, 114, 111], guard: "M62 641 Q135 649 213 678 L200 697 Q193 720 190 746 L205 783 Q172 800 151 782 L115 731 L62 712 Z M205 875 L215 851 Q233 829 263 836 Q280 821 298 835 L331 824 Q333 810 354 802 Q376 796 393 815 L411 841 L383 895 L236 921 Z" },
   };
-  const hardwarePath = (chassis, part) => `assets/hardware/${chassis}-${part}.webp?v=20261002-moving-hardware`;
+  // Fixed axle positions measured on the photographed crank mounts.
+  const WHEEL_GEOMETRY = { m40: [105, 705, 145], r12: [465, 705, 115], b76: [104, 704, 145], s90: [104, 705, 145] };
+  const rotaryGestures = [];
+  const wheelControl = document.createElement("label");
+  wheelControl.className = "elevation-wheel-control"; wheelControl.htmlFor = "angle";
+  wheelControl.title = "Turn clockwise to raise the barrel; counterclockwise to lower it · W / S";
+  const wheelPhoto = new Image(); wheelPhoto.className = "elevation-wheel";
+  wheelPhoto.src = "assets/hardware/elevation-wheel-v1.webp";
+  wheelPhoto.alt = ""; wheelPhoto.draggable = false; wheelPhoto.setAttribute("aria-hidden", "true");
+  wheelControl.append(wheelPhoto);
+  const digitalFaces = {};
+  for (const [kind, selector] of [["angle", ".live-elevation"], ["power", ".live-charge"]]) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("seven-segment-display"); svg.setAttribute("viewBox", "0 0 78 34");
+    svg.setAttribute("aria-hidden", "true");
+    gaugeLayer.querySelector(`${selector} .dial-label`).append(svg);
+    digitalFaces[kind] = svg;
+  }
+  const hardwarePath = (chassis, part) => `assets/hardware/${chassis}-${part}.webp?v=20261009-loss-continuation`;
   // Keep the battlefield aperture wide, while the tank-specific lower fascia
   // stays in its own undistorted 1672:941 frame. Scaling one full dashboard
   // over the whole stage made the controls consume almost half the screen.
@@ -103,7 +133,7 @@
   const dashboardFrame = document.createElement("div"); dashboardFrame.className = "dashboard-frame";
   const windowArmor = new Image(); windowArmor.className = "window-armor"; windowArmor.alt = ""; windowArmor.setAttribute("aria-hidden","true");
   const stage = document.querySelector(".canvas-wrap");
-  dashboardFrame.append(gaugeLayer, hardwareLayer, cockpitSkin, document.querySelector(".console"));
+  dashboardFrame.append(gaugeLayer, socketLayer, cockpitSkin, hardwareLayer, wheelControl, document.querySelector(".console"));
   instrumentFrame.append(windowArmor, dashboardFrame);
   stage.append(instrumentFrame);
   document.body.dataset.inputMode = "pointer";
@@ -117,7 +147,7 @@
   });
   const defaultChassis = (id) => ({ L1: "m40", R1: "r12", L2: "b76", R2: "s90" })[id] || "m40";
   const chassisData = (tank) => CHASSIS[tank?.chassis] || CHASSIS[defaultChassis(tank?.id)];
-  const skinPath = (chassis) => `assets/${chassis.skin}?v=20261002-moving-hardware`;
+  const skinPath = (chassis) => `assets/${chassis.skin}?v=20261009-loss-continuation`;
   // Decode all four lightweight fascias once; turn changes never wait for art.
   for (const chassis of Object.values(CHASSIS)) { const skin = new Image(); skin.src = skinPath(chassis); }
   for (const chassis of Object.keys(CHASSIS)) for (const part of Object.keys(hardwareParts)) { const photo = new Image(); photo.src = hardwarePath(chassis, part); }
@@ -453,7 +483,73 @@
     return Math.min(MAX_FULL_CHARGE_SPEED, weapon.speed * (.45 + charge * .75) + 8 * charge);
   }
   const COCKPIT_VIEWS = ["battlefield", "periscope", "commander"];
+  function setInstrumentBox(element, [x, y, w, h], width, height) {
+    element.style.left = `${x / width * 100}%`;
+    element.style.top = `${y / height * 100}%`;
+    element.style.width = `${w / width * 100}%`;
+    element.style.height = `${h / height * 100}%`;
+  }
+  function drawInstrumentScale(face, geometry, kind) {
+    const [, , w, h, rx, ry] = geometry;
+    let ticks = "";
+    for (let degrees = -120; degrees <= 120; degrees += 10) {
+      const radians = degrees * Math.PI / 180, major = degrees % 30 === 0;
+      const inner = major ? .77 : .84, outer = .92;
+      ticks += `<path d="M${w / 2 + Math.sin(radians) * rx * inner} ${h / 2 - Math.cos(radians) * ry * inner}L${w / 2 + Math.sin(radians) * rx * outer} ${h / 2 - Math.cos(radians) * ry * outer}"/>`;
+    }
+    for (const [degrees, value] of [[-105, kind === "angle" ? "0" : "20"], [0, kind === "angle" ? "40" : "60"], [105, kind === "angle" ? "85" : "100"]]) {
+      const radians = degrees * Math.PI / 180;
+      ticks += `<text x="${w / 2 + Math.sin(radians) * rx * .66}" y="${h / 2 - Math.cos(radians) * ry * .66 + 4}" text-anchor="middle">${value}</text>`;
+    }
+    face.querySelector(".dial-ticks").innerHTML = `<svg class="instrument-scale" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${ticks}</svg>`;
+    face.style.setProperty("--needle-length", `${ry * .74 / h * 100}%`);
+    face.style.setProperty("--opening-rx", `${rx / w * 100}%`);
+    face.style.setProperty("--opening-ry", `${ry / h * 100}%`);
+  }
+  function drawDigitalValue(svg, value, decimal) {
+    const text = decimal ? Number(value).toFixed(1).padStart(4, "0") : String(Math.round(value)).padStart(3, "0");
+    if (svg.getAttribute("data-value") === text) return;
+    svg.setAttribute("data-value", text);
+    const digits = text.replace(".", ""), segments = ["abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"];
+    const shapes = { a: "4,1 18,1 21,4 18,6 4,6 1,4", b: "19,6 22,4 22,15 19,17 17,14 17,8", c: "19,18 22,16 22,28 19,31 17,28 17,20", d: "4,28 17,28 20,31 17,33 4,33 1,31", e: "1,17 4,19 4,27 1,30 0,28 0,19", f: "1,4 4,7 4,14 1,17 0,15 0,6", g: "4,14 17,14 20,17 17,19 4,19 1,17" };
+    svg.innerHTML = [...digits].map((digit, index) => `<g transform="translate(${index * 26} 0)">${Object.entries(shapes).map(([key, points]) => `<polygon class="${segments[Number(digit)].includes(key) ? "lit" : ""}" points="${points}"/>`).join("")}</g>`).join("") + (decimal ? '<circle class="lit" cx="50" cy="31" r="1.6"/>' : "");
+  }
+  function layoutCockpitControls(portrait) {
+    const chassis = activeTank()?.chassis || "m40", gauge = GAUGE_GEOMETRY[chassis] || GAUGE_GEOMETRY.m40;
+    const host = dashboardFrame.getBoundingClientRect();
+    const width = portrait ? Math.max(1, host.width) : 1672, height = portrait ? Math.max(1, host.height) : 941;
+    for (const [kind, selector, fraction] of [["angle", ".live-elevation", .25], ["power", ".live-charge", .73]]) {
+      const box = portrait ? [width * fraction, height * .64, width * .35, width * .35] : gauge[kind].slice(0, 4);
+      setInstrumentBox(gaugeLayer.querySelector(selector), box, width, height);
+      setInstrumentBox(document.querySelector(kind === "angle" ? ".angle-instrument" : ".power-instrument"), box, width, height);
+      drawInstrumentScale(gaugeLayer.querySelector(selector), gauge[kind], kind);
+    }
+    const [wx, wy, diameter] = WHEEL_GEOMETRY[chassis];
+    setInstrumentBox(wheelControl, portrait ? [width * .075, height * .64, width * .145, width * .145] : [wx, wy, diameter, diameter], width, height);
+    for (const [part, hardware] of Object.entries(hardwareParts)) {
+      const [x, y, w, h, px, py] = HARDWARE_GEOMETRY[chassis][part];
+      let box = [x + w / 2, y + h / 2, w, h], pivot = [px, py];
+      if (portrait) {
+        // Tall firing levers must fit the same lower instrument bay as round
+        // buttons. Size by height as well as width, preserving the source art.
+        const scale = Math.min(width * (part === "fire" ? .24 : .11) / w, height * (part === "fire" ? .15 : .16) / h);
+        const compactW = w * scale, compactH = h * scale;
+        const centerX = width * (part === "fire" ? .25 : part === "night" ? .66 : .86);
+        const pivotY = height * .78;
+        box = part === "fire" ? [centerX, height * .83, compactW, compactH] : [centerX + (.5 - (px - x) / w) * compactW, pivotY + (.5 - (py - y) / h) * compactH, compactW, compactH];
+        pivot = [centerX, pivotY];
+      }
+      setInstrumentBox(hardware.mount, box, width, height);
+      setInstrumentBox(hardware.backfill, [box[0], box[1], box[2] * 1.5, box[3] * 1.4], width, height);
+      const control = part === "fire" ? fireButton : document.querySelector(part === "night" ? ".night-switch" : ".assist-switch");
+      // Switch hit areas contain both the up and down operating positions.
+      const hit = part === "fire" ? [box[0], box[1], Math.max(portrait ? 44 : 0, box[2]), box[3]] : [pivot[0] + box[2] * .12, pivot[1] + box[3] * .14, Math.max(portrait ? 44 : 90, box[2] * 1.5), box[3] * 1.5];
+      setInstrumentBox(control, hit, width, height);
+    }
+    dashboardFrame.classList.toggle("compact-instruments", portrait);
+  }
   function syncCockpitView() {
+    for (const gesture of rotaryGestures) gesture.cancel();
     const tank = activeTank();
     const view = COCKPIT_VIEWS.includes(tank?.view) ? tank.view : "battlefield";
     document.body.dataset.cockpitView = view;
@@ -462,17 +558,7 @@
     windowArmor.src = cockpitSkin.src;
     const chassis = tank?.chassis || "m40";
     const gauge = GAUGE_GEOMETRY[chassis] || GAUGE_GEOMETRY.m40;
-    for (const [kind, selector] of [["angle", ".live-elevation"], ["power", ".live-charge"]]) {
-      const [, , w, h, rx, ry] = gauge[kind];
-      const face = gaugeLayer.querySelector(selector);
-      // Tick arcs follow the aperture ellipse, not the larger overscan box.
-      face.style.setProperty("--tick-w", `${rx * 2 / .83 / w * 100}%`);
-      face.style.setProperty("--tick-h", `${ry * 2 / .83 / h * 100}%`);
-      face.style.setProperty("--needle-length", `${ry * .82 / h * 100}%`);
-      face.style.setProperty("--opening-rx", `${rx / w * 100}%`);
-      face.style.setProperty("--opening-ry", `${ry / h * 100}%`);
-    }
-    gaugeLayer.style.setProperty("--gauge-metal", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
+    gaugeLayer.style.setProperty("--gauge-metal", `url("assets/hardware/${chassis}-plate.webp?v=20261009-loss-continuation")`);
     for (const target of [gaugeLayer, document.querySelector(".console")]) {
       for (const kind of ["angle", "power"]) {
         const [x, y, w, h] = gauge[kind];
@@ -485,18 +571,24 @@
     const hole = ([x, y, , , rx, ry]) => `M${x-rx} ${y}a${rx} ${ry} 0 1 0 ${rx*2} 0a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
     const mask = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941"><path fill="white" fill-rule="evenodd" d="M0 0H1672V941H0Z ${hole(gauge.angle)} ${hole(gauge.power)}"/><path fill="white" d="${gauge.guard}"/></svg>`;
     cockpitSkin.style.setProperty("--gauge-mask", `url("data:image/svg+xml,${encodeURIComponent(mask)}")`);
-    hardwareLayer.style.setProperty("--socket-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
-    stage.style.setProperty("--deck-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261002-moving-hardware")`);
+    hardwareLayer.style.setProperty("--socket-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261009-loss-continuation")`);
+    socketLayer.style.setProperty("--socket-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261009-loss-continuation")`);
+    stage.style.setProperty("--deck-plate", `url("assets/hardware/${chassis}-plate.webp?v=20261009-loss-continuation")`);
     for (const [part, hardware] of Object.entries(hardwareParts)) {
       const [x,y,w,h,px,py] = HARDWARE_GEOMETRY[chassis][part];
       hardware.photo.src = hardwarePath(chassis, part);
+      if (hardware.gripPhoto) hardware.gripPhoto.src = hardware.photo.src;
       hardware.mount.style.setProperty("--part-x", `${x / 1672 * 100}%`);
       hardware.mount.style.setProperty("--part-y", `${y / 941 * 100}%`);
       hardware.mount.style.setProperty("--part-w", `${w / 1672 * 100}%`);
       hardware.mount.style.setProperty("--part-h", `${h / 941 * 100}%`);
       hardware.mount.style.setProperty("--part-aspect", String(w / h));
       hardware.face.style.transformOrigin = `${(px-x)/w*100}% ${(py-y)/h*100}%`;
+      hardware.mount.style.setProperty("--pivot-x", `${(px-x)/w*100}%`);
+      hardware.mount.style.setProperty("--pivot-y", `${(py-y)/h*100}%`);
     }
+    const box = stage.getBoundingClientRect();
+    layoutCockpitControls(box.width < 601 && box.height > box.width);
     $("chassisName").textContent = chassisData(tank).name;
     $("chassisSpecialty").textContent = chassisData(tank).specialty;
     cockpitViewSelect.value = view;
@@ -507,13 +599,17 @@
     deck.style.setProperty("--barrel-angle", `${state.angle * 2.3 - 90}deg`);
     deck.style.setProperty("--dial-elevation", `${-120 + state.angle / 85 * 240}deg`);
     deck.style.setProperty("--power-angle", `${-120 + (state.power - 20) / 80 * 240}deg`);
-    deck.style.setProperty("--wheel-angle", `${state.angle * 4}deg`);
+    deck.style.setProperty("--wheel-angle", `${state.angle * 10}deg`);
+    wheelControl.style.setProperty("--wheel-angle", `${state.angle * 10}deg`);
     deck.style.setProperty("--angle-position", `${state.angle / 85 * 100}%`);
     deck.style.setProperty("--power-position", `${(state.power - 20) / 80 * 100}%`);
     deck.style.setProperty("--charge-lever-position", `${(100 - state.power) / 80 * 81}%`);
     // Gauges sit behind the armored fascia; hit targets stay above it. Share
     // live instrument variables across those sibling layers without duplicating values.
     for (const property of ["--dial-elevation", "--power-angle", "--wheel-angle"]) gaugeLayer.style.setProperty(property, deck.style.getPropertyValue(property));
+    drawDigitalValue(digitalFaces.angle, state.angle, true);
+    drawDigitalValue(digitalFaces.power, state.power, false);
+    wheelControl.classList.toggle("is-disabled", angleInput.disabled);
     const tank = activeTank();
     $("moveBudget").textContent = `${Math.round(tank?.moveRemaining || 0)} / ${chassisData(tank).travel} m`;
     $("crewArmor").textContent = `${Math.ceil((tank?.hp || 0) / (tank?.maxHp || 100) * 100)}%`;
@@ -751,6 +847,7 @@
   function newMap(announceChange = true, explicitSeed = undefined) {
     const seed = explicitSeed === undefined ? requestedGridSeed() : explicitSeed;
     if (seed === null) return false;
+    battleContinuation.hidden = true;
     battleEpoch++; state.resolving = false; state.moving = false; state.aiMove = null;
     if (announceChange && state.winner === "left" && state.opponent === "cpu") state.level = (state.mode === "campaign" || state.mode === "night") ? Math.min(30, state.level + 1) : state.level + 1;
     generateBattlefield(seed); setFormation(state.formation);
@@ -826,6 +923,14 @@
       recordBattleResult();
       $("turnLabel").textContent = state.winner === "left" ? "VICTORY // SECTOR SECURED" : "DEFEAT // ARMOR LOST";
       $("consoleTurn").textContent = state.winner === "left" ? "MISSION SUCCESS" : "MISSION FAILED";
+      battleContinuation.hidden = state.winner !== "right";
+      if (state.winner === "right") {
+        const campaign = state.mode === "campaign" || state.mode === "night";
+        const nextLevel = state.level >= 30 ? 1 : state.level + 1;
+        $("battleResultTitle").textContent = campaign ? `OPERATION ${String(state.level).padStart(2, "0")} LOST` : "SECTOR LOST";
+        $("battleResultMessage").textContent = campaign ? "Retry this operation or continue to another grid." : "Retry this sector or deploy to a fresh battlefield.";
+        $("nextBattle").textContent = campaign ? (state.level >= 30 ? "RESTART CAMPAIGN" : `NEXT OPERATION · ${String(nextLevel).padStart(2, "0")}`) : "NEW SECTOR";
+      }
       fireButton.disabled = true; announce(state.winner === "left" ? "HOSTILE BATTERY SILENCED // VICTORY" : "ALL FRIENDLY ARMOR LOST // RETRY SECTOR");
       if (state.winner === "left" && (state.mode === "campaign" || state.mode === "night")) {
         const unlock = Number(localStorage.getItem("tam-v2-unlock") || 1);
@@ -1668,6 +1773,7 @@
   }
   let opticalFrame = {x:0,y:0,w:W,h:560}, cameraPose = null, cameraStamp = "", viewportFieldHeight = 560;
   function resize() {
+    for (const gesture of rotaryGestures) gesture.cancel();
     const box = canvas.getBoundingClientRect(); const ratio = Math.min(window.devicePixelRatio || 1, 1, 1920 / Math.max(1, box.width));
     canvas.width = Math.round((box.width || W) * ratio); canvas.height = Math.round((box.height || (box.width || W) * H / W) * ratio);
     const portrait = box.width < 601 && box.height > box.width;
@@ -1682,12 +1788,7 @@
     const supportAction = document.querySelector(".support-button");
     const supportHost = missionPanel;
     if (supportAction && supportAction.parentElement !== supportHost) supportHost.append(supportAction);
-    // Compact controls reuse the same photographs, but sit above their cropped
-    // steel backing and below the real hit targets/labels. Desktop hardware is
-    // restored below the full fascia when the phone rotates.
-    const compactDeck = document.querySelector(".console");
-    if (portrait && hardwareLayer.parentElement !== compactDeck) compactDeck.prepend(hardwareLayer);
-    else if (!portrait && hardwareLayer.parentElement !== cockpitSkin.parentElement) cockpitSkin.before(hardwareLayer);
+    // Faces, handles and controls always share the dashboard's coordinate host.
     if (portrait) {
       dashboardFrame.classList.remove("rack-side-layout");
       dashboardFrame.style.cssText = `left:0;top:0;width:${box.width}px;height:${box.height}px`;
@@ -1714,6 +1815,7 @@
         h: Math.max(1, Math.min(canvas.height, bottom) - Math.max(0, top))
       };
     }
+    layoutCockpitControls(portrait);
     viewportFieldHeight = opticalFrame.y + opticalFrame.h;
   }
   // Support activation can reveal an extra dashboard row and shrink the clean
@@ -2217,32 +2319,75 @@
   }
   angleInput.addEventListener("input", aimChange);
   powerInput.addEventListener("input", () => { if (!canControlTank()) return; state.power = Number(powerInput.value); activeTank().power = state.power; $("powerValue").textContent = state.power; syncInstruments(); });
-  // Native ranges remain focusable and keyboard-readable, while the full dial
-  // is the pointer/touch target. Dragging either gauge never arms the gun.
+  // Both a full dial and a physical handwheel operate the same native range.
+  // Relative rotation preserves the value on press and crosses the seam smoothly.
   for (const input of [angleInput, powerInput]) {
-    let pointer = null;
-    let leverDrag = false;
-    const lever = input.closest(".instrument").querySelector(".charge-lever");
-    const setFromPointer = (event) => {
-      if (input.disabled || !canControlTank()) return;
-      const box = input.getBoundingClientRect();
-      const degrees = Math.atan2(event.clientX - box.left - box.width / 2, -(event.clientY - box.top - box.height / 2)) * 180 / Math.PI;
-      const leverBox = leverDrag ? lever.getBoundingClientRect() : null;
-      const fraction = leverDrag ? clamp(1 - (event.clientY - leverBox.top) / leverBox.height, 0, 1) : (clamp(degrees, -120, 120) + 120) / 240;
-      const selected = Number(input.min) + fraction * (Number(input.max) - Number(input.min));
-      input.value = input === angleInput ? (Math.round(selected * 10) / 10).toFixed(1) : Math.round(selected);
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+    rotaryGestures.push(window.TankCockpitRotary.attach(input, { enabled: () => canControlTank() }));
+  }
+  rotaryGestures.push(window.TankCockpitRotary.attach(angleInput, {
+    target: wheelControl, sensitivity: .1, enabled: () => canControlTank(),
+    onStart: () => wheelControl.classList.add("is-turning"), onEnd: () => wheelControl.classList.remove("is-turning")
+  }));
+  const chargeLever = document.querySelector(".charge-lever");
+  let leverGesture = null;
+  const cancelChargeLever = () => {
+    const pointer = leverGesture?.pointer; leverGesture = null;
+    if (pointer !== undefined && chargeLever.hasPointerCapture(pointer)) chargeLever.releasePointerCapture(pointer);
+  };
+  rotaryGestures.push({ cancel: cancelChargeLever });
+  chargeLever.addEventListener("pointerdown", event => {
+    if (leverGesture || powerInput.disabled || !canControlTank() || !event.isPrimary || event.button !== 0) return;
+    event.preventDefault(); chargeLever.setPointerCapture(event.pointerId); powerInput.focus({ preventScroll: true });
+    leverGesture = { pointer: event.pointerId, y: event.clientY, value: Number(powerInput.value), height: chargeLever.getBoundingClientRect().height };
+  });
+  chargeLever.addEventListener("pointermove", event => {
+    if (!leverGesture || leverGesture.pointer !== event.pointerId) return;
+    if (powerInput.disabled || !canControlTank()) { cancelChargeLever(); return; }
+    event.preventDefault(); powerInput.value = Math.round(clamp(leverGesture.value - (event.clientY - leverGesture.y) / leverGesture.height * 80, 20, 100));
+    powerInput.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) chargeLever.addEventListener(type, cancelChargeLever);
+  window.addEventListener("blur", cancelChargeLever);
+
+  // Dragging a lever commits through its existing button click handler.
+  for (const [id, part] of [["nightToggle", "night"], ["assistToggle", "assist"]]) {
+    const button = $(id), mount = hardwareParts[part].mount;
+    let gesture = null, suppressClick = false;
+    const cancel = () => {
+      const pointer = gesture?.pointer; gesture = null;
+      mount.style.removeProperty("--switch-angle"); mount.classList.remove("is-pulling");
+      if (pointer !== undefined && button.hasPointerCapture(pointer)) button.releasePointerCapture(pointer);
     };
-    const startDrag = (event) => {
-      if (input.disabled || !canControlTank() || (event.pointerType === "mouse" && event.button !== 0)) return;
-      leverDrag = event.currentTarget === lever;
-      event.preventDefault(); pointer = event.pointerId; input.setPointerCapture(pointer); input.focus({ preventScroll: true }); setFromPointer(event);
-    };
-    input.addEventListener("pointerdown", startDrag);
-    lever?.addEventListener("pointerdown", startDrag);
-    input.addEventListener("pointermove", (event) => { if (pointer === event.pointerId) setFromPointer(event); });
-    const endDrag = () => { pointer = null; };
-    input.addEventListener("pointerup", endDrag); input.addEventListener("pointercancel", endDrag); input.addEventListener("lostpointercapture", endDrag);
+    rotaryGestures.push({ cancel });
+    button.addEventListener("click", event => {
+      if (suppressClick && event.isTrusted) { suppressClick = false; event.preventDefault(); event.stopImmediatePropagation(); }
+    }, true);
+    button.addEventListener("pointerdown", event => {
+      if (gesture || button.disabled || !event.isPrimary || event.button !== 0) return;
+      suppressClick = false; button.setPointerCapture(event.pointerId);
+      gesture = { pointer: event.pointerId, y: event.clientY, dy: 0, on: button.getAttribute("aria-pressed") === "true" };
+    });
+    button.addEventListener("pointermove", event => {
+      if (!gesture || gesture.pointer !== event.pointerId) return;
+      gesture.dy = event.clientY - gesture.y;
+      if (Math.abs(gesture.dy) < 5) return;
+      event.preventDefault(); mount.classList.add("is-pulling");
+      const travel = Math.max(20, mount.getBoundingClientRect().height * .65);
+      const phase = clamp((gesture.on ? 1 : 0) - gesture.dy / travel, 0, 1);
+      mount.style.setProperty("--switch-angle", `${-132 * phase}deg`);
+    });
+    button.addEventListener("pointerup", event => {
+      if (!gesture || gesture.pointer !== event.pointerId) return;
+      const dragged = Math.abs(gesture.dy) >= 5, desired = gesture.dy < 0, previous = gesture.on;
+      cancel();
+      if (dragged) {
+        suppressClick = true;
+        if (desired !== previous) button.click();
+        setTimeout(() => { suppressClick = false; }, 0);
+      }
+    });
+    for (const type of ["pointercancel", "lostpointercapture"]) button.addEventListener(type, cancel);
+    window.addEventListener("blur", cancel);
   }
   weaponSelect.addEventListener("change", () => { if (!canControlTank()) return; state.weapon = weaponSelect.value; activeTank().weapon = state.weapon; updateWeaponReadout(); });
   ordnanceRack.addEventListener("click", (event) => {
@@ -2255,6 +2400,17 @@
   fireButton.addEventListener("click", () => fire());
   $("moveLeft").addEventListener("click", () => moveTank(-1)); $("moveRight").addEventListener("click", () => moveTank(1));
   $("newMap").addEventListener("click", () => { if (projectiles.length || state.moving || state.resolving) { announce("WAIT FOR THE ROUND TO CLEAR"); return; } newMap(); });
+  $("retryBattle").addEventListener("click", () => {
+    if (!battleContinuation.hidden) { battleContinuation.hidden = true; newMap(false, state.seed); announce("SAME GRID // CREW REDEPLOYED"); }
+  });
+  $("nextBattle").addEventListener("click", () => {
+    if (battleContinuation.hidden) return;
+    if (state.mode === "campaign" || state.mode === "night") state.level = state.level >= 30 ? 1 : Math.min(30, state.level + 1);
+    else state.level++;
+    battleContinuation.hidden = true;
+    newMap(false, randomSeed());
+    announce(state.mode === "campaign" || state.mode === "night" ? `OPERATION ${String(state.level).padStart(2, "0")} // CREW REDEPLOYED` : "NEW SECTOR // CREW REDEPLOYED");
+  });
   $("saveGame").addEventListener("click", saveGame); $("loadGame").addEventListener("click", loadGame);
   $("helpButton").addEventListener("click", () => $("manualDialog").showModal());
   $("nightToggle").addEventListener("click", () => { hardwareParts.night.mount.classList.remove("is-hinting"); state.night = !state.night; syncCombatSwitches(); });

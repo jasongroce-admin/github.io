@@ -1,0 +1,91 @@
+/* The fixed fascia, live faces, physical handles and native controls share one host. */
+body[data-chassis] .dashboard-frame .console { inset: 0; background: none; border: 0; box-shadow: none; z-index: 4; }
+.battle-continuation[hidden] { display: none !important; }
+.battle-continuation { position: absolute; z-index: 7; top: 50%; left: 50%; width: min(440px,calc(100% - 28px)); padding: clamp(14px,2vw,26px); transform: translate(-50%,-50%); border: 4px ridge #6f6856; outline: 1px solid #c0a77388; background: linear-gradient(155deg,#293025f2,#101510f5 65%,#211b14f5); color: #e2d7bb; text-align: center; line-height: 1.35; box-shadow: 0 12px 36px #000c,inset 0 0 0 3px #11140ebd; }
+.battle-continuation .eyebrow { color: #c5ae77; font-size: 9px; letter-spacing: .15em; }
+.battle-continuation h2 { margin: 6px 0; font: 750 clamp(19px,2vw,28px)/1.1 "Bahnschrift Condensed","Arial Narrow",sans-serif; letter-spacing: .08em; }
+.battle-continuation p { margin: 4px 0 14px; color: #c1bba7; font-size: 13px; }
+.battle-continuation > div { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.battle-continuation .control-button { min-width: 140px; min-height: 44px; border-color: #777054; background: linear-gradient(#30382b,#171d16); color: #e5d9b8; }
+.dashboard-frame .gauge-layer { z-index: 1; }
+.dashboard-frame .hardware-layer { z-index: 3; }
+.socket-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.socket-backfill { position: absolute; transform: translate(-50%,-50%); background: linear-gradient(#10130f55,#10130f55),var(--socket-plate); background-size: auto,64px 64px; }
+.socket-fire { background: #241512; }
+.dashboard-frame .hardware-mount { transform: translate(-50%,-50%); aspect-ratio: auto; perspective: 400px; }
+.dashboard-frame .hardware-mount::before { display: none; }
+.dashboard-frame .switch-row { transform: translate(-50%,-50%); }
+.dashboard-frame .fire-button { aspect-ratio: auto; min-height: 0; min-width: 0; }
+.hardware-night, .hardware-assist { --switch-angle: 0deg; }
+.hardware-night.is-on, .hardware-assist.is-on { --switch-angle: -132deg; }
+.hardware-night .hardware-face, .hardware-assist .hardware-face,
+.hardware-night.is-on .hardware-face, .hardware-assist.is-on .hardware-face {
+  transform: rotateX(var(--switch-angle)); transform-style: preserve-3d; filter: none;
+  transition: transform .24s cubic-bezier(.22,.76,.3,1);
+}
+.hardware-night .hardware-face > img, .hardware-assist .hardware-face > img { clip-path: inset(12% 0 35% 0); }
+.hardware-grip { position: absolute; left: 6%; top: 60%; width: 88%; height: 40%; overflow: hidden; transform: rotateX(calc(-1 * var(--switch-angle))); transform-origin: center; transition: transform .24s cubic-bezier(.22,.76,.3,1); }
+.hardware-grip img { position: absolute; width: 113.636%; height: 250%; max-width: none; left: -6.818%; top: -150%; user-select: none; pointer-events: none; }
+.hardware-collar { position: absolute; z-index: 2; left: var(--pivot-x); top: var(--pivot-y); width: 35%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 50%; background: radial-gradient(circle,#11150f 0 31%,#8b8974 35%,#43463a 51%,#181c15 70%); box-shadow: 0 1px 3px #000a; }
+.hardware-mount.is-pulling .hardware-face, .hardware-mount.is-pulling .hardware-grip { transition: none; }
+.hardware-mount.is-hinting .hardware-face { animation: none; }
+.hardware-mount.is-hinting .hardware-collar { animation: collar-introduction .7s ease-in-out 4; }
+@keyframes collar-introduction { 50% { filter: brightness(1.9); } }
+.dashboard-frame .toggle, .dashboard-frame .toggle.is-on { background: none; border: 0; box-shadow: none; touch-action: none; }
+.dashboard-frame .toggle svg, .dashboard-frame .toggle strong, .dashboard-frame .toggle > span { display: none; }
+.elevation-wheel-control { position: absolute; z-index: 5; transform: translate(-50%,-50%); cursor: grab; touch-action: none; pointer-events: auto; }
+.elevation-wheel-control::before { content: ""; position: absolute; left: 29%; top: 29%; width: 42%; height: 42%; border-radius: 50%; background: radial-gradient(circle,#6a6758,#242a20 48%,#12180f 74%); box-shadow: 0 2px 5px #000b; }
+.elevation-wheel { display: block; position: absolute; left: 1.1%; top: 1.2%; width: 100%; height: 100%; transform: rotate(var(--wheel-angle)); transform-origin: 48.9% 48.8%; filter: drop-shadow(0 2px 2px #000a); pointer-events: none; user-select: none; transition: transform .06s linear; }
+.elevation-wheel-control.is-turning { cursor: grabbing; }
+.elevation-wheel-control.is-turning .elevation-wheel { transition: none; }
+.elevation-wheel-control.is-disabled { cursor: default; }
+.dashboard-frame .live-dial .dial-face { background: radial-gradient(ellipse at 36% 22%,#20231d,#10130f 60%,#080b08); }
+.dashboard-frame .live-dial .dial-ticks { display: block; inset: 0; left: 0; top: 0; width: 100%; height: 100%; transform: none; mask: none; border-radius: 0; background: none; opacity: 1; }
+.dashboard-frame .dial-ticks::after { display: none; }
+.instrument-scale { display: block; width: 100%; height: 100%; }
+.instrument-scale path { stroke: #b8ab8e; stroke-width: 1.5; opacity: .57; }
+.instrument-scale text { fill: #b8ab8e; font: 11px "Bahnschrift Condensed","Arial Narrow",sans-serif; opacity: .58; }
+.dashboard-frame .live-dial .dial-label { top: 61%; }
+.seven-segment-display { display: none; --display-ink: #90bca1; width: 6em; height: 2.5em; margin: 3px auto 0; overflow: visible; }
+.seven-segment-display polygon, .seven-segment-display circle { fill: var(--display-ink); opacity: .075; }
+.seven-segment-display .lit { opacity: .84; }
+body[data-chassis="s90"] .seven-segment-display, body[data-chassis="r12"] .seven-segment-display { display: block; }
+body[data-chassis="r12"] .seven-segment-display { --display-ink: #d4ad67; }
+body[data-chassis="s90"] .live-dial .dial-label b, body[data-chassis="r12"] .live-dial .dial-label b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.compact-instruments .live-dial { background: none; aspect-ratio: auto; }
+.compact-instruments .socket-layer { display: none; }
+.compact-instruments .live-dial .dial-face { inset: 0; box-shadow: none; border-radius: 0; clip-path: ellipse(var(--opening-rx) var(--opening-ry) at 50% 50%); }
+.compact-instruments .live-dial::before { content: ""; position: absolute; left: 50%; top: 50%; width: calc(var(--opening-rx) * 2); height: calc(var(--opening-ry) * 2); transform: translate(-50%,-50%); border: 4px ridge #77705c; border-radius: 50%; box-shadow: 0 2px 6px #000b; }
+/* Support panels are outside the original fascia, so legacy per-tank absolute
+   positions must not leak into this independent, flowing console. */
+body[data-chassis] .status-console .crew-plate,
+body[data-chassis] .status-console .keyline,
+body[data-chassis] .status-console .readouts,
+body[data-chassis] .status-console .cockpit-selector {
+  position: static; inset: auto; width: auto; max-width: none; min-width: 0;
+  transform: none; margin: 0; box-shadow: none;
+}
+body[data-chassis] .status-console .keyline { padding: 0; border: 0; background: none; font-size: 10px; text-align: left; }
+body[data-chassis] .status-console .keyline > span { width: auto; text-align: left; }
+body[data-chassis] .status-console .keyline b { display: inline; font-size: inherit; margin: 0; color: #c2c9b1; }
+@media (max-height:520px) and (orientation:landscape) {
+  .has-side-consoles > .status-console { gap: 3px; padding: 5px 7px; }
+  body[data-chassis] .status-console .crew-plate { padding: 0; border: 0; }
+  .status-console .crew-plate .eyebrow, .status-console .crew-plate > span:last-child,
+  .status-console .readouts, .status-console .cockpit-selector > span { display: none; }
+  .status-console .crew-plate > strong { margin: 0; font-size: 10px; }
+  body[data-chassis] .status-console .keyline { display: flex; gap: 3px; font-size: 7px; line-height: 1.15; }
+  .status-console .cockpit-selector select { margin: 0; min-height: 25px; height: 25px; font-size: 8px; }
+  .status-console .track-steering .control-button { min-height: 44px; font-size: 9px; }
+}
+@media (max-width:600px) and (orientation:portrait) {
+  .canvas-wrap::before { display: block; top: 48%; background-color: #32352b; }
+  .dashboard-frame .hardware-fire strong { font-size: 13px; }
+  .dashboard-frame .hardware-fire small { display: none; }
+  .dashboard-frame .live-dial .dial-label { font-size: 7px; }
+  .dashboard-frame .live-dial .dial-label b { font-size: 21px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .elevation-wheel, .hardware-grip, .hardware-face { transition: none; }
+  .hardware-mount.is-hinting .hardware-collar { animation: none; }
+}

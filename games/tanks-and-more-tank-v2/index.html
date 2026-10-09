@@ -8,9 +8,11 @@
   <link rel="icon" href="data:,">
   <title>Tanks and More Tanks II | Warfront</title>
   <link rel="preload" href="assets/battlefield-dusk.jpg" as="image" fetchpriority="high">
-  <link rel="preload" href="assets/cockpit-m40-line.webp?v=20261002-moving-hardware" as="image">
-  <link rel="stylesheet" href="styles.css?v=20261006-flight-gauge-fit">
-  <script src="game.js?v=20261008-crumbling-soil" defer></script>
+  <link rel="preload" href="assets/cockpit-m40-line.webp?v=20261009-loss-continuation" as="image">
+  <link rel="stylesheet" href="styles.css?v=20261009-loss-continuation">
+  <link rel="stylesheet" href="cockpit-mechanics.css?v=20261009-loss-continuation">
+  <script src="cockpit-rotary.js?v=20261009-loss-continuation" defer></script>
+  <script src="game.js?v=20261009-loss-continuation" defer></script>
 </head>
 <body>
   <main class="app-shell">
@@ -28,7 +30,7 @@
       <div class="view-rim"><span class="rim-label">TACTICAL DISPLAY <b>LIVE</b></span><span class="rim-coords" id="mapReadout">SECTOR 07 // GRID --</span></div>
       <div class="canvas-wrap">
         <canvas id="battlefield" width="1400" height="760" aria-label="Side-view tank artillery battlefield"></canvas>
-        <img class="cockpit-skin" id="cockpitSkin" src="assets/cockpit-m40-line.webp?v=20261002-moving-hardware" alt="" aria-hidden="true">
+        <img class="cockpit-skin" id="cockpitSkin" src="assets/cockpit-m40-line.webp?v=20261009-loss-continuation" alt="" aria-hidden="true">
         <div class="aim-hud" aria-hidden="true"><span id="reticle"></span></div>
         <div class="mission-card">
           <span class="eyebrow" id="modeLabel">SKIRMISH / FIELD TEST</span>
@@ -37,6 +39,12 @@
         </div>
         <div class="target-card" id="targetCard"><span class="eyebrow">HOSTILE CONTACT</span><strong id="targetHealth">ARMOR 100%</strong><div class="health-track"><i id="targetHealthFill"></i></div></div>
         <div class="canvas-toast" id="toast" role="status" aria-live="polite"></div>
+        <section class="battle-continuation" id="battleContinuation" aria-labelledby="battleResultTitle" hidden>
+          <span class="eyebrow">CREW STATUS // ALL FRIENDLY ARMOR LOST</span>
+          <h2 id="battleResultTitle">SECTOR LOST</h2>
+          <p id="battleResultMessage">The crew can redeploy.</p>
+          <div><button class="control-button" id="retryBattle" type="button">RETRY SECTOR</button><button class="control-button" id="nextBattle" type="button">NEW SECTOR</button></div>
+        </section>
     <section class="console" aria-label="Tank controls">
       <div class="console-heading"><div class="crew-plate"><span class="eyebrow">GUNNER <b id="activeTankName">HERO-01</b></span><strong id="chassisName">M40 LINE</strong><span id="chassisSpecialty">BREACH CREW · +15% scenery damage</span></div><label class="cockpit-selector" for="cockpitView"><span>OPTICAL STATION</span><select id="cockpitView" aria-label="Cockpit view for this tank"><option value="battlefield">Command deck · wide</option><option value="periscope">Periscope · magnified</option><option value="commander">Turret station</option></select></label><div class="turn-pill"><span class="pulse"></span><span id="consoleTurn">YOUR TURN</span></div></div>
       <div class="control-grid">
