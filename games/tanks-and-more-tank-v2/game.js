@@ -407,6 +407,13 @@
     const epoch = battleEpoch;
     setTimeout(() => { if (epoch === battleEpoch && tank === activeTank()) callback(); }, delay);
   }
+  function deferBattleOutcome(delay = 0) {
+    const epoch = battleEpoch;
+    setTimeout(() => {
+      if (epoch !== battleEpoch || state.winner) return;
+      if (!living("left").length || !living("right").length) nextTurn();
+    }, delay);
+  }
 
   function rand(seed) {
     let x = seed >>> 0;
@@ -916,6 +923,7 @@
     if (isCpu && !state.winner) { fireButton.disabled = true; deferBattle(cpuTurn, 800, tank); }
   }
   function nextTurn() {
+    if (state.winner) return;
     state.resolving = false;
     const leftAlive = living("left").length; const rightAlive = living("right").length;
     if (!leftAlive || !rightAlive) {
@@ -1928,9 +1936,14 @@
     if (!["ice", "emp", "acid"].includes(kind)) tank.burnLife = Math.max(tank.burnLife || 0, 480);
     if (tank.hp === 0) { tank.alive = false; tank.smokeUntil = performance.now() + 9000; }
     if (tank === activeTank()) syncInstruments();
-    // Ground hazards can finish a crew while its gun is idle. Resolve that
-    // death once; shots/support already own their delayed turn completion.
-    if (!tank.alive && !state.resolving && !projectiles.length && (tank === activeTank() || !living("left").length || !living("right").length)) {
+    // Resolve a total crew loss independently of the shot/turn callback. That
+    // callback is intentionally tied to the current operator; if a lethal hit
+    // or lingering hazard changes the active crew first, its guard can skip it.
+    if (!tank.alive && !living(tank.team).length) {
+      const resolutionDelay = projectiles.length ? 2400 : 500;
+      state.aiMove = null; state.moving = false; state.resolving = true;
+      fireButton.disabled = true; refreshSupportButton(); deferBattleOutcome(resolutionDelay);
+    } else if (!tank.alive && !state.resolving && !projectiles.length && tank === activeTank()) {
       state.aiMove = null; state.moving = false; state.resolving = true;
       fireButton.disabled = true; refreshSupportButton(); deferBattle(nextTurn, 500);
     }
