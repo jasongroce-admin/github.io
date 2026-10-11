@@ -3,3 +3,5 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
 .layer-heading{font:20px Georgia,serif;margin:24px 0 6px;border-top:1px solid var(--line);padding-top:15px}select{max-width:100%;min-height:44px;background:#0e1922;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0}#camera-region{width:100%}#nearby-cameras{font-size:12px;width:100%;margin-top:8px}.coverage-row{padding:12px 0;border-bottom:1px solid var(--line)}#coverage-results{max-height:320px;overflow:auto}.detail-panel h3{font:18px Georgia,serif;margin:15px 0 5px}
+
+.camera-link-action{display:block;padding:12px 0;min-height:44px;box-sizing:border-box;}

@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-10-11T14:08:47.631444+00:00",
-  "scope": "50-state coverage ledger; integrated catalogs cover eligible California and British Columbia cameras only. Finland is handled separately by the application's live adapter.",
+  "scope": "50-state directory with embedded image sources in California and official camera-view links from authoritative location catalogs in Indiana and Nevada. British Columbia and Finland are additional camera regions.",
   "states": [
     {
       "code": "AL",
@@ -212,12 +212,12 @@
       "code": "IN",
       "name": "Indiana",
       "country": "US",
-      "status": "official-map-only",
-      "label": "Open INDOT's official camera map",
+      "status": "official-linked",
+      "label": "748 official locations linked to public camera players",
       "sourceUrl": "https://511in.org/list/cameras",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "The official public content directory documents still images updated every two minutes, but cctv.json was zero bytes on acquisition and echo/ was empty. The vendor XML feed requires a request and credentials. No no-key authoritative geolocated catalog and image reuse permission were confirmed. Indiana cameras remain accessible through the official source link; no guessed positions or fabricated markers were added.",
+      "integratedCount": 748,
+      "notes": "749 public entries were retrieved from the same anonymous metadata query used by TrafficWise. 748 authoritative points are mapped and linked to their official per-camera player. One official point falls outside Indiana and is withheld without guessing a correction. Video is not embedded or rehosted. The separate XML developer feed requires credentials; ordinary viewing and this factual location catalog do not.",
       "evidenceUrls": [
         "https://pws.trafficwise.org/",
         "https://pws.trafficwise.org/json/",
@@ -227,7 +227,7 @@
       ],
       "state": "IN",
       "url": "https://511in.org/list/cameras",
-      "note": "The official public content directory documents still images updated every two minutes, but cctv.json was zero bytes on acquisition and echo/ was empty. The vendor XML feed requires a request and credentials. No no-key authoritative geolocated catalog and image reuse permission were confirmed. Indiana cameras remain accessible through the official source link; no guessed positions or fabricated markers were added."
+      "note": "748 mapped camera locations link directly to official players; one source entry has an invalid location."
     },
     {
       "code": "IA",
@@ -434,18 +434,18 @@
       "code": "NV",
       "name": "Nevada",
       "country": "US",
-      "status": "key-required",
-      "label": "Documented camera API requires an account or access key",
+      "status": "official-linked",
+      "label": "652 official Nevada camera locations linked",
       "sourceUrl": "https://www.nvroads.com/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "The documented statewide developer feed requires an access credential. It is excluded from this no-key catalog. This finding does not prove that every alternative public feed requires a key.",
+      "integratedCount": 652,
+      "notes": "652 official public directory entries with authoritative WGS84 points and original provider camera permalinks; includes 372 in the provider Las Vegas region. Videos and still views open on Nevada 511 without groce-eye rehosting. Video flags are a metadata snapshot, not a guarantee of live availability.",
       "evidenceUrls": [
         "https://www.nvroads.com/developers/doc"
       ],
       "state": "NV",
       "url": "https://www.nvroads.com/",
-      "note": "The documented statewide developer feed requires an access credential. It is excluded from this no-key catalog. This finding does not prove that every alternative public feed requires a key."
+      "note": "652 camera locations link to official Nevada 511 views, including 372 in its Las Vegas region."
     },
     {
       "code": "NH",
@@ -811,6 +811,7 @@
     "official-map-only": "Use the official public camera map; no reusable no-key geolocated catalog verified",
     "legal-uncertain": "Public data exists but a camera-pixel redistribution grant was not confirmed",
     "permission-required": "Current public-site terms restrict republication",
-    "unknown": "No eligible reusable camera feed verified; this is not a finding of no cameras"
+    "unknown": "No eligible reusable camera feed verified; this is not a finding of no cameras",
+    "official-linked": "Authoritative camera locations on the globe; video opens on the original provider site."
   }
 }
