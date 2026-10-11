@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#111c25"><meta name="description" content="Explore public road cameras, US forecasts, global satellite imagery, natural events, and public dispatch records on a free interactive globe.">
   <title>groce-eye | Explore</title>
   <link rel="icon" href="../../assets/images/site-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../vendor/cesium/Widgets/widgets.css"><link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="../vendor/cesium/Widgets/widgets.css"><link rel="stylesheet" href="app.css?v=20261011-cameras">
 </head>
 <body>
   <div id="globe" aria-label="Interactive globe. Use drag to rotate, pinch or the zoom buttons to zoom."></div>
@@ -30,5 +30,5 @@
   <section id="detail-panel" class="panel detail-panel" aria-label="Selected marker" hidden><div class="panel-heading"><h2 id="detail-title"></h2><button id="close-detail" class="close" aria-label="Close details">×</button></div><div id="detail-content"></div></section>
   <section id="help" class="panel help-panel" aria-label="Viewer help" hidden><div class="panel-heading"><h2>Your window on the world</h2><button id="close-help" class="close" aria-label="Close help">×</button></div><p>Drag to rotate. Pinch or use + and − to zoom. On desktop, right-drag to tilt. Select a marker or use the camera list to open details.</p><p>Choose a country in <strong>Browse cameras</strong>, or try <strong>Cameras in Finland</strong>, then pick an orange point. Earthquakes cover the last 24 hours. Satellite markers show calculated positions.</p><p>On phones, close the layer panel to see the whole globe. Camera details appear at the bottom. Full screen is optional.</p><p>Keyboard: Tab reaches the controls. Escape closes panels. Reset view returns to Earth. Share copies a view link; if clipboard access is unavailable, a selectable link appears.</p></section>
   <div id="notice" role="status" aria-live="polite"></div>
-  <script>window.CESIUM_BASE_URL='../vendor/cesium/';</script><script src="../vendor/cesium/Cesium.js"></script><script src="../vendor/satellite.min.js"></script><script type="module" src="app.js"></script>
+  <script>window.CESIUM_BASE_URL='../vendor/cesium/';</script><script src="../vendor/cesium/Cesium.js"></script><script src="../vendor/satellite.min.js"></script><script type="module" src="app.js?v=20261011-cameras"></script>
 </body></html>
