@@ -1002,3 +1002,11 @@ body.personal-home {
     border: 1px solid ButtonText;
   }
 }
+
+/* groce-eye featured globe artwork; the gradient remains if the photo is unavailable. */
+.globe-art {
+  background-color: #d6e3df;
+  background-image: linear-gradient(100deg, #152d3560, #152d3500 65%), url("../../groce-eye/assets/earth.jpg"), radial-gradient(ellipse at 48% 48%, #70a08a 0 12%, #4d786f 13% 20%, #244b59 48%, #122e3c 70%);
+  background-size: cover;
+  background-position: center;
+}

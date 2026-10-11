@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Free local connections · groce-eye</title>
+  <meta name="description" content="Download the free Windows groce-eye package. Extract it, open its launcher, and explore public feeds without API keys.">
+  <link rel="stylesheet" href="../welcome.css">
+  <style>
+    .download-hero { padding:60px 0 40px; max-width:840px; }
+    .download-hero h1 { font-size:clamp(2.6rem,6vw,4.5rem); }
+    .download-hero .intro { max-width:64ch; }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; padding:0; list-style:none; counter-reset:steps; }
+    .steps li { counter-increment:steps; padding:24px; border:1px solid var(--line); border-radius:8px; background:#fffdf8; }
+    .steps li::before { content:counter(steps); display:grid; place-items:center; width:32px; height:32px; margin-bottom:14px; border-radius:50%; background:var(--soft); color:var(--rust); font-weight:700; }
+    .steps strong { display:block; font-size:18px; }.steps p { margin:8px 0 0; color:var(--muted); }
+    .detail { max-width:85ch; padding:32px 0; border-top:1px solid var(--line); }.detail h2 { margin-bottom:15px; }
+    .detail p { color:var(--muted); }.detail li { margin:8px 0; }
+    .intro { display:block!important; }.small { font-size:13px; color:var(--muted); }
+    @media(max-width:760px) { .steps { grid-template-columns:1fr; }.download-hero { padding-top:40px; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="welcome-shell">
+<header class="welcome-header"><a class="wordmark" href="../index.html">groce-eye <span>curiosity, in orbit.</span></a><a class="back-link" href="../explore/index.html">Open browser viewer →</a></header>
+<main id="main">
+  <section class="download-hero">
+    <p class="eyebrow">Free public connections · Windows</p>
+    <h1>Your globe.<br><em>A few more connections.</em></h1>
+    <p class="intro">Run groce-eye on your Windows computer to connect public aircraft, satellite, and road-camera feeds. No keys, accounts, subscriptions, or paid data services.</p>
+    <a class="primary-link" href="groce-eye-free-windows.zip" download>Download Windows ZIP <span aria-hidden="true">↓</span></a>
+    <p class="no-account">Windows 10/11 · Internet connection required · No administrator installation</p>
+    <p class="small"><a href="groce-eye-free-windows.sha256">Download SHA-256 checksum</a></p>
+  </section>
+  <section aria-labelledby="start-title"><h2 id="start-title">Three steps to open it.</h2>
+    <ol class="steps">
+      <li><strong>Download the ZIP.</strong><p>Save the package to your computer.</p></li>
+      <li><strong>Choose Extract All.</strong><p>Right-click the ZIP, choose <b>Extract All</b>, then open the extracted folder.</p></li>
+      <li><strong>Open Start groce-eye.cmd.</strong><p>Double-click the launcher. Your browser opens automatically. Keep its server window open while exploring.</p></li>
+    </ol>
+    <p class="small">Close the server window to stop. Windows may show a warning for downloaded scripts; the package is unsigned and its files are readable. Organization policies may prevent it from running.</p>
+  </section>
+  <section class="detail" aria-labelledby="feeds-title"><h2 id="feeds-title">What the local connections add.</h2>
+    <ul><li><b>Aircraft:</b> regional ADSB.lol observations. The server also includes an optional OpenSky endpoint for personal, noncommercial use, with a limited anonymous allowance.</li>
+      <li><b>Satellites:</b> CelesTrak space stations and a larger active catalog. Positions are estimates calculated from dated orbital elements.</li>
+      <li><b>Cameras:</b> Fintraffic public road-weather cameras in Finland, with provider images and refresh times.</li></ul>
+    <p>Free providers can be unavailable, rate limited, delayed, or incomplete. This package helps the browser make supported requests; it does not remove provider limits or unlock paid layers.</p>
+    <p>Use aircraft feeds for personal exploration under the <a href="https://www.adsb.lol/docs/open-data/api/" target="_blank" rel="noopener noreferrer">ADSB.lol terms</a> and <a href="https://opensky-network.org/about/faq" target="_blank" rel="noopener noreferrer">OpenSky terms</a>. ADSB.lol asks commercial users to contact them; OpenSky restricts its free API to noncommercial use.</p>
+    <p>The server listens only on your computer. It contacts a fixed list of public providers and accepts no API keys. Map tiles and camera images may load directly from their providers. Internet requests disclose your public IP to those providers.</p>
+  </section>
+  <section class="detail" aria-labelledby="other-title"><h2 id="other-title">Using a phone or another computer?</h2>
+    <p><a href="../explore/index.html">Open the browser viewer</a>. This launcher is specifically for Windows. No Pinokio installation or additional runtime is needed.</p>
+    <p>The <a href="https://github.com/bilawalsidhu/gods-eye-view" target="_blank" rel="noopener noreferrer">original upstream project</a> is separate and may support your own provider keys. The free groce-eye package does not install that app or configure paid connections.</p>
+  </section>
+</main>
+<footer class="welcome-footer"><p>groce-eye · A Jason Groce experiment.</p><a href="../index.html">Back to groce-eye →</a></footer>
+</div>
+</body></html>
