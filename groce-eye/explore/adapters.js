@@ -1,5 +1,16 @@
 // Only public, keyless sources. No tokens or arbitrary proxy destinations.
-export const localEdition = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') && new URLSearchParams(location.search).get('local') === '1';
+async function detectLocalEdition() {
+  if (!['127.0.0.1','localhost'].includes(location.hostname)) return false;
+  try {
+    const response = await fetch('/api/status', {signal:AbortSignal.timeout(2500),credentials:'omit',cache:'no-store'});
+    if (!response.ok) return false;
+    const status = await response.json();
+    return status.local === true && status.freeOnly === true && Array.isArray(status.sources) && status.sources.includes('aircraft');
+  } catch { return false; }
+}
+// Recognize the running desktop server after any local navigation, even when
+// a welcome-page link or bookmark does not include the optional local flag.
+export const localEdition = await detectLocalEdition();
 export const URLs = {
   cameras: 'https://tie.digitraffic.fi/api/weathercam/v1/stations',
   earthquakes: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',
