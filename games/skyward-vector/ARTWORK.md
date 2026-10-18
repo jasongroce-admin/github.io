@@ -75,4 +75,3 @@ Style: premium pre-rendered 3D real-time-strategy terrain texture, strong materi
 Composition: textures and terrain fill every panel all the way to all four cell edges. Favor formations that can continue vertically; match approximate surface distribution at each panel's upper and lower edges. Natural varied feature distribution without a single dominant subject.
 No text, lettering, numbers, watermarks, logos, captions, grid lines, panel frames, UI, spacecraft, characters, enemies, turrets, targets, bullets, explosions or icons. No objects or landforms crossing between separate cells.
 ```
-

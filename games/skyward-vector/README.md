@@ -22,6 +22,8 @@ Local preview from the repository root: `python -m http.server 4186 --bind 127.0
 
 Files: `index.html`, `style.css`, `ui.js`, `core.js`, `visuals.js`, `art.js`, `effects.js`, `favicon.svg`, and `assets/`. Gameplay uses locally loaded generated combat sprites and six terrain panels, composited with animated Canvas lighting, weapons, smoke, fire, shockwaves, debris, and shields. Assets load from this folder and require no external service while playing.
 
+The generated asset dimensions, exact prompts, and tool provenance are documented in [ARTWORK.md](ARTWORK.md).
+
 Designed and implemented October 18, 2026. Build 20261018-3 upgrades the gameplay art and explosions while retaining left-mouse flight/fire and right-mouse bombing. Bomb blast visuals span over twice their earlier radius, with large ground and aircraft explosions and a multi-stage fortress detonation. Visual effect sizes do not enlarge weapon damage areas.
 
 Development verification: from this folder, run `node --test tests/*.test.mjs` with a recent Node.js. Seventeen deterministic tests cover combat, movement, sector completion, effect lifecycles, effect limits, precision damage, and pause. The full-campaign fixture uses protection to isolate progression; damage and lives are tested separately.
