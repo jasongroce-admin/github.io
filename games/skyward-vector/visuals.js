@@ -1,6 +1,9 @@
-/* Original procedural artwork for SKYWARD VECTOR. No image or font downloads. */
+/* Original generated artwork with animated Canvas lighting and effects. */
+import {ArtLibrary} from './art.js?v=20261018-art3';
+import {Effects} from './effects.js?v=20261018-art3';
 const W = 480, H = 720, TILE = 256;
 const TAU = Math.PI * 2;
+const heightFor=(kind,width)=>width*({scout:337/370,swoop:375/327,interceptor:412/424}[kind]||1);
 const themes = {
   forest: {land:'#183e31', land2:'#23563d', edge:'#336a49', water:'#1a6474', deep:'#103f57', road:'#8d9275', accent:'#94e9c4'},
   delta: {land:'#2a5945', land2:'#427552', edge:'#69936a', water:'#26768b', deep:'#164b6a', road:'#a2a68b', accent:'#75e7dc'},
@@ -20,7 +23,10 @@ export class Renderer {
   constructor(canvas) {
     this.canvas=canvas; this.ctx=canvas.getContext('2d',{alpha:false});
     this.tiles=new Map(); this.width=W; this.height=H;
-    canvas.width=W; canvas.height=H;
+    this.pixelRatio=Math.min(2,Math.max(1,window.devicePixelRatio||1));
+    canvas.width=W*this.pixelRatio; canvas.height=H*this.pixelRatio;
+    this.art=new ArtLibrary();this.ready=this.art.ready;
+    this.effects=new Effects({reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});
     this.ctx.imageSmoothingEnabled=true;
   }
   terrainTile(biome,index,palette) {
@@ -103,23 +109,28 @@ export class Renderer {
     const c=this.ctx;const t=game.totalTime||game.time||0;
     const biome=game.level?.biome||'forest';const theme=themes[biome]||themes.forest;
     const scroll=Number.isFinite(game.scroll)?game.scroll:t*30;
-    c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.globalCompositeOperation='source-over';
-    const first=Math.floor(-scroll/TILE);
-    for(let i=first;i<=first+4;i++)c.drawImage(this.terrainTile(biome,i,game.level?.palette),0,Math.round(i*TILE+scroll));
+    c.setTransform(this.pixelRatio,0,0,this.pixelRatio,0,0);c.globalAlpha=1;c.globalCompositeOperation='source-over';
+    if(!this.art.drawTerrain(c,biome,scroll)){
+      const first=Math.floor(-scroll/TILE);
+      for(let i=first;i<=first+4;i++)c.drawImage(this.terrainTile(biome,i,game.level?.palette),0,Math.round(i*TILE+scroll));
+    }
     // The upper screen is slightly hazy; a subtle vignette frames the action.
     const haze=c.createLinearGradient(0,0,0,H);haze.addColorStop(0,'rgba(175,209,207,.08)');haze.addColorStop(.65,'rgba(0,0,0,0)');haze.addColorStop(1,'rgba(1,9,18,.12)');c.fillStyle=haze;c.fillRect(0,0,W,H);
     const enemies=game.enemies||[];
     for(const e of enemies)if(e.ground)this.enemy(c,e,t,true);
-    for(const e of enemies)if(!e.ground)this.shadow(c,e.x+15,e.y+24,(e.r||14),.24);
+    for(const e of enemies)if(!e.ground){
+      if(!this.art.sprite(c,e.kind,e.x+14,e.y+24,e.kind==='interceptor'?58:48,{alpha:.38,shadow:true}))this.shadow(c,e.x+15,e.y+24,(e.r||14),.24);
+    }
     const p=game.player;
-    if(p&&p.alive!==false)this.shadow(c,p.x+17,p.y+27,16,.28);
+    if(p&&p.alive!==false){if(!this.art.sprite(c,'player',p.x+17,p.y+29,56,{alpha:.42,shadow:true}))this.shadow(c,p.x+17,p.y+27,16,.28);}
     for(const pickup of game.pickups||[])this.pickup(c,pickup,t);
     for(const b of game.bombs||[])this.bomb(c,b,t);
     // Ground impacts live below the aircraft layer.
-    for(const b of game.blasts||[])this.blast(c,b,t);
+    if(!game.explosions)for(const b of game.blasts||[])this.blast(c,b,t);
     for(const s of game.shots||[])this.shot(c,s);
     for(const e of enemies)if(!e.ground)this.enemy(c,e,t,false);
     if(p&&p.alive!==false)this.player(c,p,t);
+    this.effects.draw(game,c);
     for(const s of game.hostile||[])this.hostile(c,s,t);
     for(const p of game.particles||[])this.particle(c,p);
     if(game.reticle&&p&&p.alive!==false)this.reticle(c,game.reticle,t);
@@ -132,6 +143,17 @@ export class Renderer {
   player(c,p,t){
     c.save();c.translate(p.x,p.y);c.rotate((p.tilt||0)*.13);
     if(p.invulnerable>0){c.globalAlpha=Math.sin(t*38)>.15?.42:.95;}
+    if(this.art.sprites.has('player')){
+      const glow=c.createRadialGradient(0,24,0,0,24,30);glow.addColorStop(0,'rgba(125,246,255,.65)');glow.addColorStop(1,'rgba(40,140,255,0)');c.fillStyle=glow;c.fillRect(-31,0,62,65);
+      for(const x of [-9,0,9]){const len=(x?19:27)+Math.sin(t*48+x)*4;path(c,[[x-3,21],[x-2,29],[x,29+len],[x+2,29],[x+3,21]],'#49ceff');path(c,[[x-1,24],[x,29+len*.72],[x+1,24]],'#e8ffff');}
+      this.art.sprite(c,'player',0,0,58);
+      c.globalAlpha=1;
+      // The exact collision center stays visible on the bright cockpit.
+      circle(c,0,0,2.5,'#d5ffff','#1787a4',.8);
+      if(p.shield){c.strokeStyle='rgba(143,248,255,.75)';c.lineWidth=1.5;c.beginPath();c.ellipse(0,0,37,40,0,0,TAU);c.stroke();}
+      if(p.weapon>1){c.fillStyle='#c6fff6';c.fillRect(-20,8,2,8);c.fillRect(18,8,2,8);}
+      c.restore();return;
+    }
     const thrust=10+Math.sin(t*55)*3;
     const glow=c.createRadialGradient(0,25,1,0,25,25);glow.addColorStop(0,'rgba(83,222,255,.6)');glow.addColorStop(1,'rgba(38,140,255,0)');c.fillStyle=glow;c.fillRect(-26,7,52,48);
     path(c,[[-5,17],[-3,24+thrust],[0,30+thrust],[3,24+thrust],[5,17]],'#46c9f1');path(c,[[-2,17],[0,28+thrust*.8],[2,17]],'#efffff');
@@ -152,6 +174,21 @@ export class Renderer {
   enemy(c,e,t,ground){
     c.save();c.translate(e.x||0,e.y||0);
     const kind=e.kind||'scout';
+    if(this.art.sprites.has(kind)){
+      const width={scout:43,swoop:47,interceptor:59,disc:54,turret:48,battery:60,bunker:61,boss:180}[kind]||48;
+      const angle=kind==='disc'?(e.age||0)*.28:ground?0:Math.sin((e.age||0)*1.6)*.09;
+      if(ground){this.art.sprite(c,kind,5,8,width,{alpha:.45,shadow:true});}
+      this.art.sprite(c,kind,0,0,width,{angle});
+      if(!ground&&kind!=='disc'){
+        const glow=c.createRadialGradient(0,-heightFor(kind,width)*.32,0,0,-heightFor(kind,width)*.32,15);glow.addColorStop(0,'rgba(255,171,66,.45)');glow.addColorStop(1,'rgba(255,86,20,0)');c.fillStyle=glow;c.fillRect(-17,-heightFor(kind,width)*.5-9,34,30);
+      }
+      if(kind==='boss'){
+        const glow=c.createRadialGradient(0,0,1,0,0,27);glow.addColorStop(0,'rgba(255,244,189,.8)');glow.addColorStop(.3,'rgba(255,173,66,.5)');glow.addColorStop(1,'rgba(255,90,15,0)');c.fillStyle=glow;c.globalAlpha=.7+Math.sin(t*6)*.15;c.fillRect(-28,-28,56,56);c.globalAlpha=1;
+        circle(c,0,0,18,null,'#ffe3ac',1.2);c.fillStyle='#1a252b';c.fillRect(-43,70,86,5);c.fillStyle='#ffb661';c.fillRect(-42,71,84*Math.max(0,e.hp/e.maxHp),3);
+      }
+      if(e.damageFlash>0){c.globalCompositeOperation='screen';c.globalAlpha=Math.min(.65,e.damageFlash*5);circle(c,0,0,e.r||20,'#fff5cf');}
+      c.restore();return;
+    }
     if(ground){
       if(kind==='boss'){this.fortress(c,e,t);}
       else if(kind==='bunker'){

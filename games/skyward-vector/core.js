@@ -1,5 +1,5 @@
 // SKYWARD VECTOR — deterministic, browser-independent simulation. No network or runtime dependencies.
-export const BUILD = '20261018-2';
+export const BUILD = '20261018-3';
 export const LEVELS = [
   { name:'Verdant Approach', biome:'forest', tagline:'Find the river. Silence the uplink.', duration:64, scrollSpeed:44, palette:{land:'#294c3c',land2:'#3d6449',water:'#184553',accent:'#79e4c2'} },
   { name:'Riverworks', biome:'delta', tagline:'Cross the delta. Break the blockade.', duration:68, scrollSpeed:48, palette:{land:'#385944',land2:'#597252',water:'#165365',accent:'#88e8ec'} },
@@ -45,7 +45,7 @@ export class Game {
   get boss(){return this.enemies.find(e=>e.kind==='boss'&&e.hp>0)||null;}
   random(){this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;return this.seed/4294967296;}
   emit(type,detail={}){this.onEvent(type,detail);}
-  clearObjects(){this.enemies=[];this.shots=[];this.hostile=[];this.bombs=[];this.blasts=[];this.particles=[];this.pickups=[];}
+  clearObjects(){this.enemies=[];this.shots=[];this.hostile=[];this.bombs=[];this.blasts=[];this.particles=[];this.pickups=[];this.explosions=[];this.effectSerial=0;}
   reset(){
     this.state='title';this.time=0;this.scroll=0;this.totalTime=0;this.score=0;this.lives=this.rules.lives;
     this.clearObjects();this.player={x:240,y:590,r:6,invulnerable:0,weapon:1,shield:false,tilt:0,alive:true,fireCooldown:0,bombCooldown:0};
@@ -128,12 +128,26 @@ export class Game {
     }
     if(this.particles.length>360)this.particles.splice(0,this.particles.length-360);
   }
+  // Visual effects have their own deterministic seed. They never consume the
+  // combat random stream, enlarge a hitbox, or change damage and cooldowns.
+  explode(x,y,{kind='air',r=54,ground=false,duration=1.45}={}){
+    const serial=++this.effectSerial;
+    const seed=((Math.imul(Math.round(x*31+y*71),2654435761)^Math.imul(serial,2246822519))>>>0)/4294967296;
+    this.explosions.push({x,y,age:0,duration,r,kind,ground,seed,spawnScroll:this.scroll});
+    if(this.explosions.length>32)this.explosions.splice(0,this.explosions.length-32);
+  }
+  advanceExplosions(dt){
+    for(const effect of this.explosions)effect.age+=dt;
+    this.explosions=this.explosions.filter(effect=>effect.age<effect.duration);
+  }
   damageEnemy(e,damage){
     if(e.hp<=0)return;e.hp-=damage;e.damageFlash=.1;this.stats.hits++;
     if(e.hp>0)return;
     this.killCount++;if(e.ground)this.stats.groundKills++;else this.stats.airKills++;
     const values={scout:100,swoop:150,interceptor:220,disc:300,turret:250,battery:400,bunker:600,boss:3500+this.levelIndex*1000};
-    this.addScore(values[e.kind]||100);this.burst(e.x,e.y,e.ground?'#ffbd70':'#9cf5ef',e.kind==='boss'?90:18);this.emit('explosion',{boss:e.kind==='boss'});
+    this.addScore(values[e.kind]||100);this.burst(e.x,e.y,e.ground?'#ffbd70':'#9cf5ef',e.kind==='boss'?90:18);
+    this.explode(e.x,e.y,{kind:e.kind==='boss'?'boss':e.ground?'ground':'air',r:e.kind==='boss'?178:e.ground?e.kind==='bunker'?90:78:e.kind==='disc'?65:54,ground:e.ground,duration:e.kind==='boss'?3.6:e.ground?2:1.5});
+    this.emit('explosion',{boss:e.kind==='boss'});
     if(e.kind==='boss'){this.completeSector();return;}
     if(e.supply||this.killCount%9===0){
       const kind=e.supply?'shield':this.player.weapon<3?'weapon':this.killCount%18===0?'life':'shield';
@@ -143,7 +157,7 @@ export class Game {
   hurtPlayer(){
     const p=this.player;if(p.invulnerable>0||this.state!=='playing')return;
     if(p.shield){p.shield=false;p.invulnerable=1.5;this.burst(p.x,p.y,'#6df9e4',24);this.hostile=this.hostile.filter(b=>dist2(b,p)>150**2);this.emit('hit',{shield:true});return;}
-    this.lives--;this.stats.deaths++;this.burst(p.x,p.y,'#fff0cd',35);this.emit('hit',{shield:false});
+    this.lives--;this.stats.deaths++;this.burst(p.x,p.y,'#fff0cd',35);this.explode(p.x,p.y,{kind:'player',r:76,duration:1.7});this.emit('hit',{shield:false});
     this.hostile=[];this.shots=[];this.bombs=[];
     if(this.lives<=0){p.alive=false;this.state='gameover';this.emit('gameover',{score:this.score,sector:this.levelIndex});return;}
     Object.assign(p,{x:240,y:605,invulnerable:3.2,weapon:Math.max(1,p.weapon-1),fireCooldown:.3,bombCooldown:.3});
@@ -155,6 +169,9 @@ export class Game {
   }
   update(dt,input={}){
     dt=clamp(Number(dt)||0,0,.05);
+    // Terminal screens keep the final detonation moving while combat stays
+    // stopped. Pause freezes both the simulation and every visual effect.
+    if(['playing','gameover','sectorClear','victory'].includes(this.state))this.advanceExplosions(dt);
     if(this.state!=='playing')return;
     // Small integration steps keep collisions consistent across 30/60/120 Hz screens.
     const steps=Math.max(1,Math.ceil(dt/(1/120)));const h=dt/steps;
@@ -199,6 +216,7 @@ export class Game {
       const t=clamp(b.age/b.duration,0,1);b.x=b.startX+(b.targetX-b.startX)*t;b.y=b.startY+(b.targetY-b.startY)*t;
       if(t>=1&&!b.dead){
         b.dead=true;const radius=31;this.blasts.push({x:b.targetX,y:b.targetY,r:radius,age:0,duration:.36});this.burst(b.targetX,b.targetY,'#ffbf73',8);
+        this.explode(b.targetX,b.targetY,{kind:'bomb',r:72,ground:true,duration:1.5});
         // The fortress's visible center is its bomb-only reactor; other ground structures have hull collisions.
         for(const e of this.enemies){if(!e.ground||e.hp<=0)continue;const hitR=e.kind==='boss'?36:e.r;
           if(dist2(e,{x:b.targetX,y:b.targetY})<(radius+hitR*.6)**2){

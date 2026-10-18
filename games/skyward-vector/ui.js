@@ -1,5 +1,5 @@
-import { Game, LEVELS } from './core.js';
-import { Renderer } from './visuals.js';
+import { Game, LEVELS } from './core.js?v=20261018-art3';
+import { Renderer } from './visuals.js?v=20261018-art3';
 
 const $ = id => document.getElementById(id);
 const canvas = $('gameCanvas');
@@ -23,6 +23,7 @@ let lastState = '';
 let lastLevel = -1;
 let toastTimer = 0;
 let hudElapsed = 1;
+let transitionDelay = 0;
 const keys = new Set();
 const touch = {fire: false, bomb: false};
 const mouse = {fire: false, bomb: false};
@@ -66,6 +67,10 @@ function playSound(type, detail = {}) {
 
 const game = new Game({difficulty, onEvent(type, detail) {
   playSound(type, detail);
+  if(['sectorClear','victory'].includes(type)&&game.explosions.some(e=>e.kind==='boss')){
+    transitionDelay=1.15;
+    clearInputs();
+  }
   if (['sectorClear', 'victory', 'gameover', 'sectorStart', 'extraLife'].includes(type)) {
     persist();
     hudElapsed = 1;
@@ -97,7 +102,7 @@ function resultStats() {
 
 function renderOverlay() {
   const state = game.state;
-  const visible = state !== 'playing';
+  const visible = state !== 'playing' && transitionDelay <= 0;
   overlay.hidden = !visible;
   overlay.classList.toggle('title-screen', state === 'title');
   $('pauseButton').disabled = state !== 'playing' && state !== 'paused';
@@ -350,14 +355,15 @@ let lastTime = 0;
 function frame(now) {
   const dt = lastTime ? Math.min(.05,Math.max(0,(now-lastTime)/1000)) : 0;
   lastTime = now;
-  if (game.state === 'playing') {
-    game.update(dt, {
+  game.update(dt, {
       dx: Number(keys.has('arrowright') || keys.has('d')) - Number(keys.has('arrowleft') || keys.has('a')),
       dy: Number(keys.has('arrowdown') || keys.has('s')) - Number(keys.has('arrowup') || keys.has('w')),
       fire: autoFire || touch.fire || mouse.fire || keys.has('z') || keys.has(' '),
       bomb: touch.bomb || mouse.bomb || keys.has('x'),
       pointer,
     });
+  if (transitionDelay>0){transitionDelay=Math.max(0,transitionDelay-dt);if(transitionDelay===0)renderOverlay();}
+  if (game.state === 'playing') {
     if (toastTimer > 0) {toastTimer-=dt;if(toastTimer<=0)$('sectorToast').classList.remove('visible');}
   }
   renderer.draw(game, now / 1000);
