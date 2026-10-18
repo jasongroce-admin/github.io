@@ -1,5 +1,5 @@
 // SKYWARD VECTOR — deterministic, browser-independent simulation. No network or runtime dependencies.
-export const BUILD = '20261018-1';
+export const BUILD = '20261018-2';
 export const LEVELS = [
   { name:'Verdant Approach', biome:'forest', tagline:'Find the river. Silence the uplink.', duration:64, scrollSpeed:44, palette:{land:'#294c3c',land2:'#3d6449',water:'#184553',accent:'#79e4c2'} },
   { name:'Riverworks', biome:'delta', tagline:'Cross the delta. Break the blockade.', duration:68, scrollSpeed:48, palette:{land:'#385944',land2:'#597252',water:'#165365',accent:'#88e8ec'} },

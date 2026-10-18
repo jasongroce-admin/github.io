@@ -40,14 +40,14 @@
       <div class="rule"></div>
       <div class="panel-label">KNOW YOUR TARGET <span>02 / 03</span></div>
       <div class="weapon-card air-card"><span class="weapon-symbol" aria-hidden="true">⌁</span><div><strong>AIR-TO-AIR</strong><p>Fire straight ahead at aircraft.</p></div><kbd>Z</kbd></div>
-      <div class="weapon-card ground-card"><span class="weapon-symbol" aria-hidden="true">⊕</span><div><strong>AIR-TO-GROUND</strong><p>Bomb the target under your reticle.</p></div><kbd>X</kbd></div>
+      <div class="weapon-card ground-card"><span class="weapon-symbol" aria-hidden="true">⊕</span><div><strong>AIR-TO-GROUND</strong><p>Right-click or X at the gold reticle.</p></div><kbd>X</kbd></div>
       <div class="mission-foot"><span class="tiny-cross" aria-hidden="true">+</span><p>Keep moving. Watch the ground.<br>Bring your fleet home.</p></div>
     </aside>
 
     <section class="arcade-station" aria-label="Skyward Vector game">
       <div class="screen-telemetry"><div><i></i><span id="screenStatus">STANDBY</span></div><span id="sectorCounter">SECTOR 01 / 06</span></div>
       <div class="screen-frame" id="screenFrame">
-        <canvas id="gameCanvas" width="480" height="720" tabindex="0" aria-label="Skyward Vector playfield. Move with arrow keys or WASD, hold Z or Space to fire, hold X to bomb. Press P or Escape to pause."></canvas>
+        <canvas id="gameCanvas" width="480" height="720" tabindex="0" aria-label="Skyward Vector playfield. Hold left mouse to steer and fire, right-click or hold right mouse to bomb the gold reticle. Or move with arrows or WASD, Z or Space fires, X bombs. Bombs are unlimited. P or Escape pauses."></canvas>
         <div class="screen-vignette" aria-hidden="true"></div>
         <div class="mobile-hud" id="mobileHud" hidden><div><span>SCORE</span><strong id="mobileScore">000000</strong></div><div><span>FLEET</span><strong id="mobileLives">▰ × 4</strong></div><div><span>WEAPON</span><strong id="mobileWeapon">MK I</strong></div></div>
         <div class="boss-strip" id="bossStrip" hidden><div class="boss-caption"><span id="bossName">HOSTILE SIGNATURE</span><span>HULL</span></div><div class="boss-track"><i id="bossFill"></i></div></div>
@@ -57,7 +57,7 @@
         </div>
         <button class="mobile-pause" id="mobilePause" type="button" aria-label="Pause game" hidden>Ⅱ</button>
       </div>
-      <div class="screen-bottom"><span class="screen-coordinate">SV—01 <i></i> VECTOR FLIGHT SYSTEM</span><button id="pauseButton" type="button" disabled>Ⅱ <span>PAUSE</span> <kbd>P</kbd></button></div>
+      <div class="screen-bottom"><span class="screen-coordinate" id="inputHint">HOLD LEFT: FLY + FIRE · RIGHT: BOMB</span><button id="pauseButton" type="button" disabled>Ⅱ <span>PAUSE</span> <kbd>P</kbd></button></div>
       <div class="touch-controls" aria-label="Touch controls">
         <div class="drag-hint"><span aria-hidden="true">✥</span><span>DRAG TO FLY<br><small>Anywhere on the field</small></span></div>
         <button id="touchFire" class="touch-fire" type="button"><span>⌁</span> FIRE <small>AIR</small></button>
@@ -72,17 +72,18 @@
       <div class="progress-track"><i id="progressFill"></i></div>
       <ol id="sectorList" class="sector-list" aria-label="Campaign sectors"></ol>
       <div class="rule"></div>
-      <div class="controls-heading">PILOT CONTROLS <span>KEYBOARD</span></div>
+      <div class="controls-heading">PILOT CONTROLS <span>MOUSE + KEYS</span></div>
+      <div class="control-row"><span>Fly + fire</span><kbd>HOLD LEFT MOUSE</kbd></div>
       <div class="control-row"><span>Move</span><div><kbd>WASD</kbd><span class="or">/</span><kbd>↑←↓→</kbd></div></div>
       <div class="control-row"><span>Fire at aircraft</span><div><kbd>Z</kbd><span class="or">/</span><kbd>SPACE</kbd></div></div>
-      <div class="control-row"><span>Bomb ground</span><kbd>X</kbd></div>
+      <div class="control-row"><span>Bomb ground</span><div><kbd>RIGHT MOUSE</kbd><span class="or">/</span><kbd>X</kbd></div></div>
       <div class="control-row"><span>Pause</span><div><kbd>P</kbd><span class="or">/</span><kbd>ESC</kbd></div></div>
       <label class="autofire-control"><span><strong>AUTO FIRE</strong><small>Air weapon only</small></span><input id="autoFire" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
-      <p class="save-note"><span aria-hidden="true">◇</span> Progress saves on this device.</p>
+      <p class="save-note">Unlimited fire and bombs.<br><span aria-hidden="true">◇</span> Progress saves on this device.</p>
     </aside>
   </main>
   <footer class="page-footer"><span>ORIGINAL ART · ORIGINAL CAMPAIGN</span><span>BUILT FOR THE LOVE OF THE ARCADE <i>✳</i></span><a href="https://jasongroce.com/">JASONGROCE.COM ↗</a></footer>
   <noscript><p class="noscript">Enable JavaScript to play Skyward Vector.</p></noscript>
-  <script type="module" src="./ui.js"></script>
+  <script type="module" src="./ui.js?v=20261018-mouse"></script>
 </body>
 </html>

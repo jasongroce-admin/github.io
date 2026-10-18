@@ -5,6 +5,7 @@ An original six-sector vertical arcade shooter created for Jason Groce's GitHub 
 ## Play
 
 - Move with arrows / WASD. Hold **Z or Space** to fire at aircraft. Hold **X** to bomb ground structures.
+- Mouse: hold **left mouse** in the playfield to steer and fire at aircraft. **Right-click** drops a ground bomb; **hold right mouse** for repeated bombing, including while holding left to fly. Releasing left stops mouse steering/fire and never drops a bomb. Both weapons have unlimited ammunition.
 - The amber crosshair sits ahead of your ship. Align it over a turret or the glowing fortress reactor, then bomb. Air fire cannot damage ground targets; bombs cannot damage aircraft.
 - A bomb marks the ground when released and lands after a short fall; its landing marker follows the scrolling terrain.
 - On touchscreens, drag in the playfield to steer and hold the FIRE / BOMB buttons. Air autofire is optional.
@@ -21,6 +22,6 @@ Local preview from the repository root: `python -m http.server 4186 --bind 127.0
 
 Files: `index.html`, `style.css`, `ui.js`, `core.js`, `visuals.js`, `favicon.svg`, and `assets/cover.png`. The cover is generated illustration; the actual game graphics are drawn by the Canvas renderer.
 
-Designed and implemented October 18, 2026. Build 20261018-1.
+Designed and implemented October 18, 2026. Build 20261018-2 adds left-mouse flight/fire and right-mouse bombing.
 
 Development verification: from this folder, run `node --test tests/core.test.mjs` with a recent Node.js. The twelve deterministic tests include separate weapon layers, lives/retry/pause, bounded movement, a completion-score regression, and all six sectors finishing through actual bomb damage. The full-campaign fixture uses protection to isolate progression; damage and lives are tested separately.
