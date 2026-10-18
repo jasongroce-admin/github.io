@@ -1,4 +1,4 @@
-import { Game, LEVELS } from './core.js?v=20261018-art3';
+import { Game, LEVELS } from './core.js?v=20261018-mouse4';
 import { Renderer } from './visuals.js?v=20261018-art3';
 
 const $ = id => document.getElementById(id);
@@ -15,7 +15,8 @@ try { save = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catc
 let difficulty = ['relaxed', 'arcade', 'veteran'].includes(save.difficulty) ? save.difficulty : 'arcade';
 let unlocked = clamp(Number(save.unlocked) || 0, 0, LEVELS.length - 1);
 let bestScore = Math.max(0, Number(save.bestScore) || 0);
-let autoFire = typeof save.autoFire === 'boolean' ? save.autoFire : coarsePointer;
+// Desktop always starts with manual fire, including saves from older controls.
+let autoFire = coarsePointer ? (typeof save.autoFire === 'boolean' ? save.autoFire : true) : false;
 let soundOn = false;
 let audioContext;
 let selectedSector = 0;
@@ -27,7 +28,8 @@ let transitionDelay = 0;
 const keys = new Set();
 const touch = {fire: false, bomb: false};
 const mouse = {fire: false, bomb: false};
-let mouseSteering = false;
+let mouseMode = 'idle';
+let ignoreEscapeUntil = 0;
 let pointer = null;
 let pointerId = null;
 
@@ -85,7 +87,7 @@ game.bestScore = bestScore;
 game.unlocked = unlocked;
 const renderer = new Renderer(canvas);
 window.skyward = Object.freeze({game, renderer});
-$('inputHint').textContent = coarsePointer ? 'DRAG TO FLY · HOLD BOMB TO STRIKE' : 'HOLD LEFT: FLY + FIRE · RIGHT: BOMB';
+updateInputHint();
 
 $('autoFire').checked = autoFire;
 $('autoFire').addEventListener('change', event => {
@@ -116,9 +118,9 @@ function renderOverlay() {
   let markup = '';
   if (state === 'title') {
     const sectors = LEVELS.slice(0, unlocked + 1).map((level, index) => `<option value="${index}"${index === selectedSector ? ' selected' : ''}>${pad(index+1,2)} · ${escapeHtml(level.name)}</option>`).join('');
-    markup = `<div class="overlay-kicker">ORIGINAL ARCADE CAMPAIGN</div>${emblem}<h2 class="overlay-title" id="overlayTitle">CLEAR THE SKY.<span>STRIKE BELOW.</span></h2><p class="overlay-intro">An original Xevious-inspired flight through ${LEVELS.length} hostile sectors. Fire at aircraft. Bomb the ground. Defeat every fortress.</p><div class="start-settings"><label for="difficultySelect">FLIGHT DIFFICULTY<select id="difficultySelect"><option value="relaxed"${difficulty==='relaxed'?' selected':''}>Relaxed · 6 ships</option><option value="arcade"${difficulty==='arcade'?' selected':''}>Arcade · 4 ships</option><option value="veteran"${difficulty==='veteran'?' selected':''}>Veteran · 3 ships</option></select></label><label for="sectorSelect">STARTING SECTOR<select id="sectorSelect">${sectors}</select></label></div>${primary('BEGIN FLIGHT', 'start')}<p class="overlay-note">${coarsePointer ? 'Drag the field to move. Hold BOMB to strike below.<br>Air autofire is on. Toggle it from the pause menu.' : '<strong>HOLD LEFT MOUSE</strong> to fly + fire<br><strong>RIGHT-CLICK / HOLD RIGHT</strong> to bomb the gold reticle<br>Or WASD / arrows move · Z / Space fire · X bombs'}<br>Unlimited fire and bombs · Checkpoints after each sector</p>`;
+    markup = `<div class="overlay-kicker">ORIGINAL ARCADE CAMPAIGN</div>${emblem}<h2 class="overlay-title" id="overlayTitle">CLEAR THE SKY.<span>STRIKE BELOW.</span></h2><p class="overlay-intro">An original Xevious-inspired flight through ${LEVELS.length} hostile sectors. Fire at aircraft. Bomb the ground. Defeat every fortress.</p><div class="start-settings"><label for="difficultySelect">FLIGHT DIFFICULTY<select id="difficultySelect"><option value="relaxed"${difficulty==='relaxed'?' selected':''}>Relaxed · 6 ships</option><option value="arcade"${difficulty==='arcade'?' selected':''}>Arcade · 4 ships</option><option value="veteran"${difficulty==='veteran'?' selected':''}>Veteran · 3 ships</option></select></label><label for="sectorSelect">STARTING SECTOR<select id="sectorSelect">${sectors}</select></label></div>${primary('BEGIN FLIGHT', 'start')}<p class="overlay-note">${coarsePointer ? 'Drag the field to move. Hold BOMB to strike below.<br>Air autofire is on. Toggle it from the pause menu.' : '<strong>CLICK THE FIELD</strong> to capture the mouse<br>Move mouse to fly · <strong>LEFT</strong> fires · <strong>RIGHT</strong> bombs<br><strong>ESC</strong> releases · Or WASD / arrows, Z / Space, X'}<br>Unlimited fire and bombs · Checkpoints after each sector</p>`;
   } else if (state === 'paused') {
-    markup = `<div class="overlay-kicker">FLIGHT SUSPENDED</div>${emblem}<h2 class="overlay-title" id="overlayTitle">HOLDING<span>POSITION.</span></h2><p class="overlay-intro">Sector ${pad(game.levelIndex + 1,2)} · ${escapeHtml(game.level.name)}<br>Your fleet is waiting for you.</p>${primary('RESUME FLIGHT', 'resume')}${secondary('RETRY THIS SECTOR', 'retry')}<label class="pause-autofire"><input id="pauseAutoFire" type="checkbox"${autoFire ? ' checked' : ''}> Air weapon autofire</label>${document.fullscreenElement?'<button class="text-button" type="button" data-action="exitFullscreen">EXIT FULLSCREEN</button>':''}<button class="text-button" type="button" data-action="menu">RETURN TO FLIGHT MENU</button><p class="overlay-note">${coarsePointer ? 'Drag to fly · FIRE for aircraft · BOMB for ground targets.' : 'Hold LEFT mouse: fly + fire · RIGHT mouse: bombs<br>WASD / arrows move · Z / Space fire · X bombs<br>P / ESC resumes · Bombs are unlimited.'}</p>`;
+    markup = `<div class="overlay-kicker">FLIGHT SUSPENDED</div>${emblem}<h2 class="overlay-title" id="overlayTitle">HOLDING<span>POSITION.</span></h2><p class="overlay-intro">Sector ${pad(game.levelIndex + 1,2)} · ${escapeHtml(game.level.name)}<br>Your fleet is waiting for you.</p>${primary('RESUME FLIGHT', 'resume')}${secondary('RETRY THIS SECTOR', 'retry')}<label class="pause-autofire"><input id="pauseAutoFire" type="checkbox"${autoFire ? ' checked' : ''}> Air weapon autofire</label>${document.fullscreenElement?'<button class="text-button" type="button" data-action="exitFullscreen">EXIT FULLSCREEN</button>':''}<button class="text-button" type="button" data-action="menu">RETURN TO FLIGHT MENU</button><p class="overlay-note">${coarsePointer ? 'Drag to fly · FIRE for aircraft · BOMB for ground targets.' : 'Click field to capture · Move mouse to fly<br>LEFT fires · RIGHT bombs · ESC releases<br>Keyboard: WASD / arrows, Z / Space, X · P resumes'}</p>`;
   } else if (state === 'sectorClear') {
     const next = LEVELS[game.levelIndex + 1];
     markup = `<div class="overlay-kicker">FORTRESS DESTROYED</div><h2 class="overlay-title" id="overlayTitle">SECTOR<span>SECURED.</span></h2><p class="overlay-intro">${escapeHtml(game.level.name)} is clear.<br>Fleet bonus: <strong>+${game.lastBonus.toLocaleString()}</strong></p>${resultStats()}<div class="overlay-brief"><strong>UP NEXT · SECTOR ${pad(game.levelIndex+2,2)}</strong>${escapeHtml(next.name)}<br>${escapeHtml(next.tagline)}</div>${primary('NEXT SECTOR', 'next')}${secondary('RETURN TO FLIGHT MENU', 'menu')}<p class="overlay-note">Sector unlocked. Your progress has been saved.</p>`;
@@ -170,7 +172,10 @@ function clearInputs() {
   touch.bomb = false;
   mouse.fire = false;
   mouse.bomb = false;
-  mouseSteering = false;
+  mouseMode = 'idle';
+  canvas.style.cursor = '';
+  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  updateInputHint();
   $('touchFire').classList.remove('held');
   $('touchBomb').classList.remove('held');
 }
@@ -192,6 +197,7 @@ window.addEventListener('keydown', event => {
     return;
   }
   const key = event.key.toLowerCase();
+  if(key==='escape'&&performance.now()<ignoreEscapeUntil){event.preventDefault();return;}
   if (game.state === 'paused' && ['p','escape'].includes(key) && !event.target?.closest?.('select,input,textarea')) {
     event.preventDefault();if(!event.repeat) togglePause();return;
   }
@@ -233,14 +239,54 @@ canvas.addEventListener('pointercancel', endPointer);
 canvas.addEventListener('lostpointercapture', endPointer);
 canvas.addEventListener('contextmenu', event => event.preventDefault());
 
+function updateInputHint(){
+  $('inputHint').textContent = mouseMode==='locked'
+    ? 'MOUSE STEERS · LEFT FIRE · RIGHT BOMB · ESC RELEASE'
+    : mouseMode==='cursor'
+      ? 'MOUSE FOLLOWS · LEFT FIRE · RIGHT BOMB · ESC RELEASE'
+      : coarsePointer ? 'DRAG TO FLY · HOLD BOMB TO STRIKE' : 'CLICK FIELD TO CAPTURE MOUSE · ESC RELEASE';
+}
+function cursorFallback(){
+  if(game.state!=='playing'||mouseMode!=='requesting')return;
+  mouseMode='cursor';pointer={x:game.player.x,y:game.player.y};
+  canvas.style.cursor='crosshair';updateInputHint();
+}
+function captureMouse(){
+  autoFire=false;$('autoFire').checked=false;persist();
+  mouse.fire=false;mouse.bomb=false;
+  mouseMode='requesting';pointer={x:game.player.x,y:game.player.y};
+  if(!canvas.requestPointerLock){cursorFallback();return;}
+  try{
+    const request=canvas.requestPointerLock();
+    // Older browsers signal completion only with pointerlockchange/error.
+    if(request?.catch)request.catch(cursorFallback);
+  }catch{cursorFallback();}
+}
+document.addEventListener('pointerlockchange',()=>{
+  if(document.pointerLockElement===canvas){
+    if(game.state!=='playing'||mouseMode!=='requesting'){
+      document.exitPointerLock();return;
+    }
+    mouseMode='locked';mouse.fire=false;mouse.bomb=false;
+    pointer={x:game.player.x,y:game.player.y};updateInputHint();
+  }else if(mouseMode==='locked'){
+    // Escape can unlock before its keydown is delivered. Do not let that same
+    // key immediately resume the pause screen that lock loss just opened.
+    ignoreEscapeUntil=performance.now()+250;
+    clearInputs();if(game.state==='playing'){game.pause();synchronize();}
+  }
+});
+document.addEventListener('pointerlockerror',cursorFallback);
 canvas.addEventListener('mousedown', event => {
   if(game.state !== 'playing' || ![0,2].includes(event.button)) return;
   event.preventDefault();
   canvas.focus({preventScroll:true});
+  if(!['locked','cursor'].includes(mouseMode)){
+    if(event.button===0&&mouseMode!=='requesting')captureMouse();
+    return; // The capture click never fires or drops a bomb.
+  }
   if(event.button === 0){
     mouse.fire = true;
-    mouseSteering = true;
-    pointer = canvasPosition(event);
     game.fireAir();
   }else{
     mouse.bomb = true;
@@ -250,11 +296,17 @@ canvas.addEventListener('mousedown', event => {
 function releaseMouseButtons(event){
   mouse.fire = mouse.fire && !!(event.buttons & 1);
   mouse.bomb = mouse.bomb && !!(event.buttons & 2);
-  if(mouseSteering && !mouse.fire){mouseSteering=false;pointer=null;}
 }
 window.addEventListener('mousemove', event => {
   releaseMouseButtons(event);
-  if(game.state === 'playing' && mouseSteering) pointer = canvasPosition(event);
+  if(game.state!=='playing')return;
+  if(mouseMode==='locked'&&document.pointerLockElement===canvas){
+    const rect=canvas.getBoundingClientRect();
+    const target=pointer||game.player;
+    pointer={x:clamp(target.x+event.movementX*480/rect.width,22,458),y:clamp(target.y+event.movementY*720/rect.height,155,684)};
+  }else if(mouseMode==='cursor'&&event.target===canvas){
+    pointer=canvasPosition(event);
+  }
 });
 window.addEventListener('mouseup', releaseMouseButtons);
 

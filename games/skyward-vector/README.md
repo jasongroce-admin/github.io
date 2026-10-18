@@ -5,7 +5,7 @@ An original six-sector vertical arcade shooter created for Jason Groce's GitHub 
 ## Play
 
 - Move with arrows / WASD. Hold **Z or Space** to fire at aircraft. Hold **X** to bomb ground structures.
-- Mouse: hold **left mouse** in the playfield to steer and fire at aircraft. **Right-click** drops a ground bomb; **hold right mouse** for repeated bombing, including while holding left to fly. Releasing left stops mouse steering/fire and never drops a bomb. Both weapons have unlimited ammunition.
+- Mouse: **click once inside the playfield to capture the mouse**. That capture click does not fire. Move the mouse to steer without holding a button; **left-click or hold left** to fire at aircraft. **Right-click or hold right** bombs the gold reticle. Release left to stop firing while continuing to steer. **Escape** releases the mouse and pauses. Click the playfield again after resuming to recapture. If browser mouse capture is unavailable, the ship follows the visible cursor inside the field after the initial click. Desktop starts with autofire off, including older saves. Both weapons have unlimited ammunition.
 - The amber crosshair sits ahead of your ship. Align it over a turret or the glowing fortress reactor, then bomb. Air fire cannot damage ground targets; bombs cannot damage aircraft.
 - A bomb marks the ground when released and lands after a short fall; its landing marker follows the scrolling terrain.
 - On touchscreens, drag in the playfield to steer and hold the FIRE / BOMB buttons. Air autofire is optional.
@@ -24,6 +24,6 @@ Files: `index.html`, `style.css`, `ui.js`, `core.js`, `visuals.js`, `art.js`, `e
 
 The generated asset dimensions, exact prompts, and tool provenance are documented in [ARTWORK.md](ARTWORK.md).
 
-Designed and implemented October 18, 2026. Build 20261018-3 upgrades the gameplay art and explosions while retaining left-mouse flight/fire and right-mouse bombing. Bomb blast visuals span over twice their earlier radius, with large ground and aircraft explosions and a multi-stage fortress detonation. Visual effect sizes do not enlarge weapon damage areas.
+Designed and implemented October 18, 2026. Build 20261018-4 adds click-to-capture mouse steering with independent left-button fire and right-button bombing, retaining the upgraded artwork and explosions. Bomb blast visuals span over twice their earlier radius, with large ground and aircraft explosions and a multi-stage fortress detonation. Visual effect sizes do not enlarge weapon damage areas.
 
 Development verification: from this folder, run `node --test tests/*.test.mjs` with a recent Node.js. Seventeen deterministic tests cover combat, movement, sector completion, effect lifecycles, effect limits, precision damage, and pause. The full-campaign fixture uses protection to isolate progression; damage and lives are tested separately.
