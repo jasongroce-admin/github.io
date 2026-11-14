@@ -1,4 +1,4 @@
-import {getJSON,localEdition,validCoordinates} from './adapters.js?v=20261012-release';
+import {getJSON,localEdition,validCoordinates} from './adapters.js?v=20261114-nas-aircraft';
 import {loadWeather,loadEvents,loadDispatch} from './connections.js';
 const $=id=>document.getElementById(id);
 const C=window.Cesium;
@@ -46,7 +46,7 @@ const definitions=[
   {id:'dispatch',name:'Fire & EMS dispatch records',note:'Seattle only · recent public reports',color:'#eb7ead',refresh:300000},
   {id:'daynight',name:'Day & night',note:'Sunlight for the current time',color:'#ffdf84'}
 ];
-if(localEdition) definitions.unshift({id:'aircraft',name:'Aircraft near your view',note:'ADSB.lol · 100 nautical mile radius · local only',color:'#e4efee',refresh:60000});
+definitions.unshift({id:'aircraft',name:'Aircraft near your view',note:(localEdition?'ADSB.lol':'adsb.fi')+' · 100 nautical mile radius · refreshed on request',color:'#e4efee',refresh:120000});
 if(localEdition) definitions.push({id:'satelliteCatalog',name:'More satellites',note:'CelesTrak · up to 150 active objects · local only',color:'#e4b7f8',refresh:7200000});
 const groupFor=id=>CAMERA_LAYER_IDS.includes(id)?'Cameras':id==='aircraft'?'Aircraft':['satellites','satelliteCatalog'].includes(id)?'Space':['radar','clouds','daynight'].includes(id)?'Weather':['earthquakes','events'].includes(id)?'Natural events':'Public records';
 const groupOrder=['Cameras','Aircraft','Space','Weather','Natural events','Public records'];
@@ -66,13 +66,13 @@ function buildLayers(){
   for(const group of groupOrder){const section=document.createElement('details');section.className='layer-group';section.open=localEdition&&group==='Aircraft';section.id='group-'+group.toLowerCase().replaceAll(' ','-');const summary=text('summary',group),count=text('span','0 on','group-count');count.dataset.group=group;summary.append(count);section.append(summary);const body=text('div','','group-body');section.append(body);$('layer-list').append(section);
     for(const d of definitions.filter(d=>groupFor(d.id)===group)){const row=text('div','','layer'),label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.id='toggle-'+d.id;input.setAttribute('aria-describedby','note-'+d.id+' state-'+d.id);input.addEventListener('change',()=>enable(d.id,input.checked));label.append(input,text('span',d.name));const note=text('small',d.note);note.id='note-'+d.id;const status=text('small','Off','state');status.id='state-'+d.id;row.append(label,note,status);if(CAMERA_LAYER_IDS.includes(d.id))row.hidden=true;body.append(row);if(d.id==='dispatch'){const b=text('button','Browse Seattle dispatch reports');b.addEventListener('click',()=>browseDispatch(0));body.append(b);}}
     if(group==='Cameras'){body.append(text('p','Choose individual US states in Cameras. Only checked states place camera pins on the globe.','hint'));const b=text('button','Choose camera states');b.addEventListener('click',()=>selectTab('cameras'));body.append(b);}
-    if(group==='Aircraft'){if(!localEdition)body.append(text('p','Open Planes to view live aircraft on the ADSB.lol site. The optional Windows connection adds aircraft pins here.','hint'));else{const roster=text('div','','aircraft-roster');roster.id='aircraft-results';body.append(roster);}}
+    if(group==='Aircraft'){const roster=text('div','','aircraft-roster');roster.id='aircraft-results';body.append(roster);if(!localEdition){const credit=sourceLink('Aircraft data: adsb.fi ↗','https://adsb.fi/');body.append(credit);}}
     if(group==='Weather'){const b=text('button','Check US weather here');b.addEventListener('click',()=>$('weather-here').click());body.append(b);}
   }
 }
 function updateGroupCounts(){for(const badge of document.querySelectorAll('[data-group]'))badge.textContent=(badge.dataset.group==='Cameras'?activeUSStates.size+(britishColumbiaEnabled?1:0)+(layers.get('cameras').enabled?1:0):definitions.filter(d=>groupFor(d.id)===badge.dataset.group&&layers.get(d.id).enabled).length)+' on';}
 function renderAircraftList(){if(!$('aircraft-results'))return;const layer=layers.get('aircraft'),items=layer.enabled?(layer.source?.entities.values||[]):[];const list=items.slice(0,6).map(e=>{const m=e.groceMarker,b=text('button',m.title+' · '+(typeof m.alt==='number'?Math.round(m.alt).toLocaleString()+' ft':'altitude unknown'),'camera-row');b.addEventListener('click',()=>{openMarker(m);fly(m.lon,m.lat,80000);});return b;});$('aircraft-results').replaceChildren(...(list.length?[text('p','Select an aircraft observation','hint'),...list]:[]));}
-async function showPlanes(){if(!localEdition){selectTab('local');$('local-plane-link')?.focus();return;}selectTab('layers');if(!viewer){notice('The globe is still opening. Try Planes again in a moment.');return;}viewer.camera.cancelFlight();viewer.trackedEntity=undefined;$('group-aircraft').open=true;const layer=layers.get('aircraft');enable('aircraft',true);$('planes-here').disabled=true;try{if(layer.pending)await layer.pending;await load(layer,true);}finally{$('planes-here').disabled=false;}}
+async function showPlanes(){selectTab('layers');if(!viewer){notice('The globe is still opening. Try Planes again in a moment.');return;}viewer.camera.cancelFlight();viewer.trackedEntity=undefined;$('group-aircraft').open=true;const layer=layers.get('aircraft');$('planes-here').disabled=true;try{if(!layer.enabled)enable('aircraft',true);if(layer.pending)await layer.pending;else await load(layer,true);}finally{$('planes-here').disabled=false;}}
 function entity(layer,marker,appearance={}){
   if(!validCoordinates(marker.lon,marker.lat))return;
   const e=layer.source.entities.add({id:layer.id+':'+marker.id,position:position(marker.lon,marker.lat,marker.height??(['camera','cameraLink'].includes(marker.kind)?20:1000)),point:{pixelSize:layer.id==='cameras'?9:7,color:C.Color.fromCssColorString(layer.color),outlineColor:C.Color.fromCssColorString('#15222d'),outlineWidth:2,disableDepthTestDistance:0},...appearance});e.groceMarker=marker;marker.entity=e;return e;
@@ -119,7 +119,7 @@ async function performLoad(layer,force=false){
     let result;
     if(layer.id==='aircraft'){
       const center=globeCenter(); const lat=Math.max(-89,Math.min(89,C.Math.toDegrees(center.latitude))),lon=C.Math.toDegrees(center.longitude);
-      result=await getJSON('aircraft',{ttl:60000,params:{lat:lat.toFixed(2),lon:lon.toFixed(2),r:'100'},force});
+      result=await getJSON('aircraft',{ttl:localEdition?60000:120000,params:{lat:lat.toFixed(2),lon:lon.toFixed(2),r:'100'},force});
     }else result=await getJSON(layer.id,{ttl:layer.refresh,force});
     if(!layer.enabled)return;
     // Swap only after the request succeeds. Hide stale moving entities on failure.
@@ -142,7 +142,8 @@ async function performLoad(layer,force=false){
     }
     if(layer.id==='aircraft'){
       const list=Array.isArray(result.data.ac)?result.data.ac:[];
-      const observedAt=Number.isFinite(result.data.now)?result.data.now:result.time;
+      const reported=Number.isFinite(result.data.now)?result.data.now:result.time;
+      const observedAt=reported<1e12?reported*1000:reported;
       list.filter(a=>validCoordinates(a.lon,a.lat)&&(a.seen_pos??999)<120).slice(0,250).forEach(a=>entity(layer,{id:a.hex,kind:'aircraft',title:(a.flight||a.r||a.hex).trim(),lon:a.lon,lat:a.lat,height:(typeof a.alt_baro==='number'?a.alt_baro:0)*.3048,alt:a.alt_baro,speed:a.gs,track:a.track,time:observedAt-(a.seen_pos||0)*1000},{billboard:{image:'../assets/plane.svg',width:24,height:24,rotation:-C.Math.toRadians(a.track||0),color:C.Color.WHITE},point:undefined}));state(layer,layer.source.entities.values.length+' aircraft · updated '+timestamp(result.time));
     }
     if(trackedId?.startsWith(layer.id+':'))viewer.trackedEntity=layer.source.entities.getById(trackedId);
@@ -196,7 +197,7 @@ function openMarker(m){
   }else if(m.kind==='satellite'){
     content.append(text('p','Calculated orbit · NORAD '+m.id),text('p','Orbital elements dated '+timestamp(m.record.EPOCH+'Z')),text('p','Position is calculated with SGP4 from public orbital elements. It is an estimate, not a live sensor observation.','source'),sourceLink('CelesTrak orbital data','https://celestrak.org/'),actions(m));
   }else if(m.kind==='aircraft'){
-    content.append(text('p','Reported '+timestamp(m.time)),text('p','Altitude: '+(m.alt??'unknown')+' ft · Speed: '+(m.speed??'unknown')+' knots'),sourceLink('ADSB.lol · ODbL data','https://www.adsb.lol/docs/open-data/api/'),actions(m));
+    content.append(text('p','Reported '+timestamp(m.time)),text('p','Altitude: '+(m.alt??'unknown')+' ft · Speed: '+(m.speed??'unknown')+' knots'),localEdition?sourceLink('ADSB.lol · ODbL data','https://www.adsb.lol/docs/open-data/api/'):sourceLink('Aircraft data: adsb.fi','https://adsb.fi/'),actions(m));
   }
 }
 const PLACES=[['Indianapolis, Indiana',-86.158,39.768],['Kennard, Indiana',-85.518,39.904],['Helsinki, Finland',24.938,60.17],['Tampere, Finland',23.76,61.498],['London, United Kingdom',-.1276,51.5072],['Tokyo, Japan',139.69,35.68],['New York, United States',-74.006,40.7128],['Austin, Texas',-97.743,30.267],['Richfield, Utah',-112.085,38.765],['Sydney, Australia',151.209,-33.869],['Paris, France',2.352,48.857]];
@@ -217,14 +218,14 @@ async function start(){
     viewer.scene.globe.baseColor=C.Color.fromCssColorString('#183746');viewer.scene.backgroundColor=C.Color.fromCssColorString('#09131e');viewer.targetFrameRate=60;viewer.resolutionScale=Math.min(1,1.5/(window.devicePixelRatio||1));
     const imagery=new C.UrlTemplateImageryProvider({url:'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',maximumLevel:18,credit:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'});
     const satLayer=viewer.imageryLayers.addImageryProvider(imagery);imagery.errorEvent.addEventListener(()=>{satLayer.show=false;notice('Satellite imagery unavailable. Showing the bundled world map.');});
-    buildLayers();$('loading').hidden=true;$('edition').textContent=localEdition?'Windows connected':'Browser edition';$('settings-edition').textContent=localEdition?'Your Windows connection is running. Aircraft and the larger satellite catalog are available. Internet required; no keys or accounts.':'Browser edition. Cameras, weather and space stations are available. The Local tab opens aircraft on ADSB.lol without a download.';$('aircraft-connection').textContent=localEdition?'Windows connected · keyless aircraft observations within 100 nautical miles of this view.':'Use Planes or Local to open a live aircraft map in your browser.';$('planes-here').hidden=!localEdition;$('aircraft-download').hidden=localEdition;
+    buildLayers();$('loading').hidden=true;$('edition').textContent=localEdition?'Windows connected':'Browser edition';$('settings-edition').textContent=localEdition?'Your Windows connection is running. Aircraft and the larger satellite catalog are available. Internet required; no keys or accounts.':'Browser edition. Public aircraft observations, cameras, weather and space stations are available without a download.';$('aircraft-connection').textContent=localEdition?'Windows connected · keyless aircraft observations within 100 nautical miles of this view.':'Select Planes to place public aircraft observations near this view. Data: adsb.fi.';$('planes-here').hidden=false;$('aircraft-download').hidden=true;
     if(localEdition)$('desktop-link').hidden=true;
     const params=new URLSearchParams(location.search),lon=Number(params.get('lon')),lat=Number(params.get('lat')),height=Number(params.get('height'));
     if(params.has('lon')&&validCoordinates(lon,lat)&&height>=1000&&height<=50000000)fly(lon,lat,height);else if(localEdition)fly(-86.16,39.77,550000);else preset('world');
     const requested=params.has('layers')?params.get('layers').split(','):['earthquakes',...(localEdition?['aircraft']:[])];requested.filter(id=>layers.has(id)&&(!CAMERA_LAYER_IDS.includes(id)||id==='cameras')).forEach(id=>enable(id,true));$('finland-cameras').checked=layers.get('cameras').enabled;buildHomeStates();await initializeCameraStates(params);
     if(mobile())showLayers(false);
     const handler=new C.ScreenSpaceEventHandler(viewer.canvas);handler.setInputAction(e=>{const pick=viewer.scene.pick(e.position);if(pick?.id?.groceMarker)openMarker(pick.id.groceMarker);else if(Array.isArray(pick?.id)){const points=pick.id.map(e=>e.position?.getValue(viewer.clock.currentTime)).filter(Boolean);if(points.length){const sphere=C.BoundingSphere.fromPoints(points),center=C.Cartographic.fromCartesian(sphere.center);fly(C.Math.toDegrees(center.longitude),C.Math.toDegrees(center.latitude),Math.max(30000,sphere.radius*4));}}},C.ScreenSpaceEventType.LEFT_CLICK);
-    viewer.camera.moveEnd.addEventListener(()=>{for(const id of ['roadCameras','indianaCameras','nevadaCameras','usCameras']){const layer=layers.get(id);if(layer.enabled&&layer.loaded&&!layer.busy)rebuildCameraLayer(layer);}if(!$('pane-cameras').hidden&&cameraPool().length)renderCameraList();renderLocal();clearTimeout(aircraftMoveTimer);if(layers.get('aircraft')?.enabled)aircraftMoveTimer=setTimeout(()=>{const l=layers.get('aircraft');if(l.enabled)load(l);},1000);});
+    viewer.camera.moveEnd.addEventListener(()=>{for(const id of ['roadCameras','indianaCameras','nevadaCameras','usCameras']){const layer=layers.get(id);if(layer.enabled&&layer.loaded&&!layer.busy)rebuildCameraLayer(layer);}if(!$('pane-cameras').hidden&&cameraPool().length)renderCameraList();renderLocal();clearTimeout(aircraftMoveTimer);if(localEdition&&layers.get('aircraft')?.enabled)aircraftMoveTimer=setTimeout(()=>{const l=layers.get('aircraft');if(l.enabled)load(l);},1000);});
     satellitesTimer=setInterval(updateSatellites,3000);
     loadCoverage();
     document.addEventListener('visibilitychange',()=>{viewer.clock.shouldAnimate=!document.hidden;if(!document.hidden){for(const l of layers.values())if(l.enabled)load(l);}});

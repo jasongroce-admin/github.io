@@ -1,0 +1,16 @@
+services:
+  aircraft-api:
+    build: .
+    container_name: groce-eye-aircraft-api
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "127.0.0.1:8788:8788"
+    environment:
+      PORT: "8788"
+      HOST: "0.0.0.0"
+    mem_limit: 128m

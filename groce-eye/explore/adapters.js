@@ -11,6 +11,7 @@ async function detectLocalEdition() {
 // Recognize the running desktop server after any local navigation, even when
 // a welcome-page link or bookmark does not include the optional local flag.
 export const localEdition = await detectLocalEdition();
+export const browserAircraftURL = 'https://diskstation.tail091ed0.ts.net/v1/aircraft';
 export const URLs = {
   cameras: 'https://tie.digitraffic.fi/api/weathercam/v1/stations',
   earthquakes: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',
@@ -27,6 +28,7 @@ export async function getJSON(source, {ttl=0, params={}, force=false}={}) {
   if(localEdition && ['cameras','satellites','satelliteCatalog','aircraft','aircraftGlobal'].includes(source)) {
     url='/api/proxy?'+new URLSearchParams({source,...params});
   }
+  if(source==='aircraft' && !localEdition) url=browserAircraftURL+'?'+new URLSearchParams(params);
   if(!url) throw new Error('This connection is available in the local desktop edition.');
   const result=await fetch(url,{signal:AbortSignal.timeout(20000),credentials:'omit'});
   if(!result.ok) throw new Error('Source returned '+result.status+'. Try again later.');
