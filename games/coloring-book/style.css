@@ -2,3 +2,16 @@
 .workspace>*{min-width:0}.palette-panel{min-width:0}.canvas-wrap{display:block}.canvas{margin:auto}.zoom-controls{display:flex;gap:5px}.zoom-controls button{border:1px solid #dedbd1;background:#fffdf8;border-radius:6px;width:34px;height:34px;font-size:20px;line-height:1}.canvas-top .progress{min-width:20px}
 
 .lines-off .region{stroke:none}.small-label{font-size:11px}.line-toggle{display:flex;align-items:center;gap:9px;padding:14px 0;font-size:14px;font-weight:bold;cursor:pointer}.line-toggle input{width:20px;height:20px;accent-color:#8baf92}.finished-actions{border-top:1px solid #e5e0d6;margin-top:18px;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.finished-actions p{grid-column:1/-1;font-size:10px;letter-spacing:.14em;font-weight:bold;color:#a35b4d}.finished-actions button{background:#292a25;color:white;border:0;border-radius:8px;padding:13px 8px;font-weight:bold}.finished-actions button:first-of-type{grid-column:1/-1}#print-area{display:none}@media print{body>*:not(#print-area){display:none!important}#print-area{display:block!important;width:100%;height:auto}#print-area svg{display:block;width:95%;max-height:95vh;margin:auto} @page{margin:1cm}}
+
+/* Give the studio room to grow on tablets and larger screens. */
+body.studio-active main{max-width:none;padding:0 clamp(10px,2vw,30px)}
+body.studio-active header{max-width:none;padding:0 clamp(10px,2vw,30px)}
+body.studio-active .workspace{grid-template-columns:minmax(0,1fr) clamp(220px,22vw,300px);gap:clamp(10px,1.5vw,24px)}
+body.studio-active .studio-head{padding:16px 0}
+body.studio-active .canvas-column{padding:clamp(10px,1.5vw,22px)}
+body.studio-active .canvas{max-width:none}
+@media(max-width:800px){body.studio-active .workspace{grid-template-columns:minmax(0,1fr)}body.studio-active .canvas-wrap{margin-top:10px}body.studio-active .palette-panel{position:sticky;bottom:0;z-index:3;box-shadow:0 -8px 22px #292a2512}body.studio-active footer{display:none}}
+
+.detail-label{font-size:7px;paint-order:stroke;stroke:#fffdf8;stroke-width:1.4px;stroke-linejoin:round}
+
+.canvas svg{overflow:visible}
