@@ -6,15 +6,18 @@
       "code": "AL",
       "name": "Alabama",
       "country": "US",
-      "status": "unknown",
-      "label": "Official source available; embedding eligibility unverified",
+      "status": "community-linked",
+      "label": "Community catalog; official map link",
       "sourceUrl": "https://algotraffic.com/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "integratedCount": 584,
+      "notes": "Community-collected location snapshot from OpenTrafficCamMap; not independently verified for each camera. Marker opens the official state map, where the camera must be located manually. Availability and positions may have changed.",
       "state": "AL",
       "url": "https://algotraffic.com/",
-      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage."
+      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "evidenceUrls": [
+        "https://github.com/AidanWelch/OpenTrafficCamMap"
+      ]
     },
     {
       "code": "AK",
@@ -86,15 +89,18 @@
       "code": "CO",
       "name": "Colorado",
       "country": "US",
-      "status": "unknown",
-      "label": "Official source available; embedding eligibility unverified",
+      "status": "community-linked",
+      "label": "Community catalog; official map link",
       "sourceUrl": "https://www.cotrip.org/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "integratedCount": 669,
+      "notes": "Community-collected location snapshot from OpenTrafficCamMap; not independently verified for each camera. Marker opens the official state map, where the camera must be located manually. Availability and positions may have changed.",
       "state": "CO",
       "url": "https://www.cotrip.org/",
-      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage."
+      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "evidenceUrls": [
+        "https://github.com/AidanWelch/OpenTrafficCamMap"
+      ]
     },
     {
       "code": "CT",
@@ -114,15 +120,18 @@
       "code": "DE",
       "name": "Delaware",
       "country": "US",
-      "status": "unknown",
-      "label": "Official source available; embedding eligibility unverified",
+      "status": "community-linked",
+      "label": "Community catalog; official map link",
       "sourceUrl": "https://deldot.gov/map/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "integratedCount": 295,
+      "notes": "Community-collected location snapshot from OpenTrafficCamMap; not independently verified for each camera. Marker opens the official state map, where the camera must be located manually. Availability and positions may have changed.",
       "state": "DE",
       "url": "https://deldot.gov/map/",
-      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage."
+      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "evidenceUrls": [
+        "https://github.com/AidanWelch/OpenTrafficCamMap"
+      ]
     },
     {
       "code": "FL",
@@ -164,15 +173,19 @@
       "code": "HI",
       "name": "Hawaii",
       "country": "US",
-      "status": "unknown",
-      "label": "Official source available; embedding eligibility unverified",
+      "status": "official-linked",
+      "label": "Sampled camera locations and official site links",
       "sourceUrl": "https://www.goakamai.org/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "integratedCount": 106,
+      "notes": "FAA aviation weather camera sample; links open the FAA individual camera view. These are weather cameras, not necessarily traffic cameras.",
       "state": "HI",
       "url": "https://www.goakamai.org/",
-      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage."
+      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "evidenceUrls": [
+        "https://github.com/bzsasson/traffic-camera-sources",
+        "https://weathercams.faa.gov/"
+      ]
     },
     {
       "code": "ID",
@@ -233,16 +246,15 @@
       "code": "IA",
       "name": "Iowa",
       "country": "US",
-      "status": "legal-uncertain",
-      "label": "No-credential GIS camera data exists; image reuse scope needs clarification",
+      "status": "official-linked",
+      "label": "Sampled camera locations and official site links",
       "sourceUrl": "https://511ia.org/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "Iowa DOT expressly supplies no-credential camera GIS feeds and encourages integrators. Current terms dedicate GIS data to CC0 but separately restrict copying/republication of website Content including camera imagery. Camera metadata licensing alone was not treated as a grant to embed all referenced image pixels.",
+      "integratedCount": 200,
+      "notes": "Iowa DOT camera sample; links open the official map near the camera, not a verified individual view.",
       "evidenceUrls": [
-        "https://iowadot.gov/travel-tools/iowa-511/511-data-feeds",
-        "https://iowadot.gov/news/2026-05-28/media-advisory-iowa-dot-updates-traffic-camera-video-system-data-feed-usersdevelopers",
-        "https://iowadot.gov/policies-statements/terms-use"
+        "https://github.com/bzsasson/traffic-camera-sources",
+        "https://511ia.org/"
       ],
       "state": "IA",
       "url": "https://511ia.org/",
@@ -266,15 +278,18 @@
       "code": "KY",
       "name": "Kentucky",
       "country": "US",
-      "status": "unknown",
-      "label": "Official source available; embedding eligibility unverified",
+      "status": "community-linked",
+      "label": "Community catalog; official map link",
       "sourceUrl": "https://goky.ky.gov/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "integratedCount": 222,
+      "notes": "Community-collected location snapshot from OpenTrafficCamMap; not independently verified for each camera. Marker opens the official state map, where the camera must be located manually. Availability and positions may have changed.",
       "state": "KY",
       "url": "https://goky.ky.gov/",
-      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage."
+      "note": "No no-key camera catalog plus explicit image reuse grant was verified for this state in this release. This does not mean the state has no cameras. Use the official destination to check current coverage.",
+      "evidenceUrls": [
+        "https://github.com/AidanWelch/OpenTrafficCamMap"
+      ]
     },
     {
       "code": "LA",
@@ -311,17 +326,17 @@
       "code": "MD",
       "name": "Maryland",
       "country": "US",
-      "status": "legal-uncertain",
-      "label": "Public data feeds exist; camera image reuse grant unconfirmed",
-      "sourceUrl": "https://chart.maryland.gov/",
+      "status": "official-linked",
+      "label": "Official locations and individual CHART camera links",
+      "sourceUrl": "https://chart.maryland.gov/TrafficCameras/GetTrafficCameras",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "CHART publishes JSON/XML traffic/weather feeds; spatial REST feed details require contacting the operator. The existence of general public traffic data feeds was not treated as a grant to embed all live camera pixels.",
+      "integratedCount": 451,
+      "notes": "Maryland iMAP CHART public location snapshot; markers open the official CHART camera viewer. Availability varies.",
       "evidenceUrls": [
-        "https://chart.maryland.gov/DataFeeds/GetDataFeeds"
+        "https://mdgeodata.md.gov/imap/rest/services/Transportation/MD_TrafficCameras/MapServer/0"
       ],
       "state": "MD",
-      "url": "https://chart.maryland.gov/",
+      "url": "https://chart.maryland.gov/TrafficCameras/GetTrafficCameras",
       "note": "CHART publishes JSON/XML traffic/weather feeds; spatial REST feed details require contacting the operator. The existence of general public traffic data feeds was not treated as a grant to embed all live camera pixels."
     },
     {
@@ -539,14 +554,14 @@
       "code": "OH",
       "name": "Ohio",
       "country": "US",
-      "status": "key-required",
-      "label": "Documented camera API requires an account or access key",
+      "status": "community-linked",
+      "label": "Community catalog; official map link",
       "sourceUrl": "https://www.ohgo.com/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "The documented statewide developer feed requires an access credential. It is excluded from this no-key catalog. This finding does not prove that every alternative public feed requires a key.",
+      "integratedCount": 1091,
+      "notes": "Community-collected location snapshot from OpenTrafficCamMap; not independently verified for each camera. Marker opens the official state map, where the camera must be located manually. Availability and positions may have changed.",
       "evidenceUrls": [
-        "https://publicapi.ohgo.com/docs/registration"
+        "https://github.com/AidanWelch/OpenTrafficCamMap"
       ],
       "state": "OH",
       "url": "https://www.ohgo.com/",
@@ -570,14 +585,15 @@
       "code": "OR",
       "name": "Oregon",
       "country": "US",
-      "status": "account-required",
-      "label": "Documented TripCheck API requires sign-up",
+      "status": "official-linked",
+      "label": "Camera locations; official map link",
       "sourceUrl": "https://www.tripcheck.com/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "Official camera inventory API documentation directs developers to sign up at ODOT's Data API portal. No alternate no-account catalog with a reuse grant was verified.",
+      "integratedCount": 1173,
+      "notes": "Oregon TripCheck location snapshot via God’s Eye View. Markers open the official TripCheck map; find the named camera there. Includes partner-operated cameras.",
       "evidenceUrls": [
-        "https://www.tripcheck.com/Pages/API"
+        "https://tripcheck.com/",
+        "https://github.com/bilawalsidhu/gods-eye-view/blob/main/DATA_SOURCES.md"
       ],
       "state": "OR",
       "url": "https://www.tripcheck.com/",
@@ -724,14 +740,15 @@
       "code": "WA",
       "name": "Washington",
       "country": "US",
-      "status": "key-required",
-      "label": "Documented camera API requires an account or access key",
+      "status": "official-linked",
+      "label": "Official camera locations and per-camera viewer links",
       "sourceUrl": "https://wsdot.com/Travel/Real-time/Map/",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
-      "integratedCount": 0,
-      "notes": "The documented statewide developer feed requires an access credential. It is excluded from this no-key catalog. This finding does not prove that every alternative public feed requires a key.",
+      "integratedCount": 1708,
+      "notes": "WSDOT public Travel Center catalog snapshot. Markers open the official WSDOT camera page; no camera images are stored or embedded.",
       "evidenceUrls": [
-        "https://wsdot.wa.gov/traffic/api/HighwayCameras/HighwayCamerasREST.svc/Help"
+        "https://data.wsdot.wa.gov/travelcenter/Cameras.json",
+        "https://wsdot.com/travel/real-time/cameras/"
       ],
       "state": "WA",
       "url": "https://wsdot.com/Travel/Real-time/Map/",
@@ -795,7 +812,7 @@
         "https://github.com/bcgov/drivebc-webcam-api",
         "https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc"
       ],
-      "attribution": "Contains information licensed under the Open Government Licence \u2013 British Columbia.",
+      "attribution": "Contains information licensed under the Open Government Licence – British Columbia.",
       "notes": "Only official HTTPS images with authoritative coordinates, publisher-visible/on status, no third-party credit, and no stale flag are included. Excluded records are not claims that a camera cannot be viewed elsewhere."
     }
   ],
