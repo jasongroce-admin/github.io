@@ -230,7 +230,7 @@
       "sourceUrl": "https://511in.org/list/cameras",
       "directorySourceUrl": "https://highways.dot.gov/traffic-info",
       "integratedCount": 748,
-      "notes": "749 public entries were retrieved from the same anonymous metadata query used by TrafficWise. 748 authoritative points are mapped and linked to their official per-camera player. One official point falls outside Indiana and is withheld without guessing a correction. Video is not embedded or rehosted. The separate XML developer feed requires credentials; ordinary viewing and this factual location catalog do not.",
+      "notes": "748 official locations acquired October 11, 2026. On November 15, 743 media views were matched to the current official list by view ID and title; 5 unmatched entries open the official search list. Availability can change.",
       "evidenceUrls": [
         "https://pws.trafficwise.org/",
         "https://pws.trafficwise.org/json/",
