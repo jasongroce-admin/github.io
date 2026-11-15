@@ -29,5 +29,7 @@ body.studio-active .canvas{max-width:none}
 
 /* Selected spaces stay outlined even if the finished-picture lines are hidden. */
 .selected-outlines{pointer-events:none}.selected-outlines>*{fill:none;stroke:#87372b;stroke-width:2.5px;vector-effect:non-scaling-stroke;stroke-linejoin:round}
-.region.match{fill:#e1d6b7}.region.hinted{fill:#f8d77a}
+.region.match{fill:#e8e5d8}.region.hinted{fill:#f8d77a}
 .swatch{position:relative}.swatch.done{opacity:.62}.swatch.done::after{content:none}.swatch-count{position:absolute;right:-5px;bottom:-5px;min-width:21px;height:21px;padding:0 4px;display:grid;place-items:center;border:2px solid #fffdf8;border-radius:20px;background:#37362f;color:#fff;font:700 10px/1 Arial,sans-serif;box-shadow:0 1px 3px #0003}.swatch.done .swatch-count{background:#426b4c;opacity:1;font-size:12px}.palette-key{font-size:12px;color:#716f66;margin:-10px 0 8px}.palette-panel>p.palette-key{display:block}@media(max-width:800px){.palette{padding:6px 8px 9px}.palette-key{margin:5px 0;font-size:11px}}
+
+.palette-options{display:flex;flex-wrap:wrap;column-gap:18px}.palette-options .line-toggle{padding:10px 0;min-height:44px}@media(max-width:500px){.palette-options{column-gap:14px}.palette-options .line-toggle{font-size:12px;gap:6px}}
