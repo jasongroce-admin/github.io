@@ -24,3 +24,5 @@ body.studio-active .canvas{max-width:none}
 .canvas svg{touch-action:pan-x pan-y}
 .zoom-controls{align-items:center}.zoom-controls button{width:44px;height:44px;flex:none}.zoom-controls #zoom-fit{width:42px;font-size:12px;font-weight:700}.zoom-controls span{font-size:11px;color:#716f66;min-width:32px;text-align:center}
 @media(max-width:500px){.canvas-top{flex-wrap:wrap}.canvas-top .progress{flex:1 1 45%}.canvas-top .zoom-controls{order:3}.canvas-top .hint{order:4;margin-left:auto}.canvas-help{font-size:12px}}
+
+#place-link{display:inline-block;color:#8c5a4c;font-size:12px;margin-top:4px}
