@@ -33,3 +33,23 @@ body.studio-active .canvas{max-width:none}
 .swatch{position:relative}.swatch.done{opacity:.62}.swatch.done::after{content:none}.swatch-count{position:absolute;right:-5px;bottom:-5px;min-width:21px;height:21px;padding:0 4px;display:grid;place-items:center;border:2px solid #fffdf8;border-radius:20px;background:#37362f;color:#fff;font:700 10px/1 Arial,sans-serif;box-shadow:0 1px 3px #0003}.swatch.done .swatch-count{background:#426b4c;opacity:1;font-size:12px}.palette-key{font-size:12px;color:#716f66;margin:-10px 0 8px}.palette-panel>p.palette-key{display:block}@media(max-width:800px){.palette{padding:6px 8px 9px}.palette-key{margin:5px 0;font-size:11px}}
 
 .palette-options{display:flex;flex-wrap:wrap;column-gap:18px}.palette-options .line-toggle{padding:10px 0;min-height:44px}@media(max-width:500px){.palette-options{column-gap:14px}.palette-options .line-toggle{font-size:12px;gap:6px}}
+
+.worksheet-action{text-align:center;margin:14px 0 2px}.worksheet-action button{background:#f4ead0;border:1px solid #dccda8;border-radius:9px;padding:12px 16px;min-height:44px;color:#3c382e;font-size:13px;font-weight:700}#print-sheet{display:none}
+@media print{
+ body.print-worksheet>*:not(#print-sheet){display:none!important}
+ body.print-worksheet #print-sheet{display:block!important;box-sizing:border-box;width:100%;max-width:180mm;margin:0 auto;color:#171717;font-family:Arial,sans-serif;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #print-sheet .worksheet-heading{display:block;height:auto;max-width:none;margin:0 0 3mm;padding:0;border:0}
+ #print-sheet .worksheet-heading h1{font:bold 15pt/1.1 Arial,sans-serif;margin:0 0 1.5mm}
+ #print-sheet .worksheet-heading p{font:9pt/1.2 Arial,sans-serif;margin:0}
+ #print-sheet .worksheet-art{width:min(175mm,60vh,100%);margin:0 auto 2.5mm;line-height:0}
+ #print-sheet .worksheet-art svg{display:block;width:100%;height:auto;overflow:visible}
+ #print-sheet .worksheet-number{font:700 12px Arial,sans-serif;text-anchor:middle;dominant-baseline:central;fill:#222;stroke:#fff;stroke-width:1.4px;paint-order:stroke;pointer-events:none}
+ #print-sheet .worksheet-number.detail{font-size:6.7px;stroke-width:.8px}
+ #print-sheet h2{font:bold 10pt Arial,sans-serif;margin:0 0 2mm}
+ #print-sheet .worksheet-colors{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1mm 2mm}
+ #print-sheet .worksheet-color{display:flex;align-items:center;gap:1.5mm;min-width:0;height:8mm;font:7.5pt Arial,sans-serif;white-space:nowrap}
+ #print-sheet .worksheet-color svg{display:block;flex:none;width:6mm;height:6mm}
+ #print-sheet .worksheet-footer{font:7pt Arial,sans-serif;margin:2mm 0 0;color:#555}
+}
+
+@media(max-width:800px){.worksheet-action{margin:5px 0}.worksheet-action button{width:100%}}
