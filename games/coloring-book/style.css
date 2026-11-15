@@ -15,3 +15,12 @@ body.studio-active .canvas{max-width:none}
 .detail-label{font-size:7px;paint-order:stroke;stroke:#fffdf8;stroke-width:1.4px;stroke-linejoin:round}
 
 .canvas svg{overflow:visible}
+
+.level-row{display:flex;align-items:center;gap:18px;padding-bottom:8px}.level-row>span{font-size:10px;font-weight:800;letter-spacing:.15em;color:#a35b4d}.levels{display:flex;gap:8px;overflow:auto}.levels button{white-space:nowrap;border:1px solid #d6d2c8;border-radius:100px;background:transparent;padding:9px 15px;color:#56564d}.levels button.active{background:#e8d4c9;border-color:#e8d4c9;color:#442f27}.surprise-note{font-size:13px;color:#716f66;margin:8px 0 22px}#empty{padding:35px;color:#716f66}@media(max-width:500px){.level-row{align-items:flex-start;flex-direction:column;gap:8px}.levels{max-width:100%}.surprise-note{margin-bottom:18px}}
+
+.thumb img{height:100%;max-width:100%;object-fit:contain}
+
+.canvas-wrap{touch-action:pan-x pan-y;scrollbar-width:thin;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.canvas svg{touch-action:pan-x pan-y}
+.zoom-controls{align-items:center}.zoom-controls button{width:44px;height:44px;flex:none}.zoom-controls #zoom-fit{width:42px;font-size:12px;font-weight:700}.zoom-controls span{font-size:11px;color:#716f66;min-width:32px;text-align:center}
+@media(max-width:500px){.canvas-top{flex-wrap:wrap}.canvas-top .progress{flex:1 1 45%}.canvas-top .zoom-controls{order:3}.canvas-top .hint{order:4;margin-left:auto}.canvas-help{font-size:12px}}

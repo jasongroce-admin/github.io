@@ -32,6 +32,7 @@ for path,id,title,cat in sources:
    if len(neighbors):crop[mask]=np.bincount(neighbors,minlength=256).argmax();changed+=1
   if not changed:break
  shapes=[]; scale=400/size
+ preview=np.full((size,size,3),250,dtype=np.uint8)
  for color in sorted(np.unique(data)):
   count,labels,stats,_=cv2.connectedComponentsWithStats((data==color).astype(np.uint8),8)
   for j in range(1,count):
@@ -48,8 +49,12 @@ for path,id,title,cat in sources:
     if len(pts)<3:continue
     coords=[(round(float(x)*scale,1),round(float(y)*scale,1)) for x,y in pts]
     paths.append('M'+' L'.join(f'{x} {y}' for x,y in coords)+'Z')
-   if paths:shapes.append({'tag':'path','a':{'d':' '.join(paths),'fill-rule':'evenodd'},'x':round(pt[0]*scale,1),'y':round(pt[1]*scale,1),'n':int(color)+1})
+   if paths:
+    cv2.drawContours(preview,contours,-1,(120,120,120),1)
+    shapes.append({'tag':'path','a':{'d':' '.join(paths),'fill-rule':'evenodd'},'x':round(pt[0]*scale,1),'y':round(pt[1]*scale,1),'n':int(color)+1})
  palette=['#%02x%02x%02x'%tuple(pal[i*3:i*3+3]) for i in range(20)]
  pages.append({'id':id,'title':title,'category':cat,'level':'Intricate','shapes':shapes,'palette':palette,'firstLabel':True,'detail':True})
+ preview_dir=root/'previews';preview_dir.mkdir(exist_ok=True)
+ cv2.imwrite(str(preview_dir/(id+'.png')),preview)
  print(id, 'regions',len(shapes),'palette',len(set(p['n'] for p in shapes)))
 (root/'detailed-art.js').write_text('const detailedPages='+json.dumps(pages,separators=(',',':'),ensure_ascii=False)+';\n',encoding='utf-8')
