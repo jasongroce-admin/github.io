@@ -11,7 +11,7 @@ for source,title,cat,level,tags in configs:
  id=source+('-easy' if level=='Easy' else '-medium' if level=='Medium' else '-hard')
  path=root/'art-source'/(source+'.png')
  image=Image.open(path).convert('RGB').resize((size,size),Image.Resampling.LANCZOS)
- color_count=10 if source=='dog-cat-picnic' else 9 if level=='Easy' else 14 if level=='Medium' else 24
+ color_count=18 if source=='dog-cat-picnic' else 9 if level=='Easy' else 14 if level=='Medium' else 24
  quant=image.quantize(colors=color_count,method=Image.Quantize.MEDIANCUT,dither=Image.Dither.NONE)
  pal=quant.getpalette(); data=np.array(quant,dtype=np.uint8)
  # Merge small islands into the most common neighboring color. Recompute between passes.
@@ -21,7 +21,7 @@ for source,title,cat,level,tags in configs:
    n,labels,stats,_=cv2.connectedComponentsWithStats((data==color).astype(np.uint8),8)
    for j in range(1,n):
     # Keep this easy page broad, but retain medium-size facial regions.
-    min_area=160 if source=='dog-cat-picnic' else (450 if level=='Easy' else 160 if level=='Medium' else 32)
+    min_area=24 if source=='dog-cat-picnic' else (450 if level=='Easy' else 160 if level=='Medium' else 32)
     if stats[j,cv2.CC_STAT_AREA]<min_area:
      x,y,w,h,area=stats[j];small.append((area,color,x,y,w,h,labels[y:y+h,x:x+w]==j))
   if not small:break
