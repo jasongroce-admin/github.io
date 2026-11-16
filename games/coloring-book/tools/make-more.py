@@ -20,10 +20,7 @@ for source,title,cat,level,tags in configs:
   for color in np.unique(data):
    n,labels,stats,_=cv2.connectedComponentsWithStats((data==color).astype(np.uint8),8)
    for j in range(1,n):
-    # Animal faces need their smallest color islands (eyes, noses, and mouths).
-    # Keep those readable without lowering the detail threshold for the scenery.
-    min_area=16 if source in {'dog-meadow','cat-window','dogs-flowers','cats-garden'} else (450 if level=='Easy' else 160 if level=='Medium' else 32)
-    if stats[j,cv2.CC_STAT_AREA]<min_area:
+    if stats[j,cv2.CC_STAT_AREA]<(450 if level=='Easy' else 160 if level=='Medium' else 32):
      x,y,w,h,area=stats[j];small.append((area,color,x,y,w,h,labels[y:y+h,x:x+w]==j))
   if not small:break
   changed=0
