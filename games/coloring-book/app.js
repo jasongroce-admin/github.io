@@ -54,7 +54,8 @@ function save(){try{localStorage.setItem(storageKey(current.id),JSON.stringify(p
 let paintTextureSerial=0;
 let showArtShading=true;
 function installPaintTexture(svg,page){
- if(!page.paintTexture)return null;
+ const texture=page.paintTexture||page.paintTextureUrl;
+ if(!texture)return null;
  const id='paint-texture-'+ ++paintTextureSerial;
  const pattern=document.createElementNS(NS,'pattern');
  pattern.id=id;
@@ -62,7 +63,7 @@ function installPaintTexture(svg,page){
  pattern.setAttribute('width','400');
  pattern.setAttribute('height','400');
  const image=document.createElementNS(NS,'image');
- image.setAttribute('href',page.paintTexture);
+ image.setAttribute('href',texture);
  image.setAttribute('width','400');
  image.setAttribute('height','400');
  pattern.append(image);
@@ -75,7 +76,7 @@ function installPaintTexture(svg,page){
 function paintFill(page,number,texture){
  return texture?'url(#'+texture+') '+page.palette[number-1]:page.palette[number-1];
 }
-function svg(page,preview=false,lines=showLines,blankPreview=false,shading=showArtShading){let s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 400 400');if(!lines)s.classList.add('lines-off');s.setAttribute('role',preview?'img':'group');s.setAttribute('aria-label',page.title+(preview?' preview':' coloring page'));const painter=shading&&!blankPreview?installPaintTexture(s,page):null;page.shapes.forEach((shape,i)=>{let el=document.createElementNS(NS,shape.tag);Object.entries(shape.a).forEach(([k,v])=>el.setAttribute(k,v));el.setAttribute('fill',blankPreview?'#fffdf8':preview||painted.includes(i)?paintFill(page,shape.n,painter):'#fffdf8');el.setAttribute('stroke',lines?'#514b46':'none');el.setAttribute('stroke-width',page.paintTexture?'.45':page.detail?'1.1':'2.5');if(page.detail)el.style.strokeWidth=page.paintTexture?'.45px':'1.1px';el.setAttribute('stroke-linejoin','round');if(!preview){el.classList.add('region');if(!painted.includes(i)&&shape.n===selected)el.classList.add('match');if(i===hintIndex)el.classList.add('hinted');el.setAttribute('tabindex','0');el.setAttribute('role','button');el.setAttribute('aria-label',`Region ${i+1}, color ${shape.n}${painted.includes(i)?', colored':''}`);el.addEventListener('click',()=>{if(Date.now()>=suppressTapUntil)fill(i)});el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fill(i)}})}s.append(el);if(!preview&&!painted.includes(i)){let label=document.createElementNS(NS,'text');let pos=labelPositions[page.id]?.[i]||(i===0&&!page.firstLabel?[25,25]:[shape.x,shape.y]);label.setAttribute('x',pos[0]);label.setAttribute('y',pos[1]);label.setAttribute('class',page.detail?'label detail-label':'label');if(shape.labelSize)label.style.fontSize=shape.labelSize+'px';label.textContent=shape.n;s.append(label)}});if(!preview&&showOutlineHints){let outlines=document.createElementNS(NS,'g');outlines.setAttribute('class','selected-outlines');outlines.setAttribute('pointer-events','none');let regions=s.querySelectorAll('.region');page.shapes.forEach((shape,i)=>{if(shape.n!==selected||painted.includes(i))return;let outline=regions[i].cloneNode(false);outline.removeAttribute('class');outline.removeAttribute('tabindex');outline.removeAttribute('role');outline.removeAttribute('aria-label');outline.setAttribute('data-outline',i);outline.setAttribute('fill','none');outline.setAttribute('stroke','#87372b');outline.setAttribute('stroke-width','2.5');outline.setAttribute('vector-effect','non-scaling-stroke');outline.removeAttribute('style');outlines.append(outline)});s.append(outlines)}return s}
+function svg(page,preview=false,lines=showLines,blankPreview=false,shading=showArtShading){let s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 400 400');if(!lines)s.classList.add('lines-off');s.setAttribute('role',preview?'img':'group');s.setAttribute('aria-label',page.title+(preview?' preview':' coloring page'));const painter=shading&&!blankPreview?installPaintTexture(s,page):null;if(painter&&!lines&&(preview||painted.length===page.shapes.length)){const image=s.querySelector('pattern image').cloneNode();s.replaceChildren(image);return s}page.shapes.forEach((shape,i)=>{let el=document.createElementNS(NS,shape.tag);Object.entries(shape.a).forEach(([k,v])=>el.setAttribute(k,v));el.setAttribute('fill',blankPreview?'#fffdf8':preview||painted.includes(i)?paintFill(page,shape.n,painter):'#fffdf8');el.setAttribute('stroke',lines?'#514b46':'none');el.setAttribute('stroke-width',page.paintTexture?'.45':page.detail?'1.1':'2.5');if(page.detail)el.style.strokeWidth=page.paintTexture?'.45px':'1.1px';el.setAttribute('stroke-linejoin','round');if(!preview){el.classList.add('region');if(!painted.includes(i)&&shape.n===selected)el.classList.add('match');if(i===hintIndex)el.classList.add('hinted');el.setAttribute('tabindex','0');el.setAttribute('role','button');el.setAttribute('aria-label',`Region ${i+1}, color ${shape.n}${painted.includes(i)?', colored':''}`);el.addEventListener('click',()=>{if(Date.now()>=suppressTapUntil)fill(i)});el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fill(i)}})}s.append(el);if(!preview&&!painted.includes(i)){let label=document.createElementNS(NS,'text');let pos=labelPositions[page.id]?.[i]||(i===0&&!page.firstLabel?[25,25]:[shape.x,shape.y]);label.setAttribute('x',pos[0]);label.setAttribute('y',pos[1]);label.setAttribute('class',page.detail?'label detail-label':'label');if(shape.labelSize)label.style.fontSize=shape.labelSize+'px';label.textContent=shape.n;s.append(label)}});if(!preview&&showOutlineHints){let outlines=document.createElementNS(NS,'g');outlines.setAttribute('class','selected-outlines');outlines.setAttribute('pointer-events','none');let regions=s.querySelectorAll('.region');page.shapes.forEach((shape,i)=>{if(shape.n!==selected||painted.includes(i))return;let outline=regions[i].cloneNode(false);outline.removeAttribute('class');outline.removeAttribute('tabindex');outline.removeAttribute('role');outline.removeAttribute('aria-label');outline.setAttribute('data-outline',i);outline.setAttribute('fill','none');outline.setAttribute('stroke','#87372b');outline.setAttribute('stroke-width','2.5');outline.setAttribute('vector-effect','non-scaling-stroke');outline.removeAttribute('style');outlines.append(outline)});s.append(outlines)}return s}
 function difficulty(p){if(p.id.startsWith('park-'))return 'Easy';if(p.level==='Intricate'||p.level==='Hard')return 'Hard';if(p.level==='Detailed'||p.level==='Medium')return 'Medium';return 'Easy'}
 function gallery(){
  let cards=$('cards');cards.replaceChildren();let query=$('gallery-search').value.trim().toLocaleLowerCase();
@@ -92,7 +93,7 @@ const placeLinks=[['artist-point','https://www.nps.gov/places/000/grand-canyon-o
 function openPage(p){zoom=1;document.body.classList.add('studio-active');current=p;painted=[...new Set(load(p.id).filter(i=>Number.isInteger(i)&&i>=0&&i<p.shapes.length))];selected=1;hintIndex=-1;$('gallery').hidden=true;$('studio').hidden=false;$('studio-title').textContent=p.title;let place=placeLinks.find(([id])=>p.id.startsWith(id+'-'));$('place-link').hidden=!place;if(place)$('place-link').href=place[1];$('studio-category').textContent=p.category+' / '+difficulty(p);render();sizeCanvas();window.scrollTo(0,0)}
 function remaining(n){let used=new Set(painted);return current.shapes.reduce((total,shape,i)=>total+(shape.n===n&&!used.has(i)?1:0),0)}
 function updateSwatch(n){let b=$('palette').querySelector(`[data-color="${n}"]`);if(!b)return;let left=remaining(n);b.classList.toggle('done',left===0);b.querySelector('.swatch-count').textContent=left===0?'✓':left;b.setAttribute('aria-label',left===0?`Color ${n}, complete`:`Color ${n}, ${left} ${left===1?'space':'spaces'} left`);b.title=left===0?`Color ${n} complete`:`Color ${n}: ${left} left`}
-function render(){shadingControl.style.display=current.paintTexture?'':'none';let canvas=$('canvas');canvas.replaceChildren(svg(current));let palette=$('palette');palette.replaceChildren();let used=[...new Set(current.shapes.map(s=>s.n))].sort((a,b)=>a-b);used.forEach(n=>{let b=document.createElement('button');b.className='swatch'+(selected===n?' selected':'');b.dataset.color=n;b.style.background=current.palette[n-1];let hex=current.palette[n-1].slice(1),lum=(parseInt(hex.slice(0,2),16)*299+parseInt(hex.slice(2,4),16)*587+parseInt(hex.slice(4,6),16)*114)/1000;b.style.color=lum<135?'#fff':'#292a25';b.textContent=n;let badge=document.createElement('span');badge.className='swatch-count';badge.setAttribute('aria-hidden','true');b.append(badge);b.setAttribute('aria-pressed',selected===n);b.addEventListener('click',()=>{selected=n;hintIndex=-1;let left=remaining(n);$('message').textContent=left===0?'This color is complete. Choose another.':`Color ${n}: ${left} ${left===1?'space':'spaces'} left. Tap a matching space.`;render()});palette.append(b);updateSwatch(n)});let complete=painted.length===current.shapes.length;let pct=complete?100:Math.floor(painted.length/current.shapes.length*100);$('progress-label').textContent=pct+'% colored';$('progress-bar').style.width=pct+'%';$('finished-actions').hidden=!complete;if(complete)$('message').textContent='Beautiful work! Your picture is complete.'}
+function render(){shadingControl.style.display=current.paintTexture||current.paintTextureUrl?'':'none';let canvas=$('canvas');canvas.replaceChildren(svg(current));let palette=$('palette');palette.replaceChildren();let used=[...new Set(current.shapes.map(s=>s.n))].sort((a,b)=>a-b);used.forEach(n=>{let b=document.createElement('button');b.className='swatch'+(selected===n?' selected':'');b.dataset.color=n;b.style.background=current.palette[n-1];let hex=current.palette[n-1].slice(1),lum=(parseInt(hex.slice(0,2),16)*299+parseInt(hex.slice(2,4),16)*587+parseInt(hex.slice(4,6),16)*114)/1000;b.style.color=lum<135?'#fff':'#292a25';b.textContent=n;let badge=document.createElement('span');badge.className='swatch-count';badge.setAttribute('aria-hidden','true');b.append(badge);b.setAttribute('aria-pressed',selected===n);b.addEventListener('click',()=>{selected=n;hintIndex=-1;let left=remaining(n);$('message').textContent=left===0?'This color is complete. Choose another.':`Color ${n}: ${left} ${left===1?'space':'spaces'} left. Tap a matching space.`;render()});palette.append(b);updateSwatch(n)});let complete=painted.length===current.shapes.length;let pct=complete?100:Math.floor(painted.length/current.shapes.length*100);$('progress-label').textContent=pct+'% colored';$('progress-bar').style.width=pct+'%';$('finished-actions').hidden=!complete;if(complete)$('message').textContent='Beautiful work! Your picture is complete.'}
 function fill(i){
  if(painted.includes(i))return;
  if(current.shapes[i].n!==selected){$('message').textContent=`That space needs color ${current.shapes[i].n}. Choose it below.`;return}
@@ -105,6 +106,7 @@ function fill(i){
  let complete=painted.length===current.shapes.length,pct=complete?100:Math.floor(painted.length/current.shapes.length*100);
  $('progress-label').textContent=pct+'% colored';$('progress-bar').style.width=pct+'%';$('finished-actions').hidden=!complete;
  let left=remaining(n);$('message').textContent=complete?'Beautiful work! Your picture is complete.':left===0?`Color ${n} complete! Choose another color.`:`Color ${n}: ${left} ${left===1?'space':'spaces'} left.`;
+ if(complete&&!showLines&&(current.paintTexture||current.paintTextureUrl))render();
 }
 function sizeCanvas(){
  if(!current||$('studio').hidden)return;
@@ -140,8 +142,28 @@ document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click'
 $('library').addEventListener('click',()=>{$('studio').hidden=true;document.body.classList.remove('studio-active');$('gallery').hidden=false;gallery();window.scrollTo(0,0)});
 $('reset').addEventListener('click',()=>{if(confirm('Start this picture over? Your colored spaces will be cleared.')){painted=[];hintIndex=-1;save();$('message').textContent='A fresh page! Choose a color to begin.';render()}});
 $('hint').addEventListener('click',()=>{hintIndex=current.shapes.findIndex((s,i)=>s.n===selected&&!painted.includes(i));$('message').textContent=hintIndex<0?'This color is complete. Choose another.':'Look for the golden space.';render();if(hintIndex>=0){let el=$('canvas').querySelector('.hinted');if(el)(el.nextElementSibling||el).scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'})}});
-function finishedSvg(){let picture=svg(current,true,showLines);picture.setAttribute('xmlns',NS);picture.setAttribute('width','1200');picture.setAttribute('height','1200');return new XMLSerializer().serializeToString(picture)}
-async function pngBlob(){let blob=new Blob([finishedSvg()],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);try{let img=new Image();img.src=url;await img.decode();let canvas=document.createElement('canvas');canvas.width=canvas.height=1200;let ctx=canvas.getContext('2d');ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,1200,1200);ctx.drawImage(img,0,0,1200,1200);return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Could not create image')),'image/png'))}finally{URL.revokeObjectURL(url)}}
+async function finishedSvg(){
+ const picture=svg(current,true,showLines);
+ const image=picture.querySelector('image');
+ const url=image?.getAttribute('href');
+ if(url&&!url.startsWith('data:')){
+  const response=await fetch(url);
+  if(!response.ok)throw new Error('Could not load the finished artwork');
+  const blob=await response.blob();
+  const dataUrl=await new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=()=>resolve(reader.result);
+   reader.onerror=()=>reject(reader.error);
+   reader.readAsDataURL(blob);
+  });
+  image.setAttribute('href',dataUrl);
+ }
+ picture.setAttribute('xmlns',NS);
+ picture.setAttribute('width','1200');
+ picture.setAttribute('height','1200');
+ return new XMLSerializer().serializeToString(picture);
+}
+async function pngBlob(){let blob=new Blob([await finishedSvg()],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);try{let img=new Image();img.src=url;await img.decode();let canvas=document.createElement('canvas');canvas.width=canvas.height=1200;let ctx=canvas.getContext('2d');ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,1200,1200);ctx.drawImage(img,0,0,1200,1200);return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Could not create image')),'image/png'))}finally{URL.revokeObjectURL(url)}}
 function downloadBlob(blob,name){let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
 $('download').addEventListener('click',async()=>{try{downloadBlob(await pngBlob(),current.id+'.png');$('message').textContent='Your picture is ready to save.'}catch{$('message').textContent='Could not save the picture. Please try again.'}});
 $('share').addEventListener('click',async()=>{try{let blob=await pngBlob(),file=new File([blob],current.id+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:current.title,files:[file]})}else{downloadBlob(blob,current.id+'.png');$('message').textContent='Image sharing is unavailable here, so we saved a PNG you can share.'}}catch(e){if(e.name!=='AbortError')$('message').textContent='Could not share the picture. Try saving it first.'}});
@@ -171,6 +193,28 @@ $('export-svg').addEventListener('click',()=>{let options=printOptions();if(!opt
 $('print').addEventListener('click',()=>{document.body.classList.remove('print-worksheet');let target=$('print-area');target.replaceChildren(svg(current,true,showLines));window.print()});
 window.addEventListener('afterprint',()=>document.body.classList.remove('print-worksheet'));
 pages.push(...shadedPages);
+const repairedPages=new Set([
+ 'wildlife-easy',
+ 'dog-meadow-medium',
+ 'cat-window-medium',
+ 'dogs-flowers-hard',
+ 'cats-garden-hard',
+ 'dog-cat-picnic-easy',
+ 'owl-moonlit-hard',
+ 'college-campus-easy',
+ 'indiana-capitol-medium',
+ 'artist-point-medium',
+ 'great-wall-medium',
+ 'anime-fox-spirit-hard',
+ 'anime-fuji-shrine-hard',
+ 'anime-kyoto-lanterns-hard',
+ 'anime-yellowstone-night-hard',
+ 'anime-cherry-lake-hard',
+ 'anime-grand-canyon-hard'
+]);
+for(const page of pages){
+ if(repairedPages.has(page.id))page.paintTextureUrl='previews/'+page.id+'-shaded.jpg';
+}
 const shadingControl=document.createElement('label');
 shadingControl.className='line-toggle';
 shadingControl.style.display='none';
