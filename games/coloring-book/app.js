@@ -90,7 +90,7 @@ function gallery(){
 }
 $('gallery-search').addEventListener('input',gallery);
 const placeLinks=[['artist-point','https://www.nps.gov/places/000/grand-canyon-of-the-yellowstone-artist-point.htm'],['bryce-sunrise-point','https://www.nps.gov/places/sunrise-point.htm'],['mather-point','https://www.nps.gov/places/000/mather-point.htm'],['fire-wave','https://parks.nv.gov/parks/valley-of-fire']];
-function openPage(p){zoom=1;document.body.classList.add('studio-active');current=p;painted=[...new Set(load(p.id).filter(i=>Number.isInteger(i)&&i>=0&&i<p.shapes.length))];selected=1;hintIndex=-1;$('gallery').hidden=true;$('studio').hidden=false;$('studio-title').textContent=p.title;let place=placeLinks.find(([id])=>p.id.startsWith(id+'-'));$('place-link').hidden=!place;if(place)$('place-link').href=place[1];$('studio-category').textContent=p.category+' / '+difficulty(p);render();sizeCanvas();window.scrollTo(0,0)}
+function openPage(p){zoom=1;document.body.classList.add('studio-active');current=p;painted=[...new Set(load(p.id).filter(i=>Number.isInteger(i)&&i>=0&&i<p.shapes.length))];selected=1;hintIndex=-1;$('gallery').hidden=true;$('studio').hidden=false;$('studio-title').textContent=p.title;let place=placeLinks.find(([id])=>p.id.startsWith(id+'-'));$('place-link').hidden=!place;if(place)$('place-link').href=place[1];$('studio-category').textContent=p.category+' / '+difficulty(p);render();window.scrollTo(0,0);sizeCanvas();document.querySelector('.canvas-wrap').scrollTo(0,0)}
 function remaining(n){let used=new Set(painted);return current.shapes.reduce((total,shape,i)=>total+(shape.n===n&&!used.has(i)?1:0),0)}
 function updateSwatch(n){let b=$('palette').querySelector(`[data-color="${n}"]`);if(!b)return;let left=remaining(n);b.classList.toggle('done',left===0);b.querySelector('.swatch-count').textContent=left===0?'✓':left;b.setAttribute('aria-label',left===0?`Color ${n}, complete`:`Color ${n}, ${left} ${left===1?'space':'spaces'} left`);b.title=left===0?`Color ${n} complete`:`Color ${n}: ${left} left`}
 function render(){shadingControl.style.display=current.paintTexture||current.paintTextureUrl?'':'none';let canvas=$('canvas');canvas.replaceChildren(svg(current));let palette=$('palette');palette.replaceChildren();let used=[...new Set(current.shapes.map(s=>s.n))].sort((a,b)=>a-b);used.forEach(n=>{let b=document.createElement('button');b.className='swatch'+(selected===n?' selected':'');b.dataset.color=n;b.style.background=current.palette[n-1];let hex=current.palette[n-1].slice(1),lum=(parseInt(hex.slice(0,2),16)*299+parseInt(hex.slice(2,4),16)*587+parseInt(hex.slice(4,6),16)*114)/1000;b.style.color=lum<135?'#fff':'#292a25';b.textContent=n;let badge=document.createElement('span');badge.className='swatch-count';badge.setAttribute('aria-hidden','true');b.append(badge);b.setAttribute('aria-pressed',selected===n);b.addEventListener('click',()=>{selected=n;hintIndex=-1;let left=remaining(n);$('message').textContent=left===0?'This color is complete. Choose another.':`Color ${n}: ${left} ${left===1?'space':'spaces'} left. Tap a matching space.`;render()});palette.append(b);updateSwatch(n)});let complete=painted.length===current.shapes.length;let pct=complete?100:Math.floor(painted.length/current.shapes.length*100);$('progress-label').textContent=pct+'% colored';$('progress-bar').style.width=pct+'%';$('finished-actions').hidden=!complete;if(complete)$('message').textContent='Beautiful work! Your picture is complete.'}
@@ -110,11 +110,19 @@ function fill(i){
 }
 function sizeCanvas(){
  if(!current||$('studio').hidden)return;
- let wrap=document.querySelector('.canvas-wrap'),css=getComputedStyle(wrap);
- let available=wrap.clientWidth-parseFloat(css.paddingLeft)-parseFloat(css.paddingRight);
- let heightLimit=Math.max(220,window.innerHeight-240);
- let base=Math.min(available,heightLimit);
- wrap.style.height=Math.round(base+parseFloat(css.paddingTop)+parseFloat(css.paddingBottom))+'px';
+ const wrap=document.querySelector('.canvas-wrap');
+ const css=getComputedStyle(wrap);
+ const paddingY=parseFloat(css.paddingTop)+parseFloat(css.paddingBottom);
+ const paddingX=parseFloat(css.paddingLeft)+parseFloat(css.paddingRight);
+ const frame=wrap.getBoundingClientRect();
+ const swatch=$('palette').firstElementChild?.getBoundingClientRect();
+ // A palette below the picture needs space for its first row at fit zoom.
+ const stacked=swatch&&swatch.top>=frame.bottom;
+ const paletteSpace=stacked?swatch.bottom-frame.bottom+12:10;
+ const viewportHeight=Math.min(window.innerHeight,window.visualViewport?.height??Infinity);
+ const availableHeight=viewportHeight-(frame.top+window.scrollY)-paddingY-paletteSpace;
+ const base=Math.max(1,Math.floor(Math.min(wrap.offsetWidth-paddingX,Math.max(120,availableHeight))));
+ wrap.style.height=base+paddingY+'px';
  $('canvas').style.width=Math.round(base*zoom)+'px';
  $('zoom-status').textContent=Math.round(zoom*100)+'%';
 }
@@ -126,6 +134,7 @@ function setZoom(value,clientX,clientY){
  let after=canvas.getBoundingClientRect();wrap.scrollLeft+=after.left+fx*after.width-clientX;wrap.scrollTop+=after.top+fy*after.height-clientY;
 }
 window.addEventListener('resize',sizeCanvas);window.addEventListener('orientationchange',()=>{requestAnimationFrame(()=>requestAnimationFrame(sizeCanvas))});
+window.visualViewport?.addEventListener('resize',sizeCanvas);
 $('zoom-in').addEventListener('click',()=>setZoom(zoom+0.5));
 $('zoom-out').addEventListener('click',()=>setZoom(zoom-0.5));
 $('zoom-fit').addEventListener('click',()=>{setZoom(1);let wrap=document.querySelector('.canvas-wrap');wrap.scrollTo(0,0)});

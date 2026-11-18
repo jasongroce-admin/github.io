@@ -65,3 +65,38 @@ body.studio-active .canvas{max-width:none}
 .search-label{display:block;font-size:12px;font-weight:bold;margin-top:22px}.gallery-count{font-size:13px;color:#716f66;margin:14px 0}.gallery-group{margin:25px 0 48px}.gallery-group>h3{font:normal 28px Georgia,serif;margin:0 0 15px;border-top:1px solid #dedbd1;padding-top:20px}.gallery-group>h3 span{font:12px Arial,sans-serif;color:#716f66;margin-left:12px}#gallery-search{display:block;width:min(100%,420px);margin-top:7px;border:1px solid #cfc9bd;border-radius:9px;background:#fffdf8;padding:12px 14px;font:16px Arial,sans-serif}.filters{padding-top:18px}
 
 @media print{@page{margin:0}.print-worksheet #print-sheet .worksheet-reference{box-sizing:border-box;padding:10mm}}
+
+/* Keep the coloring canvas and primary controls within the opening viewport. */
+@media screen {
+ body.studio-active > header {display:none}
+ body.studio-active main {padding-top:env(safe-area-inset-top)}
+ body.studio-active .studio-head {padding:4px 0;gap:10px}
+ .studio-head > div {min-width:0;text-align:center}
+ .studio-head h1 {font-size:clamp(17px,2.8vw,29px);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .studio-head .eyebrow {display:none}
+ .studio-head .text-btn {min-height:44px;flex:none}
+ #place-link {font-size:11px}
+ body.studio-active .canvas-column {padding:8px}
+ body.studio-active .canvas-wrap {margin-top:6px;padding:3px}
+ .canvas-help {margin:6px 0 0;line-height:1.2}
+}
+@media screen and (max-width:800px) {
+ body.studio-active .workspace {gap:6px}
+ body.studio-active .palette-panel {position:static;padding:5px 8px;box-shadow:none}
+ body.studio-active .palette-panel > .eyebrow {display:none}
+ body.studio-active .palette {margin:0}
+}
+@media screen and (max-width:500px) {
+ .studio-head .text-btn {font-size:12px}
+ .canvas-top .progress {display:none}
+ .canvas-top .zoom-controls,.canvas-top .hint {order:0}
+ .canvas-top #progress-label {white-space:nowrap;font-size:11px}
+ .canvas-top .hint {padding:9px 8px;font-size:11px;min-height:44px}
+ .canvas-top #zoom-status {position:absolute;width:1px;height:1px;min-width:0;overflow:hidden;clip-path:inset(50%)}
+}
+@media screen and (max-width:350px) {
+ body.studio-active main {padding-inline:6px}
+ body.studio-active .canvas-column {padding-inline:5px}
+ .canvas-top {gap:3px}
+ .canvas-top .zoom-controls {gap:2px}
+}
